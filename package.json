@@ -1,0 +1,38 @@
+{
+  "name": "homebridge-adt-pulse",
+  "version": "1.0.0",
+  "description": "Unofficial Homebridge security system platform for ADT Pulse",
+  "main": "index.js",
+  "scripts": {
+    "start": "homebridge --debug --plugin-path $(pwd) && exit 1",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mrjackyliang/homebridge-adt-pulse.git"
+  },
+  "keywords": [
+    "homebridge-plugin",
+    "adt",
+    "adt-pulse",
+    "icontrol",
+    "security"
+  ],
+  "author": "Jacky Liang",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mrjackyliang/homebridge-adt-pulse/issues"
+  },
+  "homepage": "https://github.com/mrjackyliang/homebridge-adt-pulse#readme",
+  "engines": {
+    "node": ">=10.15.3",
+    "homebridge": ">=0.4.50"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.3",
+    "internet-available": "^1.0.0",
+    "lodash": "^4.17.15",
+    "q": "^1.5.1",
+    "request": "^2.88.0"
+  }
+}
