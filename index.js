@@ -57,34 +57,22 @@ function ADTPulsePlatform(log, config, api) {
 
     // Keeps track of device updates.
     this.polling      = {};
+    this.syncing      = undefined;
     this.lastSyncCode = "1-0-0";
     this.isSyncing    = false;
 
     // Credentials could be null.
-    this.username        = _.get(this.config, "username");
-    this.password        = _.get(this.config, "password");
-    this.debug           = _.get(this.config, "debug");
-    this.refreshInterval = _.get(this.config, "refreshInterval");
-    this.syncInterval    = _.get(this.config, "syncInterval");
+    this.username = _.get(this.config, "username");
+    this.password = _.get(this.config, "password");
+    this.debug    = false;
+
+    // Sync delay.
+    this.refreshInterval = 6;
+    this.syncInterval    = 3;
 
     if (!this.username || !this.password) {
         this.log.error("Missing required username or password in configuration.");
         return;
-    }
-
-    if (typeof this.debug !== "boolean") {
-        this.log.info("The debug setting should be a boolean (true|false). In the meantime, setting to false.");
-        this.debug = false;
-    }
-
-    if (typeof this.refreshInterval !== "number") {
-        this.log.info("The refresh interval setting should be a numerical digit. In the meantime, setting to 15.");
-        this.refreshInterval = 15;
-    }
-
-    if (typeof this.syncInterval !== "number") {
-        this.log.info("The sync interval setting should be a numerical digit. In the meantime, setting to 30.");
-        this.syncInterval = 30;
     }
 
     // Create a new Pulse instance.
@@ -113,126 +101,7 @@ function ADTPulsePlatform(log, config, api) {
             that.log("Cached accessories loaded. Initializing portal sync...");
 
             // Begin portal sync.
-            let sync = setInterval(() => {
-                if (that.isSyncing !== true) {
-                    that.isSyncing = true;
-
-                    that.theAlarm
-                        .login()
-                        .then((response) => {
-                            let version          = _.get(response, "info.version", undefined);
-                            let supportedVersion = "16.0.0-131";
-
-                            if (version !== undefined && version !== supportedVersion) {
-                                that.log(`WARNING! Web portal version ${version} does not match ${supportedVersion}.`);
-                            }
-                        })
-                        .then(() => that.theAlarm.performPortalSync())
-                        .then(async (syncCode) => {
-                            let theSyncCode = _.get(syncCode, "info.syncCode");
-
-                            // Runs if status changes.
-                            if (theSyncCode !== that.lastSyncCode || theSyncCode === "1-0-0") {
-                                if (that.debug) {
-                                    that.log(`New sync code is ${theSyncCode}`);
-                                }
-
-                                // Update accessory status.
-                                await that.theAlarm
-                                    .getDeviceStatus()
-                                    .then(async (device) => {
-                                        let deviceInfo   = _.get(device, "info");
-                                        let deviceUUID   = UUIDGen.generate("system-1");
-                                        let deviceLoaded = _.find(that.accessories, ["UUID", deviceUUID]);
-
-                                        // Set latest status into instance.
-                                        that.deviceStatus = deviceInfo;
-
-                                        if (deviceLoaded === undefined) {
-                                            await that.prepareAddAccessory("device", deviceInfo);
-                                        }
-                                    })
-                                    .then(() => that.theAlarm.getZoneStatus())
-                                    .then((zones) => {
-                                        let zonesInfo = _.get(zones, "info");
-
-                                        // Set latest status into instance.
-                                        that.zoneStatus = zonesInfo;
-
-                                        // Add zones if they have not yet been added.
-                                        _.forEach(zonesInfo, async (zone) => {
-                                            let deviceUUID   = UUIDGen.generate(_.get(zone, "id"));
-                                            let deviceLoaded = _.find(that.accessories, ["UUID", deviceUUID]);
-
-                                            if (deviceLoaded === undefined) {
-                                                await that.prepareAddAccessory("zone", zone);
-                                            }
-                                        });
-                                    })
-                                    .catch((error) => {
-                                        let action = _.get(error, "action");
-
-                                        switch (action) {
-                                            case "GET_DEVICE_INFO":
-                                                that.log("Get device information failed.");
-                                                break;
-                                            case "GET_DEVICE_STATUS":
-                                                that.log("Get device status failed.");
-                                                break;
-                                            case "GET_ZONE_STATUS":
-                                                that.log("Get zone status failed.");
-                                                break;
-                                            case "HOST_UNREACHABLE":
-                                                that.log("Internet disconnected or portal unreachable.");
-                                                break;
-                                            default:
-                                                that.log(`Action failed on ${action}.`);
-                                                break;
-                                        }
-                                    });
-
-                                // Update sync code.
-                                that.lastSyncCode = theSyncCode;
-                            }
-                        })
-                        .then(() => {
-                            that.isSyncing = false;
-                        })
-                        .catch((error) => {
-                            let action = _.get(error, "action");
-
-                            switch (action) {
-                                case "LOGIN":
-                                    that.failedLoginTimes++;
-
-                                    if (that.failedLoginTimes > 1) {
-                                        that.log("Login failed more than once. Portal sync terminated.");
-                                        clearInterval(sync);
-                                    } else {
-                                        that.log("Login failed. Trying again.");
-                                    }
-                                    break;
-                                case "SYNC":
-                                    if (that.debug) {
-                                        that.log("Portal sync failed. Attempting to fix connection...");
-                                    }
-                                    break;
-                                case "HOST_UNREACHABLE":
-                                    that.log("Internet disconnected or portal unreachable.");
-                                    break;
-                                default:
-                                    that.log(`Action failed on ${action}.`);
-                                    break;
-                            }
-
-                            that.isSyncing = false;
-                        });
-                } else {
-                    if (that.debug) {
-                        that.log("Portal sync is already in progress...");
-                    }
-                }
-            }, that.syncInterval * 1000);
+            that.portalSync();
         });
     }
 }
@@ -275,7 +144,13 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
             accessory.getService(Service.SecuritySystem)
                 .getCharacteristic(Characteristic.SecuritySystemTargetState)
                 .on("get", (callback) => {
-                    callback(null, this.getDeviceStatus("configure", "target", accessory, id, name, lastState));
+                    let status = this.getDeviceStatus("configure", accessory, id, name, lastState);
+
+                    if (that.debug) {
+                        that.log(`Getting ${accessory.displayName} (${id}) target status...`, status);
+                    }
+
+                    callback(null, status);
                 })
                 .on("set", (state, callback) => {
                     this.setDeviceStatus(accessory, state, callback);
@@ -284,7 +159,13 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
             accessory.getService(Service.SecuritySystem)
                 .getCharacteristic(Characteristic.SecuritySystemCurrentState)
                 .on("get", (callback) => {
-                    callback(null, this.getDeviceStatus("configure", "current", accessory, id, name, lastState));
+                    let status = this.getDeviceStatus("configure", accessory, id, name, lastState);
+
+                    if (that.debug) {
+                        that.log(`Getting ${accessory.displayName} (${id}) current status...`, status);
+                    }
+
+                    callback(null, status);
                 });
             break;
         case "doorWindow":
@@ -432,7 +313,13 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
                 newAccessory.getService(Service.SecuritySystem)
                     .getCharacteristic(Characteristic.SecuritySystemTargetState)
                     .on("get", (callback) => {
-                        callback(null, this.getDeviceStatus("add", "target", newAccessory, id, name, state));
+                        let status = this.getDeviceStatus("add", newAccessory, id, name, state);
+
+                        if (that.debug) {
+                            that.log(`Getting ${name} (${id}) target status...`, status);
+                        }
+
+                        callback(null, status);
                     })
                     .on("set", (state, callback) => {
                         this.setDeviceStatus(newAccessory, state, callback);
@@ -441,7 +328,13 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
                 newAccessory.getService(Service.SecuritySystem)
                     .getCharacteristic(Characteristic.SecuritySystemCurrentState)
                     .on("get", (callback) => {
-                        callback(null, this.getDeviceStatus("add", "current", newAccessory, id, name, state));
+                        let status = this.getDeviceStatus("add", newAccessory, id, name, state);
+
+                        if (that.debug) {
+                            that.log(`Getting ${name} (${id}) current status...`, status);
+                        }
+
+                        callback(null, status);
                     });
                 break;
             case "doorWindow":
@@ -710,6 +603,144 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function (type, accessory) {
 // };
 
 /**
+ * Sync with portal.
+ *
+ * Retrieve latest status, add/remove accessories.
+ */
+ADTPulsePlatform.prototype.portalSync = function () {
+    clearTimeout(this.syncing);
+
+    // Begin portal sync.
+    if (this.isSyncing !== true) {
+        this.isSyncing = true;
+
+        this.theAlarm
+            .login()
+            .then((response) => {
+                let version          = _.get(response, "info.version", undefined);
+                let supportedVersion = "16.0.0-131";
+
+                if (version !== undefined && version !== supportedVersion) {
+                    this.log(`WARNING! Web portal version ${version} does not match ${supportedVersion}.`);
+                }
+            })
+            .then(() => this.theAlarm.performPortalSync())
+            .then(async (syncCode) => {
+                let theSyncCode = _.get(syncCode, "info.syncCode");
+
+                // Runs if status changes.
+                if (theSyncCode !== this.lastSyncCode || theSyncCode === "1-0-0") {
+                    if (this.debug) {
+                        this.log(`New sync code is ${theSyncCode}`);
+                    }
+
+                    // Update accessory status.
+                    await this.theAlarm
+                        .getDeviceStatus()
+                        .then(async (device) => {
+                            let deviceInfo   = _.get(device, "info");
+                            let deviceUUID   = UUIDGen.generate("system-1");
+                            let deviceLoaded = _.find(this.accessories, ["UUID", deviceUUID]);
+
+                            // Set latest status into instance.
+                            this.deviceStatus = deviceInfo;
+
+                            if (deviceLoaded === undefined) {
+                                await this.prepareAddAccessory("device", deviceInfo);
+                            }
+                        })
+                        .then(() => this.theAlarm.getZoneStatus())
+                        .then((zones) => {
+                            let zonesInfo = _.get(zones, "info");
+
+                            // Set latest status into instance.
+                            this.zoneStatus = zonesInfo;
+
+                            // Add zones if they have not yet been added.
+                            _.forEach(zonesInfo, async (zone) => {
+                                let deviceUUID   = UUIDGen.generate(_.get(zone, "id"));
+                                let deviceLoaded = _.find(this.accessories, ["UUID", deviceUUID]);
+
+                                if (deviceLoaded === undefined) {
+                                    await this.prepareAddAccessory("zone", zone);
+                                }
+                            });
+                        })
+                        .catch((error) => {
+                            let action = _.get(error, "action");
+
+                            switch (action) {
+                                case "GET_DEVICE_INFO":
+                                    this.log("Get device information failed.");
+                                    break;
+                                case "GET_DEVICE_STATUS":
+                                    this.log("Get device status failed.");
+                                    break;
+                                case "GET_ZONE_STATUS":
+                                    this.log("Get zone status failed.");
+                                    break;
+                                case "HOST_UNREACHABLE":
+                                    this.log("Internet disconnected or portal unreachable.");
+                                    break;
+                                default:
+                                    this.log(`Action failed on ${action}.`);
+                                    break;
+                            }
+                        });
+
+                    // Update sync code.
+                    this.lastSyncCode = theSyncCode;
+                }
+            })
+            .then(() => {
+                this.isSyncing = false;
+            })
+            .catch((error) => {
+                let action = _.get(error, "action");
+
+                switch (action) {
+                    case "LOGIN":
+                        this.failedLoginTimes++;
+
+                        if (this.failedLoginTimes > 1) {
+                            this.log("Login failed more than once. Portal sync terminated.");
+                        } else {
+                            this.log("Login failed. Trying again.");
+                        }
+                        break;
+                    case "SYNC":
+                        if (this.debug) {
+                            this.log("Portal sync failed. Attempting to fix connection...");
+                        }
+                        break;
+                    case "HOST_UNREACHABLE":
+                        this.log("Internet disconnected or portal unreachable.");
+                        break;
+                    default:
+                        this.log(`Action failed on ${action}.`);
+                        break;
+                }
+
+                this.isSyncing = false;
+            });
+    } else {
+        if (this.debug) {
+            this.log("Portal sync is already in progress...");
+        }
+    }
+
+    // Force platform to retrieve latest status.
+    if (!(this.failedLoginTimes > 1)) {
+        this.syncing = setTimeout(
+            () => {
+                this.portalSync();
+            },
+            this.syncInterval * 1000
+        );
+    }
+};
+
+/**
  * Force accessories to update.
  *
  * @param {string} type - Can be "system", "doorWindow", "glass", "motion", "co", "fire".
@@ -779,7 +810,6 @@ ADTPulsePlatform.prototype.devicePolling = function (type, id) {
  * Get device status.
  *
  * @param {string} mode      - Can be "add" or "configure".
- * @param {string} kind      - Can be "target" state or "current" state.
  * @param {Object} accessory - The accessory.
  * @param {string} id        - The accessory unique identification code.
  * @param {string} name      - The name of the accessory.
@@ -789,7 +819,7 @@ ADTPulsePlatform.prototype.devicePolling = function (type, id) {
  *
  * @since 1.0.0
  */
-ADTPulsePlatform.prototype.getDeviceStatus = function (mode, kind, accessory, id, name, summary) {
+ADTPulsePlatform.prototype.getDeviceStatus = function (mode, accessory, id, name, summary) {
     let cacheDevice  = this.deviceStatus;
     let cacheState   = _.get(cacheDevice, "state");
     let cacheStatus  = _.get(cacheDevice, "status");
@@ -824,10 +854,6 @@ ADTPulsePlatform.prototype.getDeviceStatus = function (mode, kind, accessory, id
             break;
     }
 
-    if (this.debug) {
-        this.log.debug(`Getting ${name} (${id}) ${kind} status...`, status);
-    }
-
     return status;
 };
 
@@ -847,18 +873,19 @@ ADTPulsePlatform.prototype.formatDeviceStatus = function (summary) {
 
     let lowerCaseSummary = summary.toLowerCase();
     let alarm            = lowerCaseSummary.includes("alarm");
-    let disarmed         = lowerCaseSummary.includes("disarmed");
     let arm_away         = lowerCaseSummary.includes("armed away");
     let arm_stay         = lowerCaseSummary.includes("armed stay");
+    let uncleared_alarm  = lowerCaseSummary.includes("uncleared alarm");
+    let disarmed         = lowerCaseSummary.includes("disarmed");
 
     if (alarm) {
         status = Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
-    } else if (disarmed) {
-        status = Characteristic.SecuritySystemCurrentState.DISARMED;
     } else if (arm_away) {
         status = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
     } else if (arm_stay) {
         status = Characteristic.SecuritySystemCurrentState.STAY_ARM;
+    } else if (uncleared_alarm || disarmed) {
+        status = Characteristic.SecuritySystemCurrentState.DISARMED;
     }
 
     return status;
@@ -916,7 +943,7 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
             } else if (lastState.includes("armed away")) {
                 // Clear the alarms first.
                 if (lastState.includes("uncleared alarm")) {
-                    await this.theAlarm.setDeviceStatus("away+with+alarm", "off"); // TODO ??? Not sure if this is valid.
+                    await this.theAlarm.setDeviceStatus("disarmed+with+alarm", "off");
                 } else if (lastState.includes("alarm")) {
                     await this.theAlarm.setDeviceStatus("away", "off");
                     await this.theAlarm.setDeviceStatus("disarmed+with+alarm", "off");
@@ -946,7 +973,7 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
             } else if (lastState.includes("armed stay")) {
                 // Clear the alarms first.
                 if (lastState.includes("uncleared alarm")) {
-                    await this.theAlarm.setDeviceStatus("stay+with+alarm", "off"); // TODO ??? Not sure if this is valid.
+                    await this.theAlarm.setDeviceStatus("disarmed+with+alarm", "off");
                 } else if (lastState.includes("alarm")) {
                     await this.theAlarm.setDeviceStatus("stay", "off");
                     await this.theAlarm.setDeviceStatus("disarmed+with+alarm", "off");
@@ -977,7 +1004,11 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
         })
         .then(() => {
             accessory.getService(Service.SecuritySystem).setCharacteristic(Characteristic.SecuritySystemCurrentState, arm.toString());
-            callback(null);
+
+            // Delay the callback to prevent multiple reverse notifications.
+            setTimeout(() => {
+                callback(null);
+            }, this.syncInterval * 1000);
         })
         .catch((error) => {
             console.log("error", error);

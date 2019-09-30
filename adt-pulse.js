@@ -130,8 +130,7 @@ pulse.prototype.login = function () {
                                     "info": null,
                                 });
                             } else {
-                                let version          = response.request.path.match(regex)[2];
-                                let supportedVersion = "16.0.0-131";
+                                let version = response.request.path.match(regex)[2];
 
                                 // Saves last known version for reuse later.
                                 lastKnownVersion = version;
@@ -141,10 +140,6 @@ pulse.prototype.login = function () {
                                 if (that.debug) {
                                     console.log("ADT Pulse: Login success.");
                                     console.log(`ADT Pulse: Web portal version -> ${version}`);
-
-                                    if (version !== supportedVersion) {
-                                        console.warn(`ADT Pulse: WARNING! Web portal version ${version} does not match ${supportedVersion}.`);
-                                    }
                                 }
 
                                 deferred.resolve({
@@ -412,16 +407,15 @@ pulse.prototype.setDeviceStatus = function (armState, arm) {
         domainName: "portal.adtpulse.com",
         port: 53,
     }).then(function () {
-        // TODO Disarm when alarm during away, and Disarm when alarm during stay.
         /**
          * Pulse URLs to set device status.
          *
-         * Disarm (Siren Ringing)   -> https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=off
-         * Disarm (Clear Alarm)     -> https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed+with+alarm&arm=off
-         * Disarm (When Armed Away) -> https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=away&arm=off
-         * Disarm (When Armed Stay) -> https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=stay&arm=off
-         * Arm Away                 -> https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=away
-         * Arm Stay                 -> https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=stay
+         * Disarm (When Disarmed)        -> https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=off
+         * Disarm (When Armed Away)      -> https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=away&arm=off
+         * Disarm (When Armed Stay)      -> https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=stay&arm=off
+         * Disarm (When Uncleared Alarm) -> https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed+with+alarm&arm=off
+         * Arm Away                      -> https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=away
+         * Arm Stay                      -> https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=stay
          *
          * @type {string}
          */
