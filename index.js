@@ -66,7 +66,7 @@ function ADTPulsePlatform(log, config, api) {
     this.password = _.get(this.config, "password");
     this.debug    = false;
 
-    // Sync delay.
+    // Timers.
     this.refreshInterval = 6;
     this.syncInterval    = 3;
 
@@ -118,7 +118,15 @@ function ADTPulsePlatform(log, config, api) {
  */
 ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
     let that = this;
-    let name = accessory.displayName;
+
+    // Update the name to remove round brackets.
+    accessory.displayName = accessory.displayName.replace(/[()]/gi, "");
+
+    // Get accessory information.
+    let name      = accessory.displayName;
+    let id        = accessory.context.id;
+    let type      = accessory.context.type;
+    let lastState = accessory.context.lastState;
 
     this.log.info("Configuring accessory...", name);
 
@@ -131,11 +139,6 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
         callback();
     });
 
-    // Get accessory contexts.
-    let id        = accessory.context.id;
-    let type      = accessory.context.type;
-    let lastState = accessory.context.lastState;
-
     // Get latest device status.
     this.devicePolling(type, id);
 
@@ -147,7 +150,7 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
                     let status = this.getDeviceStatus("configure", accessory, id, name, lastState);
 
                     if (that.debug) {
-                        that.log(`Getting ${accessory.displayName} (${id}) target status...`, status);
+                        that.log(`Getting ${name} (${id}) target status...`, status);
                     }
 
                     callback(null, status);
@@ -162,7 +165,7 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
                     let status = this.getDeviceStatus("configure", accessory, id, name, lastState);
 
                     if (that.debug) {
-                        that.log(`Getting ${accessory.displayName} (${id}) current status...`, status);
+                        that.log(`Getting ${name} (${id}) current status...`, status);
                     }
 
                     callback(null, status);
@@ -182,7 +185,7 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
                     }
 
                     if (that.debug) {
-                        that.log(`Getting ${accessory.displayName} (${id}) status...`, status);
+                        that.log(`Getting ${name} (${id}) status...`, status);
                     }
 
                     callback(null, status);
@@ -203,7 +206,7 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
                     }
 
                     if (that.debug) {
-                        that.log(`Getting ${accessory.displayName} (${id}) status...`, status);
+                        that.log(`Getting ${name} (${id}) status...`, status);
                     }
 
                     callback(null, status);
@@ -223,7 +226,7 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
                     }
 
                     if (that.debug) {
-                        that.log(`Getting ${accessory.displayName} (${id}) status...`, status);
+                        that.log(`Getting ${name} (${id}) status...`, status);
                     }
 
                     callback(null, status);
@@ -243,7 +246,7 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
                     }
 
                     if (that.debug) {
-                        that.log(`Getting ${accessory.displayName} (${id}) status...`, status);
+                        that.log(`Getting ${name} (${id}) status...`, status);
                     }
 
                     callback(null, status);
@@ -263,7 +266,7 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
                     }
 
                     if (that.debug) {
-                        that.log(`Getting ${accessory.displayName} (${id}) status...`, status);
+                        that.log(`Getting ${name} (${id}) status...`, status);
                     }
 
                     callback(null, status);
@@ -492,7 +495,7 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
  */
 ADTPulsePlatform.prototype.prepareAddAccessory = function (type, accessory) {
     if (type === "device") {
-        let deviceName   = _.get(accessory, "name");
+        let deviceName   = _.get(accessory, "name", "").replace(/[()]/gi, "");
         let deviceMake   = _.get(accessory, "make");
         let deviceType   = _.get(accessory, "type");
         let deviceState  = _.get(accessory, "state");
@@ -520,8 +523,8 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function (type, accessory) {
             );
         }
     } else if (type === "zone") {
+        let zoneName  = _.get(accessory, "name", "").replace(/[()]/gi, "");
         let zoneId    = _.get(accessory, "id");
-        let zoneName  = _.get(accessory, "name");
         let zoneTags  = _.get(accessory, "tags");
         let zoneState = _.get(accessory, "state");
 
@@ -1003,15 +1006,28 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
             }
         })
         .then(() => {
-            accessory.getService(Service.SecuritySystem).setCharacteristic(Characteristic.SecuritySystemCurrentState, arm.toString());
+            let armString = arm.toString();
 
-            // Delay the callback to prevent multiple reverse notifications.
+            // Delay the action to prevent multiple reverse notifications.
             setTimeout(() => {
+                accessory.getService(Service.SecuritySystem).setCharacteristic(Characteristic.SecuritySystemCurrentState, armString);
                 callback(null);
-            }, this.syncInterval * 1000);
+            }, this.refreshInterval * 1000);
         })
         .catch((error) => {
-            console.log("error", error);
+            let action = _.get(error, "action");
+
+            switch (action) {
+                case "SET_DEVICE_STATUS":
+                    this.log("Set device status failed.");
+                    break;
+                case "HOST_UNREACHABLE":
+                    this.log("Internet disconnected or portal unreachable.");
+                    break;
+                default:
+                    this.log(`Action failed on ${action}.`);
+                    break;
+            }
 
             callback(null);
         });

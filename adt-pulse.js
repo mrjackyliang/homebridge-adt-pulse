@@ -451,7 +451,7 @@ pulse.prototype.setDeviceStatus = function (armState, arm) {
                     }
 
                     deferred.reject({
-                        "code": "SET_DEVICE_STATUS",
+                        "action": "SET_DEVICE_STATUS",
                         "success": false,
                         "info": null,
                     });
@@ -461,7 +461,7 @@ pulse.prototype.setDeviceStatus = function (armState, arm) {
                     }
 
                     deferred.resolve({
-                        "code": "SET_DEVICE_STATUS",
+                        "action": "SET_DEVICE_STATUS",
                         "success": true,
                         "info": null,
                     });
