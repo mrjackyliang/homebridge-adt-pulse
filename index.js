@@ -64,14 +64,23 @@ function ADTPulsePlatform(log, config, api) {
     // Credentials could be null.
     this.username = _.get(this.config, "username");
     this.password = _.get(this.config, "password");
-    this.debug    = false;
+    this.logLevel = _.get(this.config, "logLevel");
 
     // Timers.
     this.refreshInterval = 6;
     this.syncInterval    = 3;
 
+    // Setup logging function.
+    if (typeof this.logLevel !== "number" || ![10, 20, 30, 40, 50].includes(this.logLevel)) {
+        if (this.logLevel !== undefined) {
+            this.log.warn("Log level should be a specific number (10, 20, 30, 40, or 50). Defaulting to 30.");
+        }
+        this.logLevel = 30;
+    }
+
+    // Check for credentials.
     if (!this.username || !this.password) {
-        this.log.error("Missing required username or password in configuration.");
+        this.logMessage("Missing required username or password in configuration.", 10);
         return;
     }
 
@@ -79,7 +88,7 @@ function ADTPulsePlatform(log, config, api) {
     this.theAlarm = new Pulse({
         "username": this.username,
         "password": this.password,
-        "debug": this.debug,
+        "debug": (this.logLevel === 40),
     });
 
     if (api) {
@@ -98,9 +107,8 @@ function ADTPulsePlatform(log, config, api) {
          * and register new accessories.
          */
         this.api.on("didFinishLaunching", function () {
-            that.log("Cached accessories loaded. Initializing portal sync...");
+            that.logMessage("Cached accessories loaded...", 30);
 
-            // Begin portal sync.
             that.portalSync();
         });
     }
@@ -128,14 +136,14 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
     let type      = accessory.context.type;
     let lastState = accessory.context.lastState;
 
-    this.log.info("Configuring accessory...", name);
+    this.logMessage(`Configuring cached accessory... ${name} (${id})`, 30);
 
     // Accessory is always reachable.
     accessory.updateReachability(true);
 
     // When "Identify Accessory" is tapped.
     accessory.on("identify", function (paired, callback) {
-        that.log("Identifying accessory...", name);
+        that.logMessage(`Identifying accessory... ${name} (${id})`, 30);
         callback();
     });
 
@@ -149,9 +157,7 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
                 .on("get", (callback) => {
                     let status = this.getDeviceStatus("configure", accessory, id, name, lastState);
 
-                    if (that.debug) {
-                        that.log(`Getting ${name} (${id}) target status...`, status);
-                    }
+                    that.logMessage(`Getting ${name} (${id}) target status... ${status}`, 50);
 
                     callback(null, status);
                 })
@@ -164,9 +170,7 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
                 .on("get", (callback) => {
                     let status = this.getDeviceStatus("configure", accessory, id, name, lastState);
 
-                    if (that.debug) {
-                        that.log(`Getting ${name} (${id}) current status...`, status);
-                    }
+                    that.logMessage(`Getting ${name} (${id}) current status... ${status}`, 50);
 
                     callback(null, status);
                 });
@@ -184,9 +188,7 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
                         status = lastState;
                     }
 
-                    if (that.debug) {
-                        that.log(`Getting ${name} (${id}) status...`, status);
-                    }
+                    that.logMessage(`Getting ${name} (${id}) status... ${status}`, 50);
 
                     callback(null, status);
                 });
@@ -205,9 +207,7 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
                         status = lastState;
                     }
 
-                    if (that.debug) {
-                        that.log(`Getting ${name} (${id}) status...`, status);
-                    }
+                    that.logMessage(`Getting ${name} (${id}) status... ${status}`, 50);
 
                     callback(null, status);
                 });
@@ -225,9 +225,7 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
                         status = lastState;
                     }
 
-                    if (that.debug) {
-                        that.log(`Getting ${name} (${id}) status...`, status);
-                    }
+                    that.logMessage(`Getting ${name} (${id}) status... ${status}`, 50);
 
                     callback(null, status);
                 });
@@ -245,9 +243,7 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
                         status = lastState;
                     }
 
-                    if (that.debug) {
-                        that.log(`Getting ${name} (${id}) status...`, status);
-                    }
+                    that.logMessage(`Getting ${name} (${id}) status... ${status}`, 50);
 
                     callback(null, status);
                 });
@@ -265,15 +261,13 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
                         status = lastState;
                     }
 
-                    if (that.debug) {
-                        that.log(`Getting ${name} (${id}) status...`, status);
-                    }
+                    that.logMessage(`Getting ${name} (${id}) status... ${status}`, 50);
 
                     callback(null, status);
                 });
             break;
         default:
-            this.log.error("Invalid or unsupported accessory...", type);
+            this.logMessage(`Invalid or unsupported accessory... ${type}`, 10);
             break;
     }
 
@@ -301,7 +295,7 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
 
     // Add accessories that have not yet been added.
     if (accessoryLoaded === undefined) {
-        this.log.info("Adding new accessory...", name);
+        this.logMessage(`Adding new accessory... ${name}`, 30);
 
         let newAccessory   = new Accessory(name, uuid);
         let validAccessory = true;
@@ -318,9 +312,7 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
                     .on("get", (callback) => {
                         let status = this.getDeviceStatus("add", newAccessory, id, name, state);
 
-                        if (that.debug) {
-                            that.log(`Getting ${name} (${id}) target status...`, status);
-                        }
+                        that.logMessage(`Getting ${name} (${id}) target status... ${status}`, 50);
 
                         callback(null, status);
                     })
@@ -333,9 +325,7 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
                     .on("get", (callback) => {
                         let status = this.getDeviceStatus("add", newAccessory, id, name, state);
 
-                        if (that.debug) {
-                            that.log(`Getting ${name} (${id}) current status...`, status);
-                        }
+                        that.logMessage(`Getting ${name} (${id}) current status... ${status}`, 50);
 
                         callback(null, status);
                     });
@@ -353,9 +343,7 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
                             newAccessory.context.lastState = this.formatZoneStatus(type, state);
                         }
 
-                        if (that.debug) {
-                            that.log(`Getting ${name} (${id}) status...`, status);
-                        }
+                        that.logMessage(`Getting ${name} (${id}) status... ${status}`, 50);
 
                         callback(null, status);
                     });
@@ -374,9 +362,7 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
                             newAccessory.context.lastState = this.formatZoneStatus(type, state);
                         }
 
-                        if (that.debug) {
-                            that.log(`Getting ${name} (${id}) status...`, status);
-                        }
+                        that.logMessage(`Getting ${name} (${id}) status... ${status}`, 50);
 
                         callback(null, status);
                     });
@@ -394,9 +380,7 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
                             newAccessory.context.lastState = this.formatZoneStatus(type, state);
                         }
 
-                        if (that.debug) {
-                            that.log(`Getting ${name} (${id}) status...`, status);
-                        }
+                        that.logMessage(`Getting ${name} (${id}) status... ${status}`, 50);
 
                         callback(null, status);
                     });
@@ -414,9 +398,7 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
                             newAccessory.context.lastState = this.formatZoneStatus(type, state);
                         }
 
-                        if (that.debug) {
-                            that.log(`Getting ${name} (${id}) status...`, status);
-                        }
+                        that.logMessage(`Getting ${name} (${id}) status... ${status}`, 50);
 
                         callback(null, status);
                     });
@@ -434,9 +416,7 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
                             newAccessory.context.lastState = this.formatZoneStatus(type, state);
                         }
 
-                        if (that.debug) {
-                            that.log(`Getting ${name} (${id}) status...`, status);
-                        }
+                        that.logMessage(`Getting ${name} (${id}) status... ${status}`, 50);
 
                         callback(null, status);
                     });
@@ -462,7 +442,7 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
 
             // When "Identify Accessory" is tapped.
             newAccessory.on("identify", function (paired, callback) {
-                that.log("Identifying accessory...", newAccessory.displayName);
+                that.logMessage(`Identifying accessory... ${newAccessory.displayName} (${id})`, 30);
                 callback();
             });
 
@@ -476,10 +456,10 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
                 [newAccessory]
             );
         } else {
-            this.log.error("Invalid or unsupported accessory...", type);
+            this.logMessage(`Invalid or unsupported accessory... ${type}`, 10);
         }
     } else {
-        this.log.debug("Skipping duplicate accessory...", uuid);
+        this.logMessage(`Skipping duplicate accessory... ${uuid}`, 20);
     }
 };
 
@@ -507,10 +487,8 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function (type, accessory) {
         let deviceUUID   = UUIDGen.generate("system-1");
         let deviceLoaded = _.find(this.accessories, ["UUID", deviceUUID]);
 
-        if (this.debug) {
-            this.log.debug("Preparing to add device accessory...");
-            this.log.debug(accessory);
-        }
+        this.logMessage("Preparing to add device accessory...", 40);
+        this.logMessage(accessory, 40);
 
         if (deviceLoaded === undefined) {
             this.addAccessory(
@@ -555,10 +533,8 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function (type, accessory) {
                 break;
         }
 
-        if (this.debug) {
-            this.log.debug("Preparing to add zone accessory...");
-            this.log.debug(accessory);
-        }
+        this.logMessage("Preparing to add zone accessory...", 40);
+        this.logMessage(accessory, 40);
 
         if (zoneLoaded === undefined) {
             this.addAccessory(
@@ -571,10 +547,8 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function (type, accessory) {
             );
         }
     } else {
-        this.log.error(`Skipping unknown ${type} accessory...`);
-        if (this.debug) {
-            this.log.debug(accessory);
-        }
+        this.logMessage(`Skipping unknown ${type} accessory...`, 10);
+        this.logMessage(accessory, 40);
     }
 };
 
@@ -617,6 +591,8 @@ ADTPulsePlatform.prototype.portalSync = function () {
     if (this.isSyncing !== true) {
         this.isSyncing = true;
 
+        this.logMessage("Synchronizing with ADT Pulse Web Portal...", 40);
+
         this.theAlarm
             .login()
             .then((response) => {
@@ -624,7 +600,7 @@ ADTPulsePlatform.prototype.portalSync = function () {
                 let supportedVersion = "16.0.0-131";
 
                 if (version !== undefined && version !== supportedVersion) {
-                    this.log(`WARNING! Web portal version ${version} does not match ${supportedVersion}.`);
+                    this.logMessage(`Web Portal version ${version} does not match ${supportedVersion}.`, 20);
                 }
             })
             .then(() => this.theAlarm.performPortalSync())
@@ -633,9 +609,7 @@ ADTPulsePlatform.prototype.portalSync = function () {
 
                 // Runs if status changes.
                 if (theSyncCode !== this.lastSyncCode || theSyncCode === "1-0-0") {
-                    if (this.debug) {
-                        this.log(`New sync code is ${theSyncCode}`);
-                    }
+                    this.logMessage(`New sync code is ${theSyncCode}`, 40);
 
                     // Update accessory status.
                     await this.theAlarm
@@ -674,19 +648,19 @@ ADTPulsePlatform.prototype.portalSync = function () {
 
                             switch (action) {
                                 case "GET_DEVICE_INFO":
-                                    this.log("Get device information failed.");
+                                    this.logMessage("Get device information failed.", 10);
                                     break;
                                 case "GET_DEVICE_STATUS":
-                                    this.log("Get device status failed.");
+                                    this.logMessage("Get device status failed.", 10);
                                     break;
                                 case "GET_ZONE_STATUS":
-                                    this.log("Get zone status failed.");
+                                    this.logMessage("Get zone status failed.", 10);
                                     break;
                                 case "HOST_UNREACHABLE":
-                                    this.log("Internet disconnected or portal unreachable.");
+                                    this.logMessage("Internet disconnected or portal unreachable.", 10);
                                     break;
                                 default:
-                                    this.log(`Action failed on ${action}.`);
+                                    this.logMessage(`Action failed on ${action}.`, 10);
                                     break;
                             }
                         });
@@ -706,30 +680,26 @@ ADTPulsePlatform.prototype.portalSync = function () {
                         this.failedLoginTimes++;
 
                         if (this.failedLoginTimes > 1) {
-                            this.log("Login failed more than once. Portal sync terminated.");
+                            this.logMessage("Login failed more than once. Portal sync terminated.", 10);
                         } else {
-                            this.log("Login failed. Trying again.");
+                            this.logMessage("Login failed. Trying again.", 20);
                         }
                         break;
                     case "SYNC":
-                        if (this.debug) {
-                            this.log("Portal sync failed. Attempting to fix connection...");
-                        }
+                        this.logMessage("Portal sync failed. Attempting to fix connection...", 40);
                         break;
                     case "HOST_UNREACHABLE":
-                        this.log("Internet disconnected or portal unreachable.");
+                        this.logMessage("Internet disconnected or portal unreachable.", 10);
                         break;
                     default:
-                        this.log(`Action failed on ${action}.`);
+                        this.logMessage(`Action failed on ${action}.`, 10);
                         break;
                 }
 
                 this.isSyncing = false;
             });
     } else {
-        if (this.debug) {
-            this.log("Portal sync is already in progress...");
-        }
+        this.logMessage("Portal sync is already in progress...", 40);
     }
 
     // Force platform to retrieve latest status.
@@ -761,7 +731,7 @@ ADTPulsePlatform.prototype.devicePolling = function (type, id) {
     if (accessory !== undefined) {
         if (this.debug) {
             let displayName = accessory.displayName;
-            this.log.debug(`Polling device status for ${displayName}...`);
+            this.logMessage(`Polling device status for ${displayName}...`, 50);
         }
 
         switch (type) {
@@ -800,7 +770,7 @@ ADTPulsePlatform.prototype.devicePolling = function (type, id) {
                     .getValue();
                 break;
             default:
-                this.log.error("Invalid or unsupported accessory...", type);
+                this.logMessage(`Invalid or unsupported accessory... ${type}`, 10);
                 break;
         }
     }
@@ -853,7 +823,7 @@ ADTPulsePlatform.prototype.getDeviceStatus = function (mode, accessory, id, name
             }
             break;
         default:
-            this.log.error(`Unknown mode ${mode}.`);
+            this.logMessage(`Unknown mode ${mode}.`, 10);
             break;
     }
 
@@ -904,11 +874,12 @@ ADTPulsePlatform.prototype.formatDeviceStatus = function (summary) {
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback) {
-    const id        = _.get(accessory, "context.id");
     const name      = _.get(accessory, "displayName");
+    const id        = _.get(accessory, "context.id");
     const lastState = _.get(accessory, "context.lastState", "").toLowerCase();
 
-    this.log.info(`Setting ${name} (${id}) status to ${arm}...`);
+    this.logMessage(`Setting ${name} (${id}) status to ${arm}...`, 30);
+    this.logMessage(`${name} (${id}) last known state is ${lastState}...`, 40);
 
     // Setting device status.
     this.theAlarm
@@ -916,89 +887,124 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
         .then(async () => {
             // Check if Disarmed, Armed Away, or Armed Stay.
             if (lastState.includes("disarmed")) {
+                this.logMessage(`${name} (${id}) is currently disarmed...`, 40);
+
                 // Clear the alarms first.
                 if (lastState.includes("uncleared alarm")) {
+                    this.logMessage(`Clearing the ${name} (${id}) alarm...`, 40);
+
                     await this.theAlarm.setDeviceStatus("disarmed+with+alarm", "off");
                 } else if (lastState.includes("alarm")) {
+                    this.logMessage(`Disarming and clearing the ${name} (${id}) alarm...`, 40);
+
                     await this.theAlarm.setDeviceStatus("disarmed", "off");
                     await this.theAlarm.setDeviceStatus("disarmed+with+alarm", "off");
                 }
 
                 switch (arm) {
                     case Characteristic.SecuritySystemTargetState.STAY_ARM:
+                        this.logMessage(`Arming the ${name} (${id}) to stay...`, 40);
+
                         await this.theAlarm.setDeviceStatus("disarmed", "stay");
                         break;
                     case Characteristic.SecuritySystemTargetState.AWAY_ARM:
+                        this.logMessage(`Arming the ${name} (${id}) to away...`, 40);
+
                         await this.theAlarm.setDeviceStatus("disarmed", "away");
                         break;
                     case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
-                        this.log.error("ADT Pulse does not support night mode. Arming stay instead.");
+                        this.logMessage("ADT Pulse does not support night mode. Arming stay instead.", 20);
+                        this.logMessage(`Arming the ${name} (${id}) to stay...`, 40);
 
                         await this.theAlarm.setDeviceStatus("disarmed", "stay");
                         break;
                     case Characteristic.SecuritySystemTargetState.DISARM:
-                        this.log.error("Already Disarmed. Cannot disarm again.");
+                        this.logMessage(`Arming the ${name} (${id}) to disarmed...`, 40);
+                        this.logMessage("Already Disarmed. Cannot disarm again.", 10);
                         break;
                     default:
-                        this.log.error(`Unknown arm status ${arm}...`);
+                        this.logMessage(`Unknown arm status ${arm}...`, 10);
                         break;
                 }
             } else if (lastState.includes("armed away")) {
+                this.logMessage(`${name} (${id}) is currently armed away...`, 40);
+
                 // Clear the alarms first.
                 if (lastState.includes("uncleared alarm")) {
+                    this.logMessage(`Clearing the ${name} (${id}) alarm...`, 40);
+
                     await this.theAlarm.setDeviceStatus("disarmed+with+alarm", "off");
                 } else if (lastState.includes("alarm")) {
+                    this.logMessage(`Disarming and clearing the ${name} (${id}) alarm...`, 40);
+
                     await this.theAlarm.setDeviceStatus("away", "off");
                     await this.theAlarm.setDeviceStatus("disarmed+with+alarm", "off");
                 }
 
                 switch (arm) {
                     case Characteristic.SecuritySystemTargetState.STAY_ARM:
+                        this.logMessage(`Arming the ${name} (${id}) to stay...`, 40);
+
                         await this.theAlarm.setDeviceStatus("away", "off");
                         await this.theAlarm.setDeviceStatus("disarmed", "stay");
                         break;
                     case Characteristic.SecuritySystemTargetState.AWAY_ARM:
-                        this.log.error("Already Armed Away. Cannot arm away again.");
+                        this.logMessage(`Arming the ${name} (${id}) to away...`, 40);
+                        this.logMessage("Already Armed Away. Cannot arm away again.", 10);
                         break;
                     case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
-                        this.log.error("ADT Pulse does not support night mode. Arming stay instead.");
+                        this.logMessage("ADT Pulse does not support night mode. Arming stay instead.", 20);
+                        this.logMessage(`Arming the ${name} (${id}) to stay...`, 40);
 
                         await this.theAlarm.setDeviceStatus("away", "off");
                         await this.theAlarm.setDeviceStatus("disarmed", "stay");
                         break;
                     case Characteristic.SecuritySystemTargetState.DISARM:
+                        this.logMessage(`Arming the ${name} (${id}) to disarmed...`, 40);
+
                         await this.theAlarm.setDeviceStatus("away", "off");
                         break;
                     default:
-                        this.log.error(`Unknown arm status ${arm}...`);
+                        this.logMessage(`Unknown arm status ${arm}...`, 10);
                         break;
                 }
             } else if (lastState.includes("armed stay")) {
+                this.logMessage(`${name} (${id}) is currently armed stay...`, 40);
+
                 // Clear the alarms first.
                 if (lastState.includes("uncleared alarm")) {
+                    this.logMessage(`Clearing the ${name} (${id}) alarm...`, 40);
+
                     await this.theAlarm.setDeviceStatus("disarmed+with+alarm", "off");
                 } else if (lastState.includes("alarm")) {
+                    this.logMessage(`Disarming and clearing the ${name} (${id}) alarm...`, 40);
+
                     await this.theAlarm.setDeviceStatus("stay", "off");
                     await this.theAlarm.setDeviceStatus("disarmed+with+alarm", "off");
                 }
 
                 switch (arm) {
                     case Characteristic.SecuritySystemTargetState.STAY_ARM:
-                        this.log.error("Already Armed Stay. Cannot arm stay again.");
+                        this.logMessage(`Arming the ${name} (${id}) to stay...`, 40);
+                        this.logMessage("Already Armed Stay. Cannot arm stay again.", 10);
                         break;
                     case Characteristic.SecuritySystemTargetState.AWAY_ARM:
+                        this.logMessage(`Arming the ${name} (${id}) to away...`, 40);
+
                         await this.theAlarm.setDeviceStatus("stay", "off");
                         await this.theAlarm.setDeviceStatus("disarmed", "away");
                         break;
                     case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
-                        this.log.error("ADT Pulse does not support night mode. Arming stay instead.");
-                        this.log.error("Already Armed Stay. Cannot arm stay again.");
+                        this.logMessage("ADT Pulse does not support night mode. Arming stay instead.", 20);
+                        this.logMessage("Already Armed Stay. Cannot arm stay again.", 10);
                         break;
                     case Characteristic.SecuritySystemTargetState.DISARM:
+                        this.logMessage(`Arming the ${name} (${id}) to disarmed...`, 40);
+
                         await this.theAlarm.setDeviceStatus("stay", "off");
                         break;
                     default:
-                        this.log.error(`Unknown arm status ${arm}...`);
+                        this.logMessage(`Unknown arm status ${arm}...`, 10);
                         break;
                 }
             } else {
@@ -1008,9 +1014,10 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
         .then(() => {
             let armString = arm.toString();
 
+            accessory.getService(Service.SecuritySystem).setCharacteristic(Characteristic.SecuritySystemCurrentState, armString);
+
             // Delay the action to prevent multiple reverse notifications.
             setTimeout(() => {
-                accessory.getService(Service.SecuritySystem).setCharacteristic(Characteristic.SecuritySystemCurrentState, armString);
                 callback(null);
             }, this.refreshInterval * 1000);
         })
@@ -1019,13 +1026,13 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
 
             switch (action) {
                 case "SET_DEVICE_STATUS":
-                    this.log("Set device status failed.");
+                    this.logMessage("Set device status failed.", 10);
                     break;
                 case "HOST_UNREACHABLE":
-                    this.log("Internet disconnected or portal unreachable.");
+                    this.logMessage("Internet disconnected or portal unreachable.", 10);
                     break;
                 default:
-                    this.log(`Action failed on ${action}.`);
+                    this.logMessage(`Action failed on ${action}.`, 10);
                     break;
             }
 
@@ -1106,9 +1113,43 @@ ADTPulsePlatform.prototype.formatZoneStatus = function (type, state) {
             break;
         default:
             status = null;
-            this.log.error(`Unknown type ${type} with state "${state}".`);
+            this.logMessage(`Unknown type ${type} with state "${state}".`, 10);
             break;
     }
 
     return status;
+};
+
+/**
+ * Log message.
+ *
+ * Manages the messages that will be recorded in the logs.
+ *
+ * @param {string|Object} content  - The message or content being recorded into the logs.
+ * @param {number} priority - 10 (error), 20 (warn), 30 (info), 40 (debug), 50 (verbose).
+ */
+ADTPulsePlatform.prototype.logMessage = function (content, priority) {
+    let logLevel = this.logLevel;
+    let log      = this.log;
+
+    if (logLevel >= priority) {
+        // Messages won't be logged if not within specs.
+        switch (priority) {
+            case 10:
+                log.error(content);
+                break;
+            case 20:
+                log.warn(content);
+                break;
+            case 30:
+                log.info(content);
+                break;
+            case 40:
+                log.debug(content);
+                break;
+            case 50:
+                log(content);
+                break;
+        }
+    }
 };

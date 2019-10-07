@@ -73,9 +73,7 @@ pulse.prototype.login = function () {
                 },
             });
         } else {
-            if (that.debug) {
-                console.log("ADT Pulse: Logging in...");
-            }
+            that.consoleLogger("ADT Pulse: Logging in...", "log");
 
             // Request a new cookie session.
             jar = request.jar();
@@ -112,17 +110,13 @@ pulse.prototype.login = function () {
                             let regex        = new RegExp("^(\/myhome\/)(.*)(\/summary\/summary\.jsp)$");
                             let responsePath = _.get(response, "request.path");
 
-                            if (that.debug) {
-                                console.log(`ADT Pulse: Response path -> ${responsePath}`);
-                                console.log(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`);
-                            }
+                            that.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
+                            that.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
 
                             if (error || !regex.test(responsePath)) {
                                 authenticated = false;
 
-                                if (that.debug) {
-                                    console.error("ADT Pulse: Login failed.");
-                                }
+                                that.consoleLogger("ADT Pulse: Login failed.", "error");
 
                                 deferred.reject({
                                     "action": "LOGIN",
@@ -137,10 +131,8 @@ pulse.prototype.login = function () {
 
                                 authenticated = true;
 
-                                if (that.debug) {
-                                    console.log("ADT Pulse: Login success.");
-                                    console.log(`ADT Pulse: Web portal version -> ${version}`);
-                                }
+                                that.consoleLogger("ADT Pulse: Login success.", "log");
+                                that.consoleLogger(`ADT Pulse: Web portal version -> ${version}`, "log");
 
                                 deferred.resolve({
                                     "action": "LOGIN",
@@ -156,9 +148,7 @@ pulse.prototype.login = function () {
             );
         }
     }).catch(function () {
-        if (that.debug) {
-            console.log("ADT Pulse: Internet connection is offline or \"https://portal.adtpulse.com\" is unavailable.");
-        }
+        that.consoleLogger("ADT Pulse: Internet connection is offline or \"https://portal.adtpulse.com\" is unavailable.", "error");
 
         deferred.reject({
             "action": "HOST_UNREACHABLE",
@@ -194,9 +184,7 @@ pulse.prototype.logout = function () {
                 "info": null,
             });
         } else {
-            if (that.debug) {
-                console.log("ADT Pulse: Logging out...");
-            }
+            that.consoleLogger("ADT Pulse: Logging out...", "log");
 
             request(
                 {
@@ -209,9 +197,7 @@ pulse.prototype.logout = function () {
                 function () {
                     authenticated = false;
 
-                    if (that.debug) {
-                        console.log("ADT Pulse: Logout success.");
-                    }
+                    that.consoleLogger("ADT Pulse: Logout success.", "log");
 
                     deferred.resolve({
                         "action": "LOGOUT",
@@ -222,9 +208,7 @@ pulse.prototype.logout = function () {
             );
         }
     }).catch(function () {
-        if (that.debug) {
-            console.log("ADT Pulse: Internet connection is offline or \"https://portal.adtpulse.com\" is unavailable.");
-        }
+        that.consoleLogger("ADT Pulse: Internet connection is offline or \"https://portal.adtpulse.com\" is unavailable.", "error");
 
         deferred.reject({
             "action": "HOST_UNREACHABLE",
@@ -253,9 +237,7 @@ pulse.prototype.getDeviceStatus = function () {
         domainName: "portal.adtpulse.com",
         port: 53,
     }).then(function () {
-        if (that.debug) {
-            console.log("ADT Pulse: Getting device information...");
-        }
+        that.consoleLogger("ADT Pulse: Getting device information...", "log");
 
         // Get security panel information, first.
         request(
@@ -270,17 +252,13 @@ pulse.prototype.getDeviceStatus = function () {
                 let regex        = new RegExp("^(\/myhome\/)(.*)(\/system\/device\.jsp)(.*)$");
                 let responsePath = _.get(response, "request.path");
 
-                if (that.debug) {
-                    console.log(`ADT Pulse: Response path -> ${responsePath}`);
-                    console.log(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`);
-                }
+                that.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
+                that.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
 
                 if (error || !regex.test(responsePath)) {
                     authenticated = false;
 
-                    if (that.debug) {
-                        console.error("ADT Pulse: Get device information failed.");
-                    }
+                    that.consoleLogger("ADT Pulse: Get device information failed.", "error");
 
                     deferred.reject({
                         "action": "GET_DEVICE_INFO",
@@ -293,9 +271,7 @@ pulse.prototype.getDeviceStatus = function () {
                     let deviceMake = $("td.InputFieldDescriptionL:contains(\"Manufacturer\")").next().text().trim();
                     let deviceType = $("td.InputFieldDescriptionL:contains(\"Type\")").next().text().trim();
 
-                    if (that.debug) {
-                        console.log("ADT Pulse: Getting device status...");
-                    }
+                    that.consoleLogger("ADT Pulse: Getting device status...", "log");
 
                     // Then, get security panel status.
                     request(
@@ -310,15 +286,11 @@ pulse.prototype.getDeviceStatus = function () {
                             let regex        = new RegExp("^(\/myhome\/)(.*)(\/ajax\/orb\.jsp)$");
                             let responsePath = _.get(response, "request.path");
 
-                            if (that.debug) {
-                                console.log(`ADT Pulse: Response path -> ${responsePath}`);
-                                console.log(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`);
-                            }
+                            that.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
+                            that.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
 
                             if (error || !regex.test(responsePath)) {
-                                if (that.debug) {
-                                    console.error("ADT Pulse: Get device status failed.");
-                                }
+                                that.consoleLogger("ADT Pulse: Get device status failed.", "error");
 
                                 deferred.reject({
                                     "action": "GET_DEVICE_STATUS",
@@ -373,9 +345,7 @@ pulse.prototype.getDeviceStatus = function () {
             }
         );
     }).catch(function () {
-        if (that.debug) {
-            console.log("ADT Pulse: Internet connection is offline or \"https://portal.adtpulse.com\" is unavailable.");
-        }
+        that.consoleLogger("ADT Pulse: Internet connection is offline or \"https://portal.adtpulse.com\" is unavailable.", "error");
 
         deferred.reject({
             "action": "HOST_UNREACHABLE",
@@ -410,20 +380,27 @@ pulse.prototype.setDeviceStatus = function (armState, arm) {
         /**
          * Pulse URLs to set device status.
          *
-         * Disarm (When Disarmed)        -> https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=off
-         * Disarm (When Armed Away)      -> https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=away&arm=off
-         * Disarm (When Armed Stay)      -> https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=stay&arm=off
-         * Disarm (When Uncleared Alarm) -> https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed+with+alarm&arm=off
-         * Arm Away                      -> https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=away
-         * Arm Stay                      -> https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=stay
+         * Notes:
+         * - When disarming, the armState will be set to "disarmed" (normally it is "off") until next login.
+         * - Arming with armState "off" (while armState is "disarmed") works.
+         *
+         * Disarmed:
+         * - Arm Away (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=away)
+         * - Arm Stay (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=stay)
+         * - Disarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=off)
+         * - Clear Alarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed+with+alarm&arm=off)
+         * Armed Away:
+         * - Disarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=away&arm=off)
+         * - Clear Alarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed+with+alarm&arm=off)
+         * Armed Stay:
+         * - Disarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=stay&arm=off)
+         * - Clear Alarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed+with+alarm&arm=off)
          *
          * @type {string}
          */
         let url = "https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=" + armState + "&arm=" + arm;
 
-        if (that.debug) {
-            console.log("ADT Pulse: Setting device status...");
-        }
+        that.consoleLogger("ADT Pulse: Setting device status...", "log");
 
         request(
             {
@@ -434,21 +411,17 @@ pulse.prototype.setDeviceStatus = function (armState, arm) {
                     "Referer": "https://portal.adtpulse.com/myhome/summary/summary.jsp",
                 },
             },
-            function (error, response) {
+            function (error, response, body) {
                 let regex        = new RegExp("^(\/myhome\/)(.*)(\/quickcontrol\/armDisarm\.jsp)(.*)$");
                 let responsePath = _.get(response, "request.path");
 
-                if (that.debug) {
-                    console.log(`ADT Pulse: Response path -> ${responsePath}`);
-                    console.log(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`);
-                }
+                that.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
+                that.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
 
                 if (error || !regex.test(response.request.path)) {
                     authenticated = false;
 
-                    if (that.debug) {
-                        console.error("ADT Pulse: Set device status to \"" + arm + "\" failed.");
-                    }
+                    that.consoleLogger(`ADT Pulse: Set device status to ${arm} failed.`, "error");
 
                     deferred.reject({
                         "action": "SET_DEVICE_STATUS",
@@ -456,22 +429,69 @@ pulse.prototype.setDeviceStatus = function (armState, arm) {
                         "info": null,
                     });
                 } else {
-                    if (that.debug) {
-                        console.log("ADT Pulse: Set device status to \"" + arm + "\" success.");
-                    }
+                    let $       = cheerio.load(body);
+                    let onClick = $("#arm_button_1").attr("onclick");
+                    let satCode = (onClick !== undefined) ? onClick.split("sat=")[1].split("&")[0] : undefined;
 
-                    deferred.resolve({
-                        "action": "SET_DEVICE_STATUS",
-                        "success": true,
-                        "info": null,
-                    });
+                    // Check if system requires force arming.
+                    if (arm === "away" && onClick !== undefined && satCode !== undefined) {
+                        let forceUrlBase = "https://portal.adtpulse.com/myhome/quickcontrol/serv/RunRRACommand";
+                        let forceUrlArgs = `?sat=${satCode}&href=rest/adt/ui/client/security/setForceArm&armstate=forcearm&arm=away`;
+                        let forceUrl     = forceUrlBase + forceUrlArgs;
+
+                        that.consoleLogger("ADT Pulse: Some sensors are open or reporting motion. Forcing Arm Away...", "warn");
+
+                        request(
+                            {
+                                url: forceUrl,
+                                jar: jar,
+                                headers: {
+                                    "User-Agent": userAgent,
+                                    "Referer": "https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp"
+                                },
+                            },
+                            function (error, response) {
+                                let regex        = new RegExp("^(\/myhome\/)(.*)(\/quickcontrol\/serv\/RunRRACommand)(.*)$");
+                                let responsePath = _.get(response, "request.path");
+
+                                that.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
+                                that.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
+
+                                if (error || !regex.test(response.request.path)) {
+                                    authenticated = false;
+
+                                    that.consoleLogger(`ADT Pulse: Set device status to ${arm} failed.`, "error");
+
+                                    deferred.reject({
+                                        "action": "SET_DEVICE_STATUS",
+                                        "success": false,
+                                        "info": null,
+                                    });
+                                } else {
+                                    that.consoleLogger(`ADT Pulse: Set device status to ${arm} success.`, "log");
+
+                                    deferred.resolve({
+                                        "action": "SET_DEVICE_STATUS",
+                                        "success": true,
+                                        "info": null,
+                                    });
+                                }
+                            }
+                        );
+                    } else {
+                        that.consoleLogger(`ADT Pulse: Set device status to ${arm} success.`, "log");
+
+                        deferred.resolve({
+                            "action": "SET_DEVICE_STATUS",
+                            "success": true,
+                            "info": null,
+                        });
+                    }
                 }
             }
         );
     }).catch(function () {
-        if (that.debug) {
-            console.log("ADT Pulse: Internet connection is offline or \"https://portal.adtpulse.com\" is unavailable.");
-        }
+        that.consoleLogger("ADT Pulse: Internet connection is offline or \"https://portal.adtpulse.com\" is unavailable.", "error");
 
         deferred.reject({
             "action": "HOST_UNREACHABLE",
@@ -500,9 +520,7 @@ pulse.prototype.getZoneStatus = function () {
         domainName: "portal.adtpulse.com",
         port: 53,
     }).then(function () {
-        if (that.debug) {
-            console.log("ADT Pulse: Getting zone status...");
-        }
+        that.consoleLogger("ADT Pulse: Getting zone status...", "log");
 
         request(
             {
@@ -516,18 +534,14 @@ pulse.prototype.getZoneStatus = function () {
                 let regex        = new RegExp("^(\/myhome\/)(.*)(\/ajax\/homeViewDevAjax\.jsp)$");
                 let responsePath = _.get(response, "request.path");
 
-                if (that.debug) {
-                    console.log(`ADT Pulse: Response path -> ${responsePath}`);
-                    console.log(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`);
-                }
+                that.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
+                that.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
 
                 // If error, wrong path, or HTML format.
                 if (error || !regex.test(response.request.path) || body.indexOf("<html") > -1) {
                     authenticated = false;
 
-                    if (that.debug) {
-                        console.error("ADT Pulse: Get zone status failed.");
-                    }
+                    that.consoleLogger("ADT Pulse: Get zone status failed.", "error");
 
                     deferred.reject({
                         "action": "GET_ZONE_STATUS",
@@ -576,9 +590,7 @@ pulse.prototype.getZoneStatus = function () {
             }
         );
     }).catch(function () {
-        if (that.debug) {
-            console.log("ADT Pulse: Internet connection is offline or \"https://portal.adtpulse.com\" is unavailable.");
-        }
+        that.consoleLogger("ADT Pulse: Internet connection is offline or \"https://portal.adtpulse.com\" is unavailable.", "error");
 
         deferred.reject({
             "action": "HOST_UNREACHABLE",
@@ -607,9 +619,7 @@ pulse.prototype.performPortalSync = function () {
         domainName: "portal.adtpulse.com",
         port: 53,
     }).then(function () {
-        if (that.debug) {
-            console.log("ADT Pulse: Performing portal sync...");
-        }
+        that.consoleLogger("ADT Pulse: Performing portal sync...", "log");
 
         request(
             {
@@ -624,18 +634,14 @@ pulse.prototype.performPortalSync = function () {
                 let regex        = new RegExp("^(\/myhome\/)(.*)(\/Ajax\/SyncCheckServ)(.*)$");
                 let responsePath = _.get(response, "request.path");
 
-                if (that.debug) {
-                    console.log(`ADT Pulse: Response path -> ${responsePath}`);
-                    console.log(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`);
-                }
+                that.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
+                that.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
 
                 // If error, wrong path, or HTML format.
                 if (error || !regex.test(responsePath) || body.indexOf("<html") > -1) {
                     authenticated = false;
 
-                    if (that.debug) {
-                        console.error("ADT Pulse: Failed to sync with portal.");
-                    }
+                    that.consoleLogger("ADT Pulse: Failed to sync with portal.", "error");
 
                     deferred.reject({
                         "action": "SYNC",
@@ -661,9 +667,7 @@ pulse.prototype.performPortalSync = function () {
             }
         );
     }).catch(function () {
-        if (that.debug) {
-            console.log("ADT Pulse: Internet connection is offline or \"https://portal.adtpulse.com\" is unavailable.");
-        }
+        that.consoleLogger("ADT Pulse: Internet connection is offline or \"https://portal.adtpulse.com\" is unavailable.", "error");
 
         deferred.reject({
             "action": "HOST_UNREACHABLE",
@@ -673,6 +677,28 @@ pulse.prototype.performPortalSync = function () {
     });
 
     return deferred.promise;
+};
+
+/**
+ * ADT Pulse console logger.
+ *
+ * @param {string} content - The message or content being recorded into the logs.
+ * @param {string} type   - Can be "error", "warn", or "log".
+ */
+pulse.prototype.consoleLogger = function (content, type) {
+    if (this.debug) {
+        switch (type) {
+            case "error":
+                console.error(content);
+                break;
+            case "warn":
+                console.warn(content);
+                break;
+            case "log":
+                console.log(content);
+                break;
+        }
+    }
 };
 
 module.exports = pulse;
