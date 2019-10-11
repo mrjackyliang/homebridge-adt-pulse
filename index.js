@@ -56,9 +56,8 @@ function ADTPulsePlatform(log, config, api) {
     this.failedLoginTimes = 0;
 
     // Keeps track of device updates.
-    this.polling      = {};
-    this.syncing      = undefined;
     this.lastSyncCode = "1-0-0";
+    this.syncing      = undefined;
     this.isSyncing    = false;
 
     // Credentials could be null.
@@ -67,8 +66,7 @@ function ADTPulsePlatform(log, config, api) {
     this.logLevel = _.get(this.config, "logLevel");
 
     // Timers.
-    this.refreshInterval = 6;
-    this.syncInterval    = 3;
+    this.syncInterval = 5;
 
     // Setup logging function.
     if (typeof this.logLevel !== "number" || ![10, 20, 30, 40, 50].includes(this.logLevel)) {
@@ -137,6 +135,7 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
     let lastState = accessory.context.lastState;
 
     this.logMessage(`Configuring cached accessory... ${name} (${id})`, 30);
+    this.logMessage(accessory, 40);
 
     // Accessory is always reachable.
     accessory.updateReachability(true);
@@ -146,9 +145,6 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
         that.logMessage(`Identifying accessory... ${name} (${id})`, 30);
         callback();
     });
-
-    // Get latest device status.
-    this.devicePolling(type, id);
 
     switch (type) {
         case "system":
@@ -431,9 +427,6 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
             newAccessory.context.id   = id;
             newAccessory.context.type = type;
 
-            // Get latest device status.
-            this.devicePolling(type, id);
-
             // Set accessory information.
             newAccessory.getService(Service.AccessoryInformation)
                 .setCharacteristic(Characteristic.Manufacturer, make)
@@ -622,8 +615,11 @@ ADTPulsePlatform.prototype.portalSync = function () {
                             // Set latest status into instance.
                             this.deviceStatus = deviceInfo;
 
+                            // Add or update device.
                             if (deviceLoaded === undefined) {
                                 await this.prepareAddAccessory("device", deviceInfo);
+                            } else {
+                                this.devicePolling("system", "system-1");
                             }
                         })
                         .then(() => this.theAlarm.getZoneStatus())
@@ -633,13 +629,18 @@ ADTPulsePlatform.prototype.portalSync = function () {
                             // Set latest status into instance.
                             this.zoneStatus = zonesInfo;
 
-                            // Add zones if they have not yet been added.
                             _.forEach(zonesInfo, async (zone) => {
-                                let deviceUUID   = UUIDGen.generate(_.get(zone, "id"));
+                                let zoneId       = _.get(zone, "id");
+                                let zoneTags     = _.get(zone, "tags");
+                                let zoneType     = zoneTags.substr(zoneTags.indexOf(",") + 1);
+                                let deviceUUID   = UUIDGen.generate(zoneId);
                                 let deviceLoaded = _.find(this.accessories, ["UUID", deviceUUID]);
 
+                                // Add or update zone.
                                 if (deviceLoaded === undefined) {
                                     await this.prepareAddAccessory("zone", zone);
+                                } else {
+                                    this.devicePolling(zoneType, zoneId);
                                 }
                             });
                         })
@@ -725,14 +726,8 @@ ADTPulsePlatform.prototype.devicePolling = function (type, id) {
     let uuid      = UUIDGen.generate(id);
     let accessory = _.find(this.accessories, ["UUID", uuid]);
 
-    // No multiple timeouts.
-    clearTimeout(this.polling[uuid]);
-
     if (accessory !== undefined) {
-        if (this.debug) {
-            let displayName = accessory.displayName;
-            this.logMessage(`Polling device status for ${displayName}...`, 50);
-        }
+        this.logMessage(`Polling device status for ${accessory.displayName}...`, 50);
 
         switch (type) {
             case "system":
@@ -774,9 +769,6 @@ ADTPulsePlatform.prototype.devicePolling = function (type, id) {
                 break;
         }
     }
-
-    // Force accessory to check device status again.
-    this.polling[uuid] = setTimeout(this.devicePolling.bind(this, type, id), this.refreshInterval * 1000);
 };
 
 /**
@@ -1012,14 +1004,8 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
             }
         })
         .then(() => {
-            let armString = arm.toString();
-
-            accessory.getService(Service.SecuritySystem).setCharacteristic(Characteristic.SecuritySystemCurrentState, armString);
-
-            // Delay the action to prevent multiple reverse notifications.
-            setTimeout(() => {
-                callback(null);
-            }, this.refreshInterval * 1000);
+            accessory.getService(Service.SecuritySystem).setCharacteristic(Characteristic.SecuritySystemCurrentState, arm.toString());
+            callback(null);
         })
         .catch((error) => {
             let action = _.get(error, "action");
@@ -1092,7 +1078,7 @@ ADTPulsePlatform.prototype.formatZoneStatus = function (type, state) {
             if (state === "devStatOK") {
                 // No motion detected.
                 status = false;
-            } else if (state === "devStatMotion") {
+            } else if (state === "devStatMotion" || state === "devStatTamper") {
                 // Motion detected.
                 status = true;
             }
@@ -1100,14 +1086,14 @@ ADTPulsePlatform.prototype.formatZoneStatus = function (type, state) {
         case "co":
             if (state === "devStatOK") {
                 status = Characteristic.CarbonMonoxideDetected.CO_LEVELS_NORMAL;
-            } else if (state === "devStatAlarm") {
+            } else if (state === "devStatAlarm" || state === "devStatTamper") {
                 status = Characteristic.CarbonMonoxideDetected.CO_LEVELS_ABNORMAL;
             }
             break;
         case "fire":
             if (state === "devStatOK") {
                 status = Characteristic.SmokeDetected.SMOKE_NOT_DETECTED;
-            } else if (state === "devStatAlarm") {
+            } else if (state === "devStatAlarm" || state === "devStatTamper") {
                 status = Characteristic.SmokeDetected.SMOKE_DETECTED;
             }
             break;
