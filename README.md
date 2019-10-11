@@ -29,7 +29,7 @@ When configuring this plugin, simply add the platform to your existing `config.j
 ```
 
 ## Plugin Limitations
-Even though the name is stated as "ADT Pulse for Homebridge", this Homebridge plugin is limited in the hardware it may support. This plugin is not a complete replacement to the [official ADT Pulse app](https://www.adt.com/help/faq/adt-pulse/adt-pulse-mobile-app).
+Even though the name is stated as "ADT Pulse for Homebridge", this Homebridge plugin is limited in the hardware it may support. This plugin is NOT a complete replacement to the [official ADT Pulse app](https://www.adt.com/help/faq/adt-pulse/adt-pulse-mobile-app).
 
 The supported hardware configurations are listed below:
 1. ADT Security Panel (`system`)
@@ -39,9 +39,9 @@ The supported hardware configurations are listed below:
 5. ADT Carbon Monoxide Detector (`co`)
 6. ADT Fire (Smoke/Heat) Detector (`fire`)
 
-If you have a sensor that is unsupported by this plugin, [request a feature](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new?template=feature_request.md) so I can add support for it into the plugin.
+If you have a sensor that is unsupported by this plugin, please [request a feature](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new?template=feature_request.md) so I can add support for it into the plugin.
 
-Please mind that I DO NOT have plans to support smart devices or cameras connected to the ADT Pulse service. I recommend using another `homebridge-plugin` for that.
+Please mind that I DO NOT have plans to support smart devices or cameras connected to the ADT Pulse service. I recommend using another `homebridge-plugin` or the [official ADT Pulse app](https://www.adt.com/help/faq/adt-pulse/adt-pulse-mobile-app).
 
 ## Test Script
 There is a test script included in the package that performs specific actions used by the plugin. Feel free to test it out, and report any bugs you see.
@@ -54,9 +54,8 @@ node adt-pulse-test.js --username email@email.com --password 12345667890 --actio
 ## Developer Information
 The script provides an active connection to the ADT Pulse portal. Here are a list of must knows, just in case you might want to debug (or improve) the plugin:
 
-1. Sync codes are polled every 3 seconds. Only thing stopping it is if there are more than 2 login failures.
-2. Device updates are also polled every 6 seconds and retrieved from the cached data created through the sync code changes above.
-3. Current version is `16.0.0-131`. If Web Portal version is changed or updated, a warning will appear in the logs. Please [create a bug report](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new?template=bug_report.md) to let me know!
+1. Device and zone statuses are polled every 5 seconds. If there are more than 2 login failures, device polling and portal sync stops.
+2. Current version is `16.0.0-131`. If Web Portal version is changed or updated, a warning will appear in the logs. Please [create a bug report](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new?template=bug_report.md) to let me know!
 
 ## Credits and Appreciation
 If you would like to show your appreciation for its continued development, you can optionally make a small donation to my company, [CBN Ventures](https://cbnventures.io), through [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=L59Y27M66FG26&source=url).
