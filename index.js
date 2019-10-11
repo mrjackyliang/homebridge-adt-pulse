@@ -66,7 +66,7 @@ function ADTPulsePlatform(log, config, api) {
     this.logLevel = _.get(this.config, "logLevel");
 
     // Timers.
-    this.syncInterval = 5;
+    this.syncInterval = 4;
 
     // Setup logging function.
     if (typeof this.logLevel !== "number" || ![10, 20, 30, 40, 50].includes(this.logLevel)) {
@@ -1004,8 +1004,12 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
             }
         })
         .then(() => {
-            accessory.getService(Service.SecuritySystem).setCharacteristic(Characteristic.SecuritySystemCurrentState, arm.toString());
-            callback(null);
+            let armString = arm.toString();
+            accessory.getService(Service.SecuritySystem).setCharacteristic(Characteristic.SecuritySystemCurrentState, armString);
+
+            setTimeout(() => {
+                callback(null);
+            }, this.syncInterval * 1000);
         })
         .catch((error) => {
             let action = _.get(error, "action");

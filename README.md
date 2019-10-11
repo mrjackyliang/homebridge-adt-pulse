@@ -54,7 +54,7 @@ node adt-pulse-test.js --username email@email.com --password 12345667890 --actio
 ## Developer Information
 The script provides an active connection to the ADT Pulse portal. Here are a list of must knows, just in case you might want to debug (or improve) the plugin:
 
-1. Device and zone statuses are polled every 5 seconds. If there are more than 2 login failures, device polling and portal sync stops.
+1. Device and zone statuses are polled every 4 seconds. If there are more than 2 login failures, device polling and portal sync stops.
 2. Current version is `16.0.0-131`. If Web Portal version is changed or updated, a warning will appear in the logs. Please [create a bug report](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new?template=bug_report.md) to let me know!
 
 ## Credits and Appreciation
