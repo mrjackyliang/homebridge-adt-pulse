@@ -108,7 +108,7 @@ pulse.prototype.login = function () {
                             isAuthenticating = false;
 
                             let regex        = new RegExp("^(\/myhome\/)(.*)(\/summary\/summary\.jsp)$");
-                            let responsePath = _.get(response, "request.path");
+                            let responsePath = _.get(response, "request.uri.path");
 
                             that.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
                             that.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
@@ -250,7 +250,7 @@ pulse.prototype.getDeviceStatus = function () {
             },
             function (error, response, body) {
                 let regex        = new RegExp("^(\/myhome\/)(.*)(\/system\/device\.jsp)(.*)$");
-                let responsePath = _.get(response, "request.path");
+                let responsePath = _.get(response, "request.uri.path");
 
                 that.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
                 that.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
@@ -284,7 +284,7 @@ pulse.prototype.getDeviceStatus = function () {
                         },
                         function (error, response, body) {
                             let regex        = new RegExp("^(\/myhome\/)(.*)(\/ajax\/orb\.jsp)$");
-                            let responsePath = _.get(response, "request.path");
+                            let responsePath = _.get(response, "request.uri.path");
 
                             that.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
                             that.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
@@ -413,7 +413,7 @@ pulse.prototype.setDeviceStatus = function (armState, arm) {
             },
             function (error, response, body) {
                 let regex        = new RegExp("^(\/myhome\/)(.*)(\/quickcontrol\/armDisarm\.jsp)(.*)$");
-                let responsePath = _.get(response, "request.path");
+                let responsePath = _.get(response, "request.uri.path");
 
                 that.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
                 that.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
@@ -452,7 +452,7 @@ pulse.prototype.setDeviceStatus = function (armState, arm) {
                             },
                             function (error, response) {
                                 let regex        = new RegExp("^(\/myhome\/)(.*)(\/quickcontrol\/serv\/RunRRACommand)(.*)$");
-                                let responsePath = _.get(response, "request.path");
+                                let responsePath = _.get(response, "request.uri.path");
 
                                 that.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
                                 that.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
@@ -532,7 +532,7 @@ pulse.prototype.getZoneStatus = function () {
             },
             function (error, response, body) {
                 let regex        = new RegExp("^(\/myhome\/)(.*)(\/ajax\/homeViewDevAjax\.jsp)$");
-                let responsePath = _.get(response, "request.path");
+                let responsePath = _.get(response, "request.uri.path");
 
                 that.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
                 that.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
@@ -632,7 +632,7 @@ pulse.prototype.performPortalSync = function () {
             },
             function (error, response, body) {
                 let regex        = new RegExp("^(\/myhome\/)(.*)(\/Ajax\/SyncCheckServ)(.*)$");
-                let responsePath = _.get(response, "request.path");
+                let responsePath = _.get(response, "request.uri.path");
 
                 that.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
                 that.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
