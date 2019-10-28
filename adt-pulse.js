@@ -80,14 +80,18 @@ pulse.prototype.login = function () {
 
             isAuthenticating = true;
 
-            request(
+            request.get(
+                "https://portal.adtpulse.com",
                 {
-                    url: "https://portal.adtpulse.com",
                     jar: jar,
                     headers: {
                         "Accept": accept,
                         "User-Agent": userAgent,
                     },
+                    ciphers: [
+                        "ECDHE-RSA-AES256-GCM-SHA384",
+                        "ECDHE-RSA-AES128-GCM-SHA256"
+                    ].join(":"),
                 },
                 function () {
                     request.post(
@@ -103,6 +107,10 @@ pulse.prototype.login = function () {
                                 username: that.username,
                                 password: that.password,
                             },
+                            ciphers: [
+                                "ECDHE-RSA-AES256-GCM-SHA384",
+                                "ECDHE-RSA-AES128-GCM-SHA256"
+                            ].join(":"),
                         },
                         function (error, response) {
                             isAuthenticating = false;
@@ -117,6 +125,7 @@ pulse.prototype.login = function () {
                                 authenticated = false;
 
                                 that.consoleLogger("ADT Pulse: Login failed.", "error");
+                                that.consoleLogger(error, "error");
 
                                 deferred.reject({
                                     "action": "LOGIN",
@@ -186,13 +195,17 @@ pulse.prototype.logout = function () {
         } else {
             that.consoleLogger("ADT Pulse: Logging out...", "log");
 
-            request(
+            request.get(
+                "https://portal.adtpulse.com/myhome/access/signout.jsp",
                 {
-                    url: "https://portal.adtpulse.com/myhome/access/signout.jsp",
                     jar: jar,
                     headers: {
                         "User-Agent": userAgent,
-                    }
+                    },
+                    ciphers: [
+                        "ECDHE-RSA-AES256-GCM-SHA384",
+                        "ECDHE-RSA-AES128-GCM-SHA256"
+                    ].join(":"),
                 },
                 function () {
                     authenticated = false;
@@ -240,13 +253,17 @@ pulse.prototype.getDeviceStatus = function () {
         that.consoleLogger("ADT Pulse: Getting device information...", "log");
 
         // Get security panel information, first.
-        request(
+        request.get(
+            "https://portal.adtpulse.com/myhome/system/device.jsp?id=1",
             {
-                url: "https://portal.adtpulse.com/myhome/system/device.jsp?id=1",
                 jar: jar,
                 headers: {
                     "User-Agent": userAgent,
                 },
+                ciphers: [
+                    "ECDHE-RSA-AES256-GCM-SHA384",
+                    "ECDHE-RSA-AES128-GCM-SHA256"
+                ].join(":"),
             },
             function (error, response, body) {
                 let regex        = new RegExp("^(\/myhome\/)(.*)(\/system\/device\.jsp)(.*)$");
@@ -259,6 +276,7 @@ pulse.prototype.getDeviceStatus = function () {
                     authenticated = false;
 
                     that.consoleLogger("ADT Pulse: Get device information failed.", "error");
+                    that.consoleLogger(error, "error");
 
                     deferred.reject({
                         "action": "GET_DEVICE_INFO",
@@ -274,13 +292,17 @@ pulse.prototype.getDeviceStatus = function () {
                     that.consoleLogger("ADT Pulse: Getting device status...", "log");
 
                     // Then, get security panel status.
-                    request(
+                    request.get(
+                        "https://portal.adtpulse.com/myhome/ajax/orb.jsp",
                         {
-                            url: "https://portal.adtpulse.com/myhome/ajax/orb.jsp",
                             jar: jar,
                             headers: {
                                 "User-Agent": userAgent,
                             },
+                            ciphers: [
+                                "ECDHE-RSA-AES256-GCM-SHA384",
+                                "ECDHE-RSA-AES128-GCM-SHA256"
+                            ].join(":"),
                         },
                         function (error, response, body) {
                             let regex        = new RegExp("^(\/myhome\/)(.*)(\/ajax\/orb\.jsp)$");
@@ -291,6 +313,7 @@ pulse.prototype.getDeviceStatus = function () {
 
                             if (error || !regex.test(responsePath)) {
                                 that.consoleLogger("ADT Pulse: Get device status failed.", "error");
+                                that.consoleLogger(error, "error");
 
                                 deferred.reject({
                                     "action": "GET_DEVICE_STATUS",
@@ -402,14 +425,18 @@ pulse.prototype.setDeviceStatus = function (armState, arm) {
 
         that.consoleLogger("ADT Pulse: Setting device status...", "log");
 
-        request(
+        request.get(
+            url,
             {
-                url: url,
                 jar: jar,
                 headers: {
                     "User-Agent": userAgent,
                     "Referer": "https://portal.adtpulse.com/myhome/summary/summary.jsp",
                 },
+                ciphers: [
+                    "ECDHE-RSA-AES256-GCM-SHA384",
+                    "ECDHE-RSA-AES128-GCM-SHA256"
+                ].join(":"),
             },
             function (error, response, body) {
                 let regex        = new RegExp("^(\/myhome\/)(.*)(\/quickcontrol\/armDisarm\.jsp)(.*)$");
@@ -422,6 +449,7 @@ pulse.prototype.setDeviceStatus = function (armState, arm) {
                     authenticated = false;
 
                     that.consoleLogger(`ADT Pulse: Set device status to ${arm} failed.`, "error");
+                    that.consoleLogger(error, "error");
 
                     deferred.reject({
                         "action": "SET_DEVICE_STATUS",
@@ -441,14 +469,18 @@ pulse.prototype.setDeviceStatus = function (armState, arm) {
 
                         that.consoleLogger("ADT Pulse: Some sensors are open or reporting motion. Forcing Arm Away...", "warn");
 
-                        request(
+                        request.get(
+                            forceUrl,
                             {
-                                url: forceUrl,
                                 jar: jar,
                                 headers: {
                                     "User-Agent": userAgent,
                                     "Referer": "https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp"
                                 },
+                                ciphers: [
+                                    "ECDHE-RSA-AES256-GCM-SHA384",
+                                    "ECDHE-RSA-AES128-GCM-SHA256"
+                                ].join(":"),
                             },
                             function (error, response) {
                                 let regex        = new RegExp("^(\/myhome\/)(.*)(\/quickcontrol\/serv\/RunRRACommand)(.*)$");
@@ -461,6 +493,7 @@ pulse.prototype.setDeviceStatus = function (armState, arm) {
                                     authenticated = false;
 
                                     that.consoleLogger(`ADT Pulse: Set device status to ${arm} failed.`, "error");
+                                    that.consoleLogger(error, "error");
 
                                     deferred.reject({
                                         "action": "SET_DEVICE_STATUS",
@@ -469,6 +502,7 @@ pulse.prototype.setDeviceStatus = function (armState, arm) {
                                     });
                                 } else {
                                     that.consoleLogger(`ADT Pulse: Set device status to ${arm} success.`, "log");
+                                    that.consoleLogger(error, "error");
 
                                     deferred.resolve({
                                         "action": "SET_DEVICE_STATUS",
@@ -522,13 +556,17 @@ pulse.prototype.getZoneStatus = function () {
     }).then(function () {
         that.consoleLogger("ADT Pulse: Getting zone status...", "log");
 
-        request(
+        request.get(
+            "https://portal.adtpulse.com/myhome/ajax/homeViewDevAjax.jsp",
             {
-                url: "https://portal.adtpulse.com/myhome/ajax/homeViewDevAjax.jsp",
                 jar: jar,
                 headers: {
                     "User-Agent": userAgent,
                 },
+                ciphers: [
+                    "ECDHE-RSA-AES256-GCM-SHA384",
+                    "ECDHE-RSA-AES128-GCM-SHA256"
+                ].join(":"),
             },
             function (error, response, body) {
                 let regex        = new RegExp("^(\/myhome\/)(.*)(\/ajax\/homeViewDevAjax\.jsp)$");
@@ -542,6 +580,7 @@ pulse.prototype.getZoneStatus = function () {
                     authenticated = false;
 
                     that.consoleLogger("ADT Pulse: Get zone status failed.", "error");
+                    that.consoleLogger(error, "error");
 
                     deferred.reject({
                         "action": "GET_ZONE_STATUS",
@@ -621,14 +660,18 @@ pulse.prototype.performPortalSync = function () {
     }).then(function () {
         that.consoleLogger("ADT Pulse: Performing portal sync...", "log");
 
-        request(
+        request.get(
+            "https://portal.adtpulse.com/myhome/Ajax/SyncCheckServ" + "?t=" + Date.now(),
             {
-                url: "https://portal.adtpulse.com/myhome/Ajax/SyncCheckServ" + "?t=" + Date.now(),
                 jar: jar,
                 headers: {
                     "User-Agent": userAgent,
                     "Referer": "https://portal.adtpulse.com/myhome/summary/summary.jsp",
                 },
+                ciphers: [
+                    "ECDHE-RSA-AES256-GCM-SHA384",
+                    "ECDHE-RSA-AES128-GCM-SHA256"
+                ].join(":"),
             },
             function (error, response, body) {
                 let regex        = new RegExp("^(\/myhome\/)(.*)(\/Ajax\/SyncCheckServ)(.*)$");
@@ -642,6 +685,7 @@ pulse.prototype.performPortalSync = function () {
                     authenticated = false;
 
                     that.consoleLogger("ADT Pulse: Failed to sync with portal.", "error");
+                    that.consoleLogger(error, "error");
 
                     deferred.reject({
                         "action": "SYNC",
