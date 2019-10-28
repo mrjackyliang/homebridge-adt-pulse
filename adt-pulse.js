@@ -461,13 +461,13 @@ pulse.prototype.setDeviceStatus = function (armState, arm) {
                     let onClick = $("#arm_button_1").attr("onclick");
                     let satCode = (onClick !== undefined) ? onClick.split("sat=")[1].split("&")[0] : undefined;
 
-                    // Check if system requires force arming.
-                    if (arm === "away" && onClick !== undefined && satCode !== undefined) {
-                        let forceUrlBase = "https://portal.adtpulse.com/myhome/quickcontrol/serv/RunRRACommand";
-                        let forceUrlArgs = `?sat=${satCode}&href=rest/adt/ui/client/security/setForceArm&armstate=forcearm&arm=away`;
-                        let forceUrl     = forceUrlBase + forceUrlArgs;
+                    let forceUrlBase = "https://portal.adtpulse.com/myhome/quickcontrol/serv/RunRRACommand";
+                    let forceUrlArgs = `?sat=${satCode}&href=rest/adt/ui/client/security/setForceArm&armstate=forcearm&arm=${arm}`;
+                    let forceUrl     = forceUrlBase + forceUrlArgs;
 
-                        that.consoleLogger("ADT Pulse: Some sensors are open or reporting motion. Forcing Arm Away...", "warn");
+                    // Check if system requires force arming.
+                    if (arm === "away" || arm === "stay" && onClick !== undefined && satCode !== undefined) {
+                        that.consoleLogger("ADT Pulse: Some sensors are open or reporting motion. Forcing Arm...", "warn");
 
                         request.get(
                             forceUrl,
