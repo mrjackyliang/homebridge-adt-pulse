@@ -43,6 +43,18 @@ If you have a sensor that is unsupported by this plugin, please [request a featu
 
 Please mind that I DO NOT have plans to support smart devices or cameras connected to the ADT Pulse service. I recommend using another `homebridge-plugin` or the [official ADT Pulse app](https://www.adt.com/help/faq/adt-pulse/adt-pulse-mobile-app).
 
+## Log Level (Debugging)
+Let's face it. Debugging is difficult without the proper information, in such, the plugin offers a way to filter out logs in which you may want to see (and not see).
+
+Configure `logLevel` (like the example configuration above) with the values below:
+* Set `logLevel` to `10` for errors only.
+* Set `logLevel` to `20` for warnings (and the above).
+* Set `logLevel` to `30` for info (and the above).
+* Set `logLevel` to `40` for debug (and the above).
+* Set `logLevel` to `50` for verbose (and the above).
+
+If the `logLevel` setting is undefined or is not the specific numbers set above, a warning may be shown and `logLevel` will be set to `30` which is the recommended level.
+
 ## Test Script
 There is a test script included in the package that performs specific actions used by the plugin. Feel free to test it out, and report any bugs you see.
 
@@ -60,4 +72,4 @@ The script provides an active connection to the ADT Pulse portal. Here are a lis
 ## Credits and Appreciation
 If you would like to show your appreciation for its continued development, you can optionally make a small donation to my company, [CBN Ventures](https://cbnventures.io), through [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=L59Y27M66FG26&source=url).
 
-Also, giving HUGE thanks to [@kevinmkickey](https://github.com/kevinmhickey/adt-pulse) for providing the ADT Pulse script. This "unofficial" plugin (or any other unofficial ADT Pulse plugin) would not have happened without this script.
+Also, giving HUGE thanks to [@kevinmkickey](https://github.com/kevinmhickey/adt-pulse) for providing the ADT Pulse script. This plugin would not have happened without this script.
