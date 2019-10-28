@@ -60,6 +60,9 @@ function ADTPulsePlatform(log, config, api) {
     this.syncing      = undefined;
     this.isSyncing    = false;
 
+    // Session data.
+    this.sessionVersion = "";
+
     // Credentials could be null.
     this.username = _.get(this.config, "username");
     this.password = _.get(this.config, "password");
@@ -592,9 +595,12 @@ ADTPulsePlatform.prototype.portalSync = function () {
                 let version          = _.get(response, "info.version", undefined);
                 let supportedVersion = "16.0.0-131";
 
-                if (version !== undefined && version !== supportedVersion) {
+                if (version !== undefined && version !== supportedVersion && version !== this.sessionVersion) {
                     this.logMessage(`Web Portal version ${version} does not match ${supportedVersion}.`, 20);
                 }
+
+                // Bind version to session so message doesn't keep showing up.
+                this.sessionVersion = version;
             })
             .then(() => this.theAlarm.performPortalSync())
             .then(async (syncCode) => {
