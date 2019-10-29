@@ -43,28 +43,28 @@ If you have a sensor that is unsupported by this plugin, please [request a featu
 
 Please mind that I DO NOT have plans to support smart devices or cameras connected to the ADT Pulse service. I recommend using another `homebridge-plugin` or the [official ADT Pulse app](https://www.adt.com/help/faq/adt-pulse/adt-pulse-mobile-app) for that.
 
-## Force Arming (Arm Stay/Away)
+## Force Arming (Arm Away/Stay)
 Due to the nature of how HomeKit and ADT Pulse processes `setDeviceStatus` commands, this plugin will force arm when it detects active motion or open sensors.
 
-__This issue will prevent your from arming stay/away (with no error response) causing confusion.__
+__Without force arm, arm away/stay may stall without error response.__
 
-Before arming, I advise you to check the status of your Home (instructions below), as HomeKit will not check if your devices are in active state.
+Before arming, please check the status of your Home (instructions below), as HomeKit will not check if your devices are in an active state.
 
 1. Open Home app.
 2. Tap `Details >` above `Favorite Accessories`.
 3. View the `ATTENTION` area of your home.
 
 ## Log Level (Debugging)
-Debugging is difficult without the proper information, in such, the plugin offers a way to filter out logs in which you may want to see and not see. _Optional._
+Debugging is difficult without the proper information, in such, this plugin offers a way to filter out messages sent to the logs. _Optional._
 
-Configure `logLevel` like the example configuration above with the values below:
+The default is `30`. Configure `logLevel` with the values below:
 * Set `logLevel` to `10` for errors only.
 * Set `logLevel` to `20` for warnings (and the above).
 * Set `logLevel` to `30` for info (and the above).
 * Set `logLevel` to `40` for debug (and the above).
 * Set `logLevel` to `50` for verbose (and the above).
 
-If the `logLevel` setting is undefined or not in the specific numbers set above, a warning may be shown and `logLevel` will be set to `30` (_recommended_).
+NOTE: If the `logLevel` setting is incorrectly specified, a warning will be shown then subsequently set to `30`.
 
 ## Test Script
 There is a test script included in the package that performs specific actions used by the plugin. Feel free to test it out, and report any bugs you see.
