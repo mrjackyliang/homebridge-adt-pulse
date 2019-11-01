@@ -593,10 +593,10 @@ ADTPulsePlatform.prototype.portalSync = function () {
             .login()
             .then((response) => {
                 let version          = _.get(response, "info.version", undefined);
-                let supportedVersion = "16.0.0-131";
+                let supportedVersion = ["16.0.0-131", "17.0.0-69"];
 
-                if (version !== undefined && version !== supportedVersion && version !== this.sessionVersion) {
-                    this.logMessage(`Web Portal version ${version} does not match ${supportedVersion}.`, 20);
+                if (version !== undefined && !supportedVersion.includes(version) && version !== this.sessionVersion) {
+                    this.logMessage(`Web Portal version ${version} does not match ${supportedVersion.join(", ")}.`, 20);
                 }
 
                 // Bind version to session so message doesn't keep showing up.
@@ -1141,6 +1141,7 @@ ADTPulsePlatform.prototype.logMessage = function (content, priority) {
                 log.info(content);
                 break;
             case 40:
+                // Homebridge debug must be enabled.
                 log.debug(content);
                 break;
             case 50:

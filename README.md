@@ -68,6 +68,8 @@ The default is `30`. Configure `logLevel` with the values below:
 
 NOTE: If the `logLevel` setting is incorrectly specified, a warning will be shown then subsequently set to `30`.
 
+NOTE 2: Subsequently enable Homebridge Debug Mode when setting `logLevel` to `40` or above or else debug messages won't be shown.
+
 ## Test Script
 There is a test script included in the package that performs specific actions used by the plugin. Feel free to test it out, and report any bugs you see.
 

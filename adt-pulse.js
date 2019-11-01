@@ -112,7 +112,7 @@ pulse.prototype.login = function () {
                                 "ECDHE-RSA-AES128-GCM-SHA256"
                             ].join(":"),
                         },
-                        function (error, response) {
+                        function (error, response, body) {
                             isAuthenticating = false;
 
                             let regex        = new RegExp("^(\/myhome\/)(.*)(\/summary\/summary\.jsp)$");
@@ -125,7 +125,14 @@ pulse.prototype.login = function () {
                                 authenticated = false;
 
                                 that.consoleLogger("ADT Pulse: Login failed.", "error");
-                                that.consoleLogger(error, "error");
+
+                                if (error) {
+                                    that.consoleLogger(`ADT Pulse: Error -> ${error}`, "error");
+                                }
+
+                                if (body) {
+                                    that.consoleLogger(`ADT Pulse: Body -> ${body}`, "log");
+                                }
 
                                 deferred.reject({
                                     "action": "LOGIN",
@@ -276,7 +283,14 @@ pulse.prototype.getDeviceStatus = function () {
                     authenticated = false;
 
                     that.consoleLogger("ADT Pulse: Get device information failed.", "error");
-                    that.consoleLogger(error, "error");
+
+                    if (error) {
+                        that.consoleLogger(`ADT Pulse: Error -> ${error}`, "error");
+                    }
+
+                    if (body) {
+                        that.consoleLogger(`ADT Pulse: Body -> ${body}`, "log");
+                    }
 
                     deferred.reject({
                         "action": "GET_DEVICE_INFO",
@@ -313,7 +327,14 @@ pulse.prototype.getDeviceStatus = function () {
 
                             if (error || !regex.test(responsePath)) {
                                 that.consoleLogger("ADT Pulse: Get device status failed.", "error");
-                                that.consoleLogger(error, "error");
+
+                                if (error) {
+                                    that.consoleLogger(`ADT Pulse: Error -> ${error}`, "error");
+                                }
+
+                                if (body) {
+                                    that.consoleLogger(`ADT Pulse: Body -> ${body}`, "log");
+                                }
 
                                 deferred.reject({
                                     "action": "GET_DEVICE_STATUS",
@@ -449,7 +470,14 @@ pulse.prototype.setDeviceStatus = function (armState, arm) {
                     authenticated = false;
 
                     that.consoleLogger(`ADT Pulse: Set device status to ${arm} failed.`, "error");
-                    that.consoleLogger(error, "error");
+
+                    if (error) {
+                        that.consoleLogger(`ADT Pulse: Error -> ${error}`, "error");
+                    }
+
+                    if (body) {
+                        that.consoleLogger(`ADT Pulse: Body -> ${body}`, "log");
+                    }
 
                     deferred.reject({
                         "action": "SET_DEVICE_STATUS",
@@ -482,7 +510,7 @@ pulse.prototype.setDeviceStatus = function (armState, arm) {
                                     "ECDHE-RSA-AES128-GCM-SHA256"
                                 ].join(":"),
                             },
-                            function (error, response) {
+                            function (error, response, body) {
                                 let regex        = new RegExp("^(\/myhome\/)(.*)(\/quickcontrol\/serv\/RunRRACommand)(.*)$");
                                 let responsePath = _.get(response, "request.uri.path");
 
@@ -493,7 +521,14 @@ pulse.prototype.setDeviceStatus = function (armState, arm) {
                                     authenticated = false;
 
                                     that.consoleLogger(`ADT Pulse: Set device status to ${arm} failed.`, "error");
-                                    that.consoleLogger(error, "error");
+
+                                    if (error) {
+                                        that.consoleLogger(`ADT Pulse: Error -> ${error}`, "error");
+                                    }
+
+                                    if (body) {
+                                        that.consoleLogger(`ADT Pulse: Body -> ${body}`, "log");
+                                    }
 
                                     deferred.reject({
                                         "action": "SET_DEVICE_STATUS",
@@ -502,7 +537,6 @@ pulse.prototype.setDeviceStatus = function (armState, arm) {
                                     });
                                 } else {
                                     that.consoleLogger(`ADT Pulse: Set device status to ${arm} success.`, "log");
-                                    that.consoleLogger(error, "error");
 
                                     deferred.resolve({
                                         "action": "SET_DEVICE_STATUS",
@@ -580,7 +614,14 @@ pulse.prototype.getZoneStatus = function () {
                     authenticated = false;
 
                     that.consoleLogger("ADT Pulse: Get zone status failed.", "error");
-                    that.consoleLogger(error, "error");
+
+                    if (error) {
+                        that.consoleLogger(`ADT Pulse: Error -> ${error}`, "error");
+                    }
+
+                    if (body) {
+                        that.consoleLogger(`ADT Pulse: Body -> ${body}`, "log");
+                    }
 
                     deferred.reject({
                         "action": "GET_ZONE_STATUS",
@@ -685,7 +726,14 @@ pulse.prototype.performPortalSync = function () {
                     authenticated = false;
 
                     that.consoleLogger("ADT Pulse: Failed to sync with portal.", "error");
-                    that.consoleLogger(error, "error");
+
+                    if (error) {
+                        that.consoleLogger(`ADT Pulse: Error -> ${error}`, "error");
+                    }
+
+                    if (body) {
+                        that.consoleLogger(`ADT Pulse: Body -> ${body}`, "log");
+                    }
 
                     deferred.reject({
                         "action": "SYNC",
