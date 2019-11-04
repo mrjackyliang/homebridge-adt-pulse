@@ -41,7 +41,7 @@ let lastKnownVersion = "";
  *
  * @since 1.0.0
  */
-pulse = function (options) {
+Pulse = function (options) {
     this.username = _.get(options, "username", "");
     this.password = _.get(options, "password", "");
     this.debug    = _.get(options, "debug", false);
@@ -54,7 +54,7 @@ pulse = function (options) {
  *
  * @since 1.0.0
  */
-pulse.prototype.login = function () {
+Pulse.prototype.login = function () {
     let deferred = q.defer();
     let that     = this;
 
@@ -126,18 +126,15 @@ pulse.prototype.login = function () {
 
                                 that.consoleLogger("ADT Pulse: Login failed.", "error");
 
-                                if (error) {
-                                    that.consoleLogger(`ADT Pulse: Error -> ${error}`, "error");
-                                }
-
-                                if (body) {
-                                    that.consoleLogger(`ADT Pulse: Body -> ${body}`, "log");
-                                }
-
                                 deferred.reject({
                                     "action": "LOGIN",
                                     "success": false,
-                                    "info": null,
+                                    "info": {
+                                        "error": error,
+                                        "response": {
+                                            "body": body,
+                                        },
+                                    },
                                 });
                             } else {
                                 let version = response.request.path.match(regex)[2];
@@ -176,6 +173,7 @@ pulse.prototype.login = function () {
     return deferred.promise;
 };
 
+// noinspection JSUnusedGlobalSymbols
 /**
  * ADT Pulse logout.
  *
@@ -183,7 +181,7 @@ pulse.prototype.login = function () {
  *
  * @since 1.0.0
  */
-pulse.prototype.logout = function () {
+Pulse.prototype.logout = function () {
     let deferred = q.defer();
     let that     = this;
 
@@ -247,7 +245,7 @@ pulse.prototype.logout = function () {
  *
  * @since 1.0.0
  */
-pulse.prototype.getDeviceStatus = function () {
+Pulse.prototype.getDeviceStatus = function () {
     let deferred = q.defer();
     let that     = this;
 
@@ -284,18 +282,15 @@ pulse.prototype.getDeviceStatus = function () {
 
                     that.consoleLogger("ADT Pulse: Get device information failed.", "error");
 
-                    if (error) {
-                        that.consoleLogger(`ADT Pulse: Error -> ${error}`, "error");
-                    }
-
-                    if (body) {
-                        that.consoleLogger(`ADT Pulse: Body -> ${body}`, "log");
-                    }
-
                     deferred.reject({
                         "action": "GET_DEVICE_INFO",
                         "success": false,
-                        "info": null,
+                        "info": {
+                            "error": error,
+                            "response": {
+                                "body": body,
+                            },
+                        },
                     });
                 } else {
                     let $          = cheerio.load(body);
@@ -325,21 +320,18 @@ pulse.prototype.getDeviceStatus = function () {
                             that.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
                             that.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
 
-                            if (error || !regex.test(responsePath)) {
+                            if (error || !regex.test(responsePath) || body.indexOf("<html") > -1) {
                                 that.consoleLogger("ADT Pulse: Get device status failed.", "error");
-
-                                if (error) {
-                                    that.consoleLogger(`ADT Pulse: Error -> ${error}`, "error");
-                                }
-
-                                if (body) {
-                                    that.consoleLogger(`ADT Pulse: Body -> ${body}`, "log");
-                                }
 
                                 deferred.reject({
                                     "action": "GET_DEVICE_STATUS",
                                     "success": false,
-                                    "info": null,
+                                    "info": {
+                                        "error": error,
+                                        "response": {
+                                            "body": body,
+                                        },
+                                    },
                                 });
                             } else {
                                 let $           = cheerio.load(body);
@@ -411,7 +403,7 @@ pulse.prototype.getDeviceStatus = function () {
  *
  * @since 1.0.0
  */
-pulse.prototype.setDeviceStatus = function (armState, arm) {
+Pulse.prototype.setDeviceStatus = function (armState, arm) {
     let deferred = q.defer();
     let that     = this;
 
@@ -471,18 +463,15 @@ pulse.prototype.setDeviceStatus = function (armState, arm) {
 
                     that.consoleLogger(`ADT Pulse: Set device status to ${arm} failed.`, "error");
 
-                    if (error) {
-                        that.consoleLogger(`ADT Pulse: Error -> ${error}`, "error");
-                    }
-
-                    if (body) {
-                        that.consoleLogger(`ADT Pulse: Body -> ${body}`, "log");
-                    }
-
                     deferred.reject({
                         "action": "SET_DEVICE_STATUS",
                         "success": false,
-                        "info": null,
+                        "info": {
+                            "error": error,
+                            "response": {
+                                "body": body,
+                            },
+                        },
                     });
                 } else {
                     let $       = cheerio.load(body);
@@ -522,18 +511,15 @@ pulse.prototype.setDeviceStatus = function (armState, arm) {
 
                                     that.consoleLogger(`ADT Pulse: Set device status to ${arm} failed.`, "error");
 
-                                    if (error) {
-                                        that.consoleLogger(`ADT Pulse: Error -> ${error}`, "error");
-                                    }
-
-                                    if (body) {
-                                        that.consoleLogger(`ADT Pulse: Body -> ${body}`, "log");
-                                    }
-
                                     deferred.reject({
                                         "action": "SET_DEVICE_STATUS",
                                         "success": false,
-                                        "info": null,
+                                        "info": {
+                                            "error": error,
+                                            "response": {
+                                                "body": body,
+                                            },
+                                        },
                                     });
                                 } else {
                                     that.consoleLogger(`ADT Pulse: Set device status to ${arm} success.`, "log");
@@ -578,7 +564,7 @@ pulse.prototype.setDeviceStatus = function (armState, arm) {
  *
  * @since 1.0.0
  */
-pulse.prototype.getZoneStatus = function () {
+Pulse.prototype.getZoneStatus = function () {
     let deferred = q.defer();
     let that     = this;
 
@@ -615,18 +601,15 @@ pulse.prototype.getZoneStatus = function () {
 
                     that.consoleLogger("ADT Pulse: Get zone status failed.", "error");
 
-                    if (error) {
-                        that.consoleLogger(`ADT Pulse: Error -> ${error}`, "error");
-                    }
-
-                    if (body) {
-                        that.consoleLogger(`ADT Pulse: Body -> ${body}`, "log");
-                    }
-
                     deferred.reject({
                         "action": "GET_ZONE_STATUS",
                         "success": false,
-                        "info": null,
+                        "info": {
+                            "error": error,
+                            "response": {
+                                "body": body,
+                            },
+                        },
                     });
                 } else {
                     let allDevices = JSON.parse(body)["items"];
@@ -689,7 +672,7 @@ pulse.prototype.getZoneStatus = function () {
  *
  * @since 1.0.0
  */
-pulse.prototype.performPortalSync = function () {
+Pulse.prototype.performPortalSync = function () {
     let deferred = q.defer();
     let that     = this;
 
@@ -727,18 +710,15 @@ pulse.prototype.performPortalSync = function () {
 
                     that.consoleLogger("ADT Pulse: Failed to sync with portal.", "error");
 
-                    if (error) {
-                        that.consoleLogger(`ADT Pulse: Error -> ${error}`, "error");
-                    }
-
-                    if (body) {
-                        that.consoleLogger(`ADT Pulse: Body -> ${body}`, "log");
-                    }
-
                     deferred.reject({
                         "action": "SYNC",
                         "success": false,
-                        "info": null,
+                        "info": {
+                            "error": error,
+                            "response": {
+                                "body": body,
+                            },
+                        },
                     });
                 } else {
                     /**
@@ -777,7 +757,7 @@ pulse.prototype.performPortalSync = function () {
  * @param {string} content - The message or content being recorded into the logs.
  * @param {string} type   - Can be "error", "warn", or "log".
  */
-pulse.prototype.consoleLogger = function (content, type) {
+Pulse.prototype.consoleLogger = function (content, type) {
     if (this.debug) {
         switch (type) {
             case "error":
@@ -793,4 +773,4 @@ pulse.prototype.consoleLogger = function (content, type) {
     }
 };
 
-module.exports = pulse;
+module.exports = Pulse;

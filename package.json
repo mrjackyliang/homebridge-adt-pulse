@@ -1,12 +1,12 @@
 {
   "name": "homebridge-adt-pulse",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "description": "Homebridge security system platform for ADT Pulse",
   "main": "index.js",
   "scripts": {
-    "start": "homebridge --debug --plugin-path $(pwd) && exit 1",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "publish": "npm publish && exit 1"
+    "start": "homebridge --plugin-path $(pwd) && exit 1",
+    "start:debug": "homebridge --debug --plugin-path $(pwd) && exit 1",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",

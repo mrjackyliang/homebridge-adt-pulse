@@ -596,7 +596,7 @@ ADTPulsePlatform.prototype.portalSync = function () {
                 let supportedVersion = ["16.0.0-131", "17.0.0-69"];
 
                 if (version !== undefined && !supportedVersion.includes(version) && version !== this.sessionVersion) {
-                    this.logMessage(`Web Portal version ${version} does not match ${supportedVersion.join(", ")}.`, 20);
+                    this.logMessage(`Web Portal version ${version} does not match ${supportedVersion.join(" or ")}.`, 20);
                 }
 
                 // Bind version to session so message doesn't keep showing up.
@@ -670,6 +670,9 @@ ADTPulsePlatform.prototype.portalSync = function () {
                                     this.logMessage(`Action failed on ${action}.`, 10);
                                     break;
                             }
+
+                            // Error response object.
+                            this.logMessage(error, 40);
                         });
 
                     // Update sync code.
@@ -702,6 +705,9 @@ ADTPulsePlatform.prototype.portalSync = function () {
                         this.logMessage(`Action failed on ${action}.`, 10);
                         break;
                 }
+
+                // Error response object.
+                this.logMessage(error, 40);
 
                 this.isSyncing = false;
             });
@@ -1032,6 +1038,9 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
                     break;
             }
 
+            // Error response object.
+            this.logMessage(error, 40);
+
             callback(null);
         });
 };
@@ -1077,10 +1086,10 @@ ADTPulsePlatform.prototype.formatZoneStatus = function (type, state) {
             break;
         case "glass":
             if (state === "devStatOK") {
-                // No tamper detected.
+                // No glass broken.
                 status = false;
             } else if (state === "devStatTamper") {
-                // Tamper detected.
+                // Glass broken.
                 status = true;
             }
             break;
@@ -1122,14 +1131,17 @@ ADTPulsePlatform.prototype.formatZoneStatus = function (type, state) {
  * Manages the messages that will be recorded in the logs.
  *
  * @param {string|Object} content  - The message or content being recorded into the logs.
- * @param {number} priority - 10 (error), 20 (warn), 30 (info), 40 (debug), 50 (verbose).
+ * @param {number}        priority - 10 (error), 20 (warn), 30 (info), 40 (debug), 50 (verbose).
  */
 ADTPulsePlatform.prototype.logMessage = function (content, priority) {
     let logLevel = this.logLevel;
     let log      = this.log;
 
     if (logLevel >= priority) {
-        // Messages won't be logged if not within specs.
+        /**
+         * Messages won't be logged if not within specs.
+         * Homebridge Debug Mode must be enabled for priorities 40 and 50.
+         */
         switch (priority) {
             case 10:
                 log.error(content);
@@ -1141,11 +1153,10 @@ ADTPulsePlatform.prototype.logMessage = function (content, priority) {
                 log.info(content);
                 break;
             case 40:
-                // Homebridge debug must be enabled.
                 log.debug(content);
                 break;
             case 50:
-                log(content);
+                log.debug(content);
                 break;
         }
     }

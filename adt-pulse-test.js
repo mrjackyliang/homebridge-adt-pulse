@@ -66,7 +66,7 @@ if (debugValue === "true") {
 /**
  * Initialize ADT Pulse function.
  *
- * @type {pulse}
+ * @type {Pulse}
  *
  * @since 1.0.0
  */
