@@ -849,14 +849,16 @@ ADTPulsePlatform.prototype.formatDeviceStatus = function (summary) {
     let status = null;
 
     let lowerCaseSummary = summary.toLowerCase();
+    let disarmed         = lowerCaseSummary.includes("disarmed");
+    let uncleared_alarm  = lowerCaseSummary.includes("uncleared alarm");
     let alarm            = lowerCaseSummary.includes("alarm");
     let arm_away         = lowerCaseSummary.includes("armed away");
     let arm_stay         = lowerCaseSummary.includes("armed stay");
     let arm_night        = lowerCaseSummary.includes("armed night");
-    let uncleared_alarm  = lowerCaseSummary.includes("uncleared alarm");
-    let disarmed         = lowerCaseSummary.includes("disarmed");
 
-    if (alarm) {
+    if (disarmed || uncleared_alarm) {
+        status = Characteristic.SecuritySystemCurrentState.DISARMED;
+    } else if (alarm) {
         status = Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
     } else if (arm_away) {
         status = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
@@ -864,8 +866,6 @@ ADTPulsePlatform.prototype.formatDeviceStatus = function (summary) {
         status = Characteristic.SecuritySystemCurrentState.STAY_ARM;
     } else if (arm_night) {
         status = Characteristic.SecuritySystemCurrentState.NIGHT_ARM;
-    } else if (uncleared_alarm || disarmed) {
-        status = Characteristic.SecuritySystemCurrentState.DISARMED;
     }
 
     return status;
@@ -936,11 +936,7 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
                 this.logMessage(`${name} (${id}) is currently armed away...`, 40);
 
                 // Clear the alarms first.
-                if (lastState.includes("uncleared alarm")) {
-                    this.logMessage(`Clearing the ${name} (${id}) alarm...`, 40);
-
-                    await this.theAlarm.setDeviceStatus("disarmed+with+alarm", "off");
-                } else if (lastState.includes("alarm")) {
+                if (lastState.includes("alarm")) {
                     this.logMessage(`Disarming and clearing the ${name} (${id}) alarm...`, 40);
 
                     await this.theAlarm.setDeviceStatus("away", "off");
@@ -977,11 +973,7 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
                 this.logMessage(`${name} (${id}) is currently armed stay...`, 40);
 
                 // Clear the alarms first.
-                if (lastState.includes("uncleared alarm")) {
-                    this.logMessage(`Clearing the ${name} (${id}) alarm...`, 40);
-
-                    await this.theAlarm.setDeviceStatus("disarmed+with+alarm", "off");
-                } else if (lastState.includes("alarm")) {
+                if (lastState.includes("alarm")) {
                     this.logMessage(`Disarming and clearing the ${name} (${id}) alarm...`, 40);
 
                     await this.theAlarm.setDeviceStatus("stay", "off");
@@ -1018,11 +1010,7 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
                 this.logMessage(`${name} (${id}) is currently armed night...`, 40);
 
                 // Clear the alarms first.
-                if (lastState.includes("uncleared alarm")) {
-                    this.logMessage(`Clearing the ${name} (${id}) alarm...`, 40);
-
-                    await this.theAlarm.setDeviceStatus("disarmed+with+alarm", "off");
-                } else if (lastState.includes("alarm")) {
+                if (lastState.includes("alarm")) {
                     this.logMessage(`Disarming and clearing the ${name} (${id}) alarm...`, 40);
 
                     await this.theAlarm.setDeviceStatus("night", "off");
@@ -1056,7 +1044,7 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
                         break;
                 }
             } else {
-                throw "lastState throw: " + lastState;
+                this.logMessage(`lastState context with "${lastState}" is unknown.`, 10);
             }
         })
         .then(() => {

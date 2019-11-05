@@ -420,8 +420,9 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
          * Pulse URLs to set device status.
          *
          * Notes:
-         * - When disarming, the armState will be set to "disarmed" (normally it is "off") until next login.
-         * - Arming with armState "off" (while armState is "disarmed") works.
+         * - When Disarming, the armState will be set to "disarmed". After re-login, it will be set to "off".
+         * - When Arming Night, armState will be set to "night+stay". After re-login, it will be set to "night".
+         * - If alarm occurred, you must Clear Alarm before setting to Armed Away/Stay/Night.
          *
          * Disarmed:
          * - Arm Away (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=away)
@@ -431,13 +432,10 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
          * - Clear Alarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed+with+alarm&arm=off)
          * Armed Away:
          * - Disarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=away&arm=off)
-         * - Clear Alarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed+with+alarm&arm=off)
          * Armed Stay:
          * - Disarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=stay&arm=off)
-         * - Clear Alarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed+with+alarm&arm=off)
          * Armed Night:
          * - Disarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=night&arm=off)
-         * - Clear Alarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed+with+alarm&arm=off)
          *
          * @type {string}
          */
