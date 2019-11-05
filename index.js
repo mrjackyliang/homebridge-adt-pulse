@@ -852,6 +852,7 @@ ADTPulsePlatform.prototype.formatDeviceStatus = function (summary) {
     let alarm            = lowerCaseSummary.includes("alarm");
     let arm_away         = lowerCaseSummary.includes("armed away");
     let arm_stay         = lowerCaseSummary.includes("armed stay");
+    let arm_night        = lowerCaseSummary.includes("armed night");
     let uncleared_alarm  = lowerCaseSummary.includes("uncleared alarm");
     let disarmed         = lowerCaseSummary.includes("disarmed");
 
@@ -861,6 +862,8 @@ ADTPulsePlatform.prototype.formatDeviceStatus = function (summary) {
         status = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
     } else if (arm_stay) {
         status = Characteristic.SecuritySystemCurrentState.STAY_ARM;
+    } else if (arm_night) {
+        status = Characteristic.SecuritySystemCurrentState.NIGHT_ARM;
     } else if (uncleared_alarm || disarmed) {
         status = Characteristic.SecuritySystemCurrentState.DISARMED;
     }
@@ -889,7 +892,7 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
     this.theAlarm
         .login()
         .then(async () => {
-            // Check if Disarmed, Armed Away, or Armed Stay.
+            // Check if Disarmed, Armed Away, Armed Stay, or Armed Night.
             if (lastState.includes("disarmed")) {
                 this.logMessage(`${name} (${id}) is currently disarmed...`, 40);
 
@@ -906,21 +909,20 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
                 }
 
                 switch (arm) {
-                    case Characteristic.SecuritySystemTargetState.STAY_ARM:
-                        this.logMessage(`Arming the ${name} (${id}) to stay...`, 40);
-
-                        await this.theAlarm.setDeviceStatus("disarmed", "stay");
-                        break;
                     case Characteristic.SecuritySystemTargetState.AWAY_ARM:
                         this.logMessage(`Arming the ${name} (${id}) to away...`, 40);
 
                         await this.theAlarm.setDeviceStatus("disarmed", "away");
                         break;
-                    case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
-                        this.logMessage("ADT Pulse does not support night mode. Arming stay instead.", 20);
+                    case Characteristic.SecuritySystemTargetState.STAY_ARM:
                         this.logMessage(`Arming the ${name} (${id}) to stay...`, 40);
 
                         await this.theAlarm.setDeviceStatus("disarmed", "stay");
+                        break;
+                    case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
+                        this.logMessage(`Arming the ${name} (${id}) to night...`, 40);
+
+                        await this.theAlarm.setDeviceStatus("disarmed", "night");
                         break;
                     case Characteristic.SecuritySystemTargetState.DISARM:
                         this.logMessage(`Arming the ${name} (${id}) to disarmed...`, 40);
@@ -946,22 +948,21 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
                 }
 
                 switch (arm) {
+                    case Characteristic.SecuritySystemTargetState.AWAY_ARM:
+                        this.logMessage(`Arming the ${name} (${id}) to away...`, 40);
+                        this.logMessage("Already Armed Away. Cannot arm away again.", 10);
+                        break;
                     case Characteristic.SecuritySystemTargetState.STAY_ARM:
                         this.logMessage(`Arming the ${name} (${id}) to stay...`, 40);
 
                         await this.theAlarm.setDeviceStatus("away", "off");
                         await this.theAlarm.setDeviceStatus("disarmed", "stay");
                         break;
-                    case Characteristic.SecuritySystemTargetState.AWAY_ARM:
-                        this.logMessage(`Arming the ${name} (${id}) to away...`, 40);
-                        this.logMessage("Already Armed Away. Cannot arm away again.", 10);
-                        break;
                     case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
-                        this.logMessage("ADT Pulse does not support night mode. Arming stay instead.", 20);
-                        this.logMessage(`Arming the ${name} (${id}) to stay...`, 40);
+                        this.logMessage(`Arming the ${name} (${id}) to night...`, 40);
 
                         await this.theAlarm.setDeviceStatus("away", "off");
-                        await this.theAlarm.setDeviceStatus("disarmed", "stay");
+                        await this.theAlarm.setDeviceStatus("disarmed", "night");
                         break;
                     case Characteristic.SecuritySystemTargetState.DISARM:
                         this.logMessage(`Arming the ${name} (${id}) to disarmed...`, 40);
@@ -988,24 +989,67 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
                 }
 
                 switch (arm) {
-                    case Characteristic.SecuritySystemTargetState.STAY_ARM:
-                        this.logMessage(`Arming the ${name} (${id}) to stay...`, 40);
-                        this.logMessage("Already Armed Stay. Cannot arm stay again.", 10);
-                        break;
                     case Characteristic.SecuritySystemTargetState.AWAY_ARM:
                         this.logMessage(`Arming the ${name} (${id}) to away...`, 40);
 
                         await this.theAlarm.setDeviceStatus("stay", "off");
                         await this.theAlarm.setDeviceStatus("disarmed", "away");
                         break;
-                    case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
-                        this.logMessage("ADT Pulse does not support night mode. Arming stay instead.", 20);
+                    case Characteristic.SecuritySystemTargetState.STAY_ARM:
+                        this.logMessage(`Arming the ${name} (${id}) to stay...`, 40);
                         this.logMessage("Already Armed Stay. Cannot arm stay again.", 10);
+                        break;
+                    case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
+                        this.logMessage(`Arming the ${name} (${id}) to night...`, 40);
+
+                        await this.theAlarm.setDeviceStatus("stay", "off");
+                        await this.theAlarm.setDeviceStatus("disarmed", "night");
                         break;
                     case Characteristic.SecuritySystemTargetState.DISARM:
                         this.logMessage(`Arming the ${name} (${id}) to disarmed...`, 40);
 
                         await this.theAlarm.setDeviceStatus("stay", "off");
+                        break;
+                    default:
+                        this.logMessage(`Unknown arm status ${arm}...`, 10);
+                        break;
+                }
+            } else if (lastState.includes("armed night")) {
+                this.logMessage(`${name} (${id}) is currently armed night...`, 40);
+
+                // Clear the alarms first.
+                if (lastState.includes("uncleared alarm")) {
+                    this.logMessage(`Clearing the ${name} (${id}) alarm...`, 40);
+
+                    await this.theAlarm.setDeviceStatus("disarmed+with+alarm", "off");
+                } else if (lastState.includes("alarm")) {
+                    this.logMessage(`Disarming and clearing the ${name} (${id}) alarm...`, 40);
+
+                    await this.theAlarm.setDeviceStatus("night", "off");
+                    await this.theAlarm.setDeviceStatus("disarmed+with+alarm", "off");
+                }
+
+                switch (arm) {
+                    case Characteristic.SecuritySystemTargetState.AWAY_ARM:
+                        this.logMessage(`Arming the ${name} (${id}) to away...`, 40);
+
+                        await this.theAlarm.setDeviceStatus("night", "off");
+                        await this.theAlarm.setDeviceStatus("disarmed", "away");
+                        break;
+                    case Characteristic.SecuritySystemTargetState.STAY_ARM:
+                        this.logMessage(`Arming the ${name} (${id}) to stay...`, 40);
+
+                        await this.theAlarm.setDeviceStatus("night", "off");
+                        await this.theAlarm.setDeviceStatus("disarmed", "stay");
+                        break;
+                    case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
+                        this.logMessage(`Arming the ${name} (${id}) to night...`, 40);
+                        this.logMessage("Already Armed Night. Cannot arm night again.", 10);
+                        break;
+                    case Characteristic.SecuritySystemTargetState.DISARM:
+                        this.logMessage(`Arming the ${name} (${id}) to disarmed...`, 40);
+
+                        await this.theAlarm.setDeviceStatus("night", "off");
                         break;
                     default:
                         this.logMessage(`Unknown arm status ${arm}...`, 10);
@@ -1117,7 +1161,6 @@ ADTPulsePlatform.prototype.formatZoneStatus = function (type, state) {
             }
             break;
         default:
-            status = null;
             this.logMessage(`Unknown type ${type} with state "${state}".`, 10);
             break;
     }

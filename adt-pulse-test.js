@@ -6,7 +6,7 @@
  * Arguments:
  *     --username email@email.com
  *     --password 1234567890
- *     --action   [device-status,zone-status,sync,disarm,arm-away,arm-stay]
+ *     --action   [device-status,zone-status,sync,disarm,arm-away,arm-stay,arm-night]
  *     --debug    [true,false]
  *
  * Usage:
@@ -191,6 +191,34 @@ switch (actionValue) {
             .then(async () => {
                 // setDeviceStatus function may fail because a wrong armState was set.
                 await myAlarm.setDeviceStatus("disarmed", "stay");
+            })
+            .then(() => {
+                setTimeout(() => {
+                    myAlarm
+                        .getDeviceStatus()
+                        .then((status) => {
+                            console.log("==============================");
+                            console.log(status);
+                            console.log("==============================");
+                        })
+                        .then(() => myAlarm.logout());
+                }, 1000);
+            });
+        break;
+    case "arm-night":
+        console.log("ADT Pulse Test: Arming night...");
+
+        myAlarm
+            .login()
+            .then(() => myAlarm.getDeviceStatus())
+            .then((status) => {
+                console.log("==============================");
+                console.log(status);
+                console.log("==============================");
+            })
+            .then(async () => {
+                // setDeviceStatus function may fail because a wrong armState was set.
+                await myAlarm.setDeviceStatus("disarmed", "night");
             })
             .then(() => {
                 setTimeout(() => {

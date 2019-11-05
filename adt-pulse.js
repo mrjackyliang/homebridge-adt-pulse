@@ -39,6 +39,8 @@ let lastKnownVersion = "";
  *
  * @param {Object} options - Stores the configuration.
  *
+ * @constructor
+ *
  * @since 1.0.0
  */
 Pulse = function (options) {
@@ -346,6 +348,7 @@ Pulse.prototype.getDeviceStatus = function () {
                                  *   "Disarmed"
                                  *   "Armed Away"
                                  *   "Armed Stay"
+                                 *   "Armed Night"
                                  *   "Status Unavailable"
                                  * Status:
                                  *   "All Quiet"
@@ -423,6 +426,7 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
          * Disarmed:
          * - Arm Away (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=away)
          * - Arm Stay (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=stay)
+         * - Arm Night (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=night)
          * - Disarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=off)
          * - Clear Alarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed+with+alarm&arm=off)
          * Armed Away:
@@ -430,6 +434,9 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
          * - Clear Alarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed+with+alarm&arm=off)
          * Armed Stay:
          * - Disarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=stay&arm=off)
+         * - Clear Alarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed+with+alarm&arm=off)
+         * Armed Night:
+         * - Disarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=night&arm=off)
          * - Clear Alarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed+with+alarm&arm=off)
          *
          * @type {string}
@@ -483,7 +490,7 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
                     let forceUrl     = forceUrlBase + forceUrlArgs;
 
                     // Check if system requires force arming.
-                    if (arm === "away" || arm === "stay" && onClick !== undefined && satCode !== undefined) {
+                    if (["away", "stay", "night"].includes(arm) && onClick !== undefined && satCode !== undefined) {
                         that.consoleLogger("ADT Pulse: Some sensors are open or reporting motion. Forcing Arm...", "warn");
 
                         request.get(
@@ -527,7 +534,10 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
                                     deferred.resolve({
                                         "action": "SET_DEVICE_STATUS",
                                         "success": true,
-                                        "info": null,
+                                        "info": {
+                                            "forceArm": true,
+                                            "setStatusTo": arm,
+                                        },
                                     });
                                 }
                             }
@@ -538,7 +548,10 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
                         deferred.resolve({
                             "action": "SET_DEVICE_STATUS",
                             "success": true,
-                            "info": null,
+                            "info": {
+                                "forceArm": false,
+                                "setStatusTo": arm,
+                            },
                         });
                     }
                 }

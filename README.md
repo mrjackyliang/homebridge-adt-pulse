@@ -45,16 +45,21 @@ If you have a sensor that is unsupported by this plugin, please [request a featu
 
 Please mind that I DO NOT have plans to support smart devices or cameras connected to the ADT Pulse service. I recommend using another `homebridge-plugin` or the [official ADT Pulse app](https://www.adt.com/help/faq/adt-pulse/adt-pulse-mobile-app) for that.
 
+## Arm Night Support
+As for ADT Pulse systems, __Arm Night__ is only available for use through the panel itself. Although, it might not be visible on the Web Portal (or the mobile app), you can still place your system in this mode with the plugin.
+
+Due to the force arming procedure (documented below), __please make sure no devices are open or reporting motion__ as this may render the __Arm Night__ mode less effective.
+
 ## Force Arming (Arm Away/Stay)
 Due to the nature of how HomeKit and ADT Pulse processes `setDeviceStatus` commands, this plugin will force arm when it detects active motion or open sensors.
 
-__Without force arm, arm away/stay may stall without error response.__
+__Without force arm, arm away/stay may stall and reset with no error response.__
 
 Before arming, please check the status of your Home (instructions below), as HomeKit will not check if your devices are in an active state.
 
 1. Open Home app.
-2. Tap `Details >` above `Favorite Accessories`.
-3. View the `ATTENTION` area of your home.
+2. Tap __Details >__ above __Favorite Accessories__.
+3. View the __ATTENTION__ area of your home.
 
 ## Log Level (Debugging)
 Debugging is difficult without the proper information, in such, this plugin offers a way to filter out messages sent to the logs. _Optional._
@@ -68,20 +73,20 @@ The default is `30`. Configure `logLevel` with the values below:
 
 NOTE: If the `logLevel` setting is incorrectly specified, a warning will be shown then subsequently set to `30`.
 
-NOTE 2: Subsequently enable Homebridge Debug Mode when setting `logLevel` to `40` or above or else debug messages won't be shown.
+NOTE 2: Don't forget to enable Homebridge Debug Mode when setting `logLevel` to `40` or above or else debug messages won't be shown.
 
 ## Test Script
 There is a test script included in the package that performs specific actions used by the plugin. Feel free to test it out, and report any bugs you see.
 
 This script requires your username, password, and an action type.
 ```shell script
-node adt-pulse-test.js --username email@email.com --password 12345667890 --action [device-status,zone-status,sync,disarm,arm-away,arm-stay] --debug [true,false]
+node adt-pulse-test.js --username email@email.com --password 12345667890 --action [device-status,zone-status,sync,disarm,arm-away,arm-stay,arm-night] --debug [true,false]
 ```
 
 ## Developer Information
 The script provides an active connection to the ADT Pulse portal. Here are a list of must knows, just in case you might want to debug (or improve) the plugin:
 
-1. Device and zone statuses are polled every 4 seconds. If there are more than 2 login failures, device polling and portal sync stops.
+1. Device and zone statuses are polled every __4 seconds__. If there are more than 2 login failures, device polling and portal sync stops.
 2. Supported versions are `17.0.0-69` and `16.0.0-131`. If this plugin does not support either version, a warning will appear in the logs. Please [create a bug report](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new?template=bug_report.md) to let me know!
 
 ## Credits and Appreciation
