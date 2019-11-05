@@ -46,7 +46,7 @@ If you have a sensor that is unsupported by this plugin, please [request a featu
 Please mind that I DO NOT have plans to support smart devices or cameras connected to the ADT Pulse service. I recommend using another `homebridge-plugin` or the [official ADT Pulse app](https://www.adt.com/help/faq/adt-pulse/adt-pulse-mobile-app) for that.
 
 ## Arm Night Support
-As for ADT Pulse systems, __Arm Night__ is only available for use through the panel itself. Although, it might not be visible on the Web Portal (or the mobile app), you can still place your system in this mode with the plugin.
+As for ADT Pulse systems, __Arm Night__ is only available for use through the panel itself. Although, it is not visible on the Web Portal or the mobile app, you can still place your system in __Arm Night__ mode with this plugin.
 
 Due to the force arming procedure (documented below), __please make sure no devices are open or reporting motion__ as this may render the __Arm Night__ mode less effective.
 
