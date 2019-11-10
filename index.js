@@ -278,12 +278,12 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
  *
  * Call this function manually during plugin initialization.
  *
- * @param {string} type   - Can be "system", "doorWindow", "glass", "motion", "co", "fire".
- * @param {string} id     - The accessory unique identification code.
- * @param {string} name   - The name of the accessory.
- * @param {string} make   - The manufacturer of the accessory.
- * @param {string} model  - The model/type of accessory.
- * @param {string} state  - The last known state of the accessory.
+ * @param {string} type  - Can be "system", "doorWindow", "glass", "motion", "co", "fire".
+ * @param {string} id    - The accessory unique identification code.
+ * @param {string} name  - The name of the accessory.
+ * @param {string} make  - The manufacturer of the accessory.
+ * @param {string} model - The model/type of accessory.
+ * @param {string} state - The last known state of the accessory.
  *
  * @since 1.0.0
  */
@@ -593,7 +593,7 @@ ADTPulsePlatform.prototype.portalSync = function () {
             .login()
             .then((response) => {
                 let version          = _.get(response, "info.version", undefined);
-                let supportedVersion = ["16.0.0-131", "17.0.0-69"];
+                let supportedVersion = ["17.0.0-69", "17.0.0-71"];
 
                 if (version !== undefined && !supportedVersion.includes(version) && version !== this.sessionVersion) {
                     this.logMessage(`Web Portal version ${version} does not match ${supportedVersion.join(" or ")}.`, 20);
