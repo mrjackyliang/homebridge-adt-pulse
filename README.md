@@ -45,21 +45,21 @@ If you have a sensor that is unsupported by this plugin, please [request a featu
 
 Please mind that I DO NOT have plans to support smart devices or cameras connected to the ADT Pulse service. I recommend using another `homebridge-plugin` or the [official ADT Pulse app](https://www.adt.com/help/faq/adt-pulse/adt-pulse-mobile-app) for that.
 
-## Arm Night Support
-As for ADT Pulse systems, __Arm Night__ is only available for use through the panel itself. Although, it is not visible on the Web Portal or the mobile app, you can still place your system in __Arm Night__ mode with this plugin.
-
-Due to the force arming procedure (documented below), __please make sure no devices are open or reporting motion__ as this may render the __Arm Night__ mode less effective.
-
-## Force Arming (Arm Away/Stay)
+## Force Arming (Arm Away/Stay/Night)
 Due to the nature of how HomeKit and ADT Pulse processes `setDeviceStatus` commands, this plugin will force arm when it detects active motion or open sensors.
 
-__Without force arm, arm away/stay may stall and reset with no error response.__
+__Without force arm, arm away/stay/night may stall and reset to Disarm with no error response.__
 
 Before arming, please check the status of your Home (instructions below), as HomeKit will not check if your devices are in an active state.
 
 1. Open Home app.
-2. Tap __Details >__ above __Favorite Accessories__.
+2. Tap __Details >__ (usually above __Favorite Accessories__).
 3. View the __ATTENTION__ area of your home.
+
+## Arm Night Support
+As for ADT Pulse systems, __Arm Night__ is only available for use through the panel itself. Although, it is not visible on the Web Portal or the mobile app, you can still place your system in __Arm Night__ mode with this plugin.
+
+Because of the force arming procedure (above), __please make sure no devices are open or reporting motion__ as this may render the __Arm Night__ mode less effective.
 
 ## Log Level (Debugging)
 Debugging is difficult without the proper information, in such, this plugin offers a way to filter out messages sent to the logs. _Optional._
@@ -87,7 +87,7 @@ node adt-pulse-test.js --username email@email.com --password 12345667890 --actio
 The script provides an active connection to the ADT Pulse portal. Here are a list of must knows, just in case you might want to debug (or improve) the plugin:
 
 1. Device and zone statuses are polled every __4 seconds__. If there are more than 2 login failures, device polling and portal sync stops.
-2. Supported versions are `17.0.0-69` and `16.0.0-131`. If this plugin does not support either version, a warning will appear in the logs. Please [create a bug report](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new?template=bug_report.md) to let me know!
+2. Supported versions are `17.0.0-69` and `17.0.0-71`. If this plugin does not support either version, a warning will appear in the logs. Please [create a bug report](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new?template=bug_report.md) to let me know!
 
 ## Credits and Appreciation
 If you would like to show your appreciation for its continued development, you can optionally make a small donation to my company, [CBN Ventures](https://cbnventures.io), through [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=L59Y27M66FG26&source=url).
