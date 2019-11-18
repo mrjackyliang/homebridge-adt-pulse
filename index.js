@@ -712,11 +712,6 @@ ADTPulsePlatform.prototype.portalSync = function () {
                         break;
                 }
 
-                // Show error message.
-                if (message) {
-                    this.logMessage(message, 10);
-                }
-
                 this.isSyncing = false;
             });
     } else {
