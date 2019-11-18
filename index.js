@@ -651,7 +651,8 @@ ADTPulsePlatform.prototype.portalSync = function () {
                             });
                         })
                         .catch((error) => {
-                            let action = _.get(error, "action");
+                            let action  = _.get(error, "action");
+                            let message = _.get(error, "info.message");
 
                             switch (action) {
                                 case "GET_DEVICE_INFO":
@@ -671,8 +672,10 @@ ADTPulsePlatform.prototype.portalSync = function () {
                                     break;
                             }
 
-                            // Error response object.
-                            this.logMessage(error, 40);
+                            // Show error message.
+                            if (message) {
+                                this.logMessage(message, 10);
+                            }
                         });
 
                     // Update sync code.
@@ -683,11 +686,14 @@ ADTPulsePlatform.prototype.portalSync = function () {
                 this.isSyncing = false;
             })
             .catch((error) => {
-                let action = _.get(error, "action");
+                let action  = _.get(error, "action");
+                let message = _.get(error, "info.message");
 
                 switch (action) {
                     case "LOGIN":
-                        this.failedLoginTimes++;
+                        if (message.match(/(Sign In unsuccessful\.)/g)) {
+                            this.failedLoginTimes++;
+                        }
 
                         if (this.failedLoginTimes > 1) {
                             this.logMessage("Login failed more than once. Portal sync terminated.", 10);
@@ -706,8 +712,10 @@ ADTPulsePlatform.prototype.portalSync = function () {
                         break;
                 }
 
-                // Error response object.
-                this.logMessage(error, 40);
+                // Show error message.
+                if (message) {
+                    this.logMessage(message, 10);
+                }
 
                 this.isSyncing = false;
             });
@@ -1056,7 +1064,8 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
             }, this.syncInterval * 1000);
         })
         .catch((error) => {
-            let action = _.get(error, "action");
+            let action  = _.get(error, "action");
+            let message = _.get(error, "info.message");
 
             switch (action) {
                 case "SET_DEVICE_STATUS":
@@ -1070,8 +1079,10 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
                     break;
             }
 
-            // Error response object.
-            this.logMessage(error, 40);
+            // Show error message.
+            if (message) {
+                this.logMessage(message, 10);
+            }
 
             callback(null);
         });

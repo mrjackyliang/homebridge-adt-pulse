@@ -126,6 +126,10 @@ Pulse.prototype.login = function () {
                             if (error || !regex.test(responsePath)) {
                                 authenticated = false;
 
+                                let errorMessage        = body.match(/<div id="warnMsgContents" class="p_signinWarning">(.*?)<\/div>/g)[0];
+                                let errorMessageNoBreak = (errorMessage) ? errorMessage.replace(/<br\/>/ig, " ") : "";
+                                let errorMessageNoHTML  = errorMessageNoBreak.replace(/(<([^>]+)>)/ig, "");
+
                                 that.consoleLogger("ADT Pulse: Login failed.", "error");
 
                                 deferred.reject({
@@ -133,9 +137,7 @@ Pulse.prototype.login = function () {
                                     "success": false,
                                     "info": {
                                         "error": error,
-                                        "response": {
-                                            "body": body,
-                                        },
+                                        "message": (errorMessageNoHTML) ? errorMessageNoHTML : undefined,
                                     },
                                 });
                             } else {
@@ -282,6 +284,10 @@ Pulse.prototype.getDeviceStatus = function () {
                 if (error || !regex.test(responsePath)) {
                     authenticated = false;
 
+                    let errorMessage        = body.match(/<div id="warnMsgContents" class="p_signinWarning">(.*?)<\/div>/g)[0];
+                    let errorMessageNoBreak = (errorMessage) ? errorMessage.replace(/<br\/>/ig, " ") : "";
+                    let errorMessageNoHTML  = errorMessageNoBreak.replace(/(<([^>]+)>)/ig, "");
+
                     that.consoleLogger("ADT Pulse: Get device information failed.", "error");
 
                     deferred.reject({
@@ -289,9 +295,7 @@ Pulse.prototype.getDeviceStatus = function () {
                         "success": false,
                         "info": {
                             "error": error,
-                            "response": {
-                                "body": body,
-                            },
+                            "message": (errorMessageNoHTML) ? errorMessageNoHTML : undefined,
                         },
                     });
                 } else {
@@ -323,6 +327,12 @@ Pulse.prototype.getDeviceStatus = function () {
                             that.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
 
                             if (error || !regex.test(responsePath) || body.indexOf("<html") > -1) {
+                                authenticated = false;
+
+                                let errorMessage        = body.match(/<div id="warnMsgContents" class="p_signinWarning">(.*?)<\/div>/g)[0];
+                                let errorMessageNoBreak = (errorMessage) ? errorMessage.replace(/<br\/>/ig, " ") : "";
+                                let errorMessageNoHTML  = errorMessageNoBreak.replace(/(<([^>]+)>)/ig, "");
+
                                 that.consoleLogger("ADT Pulse: Get device status failed.", "error");
 
                                 deferred.reject({
@@ -330,9 +340,7 @@ Pulse.prototype.getDeviceStatus = function () {
                                     "success": false,
                                     "info": {
                                         "error": error,
-                                        "response": {
-                                            "body": body,
-                                        },
+                                        "message": (errorMessageNoHTML) ? errorMessageNoHTML : undefined,
                                     },
                                 });
                             } else {
@@ -466,6 +474,10 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
                 if (error || !regex.test(response.request.path)) {
                     authenticated = false;
 
+                    let errorMessage        = body.match(/<div id="warnMsgContents" class="p_signinWarning">(.*?)<\/div>/g)[0];
+                    let errorMessageNoBreak = (errorMessage) ? errorMessage.replace(/<br\/>/ig, " ") : "";
+                    let errorMessageNoHTML  = errorMessageNoBreak.replace(/(<([^>]+)>)/ig, "");
+
                     that.consoleLogger(`ADT Pulse: Set device status to ${arm} failed.`, "error");
 
                     deferred.reject({
@@ -473,9 +485,7 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
                         "success": false,
                         "info": {
                             "error": error,
-                            "response": {
-                                "body": body,
-                            },
+                            "message": (errorMessageNoHTML) ? errorMessageNoHTML : undefined,
                         },
                     });
                 } else {
@@ -514,6 +524,10 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
                                 if (error || !regex.test(response.request.path)) {
                                     authenticated = false;
 
+                                    let errorMessage        = body.match(/<div id="warnMsgContents" class="p_signinWarning">(.*?)<\/div>/g)[0];
+                                    let errorMessageNoBreak = (errorMessage) ? errorMessage.replace(/<br\/>/ig, " ") : "";
+                                    let errorMessageNoHTML  = errorMessageNoBreak.replace(/(<([^>]+)>)/ig, "");
+
                                     that.consoleLogger(`ADT Pulse: Set device status to ${arm} failed.`, "error");
 
                                     deferred.reject({
@@ -521,9 +535,7 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
                                         "success": false,
                                         "info": {
                                             "error": error,
-                                            "response": {
-                                                "body": body,
-                                            },
+                                            "message": (errorMessageNoHTML) ? errorMessageNoHTML : undefined,
                                         },
                                     });
                                 } else {
@@ -610,6 +622,10 @@ Pulse.prototype.getZoneStatus = function () {
                 if (error || !regex.test(response.request.path) || body.indexOf("<html") > -1) {
                     authenticated = false;
 
+                    let errorMessage        = body.match(/<div id="warnMsgContents" class="p_signinWarning">(.*?)<\/div>/g)[0];
+                    let errorMessageNoBreak = (errorMessage) ? errorMessage.replace(/<br\/>/ig, " ") : "";
+                    let errorMessageNoHTML  = errorMessageNoBreak.replace(/(<([^>]+)>)/ig, "");
+
                     that.consoleLogger("ADT Pulse: Get zone status failed.", "error");
 
                     deferred.reject({
@@ -617,9 +633,7 @@ Pulse.prototype.getZoneStatus = function () {
                         "success": false,
                         "info": {
                             "error": error,
-                            "response": {
-                                "body": body,
-                            },
+                            "message": (errorMessageNoHTML) ? errorMessageNoHTML : undefined,
                         },
                     });
                 } else {
@@ -719,6 +733,10 @@ Pulse.prototype.performPortalSync = function () {
                 if (error || !regex.test(responsePath) || body.indexOf("<html") > -1) {
                     authenticated = false;
 
+                    let errorMessage        = body.match(/<div id="warnMsgContents" class="p_signinWarning">(.*?)<\/div>/g)[0];
+                    let errorMessageNoBreak = (errorMessage) ? errorMessage.replace(/<br\/>/ig, " ") : "";
+                    let errorMessageNoHTML  = errorMessageNoBreak.replace(/(<([^>]+)>)/ig, "");
+
                     that.consoleLogger("ADT Pulse: Failed to sync with portal.", "error");
 
                     deferred.reject({
@@ -726,9 +744,7 @@ Pulse.prototype.performPortalSync = function () {
                         "success": false,
                         "info": {
                             "error": error,
-                            "response": {
-                                "body": body,
-                            },
+                            "message": (errorMessageNoHTML) ? errorMessageNoHTML : undefined,
                         },
                     });
                 } else {
