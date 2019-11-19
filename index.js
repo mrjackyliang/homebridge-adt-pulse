@@ -712,6 +712,11 @@ ADTPulsePlatform.prototype.portalSync = function () {
                         break;
                 }
 
+                // Show error message when login or other error.
+                if (message && !["SYNC", "HOST_UNREACHABLE"].includes(action)) {
+                    this.logMessage(message, 10);
+                }
+
                 this.isSyncing = false;
             });
     } else {
