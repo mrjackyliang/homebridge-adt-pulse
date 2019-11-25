@@ -21,9 +21,10 @@ const hasInternet = require("internet-available");
  *
  * @since 1.0.0
  */
+const userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36";
+const accept    = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3";
+
 let jar;
-let userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36";
-let accept    = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3";
 
 /**
  * Track login, login statuses, portal versions.
@@ -117,18 +118,14 @@ Pulse.prototype.login = function () {
                         function (error, response, body) {
                             isAuthenticating = false;
 
-                            let regex        = new RegExp("^(\/myhome\/)(.*)(\/summary\/summary\.jsp)$");
-                            let responsePath = _.get(response, "request.uri.path");
+                            const regex        = new RegExp("^(\/myhome\/)(.*)(\/summary\/summary\.jsp)$");
+                            const responsePath = _.get(response, "request.uri.path");
 
                             that.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
                             that.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
 
                             if (error || !regex.test(responsePath)) {
                                 authenticated = false;
-
-                                let errorMessage        = body.match(/<div id="warnMsgContents" class="p_signinWarning">(.*?)<\/div>/g)[0];
-                                let errorMessageNoBreak = (errorMessage) ? errorMessage.replace(/<br\/>/ig, " ") : "";
-                                let errorMessageNoHTML  = errorMessageNoBreak.replace(/(<([^>]+)>)/ig, "");
 
                                 that.consoleLogger("ADT Pulse: Login failed.", "error");
 
@@ -137,16 +134,20 @@ Pulse.prototype.login = function () {
                                     "success": false,
                                     "info": {
                                         "error": error,
-                                        "message": (errorMessageNoHTML) ? errorMessageNoHTML : undefined,
+                                        "message": this.getErrorMessage(body),
+                                        "response": {
+                                            "path": responsePath,
+                                            "valid": regex.test(responsePath),
+                                        },
                                     },
                                 });
                             } else {
-                                let version = response.request.path.match(regex)[2];
+                                authenticated = true;
+
+                                const version = responsePath.match(regex)[2];
 
                                 // Saves last known version for reuse later.
                                 lastKnownVersion = version;
-
-                                authenticated = true;
 
                                 that.consoleLogger("ADT Pulse: Login success.", "log");
                                 that.consoleLogger(`ADT Pulse: Web portal version -> ${version}`, "log");
@@ -275,18 +276,14 @@ Pulse.prototype.getDeviceStatus = function () {
                 ].join(":"),
             },
             function (error, response, body) {
-                let regex        = new RegExp("^(\/myhome\/)(.*)(\/system\/device\.jsp)(.*)$");
-                let responsePath = _.get(response, "request.uri.path");
+                const regex        = new RegExp("^(\/myhome\/)(.*)(\/system\/device\.jsp)(.*)$");
+                const responsePath = _.get(response, "request.uri.path");
 
                 that.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
                 that.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
 
                 if (error || !regex.test(responsePath)) {
                     authenticated = false;
-
-                    let errorMessage        = body.match(/<div id="warnMsgContents" class="p_signinWarning">(.*?)<\/div>/g)[0];
-                    let errorMessageNoBreak = (errorMessage) ? errorMessage.replace(/<br\/>/ig, " ") : "";
-                    let errorMessageNoHTML  = errorMessageNoBreak.replace(/(<([^>]+)>)/ig, "");
 
                     that.consoleLogger("ADT Pulse: Get device information failed.", "error");
 
@@ -295,14 +292,18 @@ Pulse.prototype.getDeviceStatus = function () {
                         "success": false,
                         "info": {
                             "error": error,
-                            "message": (errorMessageNoHTML) ? errorMessageNoHTML : undefined,
+                            "message": this.getErrorMessage(body),
+                            "response": {
+                                "path": responsePath,
+                                "valid": regex.test(responsePath),
+                            },
                         },
                     });
                 } else {
-                    let $          = cheerio.load(body);
-                    let deviceName = $("td.InputFieldDescriptionL:contains(\"Name\")").next().text().trim();
-                    let deviceMake = $("td.InputFieldDescriptionL:contains(\"Manufacturer\")").next().text().trim();
-                    let deviceType = $("td.InputFieldDescriptionL:contains(\"Type\")").next().text().trim();
+                    const $          = cheerio.load(body);
+                    const deviceName = $("td.InputFieldDescriptionL:contains(\"Name\")").next().text().trim();
+                    const deviceMake = $("td.InputFieldDescriptionL:contains(\"Manufacturer\")").next().text().trim();
+                    const deviceType = $("td.InputFieldDescriptionL:contains(\"Type\")").next().text().trim();
 
                     that.consoleLogger("ADT Pulse: Getting device status...", "log");
 
@@ -320,18 +321,14 @@ Pulse.prototype.getDeviceStatus = function () {
                             ].join(":"),
                         },
                         function (error, response, body) {
-                            let regex        = new RegExp("^(\/myhome\/)(.*)(\/ajax\/orb\.jsp)$");
-                            let responsePath = _.get(response, "request.uri.path");
+                            const regex        = new RegExp("^(\/myhome\/)(.*)(\/ajax\/orb\.jsp)$");
+                            const responsePath = _.get(response, "request.uri.path");
 
                             that.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
                             that.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
 
                             if (error || !regex.test(responsePath) || body.indexOf("<html") > -1) {
                                 authenticated = false;
-
-                                let errorMessage        = body.match(/<div id="warnMsgContents" class="p_signinWarning">(.*?)<\/div>/g)[0];
-                                let errorMessageNoBreak = (errorMessage) ? errorMessage.replace(/<br\/>/ig, " ") : "";
-                                let errorMessageNoHTML  = errorMessageNoBreak.replace(/(<([^>]+)>)/ig, "");
 
                                 that.consoleLogger("ADT Pulse: Get device status failed.", "error");
 
@@ -340,14 +337,18 @@ Pulse.prototype.getDeviceStatus = function () {
                                     "success": false,
                                     "info": {
                                         "error": error,
-                                        "message": (errorMessageNoHTML) ? errorMessageNoHTML : undefined,
+                                        "message": that.getErrorMessage(body),
+                                        "response": {
+                                            "path": responsePath,
+                                            "valid": regex.test(responsePath),
+                                        },
                                     },
                                 });
                             } else {
-                                let $           = cheerio.load(body);
-                                let textSummary = $("#divOrbTextSummary span").text();
-                                let theState    = textSummary.substr(0, textSummary.indexOf("."));
-                                let theStatus   = textSummary.substr(textSummary.indexOf(".") + 2).slice(0, -1);
+                                const $           = cheerio.load(body);
+                                const textSummary = $("#divOrbTextSummary span").text();
+                                const theState    = textSummary.substr(0, textSummary.indexOf("."));
+                                const theStatus   = textSummary.substr(textSummary.indexOf(".") + 2).slice(0, -1);
 
                                 /**
                                  * These are the possible states and statuses.
@@ -447,7 +448,7 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
          *
          * @type {string}
          */
-        let url = "https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=" + armState + "&arm=" + arm;
+        const url = "https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=" + armState + "&arm=" + arm;
 
         that.consoleLogger("ADT Pulse: Setting device status...", "log");
 
@@ -465,18 +466,14 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
                 ].join(":"),
             },
             function (error, response, body) {
-                let regex        = new RegExp("^(\/myhome\/)(.*)(\/quickcontrol\/armDisarm\.jsp)(.*)$");
-                let responsePath = _.get(response, "request.uri.path");
+                const regex        = new RegExp("^(\/myhome\/)(.*)(\/quickcontrol\/armDisarm\.jsp)(.*)$");
+                const responsePath = _.get(response, "request.uri.path");
 
                 that.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
                 that.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
 
-                if (error || !regex.test(response.request.path)) {
+                if (error || !regex.test(responsePath)) {
                     authenticated = false;
-
-                    let errorMessage        = body.match(/<div id="warnMsgContents" class="p_signinWarning">(.*?)<\/div>/g)[0];
-                    let errorMessageNoBreak = (errorMessage) ? errorMessage.replace(/<br\/>/ig, " ") : "";
-                    let errorMessageNoHTML  = errorMessageNoBreak.replace(/(<([^>]+)>)/ig, "");
 
                     that.consoleLogger(`ADT Pulse: Set device status to ${arm} failed.`, "error");
 
@@ -485,17 +482,21 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
                         "success": false,
                         "info": {
                             "error": error,
-                            "message": (errorMessageNoHTML) ? errorMessageNoHTML : undefined,
+                            "message": this.getErrorMessage(body),
+                            "response": {
+                                "path": responsePath,
+                                "valid": regex.test(responsePath),
+                            },
                         },
                     });
                 } else {
-                    let $       = cheerio.load(body);
-                    let onClick = $("#arm_button_1").attr("onclick");
-                    let satCode = (onClick !== undefined) ? onClick.split("sat=")[1].split("&")[0] : undefined;
+                    const $       = cheerio.load(body);
+                    const onClick = $("#arm_button_1").attr("onclick");
+                    const satCode = (onClick !== undefined) ? onClick.split("sat=")[1].split("&")[0] : undefined;
 
-                    let forceUrlBase = "https://portal.adtpulse.com/myhome/quickcontrol/serv/RunRRACommand";
-                    let forceUrlArgs = `?sat=${satCode}&href=rest/adt/ui/client/security/setForceArm&armstate=forcearm&arm=${arm}`;
-                    let forceUrl     = forceUrlBase + forceUrlArgs;
+                    const forceUrlBase = "https://portal.adtpulse.com/myhome/quickcontrol/serv/RunRRACommand";
+                    const forceUrlArgs = `?sat=${satCode}&href=rest/adt/ui/client/security/setForceArm&armstate=forcearm&arm=${arm}`;
+                    const forceUrl     = forceUrlBase + forceUrlArgs;
 
                     // Check if system requires force arming.
                     if (["away", "stay", "night"].includes(arm) && onClick !== undefined && satCode !== undefined) {
@@ -515,18 +516,14 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
                                 ].join(":"),
                             },
                             function (error, response, body) {
-                                let regex        = new RegExp("^(\/myhome\/)(.*)(\/quickcontrol\/serv\/RunRRACommand)(.*)$");
-                                let responsePath = _.get(response, "request.uri.path");
+                                const regex        = new RegExp("^(\/myhome\/)(.*)(\/quickcontrol\/serv\/RunRRACommand)(.*)$");
+                                const responsePath = _.get(response, "request.uri.path");
 
                                 that.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
                                 that.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
 
-                                if (error || !regex.test(response.request.path)) {
+                                if (error || !regex.test(responsePath)) {
                                     authenticated = false;
-
-                                    let errorMessage        = body.match(/<div id="warnMsgContents" class="p_signinWarning">(.*?)<\/div>/g)[0];
-                                    let errorMessageNoBreak = (errorMessage) ? errorMessage.replace(/<br\/>/ig, " ") : "";
-                                    let errorMessageNoHTML  = errorMessageNoBreak.replace(/(<([^>]+)>)/ig, "");
 
                                     that.consoleLogger(`ADT Pulse: Set device status to ${arm} failed.`, "error");
 
@@ -535,7 +532,11 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
                                         "success": false,
                                         "info": {
                                             "error": error,
-                                            "message": (errorMessageNoHTML) ? errorMessageNoHTML : undefined,
+                                            "message": that.getErrorMessage(body),
+                                            "response": {
+                                                "path": responsePath,
+                                                "valid": regex.test(responsePath),
+                                            },
                                         },
                                     });
                                 } else {
@@ -612,19 +613,15 @@ Pulse.prototype.getZoneStatus = function () {
                 ].join(":"),
             },
             function (error, response, body) {
-                let regex        = new RegExp("^(\/myhome\/)(.*)(\/ajax\/homeViewDevAjax\.jsp)$");
-                let responsePath = _.get(response, "request.uri.path");
+                const regex        = new RegExp("^(\/myhome\/)(.*)(\/ajax\/homeViewDevAjax\.jsp)$");
+                const responsePath = _.get(response, "request.uri.path");
 
                 that.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
                 that.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
 
                 // If error, wrong path, or HTML format.
-                if (error || !regex.test(response.request.path) || body.indexOf("<html") > -1) {
+                if (error || !regex.test(responsePath) || body.indexOf("<html") > -1) {
                     authenticated = false;
-
-                    let errorMessage        = body.match(/<div id="warnMsgContents" class="p_signinWarning">(.*?)<\/div>/g)[0];
-                    let errorMessageNoBreak = (errorMessage) ? errorMessage.replace(/<br\/>/ig, " ") : "";
-                    let errorMessageNoHTML  = errorMessageNoBreak.replace(/(<([^>]+)>)/ig, "");
 
                     that.consoleLogger("ADT Pulse: Get zone status failed.", "error");
 
@@ -633,21 +630,25 @@ Pulse.prototype.getZoneStatus = function () {
                         "success": false,
                         "info": {
                             "error": error,
-                            "message": (errorMessageNoHTML) ? errorMessageNoHTML : undefined,
+                            "message": this.getErrorMessage(body),
+                            "response": {
+                                "path": responsePath,
+                                "valid": regex.test(responsePath),
+                            },
                         },
                     });
                 } else {
-                    let allDevices = JSON.parse(body)["items"];
-                    let sensors    = _.filter(allDevices, function (device) {
+                    const allDevices = JSON.parse(body)["items"];
+                    const sensors    = _.filter(allDevices, function (device) {
                         return device["id"].indexOf("sensor-") > -1;
                     });
 
                     // Only sensors are supported.
-                    let output = _.map(sensors, function (device) {
-                        let id    = device["id"];
-                        let name  = device["name"];
-                        let tags  = device["tags"];
-                        let state = device["state"]["icon"];
+                    const output = _.map(sensors, function (device) {
+                        const id    = device["id"];
+                        const name  = device["name"];
+                        const tags  = device["tags"];
+                        const state = device["state"]["icon"];
 
                         /**
                          * Examples of output.
@@ -723,8 +724,8 @@ Pulse.prototype.performPortalSync = function () {
                 ].join(":"),
             },
             function (error, response, body) {
-                let regex        = new RegExp("^(\/myhome\/)(.*)(\/Ajax\/SyncCheckServ)(.*)$");
-                let responsePath = _.get(response, "request.uri.path");
+                const regex        = new RegExp("^(\/myhome\/)(.*)(\/Ajax\/SyncCheckServ)(.*)$");
+                const responsePath = _.get(response, "request.uri.path");
 
                 that.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
                 that.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
@@ -733,10 +734,6 @@ Pulse.prototype.performPortalSync = function () {
                 if (error || !regex.test(responsePath) || body.indexOf("<html") > -1) {
                     authenticated = false;
 
-                    let errorMessage        = body.match(/<div id="warnMsgContents" class="p_signinWarning">(.*?)<\/div>/g)[0];
-                    let errorMessageNoBreak = (errorMessage) ? errorMessage.replace(/<br\/>/ig, " ") : "";
-                    let errorMessageNoHTML  = errorMessageNoBreak.replace(/(<([^>]+)>)/ig, "");
-
                     that.consoleLogger("ADT Pulse: Failed to sync with portal.", "error");
 
                     deferred.reject({
@@ -744,7 +741,11 @@ Pulse.prototype.performPortalSync = function () {
                         "success": false,
                         "info": {
                             "error": error,
-                            "message": (errorMessageNoHTML) ? errorMessageNoHTML : undefined,
+                            "message": this.getErrorMessage(body),
+                            "response": {
+                                "path": responsePath,
+                                "valid": regex.test(responsePath),
+                            },
                         },
                     });
                 } else {
@@ -779,10 +780,37 @@ Pulse.prototype.performPortalSync = function () {
 };
 
 /**
+ * ADT Pulse get error message.
+ *
+ * @param {string} responseBody - The response body.
+ *
+ * @returns {(null|string)}
+ *
+ * @since 1.0.0
+ */
+Pulse.prototype.getErrorMessage = function (responseBody) {
+    let errorMessage = responseBody.match(/<div id="warnMsgContents" class="p_signinWarning">(.*?)<\/div>/g);
+
+    // Array or null. Returns string.
+    errorMessage = (errorMessage) ? errorMessage[0] : "";
+
+    // Replace single line break with space.
+    errorMessage = errorMessage.replace(/<br\/>/ig, " ");
+
+    // Remove all HTML code.
+    errorMessage.replace(/(<([^>]+)>)/ig, "");
+
+    // If empty message, return null.
+    return (errorMessage) ? errorMessage : null;
+};
+
+/**
  * ADT Pulse console logger.
  *
  * @param {string} content - The message or content being recorded into the logs.
  * @param {string} type   - Can be "error", "warn", or "log".
+ *
+ * @since 1.0.0
  */
 Pulse.prototype.consoleLogger = function (content, type) {
     if (this.debug) {

@@ -56,9 +56,9 @@ function ADTPulsePlatform(log, config, api) {
     this.failedLoginTimes = 0;
 
     // Keeps track of device updates.
-    this.lastSyncCode = "1-0-0";
-    this.syncing      = undefined;
-    this.isSyncing    = false;
+    this.lastSyncCode      = "1-0-0";
+    this.portalSyncSession = undefined;
+    this.isSyncing         = false;
 
     // Session data.
     this.sessionVersion = "";
@@ -69,7 +69,13 @@ function ADTPulsePlatform(log, config, api) {
     this.logLevel = _.get(this.config, "logLevel");
 
     // Timers.
-    this.syncInterval = 4;
+    this.syncInterval = 3;
+
+    // Check for credentials.
+    if (!this.username || !this.password) {
+        this.logMessage("Missing required username or password in configuration.", 10);
+        return;
+    }
 
     // Setup logging function.
     if (typeof this.logLevel !== "number" || ![10, 20, 30, 40, 50].includes(this.logLevel)) {
@@ -79,17 +85,11 @@ function ADTPulsePlatform(log, config, api) {
         this.logLevel = 30;
     }
 
-    // Check for credentials.
-    if (!this.username || !this.password) {
-        this.logMessage("Missing required username or password in configuration.", 10);
-        return;
-    }
-
     // Create a new Pulse instance.
     this.theAlarm = new Pulse({
         "username": this.username,
         "password": this.password,
-        "debug": (this.logLevel === 40),
+        "debug": (this.logLevel >= 40),
     });
 
     if (api) {
@@ -132,10 +132,10 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
     accessory.displayName = accessory.displayName.replace(/[()]/gi, "");
 
     // Get accessory information.
-    let name      = accessory.displayName;
-    let id        = accessory.context.id;
-    let type      = accessory.context.type;
-    let lastState = accessory.context.lastState;
+    const name      = _.get(accessory, "displayName");
+    const id        = _.get(accessory, "context.id");
+    const type      = _.get(accessory, "context.type");
+    const lastState = _.get(accessory, "context.lastState");
 
     this.logMessage(`Configuring cached accessory... ${name} (${id})`, 30);
     this.logMessage(accessory, 40);
@@ -154,7 +154,7 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
             accessory.getService(Service.SecuritySystem)
                 .getCharacteristic(Characteristic.SecuritySystemTargetState)
                 .on("get", (callback) => {
-                    let status = this.getDeviceStatus("configure", accessory, id, name, lastState);
+                    const status = this.getDeviceStatus("configure", accessory, id, name, lastState);
 
                     that.logMessage(`Getting ${name} (${id}) target status... ${status}`, 50);
 
@@ -167,7 +167,7 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
             accessory.getService(Service.SecuritySystem)
                 .getCharacteristic(Characteristic.SecuritySystemCurrentState)
                 .on("get", (callback) => {
-                    let status = this.getDeviceStatus("configure", accessory, id, name, lastState);
+                    const status = this.getDeviceStatus("configure", accessory, id, name, lastState);
 
                     that.logMessage(`Getting ${name} (${id}) current status... ${status}`, 50);
 
@@ -288,13 +288,14 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model, state) {
-    let that            = this;
-    let uuid            = UUIDGen.generate(id);
-    let accessoryLoaded = _.find(this.accessories, ["UUID", uuid]);
+    let that = this;
+
+    const uuid            = UUIDGen.generate(id);
+    const accessoryLoaded = _.find(this.accessories, ["UUID", uuid]);
 
     // Add accessories that have not yet been added.
     if (accessoryLoaded === undefined) {
-        this.logMessage(`Adding new accessory... ${name}`, 30);
+        this.logMessage(`Adding new accessory... ${name} (${id})`, 30);
 
         let newAccessory   = new Accessory(name, uuid);
         let validAccessory = true;
@@ -309,7 +310,7 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
                 newAccessory.getService(Service.SecuritySystem)
                     .getCharacteristic(Characteristic.SecuritySystemTargetState)
                     .on("get", (callback) => {
-                        let status = this.getDeviceStatus("add", newAccessory, id, name, state);
+                        const status = this.getDeviceStatus("add", newAccessory, id, name, state);
 
                         that.logMessage(`Getting ${name} (${id}) target status... ${status}`, 50);
 
@@ -322,7 +323,7 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
                 newAccessory.getService(Service.SecuritySystem)
                     .getCharacteristic(Characteristic.SecuritySystemCurrentState)
                     .on("get", (callback) => {
-                        let status = this.getDeviceStatus("add", newAccessory, id, name, state);
+                        const status = this.getDeviceStatus("add", newAccessory, id, name, state);
 
                         that.logMessage(`Getting ${name} (${id}) current status... ${status}`, 50);
 
@@ -333,7 +334,7 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
                 newAccessory.addService(Service.ContactSensor, name)
                     .getCharacteristic(Characteristic.ContactSensorState)
                     .on("get", function (callback) {
-                        let status = that.getZoneStatus(type, id);
+                        const status = that.getZoneStatus(type, id);
 
                         // Save the last state so cached accessory will have a state to load.
                         if (status !== null) {
@@ -352,7 +353,7 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
                 newAccessory.addService(Service.MotionSensor, name)
                     .getCharacteristic(Characteristic.MotionDetected)
                     .on("get", function (callback) {
-                        let status = that.getZoneStatus(type, id);
+                        const status = that.getZoneStatus(type, id);
 
                         // Save the last state so cached accessory will have a state to load.
                         if (status !== null) {
@@ -370,7 +371,7 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
                 newAccessory.addService(Service.MotionSensor, name)
                     .getCharacteristic(Characteristic.MotionDetected)
                     .on("get", function (callback) {
-                        let status = that.getZoneStatus(type, id);
+                        const status = that.getZoneStatus(type, id);
 
                         // Save the last state so cached accessory will have a state to load.
                         if (status !== null) {
@@ -388,7 +389,7 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
                 newAccessory.addService(Service.CarbonMonoxideSensor, name)
                     .getCharacteristic(Characteristic.CarbonMonoxideDetected)
                     .on("get", function (callback) {
-                        let status = that.getZoneStatus(type, id);
+                        const status = that.getZoneStatus(type, id);
 
                         // Save the last state so cached accessory will have a state to load.
                         if (status !== null) {
@@ -406,7 +407,7 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
                 newAccessory.addService(Service.SmokeSensor, name)
                     .getCharacteristic(Characteristic.SmokeDetected)
                     .on("get", function (callback) {
-                        let status = that.getZoneStatus(type, id);
+                        const status = that.getZoneStatus(type, id);
 
                         // Save the last state so cached accessory will have a state to load.
                         if (status !== null) {
@@ -471,19 +472,19 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
  */
 ADTPulsePlatform.prototype.prepareAddAccessory = function (type, accessory) {
     if (type === "device") {
-        let deviceName   = _.get(accessory, "name", "").replace(/[()]/gi, "");
-        let deviceMake   = _.get(accessory, "make");
-        let deviceType   = _.get(accessory, "type");
-        let deviceState  = _.get(accessory, "state");
-        let deviceStatus = _.get(accessory, "status");
+        const deviceName   = _.get(accessory, "name", "").replace(/[()]/gi, "");
+        const deviceMake   = _.get(accessory, "make");
+        const deviceType   = _.get(accessory, "type");
+        const deviceState  = _.get(accessory, "state");
+        const deviceStatus = _.get(accessory, "status");
 
-        let deviceModel   = deviceType.substr(deviceType.indexOf("-") + 2);
-        let deviceSummary = `"${deviceState}" / "${deviceStatus}"`.toLowerCase();
+        const deviceModel   = deviceType.substr(deviceType.indexOf("-") + 2);
+        const deviceSummary = `"${deviceState}" / "${deviceStatus}"`.toLowerCase();
 
-        let deviceUUID   = UUIDGen.generate("system-1");
-        let deviceLoaded = _.find(this.accessories, ["UUID", deviceUUID]);
+        const deviceUUID   = UUIDGen.generate("system-1");
+        const deviceLoaded = _.find(this.accessories, ["UUID", deviceUUID]);
 
-        this.logMessage("Preparing to add device accessory...", 40);
+        this.logMessage("Preparing to add device accessory...", 30);
         this.logMessage(accessory, 40);
 
         if (deviceLoaded === undefined) {
@@ -497,15 +498,15 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function (type, accessory) {
             );
         }
     } else if (type === "zone") {
-        let zoneName  = _.get(accessory, "name", "").replace(/[()]/gi, "");
-        let zoneId    = _.get(accessory, "id");
-        let zoneTags  = _.get(accessory, "tags");
-        let zoneState = _.get(accessory, "state");
+        const zoneName  = _.get(accessory, "name", "").replace(/[()]/gi, "");
+        const zoneId    = _.get(accessory, "id");
+        const zoneTags  = _.get(accessory, "tags");
+        const zoneState = _.get(accessory, "state");
 
-        let zoneUUID   = UUIDGen.generate(zoneId);
-        let zoneLoaded = _.find(this.accessories, ["UUID", zoneUUID]);
+        const zoneUUID   = UUIDGen.generate(zoneId);
+        const zoneLoaded = _.find(this.accessories, ["UUID", zoneUUID]);
+        const zoneKind   = zoneTags.substr(zoneTags.indexOf(",") + 1);
 
-        let zoneKind = zoneTags.substr(zoneTags.indexOf(",") + 1);
         let zoneModel;
 
         switch (zoneKind) {
@@ -529,7 +530,7 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function (type, accessory) {
                 break;
         }
 
-        this.logMessage("Preparing to add zone accessory...", 40);
+        this.logMessage("Preparing to add zone accessory...", 30);
         this.logMessage(accessory, 40);
 
         if (zoneLoaded === undefined) {
@@ -553,27 +554,25 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function (type, accessory) {
  *
  * Call this function manually during plugin initialization.
  *
- * @param {Object}  accessory - The accessory.
- * @param {boolean} reset     - Remove all accessories (reset).
+ * @param {Object} accessory - The accessory.
  *
  * @since 1.0.0
  */
-// TODO Work on accessory removal.
-// ADTPulsePlatform.prototype.removeAccessory = function (accessory, reset) {
-//     this.log("Remove accessory");
-//     this.api.unregisterPlatformAccessories(
-//         "homebridge-adt-pulse",
-//         "ADTPulse",
-//         this.accessories
-//     );
-//
-//     if (reset) {
-//         this.log("Removing security panel and all sensors...");
-//         this.accessories = [];
-//     } else {
-//         this.log("Removing obsolete security panels and/or sensors...");
-//     }
-// };
+ADTPulsePlatform.prototype.removeAccessory = function (accessory) {
+    const name    = _.get(accessory, "displayName");
+    const id      = _.get(accessory, "context.id");
+    const removed = _.remove(this.accessories, ["UUID", accessory.UUID]);
+
+    this.logMessage(`Removing obsolete accessory... ${name} (${id})`, 30);
+    this.logMessage(removed, 40);
+
+    // Unregister accessory.
+    this.api.unregisterPlatformAccessories(
+        "homebridge-adt-pulse",
+        "ADTPulse",
+        [accessory]
+    );
+};
 
 /**
  * Sync with portal.
@@ -581,7 +580,7 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function (type, accessory) {
  * Retrieve latest status, add/remove accessories.
  */
 ADTPulsePlatform.prototype.portalSync = function () {
-    clearTimeout(this.syncing);
+    clearTimeout(this.portalSyncSession);
 
     // Begin portal sync.
     if (this.isSyncing !== true) {
@@ -592,8 +591,8 @@ ADTPulsePlatform.prototype.portalSync = function () {
         this.theAlarm
             .login()
             .then((response) => {
-                let version          = _.get(response, "info.version", undefined);
-                let supportedVersion = ["17.0.0-69", "17.0.0-71"];
+                const version          = _.get(response, "info.version", undefined);
+                const supportedVersion = ["17.0.0-69", "17.0.0-71"];
 
                 if (version !== undefined && !supportedVersion.includes(version) && version !== this.sessionVersion) {
                     this.logMessage(`Web Portal version ${version} does not match ${supportedVersion.join(" or ")}.`, 20);
@@ -604,19 +603,19 @@ ADTPulsePlatform.prototype.portalSync = function () {
             })
             .then(() => this.theAlarm.performPortalSync())
             .then(async (syncCode) => {
-                let theSyncCode = _.get(syncCode, "info.syncCode");
+                const theSyncCode = _.get(syncCode, "info.syncCode");
 
                 // Runs if status changes.
                 if (theSyncCode !== this.lastSyncCode || theSyncCode === "1-0-0") {
                     this.logMessage(`New sync code is ${theSyncCode}`, 40);
 
-                    // Update accessory status.
+                    // Add or update accessories.
                     await this.theAlarm
                         .getDeviceStatus()
                         .then(async (device) => {
-                            let deviceInfo   = _.get(device, "info");
-                            let deviceUUID   = UUIDGen.generate("system-1");
-                            let deviceLoaded = _.find(this.accessories, ["UUID", deviceUUID]);
+                            const deviceInfo   = _.get(device, "info");
+                            const deviceUUID   = UUIDGen.generate("system-1");
+                            const deviceLoaded = _.find(this.accessories, ["UUID", deviceUUID]);
 
                             // Set latest status into instance.
                             this.deviceStatus = deviceInfo;
@@ -630,17 +629,17 @@ ADTPulsePlatform.prototype.portalSync = function () {
                         })
                         .then(() => this.theAlarm.getZoneStatus())
                         .then((zones) => {
-                            let zonesInfo = _.get(zones, "info");
+                            const zonesInfo = _.get(zones, "info");
 
                             // Set latest status into instance.
                             this.zoneStatus = zonesInfo;
 
                             _.forEach(zonesInfo, async (zone) => {
-                                let zoneId       = _.get(zone, "id");
-                                let zoneTags     = _.get(zone, "tags");
-                                let zoneType     = zoneTags.substr(zoneTags.indexOf(",") + 1);
-                                let deviceUUID   = UUIDGen.generate(zoneId);
-                                let deviceLoaded = _.find(this.accessories, ["UUID", deviceUUID]);
+                                const zoneId       = _.get(zone, "id");
+                                const zoneTags     = _.get(zone, "tags");
+                                const zoneType     = zoneTags.substr(zoneTags.indexOf(",") + 1);
+                                const deviceUUID   = UUIDGen.generate(zoneId);
+                                const deviceLoaded = _.find(this.accessories, ["UUID", deviceUUID]);
 
                                 // Add or update zone.
                                 if (deviceLoaded === undefined) {
@@ -651,32 +650,44 @@ ADTPulsePlatform.prototype.portalSync = function () {
                             });
                         })
                         .catch((error) => {
-                            let action  = _.get(error, "action");
-                            let message = _.get(error, "info.message");
+                            const action  = _.get(error, "action");
+                            const message = _.get(error, "info.message");
 
                             switch (action) {
                                 case "GET_DEVICE_INFO":
                                     this.logMessage("Get device information failed.", 10);
+                                    if (message) this.logMessage(message, 10);
                                     break;
                                 case "GET_DEVICE_STATUS":
                                     this.logMessage("Get device status failed.", 10);
+                                    if (message) this.logMessage(message, 10);
                                     break;
                                 case "GET_ZONE_STATUS":
                                     this.logMessage("Get zone status failed.", 10);
+                                    if (message) this.logMessage(message, 10);
                                     break;
                                 case "HOST_UNREACHABLE":
                                     this.logMessage("Internet disconnected or portal unreachable.", 10);
+                                    if (message) this.logMessage(message, 10);
                                     break;
                                 default:
                                     this.logMessage(`Action failed on ${action}.`, 10);
+                                    if (message) this.logMessage(message, 10);
                                     break;
                             }
-
-                            // Show error message.
-                            if (message) {
-                                this.logMessage(message, 10);
-                            }
                         });
+
+                    // Remove obsolete zones.
+                    _.forEach(this.accessories, async (accessory) => {
+                        const id   = await _.get(accessory, "context.id");
+                        const type = await _.get(accessory, "context.type");
+                        const zone = _.find(this.zoneStatus, {"id": id});
+
+                        // Do not remove security panel.
+                        if (type !== "system" && zone === undefined) {
+                            await this.removeAccessory(accessory);
+                        }
+                    });
 
                     // Update sync code.
                     this.lastSyncCode = theSyncCode;
@@ -686,8 +697,8 @@ ADTPulsePlatform.prototype.portalSync = function () {
                 this.isSyncing = false;
             })
             .catch((error) => {
-                let action  = _.get(error, "action");
-                let message = _.get(error, "info.message");
+                const action  = _.get(error, "action");
+                const message = _.get(error, "info.message");
 
                 switch (action) {
                     case "LOGIN":
@@ -695,26 +706,27 @@ ADTPulsePlatform.prototype.portalSync = function () {
                             this.failedLoginTimes++;
                         }
 
-                        if (this.failedLoginTimes > 1) {
+                        // If login fails twice.
+                        if (this.failedLoginTimes >= 2) {
                             this.logMessage("Login failed more than once. Portal sync terminated.", 10);
+                            if (message) this.logMessage(message, 10);
                         } else {
                             this.logMessage("Login failed. Trying again.", 20);
+                            if (message) this.logMessage(message, 20);
                         }
                         break;
                     case "SYNC":
                         this.logMessage("Portal sync failed. Attempting to fix connection...", 40);
+                        if (message) this.logMessage(message, 40);
                         break;
                     case "HOST_UNREACHABLE":
                         this.logMessage("Internet disconnected or portal unreachable.", 10);
+                        if (message) this.logMessage(message, 10);
                         break;
                     default:
                         this.logMessage(`Action failed on ${action}.`, 10);
+                        if (message) this.logMessage(message, 10);
                         break;
-                }
-
-                // Show error message when login or other error.
-                if (message && !["SYNC", "HOST_UNREACHABLE"].includes(action)) {
-                    this.logMessage(message, 10);
                 }
 
                 this.isSyncing = false;
@@ -724,8 +736,8 @@ ADTPulsePlatform.prototype.portalSync = function () {
     }
 
     // Force platform to retrieve latest status.
-    if (!(this.failedLoginTimes > 1)) {
-        this.syncing = setTimeout(
+    if (!(this.failedLoginTimes >= 2)) {
+        this.portalSyncSession = setTimeout(
             () => {
                 this.portalSync();
             },
@@ -743,8 +755,8 @@ ADTPulsePlatform.prototype.portalSync = function () {
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.devicePolling = function (type, id) {
-    let uuid      = UUIDGen.generate(id);
-    let accessory = _.find(this.accessories, ["UUID", uuid]);
+    const uuid      = UUIDGen.generate(id);
+    const accessory = _.find(this.accessories, ["UUID", uuid]);
 
     if (accessory !== undefined) {
         this.logMessage(`Polling device status for ${accessory.displayName}...`, 50);
@@ -800,15 +812,15 @@ ADTPulsePlatform.prototype.devicePolling = function (type, id) {
  * @param {string} name      - The name of the accessory.
  * @param {string} summary   - The last known summary of the accessory.
  *
- * @returns {null|number}
+ * @returns {(null|number)}
  *
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.getDeviceStatus = function (mode, accessory, id, name, summary) {
-    let cacheDevice  = this.deviceStatus;
-    let cacheState   = _.get(cacheDevice, "state");
-    let cacheStatus  = _.get(cacheDevice, "status");
-    let cacheSummary = `"${cacheState}" / "${cacheStatus}"`.toLowerCase();
+    const cacheDevice  = this.deviceStatus;
+    const cacheState   = _.get(cacheDevice, "state");
+    const cacheStatus  = _.get(cacheDevice, "status");
+    const cacheSummary = `"${cacheState}" / "${cacheStatus}"`.toLowerCase();
 
     let status = null;
 
@@ -849,20 +861,20 @@ ADTPulsePlatform.prototype.getDeviceStatus = function (mode, accessory, id, name
  *
  * @param {string} summary - The last known summary of the accessory.
  *
- * @returns {null|number}
+ * @returns {(null|number)}
  *
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.formatDeviceStatus = function (summary) {
-    let status = null;
+    const lowerCaseSummary = summary.toLowerCase();
+    const disarmed         = lowerCaseSummary.includes("disarmed");
+    const uncleared_alarm  = lowerCaseSummary.includes("uncleared alarm");
+    const alarm            = lowerCaseSummary.includes("alarm");
+    const arm_away         = lowerCaseSummary.includes("armed away");
+    const arm_stay         = lowerCaseSummary.includes("armed stay");
+    const arm_night        = lowerCaseSummary.includes("armed night");
 
-    let lowerCaseSummary = summary.toLowerCase();
-    let disarmed         = lowerCaseSummary.includes("disarmed");
-    let uncleared_alarm  = lowerCaseSummary.includes("uncleared alarm");
-    let alarm            = lowerCaseSummary.includes("alarm");
-    let arm_away         = lowerCaseSummary.includes("armed away");
-    let arm_stay         = lowerCaseSummary.includes("armed stay");
-    let arm_night        = lowerCaseSummary.includes("armed night");
+    let status = null;
 
     if (disarmed || uncleared_alarm) {
         status = Characteristic.SecuritySystemCurrentState.DISARMED;
@@ -934,7 +946,7 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
                         break;
                     case Characteristic.SecuritySystemTargetState.DISARM:
                         this.logMessage(`Arming the ${name} (${id}) to disarmed...`, 40);
-                        this.logMessage("Already Disarmed. Cannot disarm again.", 10);
+                        this.logMessage("Already Disarmed. Cannot disarm again.", 20);
                         break;
                     default:
                         this.logMessage(`Unknown arm status ${arm}...`, 10);
@@ -954,7 +966,7 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
                 switch (arm) {
                     case Characteristic.SecuritySystemTargetState.AWAY_ARM:
                         this.logMessage(`Arming the ${name} (${id}) to away...`, 40);
-                        this.logMessage("Already Armed Away. Cannot arm away again.", 10);
+                        this.logMessage("Already Armed Away. Cannot arm away again.", 20);
                         break;
                     case Characteristic.SecuritySystemTargetState.STAY_ARM:
                         this.logMessage(`Arming the ${name} (${id}) to stay...`, 40);
@@ -997,7 +1009,7 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
                         break;
                     case Characteristic.SecuritySystemTargetState.STAY_ARM:
                         this.logMessage(`Arming the ${name} (${id}) to stay...`, 40);
-                        this.logMessage("Already Armed Stay. Cannot arm stay again.", 10);
+                        this.logMessage("Already Armed Stay. Cannot arm stay again.", 20);
                         break;
                     case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
                         this.logMessage(`Arming the ${name} (${id}) to night...`, 40);
@@ -1040,7 +1052,7 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
                         break;
                     case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
                         this.logMessage(`Arming the ${name} (${id}) to night...`, 40);
-                        this.logMessage("Already Armed Night. Cannot arm night again.", 10);
+                        this.logMessage("Already Armed Night. Cannot arm night again.", 20);
                         break;
                     case Characteristic.SecuritySystemTargetState.DISARM:
                         this.logMessage(`Arming the ${name} (${id}) to disarmed...`, 40);
@@ -1056,7 +1068,7 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
             }
         })
         .then(() => {
-            let armString = arm.toString();
+            const armString = arm.toString();
             accessory.getService(Service.SecuritySystem).setCharacteristic(Characteristic.SecuritySystemCurrentState, armString);
 
             setTimeout(() => {
@@ -1064,24 +1076,22 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
             }, this.syncInterval * 1000);
         })
         .catch((error) => {
-            let action  = _.get(error, "action");
-            let message = _.get(error, "info.message");
+            const action  = _.get(error, "action");
+            const message = _.get(error, "info.message");
 
             switch (action) {
                 case "SET_DEVICE_STATUS":
                     this.logMessage("Set device status failed.", 10);
+                    if (message) this.logMessage(message, 10);
                     break;
                 case "HOST_UNREACHABLE":
                     this.logMessage("Internet disconnected or portal unreachable.", 10);
+                    if (message) this.logMessage(message, 10);
                     break;
                 default:
                     this.logMessage(`Action failed on ${action}.`, 10);
+                    if (message) this.logMessage(message, 10);
                     break;
-            }
-
-            // Show error message.
-            if (message) {
-                this.logMessage(message, 10);
             }
 
             callback(null);
@@ -1099,8 +1109,8 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.getZoneStatus = function (type, id) {
-    let zone  = _.find(this.zoneStatus, ["id", id]);
-    let state = _.get(zone, "state");
+    const zone  = _.find(this.zoneStatus, ["id", id]);
+    const state = _.get(zone, "state");
 
     // If state is undefined, this function will return null.
     return this.formatZoneStatus(type, state);
@@ -1176,8 +1186,9 @@ ADTPulsePlatform.prototype.formatZoneStatus = function (type, state) {
  * @param {number}        priority - 10 (error), 20 (warn), 30 (info), 40 (debug), 50 (verbose).
  */
 ADTPulsePlatform.prototype.logMessage = function (content, priority) {
-    let logLevel = this.logLevel;
-    let log      = this.log;
+    const logLevel = this.logLevel;
+
+    let log = this.log;
 
     if (logLevel >= priority) {
         /**
