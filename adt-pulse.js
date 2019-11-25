@@ -134,7 +134,7 @@ Pulse.prototype.login = function () {
                                     "success": false,
                                     "info": {
                                         "error": error,
-                                        "message": this.getErrorMessage(body),
+                                        "message": that.getErrorMessage(body),
                                         "response": {
                                             "path": responsePath,
                                             "valid": regex.test(responsePath),
@@ -292,7 +292,7 @@ Pulse.prototype.getDeviceStatus = function () {
                         "success": false,
                         "info": {
                             "error": error,
-                            "message": this.getErrorMessage(body),
+                            "message": that.getErrorMessage(body),
                             "response": {
                                 "path": responsePath,
                                 "valid": regex.test(responsePath),
@@ -482,7 +482,7 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
                         "success": false,
                         "info": {
                             "error": error,
-                            "message": this.getErrorMessage(body),
+                            "message": that.getErrorMessage(body),
                             "response": {
                                 "path": responsePath,
                                 "valid": regex.test(responsePath),
@@ -630,7 +630,7 @@ Pulse.prototype.getZoneStatus = function () {
                         "success": false,
                         "info": {
                             "error": error,
-                            "message": this.getErrorMessage(body),
+                            "message": that.getErrorMessage(body),
                             "response": {
                                 "path": responsePath,
                                 "valid": regex.test(responsePath),
@@ -741,7 +741,7 @@ Pulse.prototype.performPortalSync = function () {
                         "success": false,
                         "info": {
                             "error": error,
-                            "message": this.getErrorMessage(body),
+                            "message": that.getErrorMessage(body),
                             "response": {
                                 "path": responsePath,
                                 "valid": regex.test(responsePath),

@@ -80,7 +80,7 @@ There is a test script included in the package that performs specific actions us
 
 This script requires your username, password, and an action type.
 ```shell script
-node adt-pulse-test.js --username email@email.com --password 12345667890 --action [device-status,zone-status,sync,disarm,arm-away,arm-stay,arm-night] --debug [true,false]
+node adt-pulse-test.js --username email@email.com --password 1234567890 --action [device-status,zone-status,sync,disarm,arm-away,arm-stay,arm-night] --debug [true,false]
 ```
 
 ## Developer Information

@@ -108,7 +108,7 @@ function ADTPulsePlatform(log, config, api) {
          * and register new accessories.
          */
         this.api.on("didFinishLaunching", function () {
-            that.logMessage("Cached accessories loaded...", 30);
+            that.logMessage("Cached accessories loaded successfully...", 40);
 
             that.portalSync();
         });
@@ -683,7 +683,7 @@ ADTPulsePlatform.prototype.portalSync = function () {
                         const type = await _.get(accessory, "context.type");
                         const zone = _.find(this.zoneStatus, {"id": id});
 
-                        // Do not remove security panel.
+                        // Do not remove security panel(s).
                         if (type !== "system" && zone === undefined) {
                             await this.removeAccessory(accessory);
                         }
