@@ -27,6 +27,18 @@ const accept    = "text/html,application/xhtml+xml,application/xml;q=0.9,image/w
 let jar;
 
 /**
+ * Settings for internet-available.
+ *
+ * @since 1.0.0
+ */
+const hasInternetSettings = {
+    timeout: 5000,
+    retries: 3,
+    domainName: "portal.adtpulse.com",
+    port: 53,
+};
+
+/**
  * Track login, login statuses, portal versions.
  *
  * @since 1.0.0
@@ -61,12 +73,7 @@ Pulse.prototype.login = function () {
     let deferred = q.defer();
     let that     = this;
 
-    hasInternet({
-        timeout: 5000,
-        retries: 3,
-        domainName: "portal.adtpulse.com",
-        port: 53,
-    }).then(function () {
+    hasInternet(hasInternetSettings).then(function () {
         if (authenticated) {
             deferred.resolve({
                 "action": "LOGIN",
@@ -135,10 +142,6 @@ Pulse.prototype.login = function () {
                                     "info": {
                                         "error": error,
                                         "message": that.getErrorMessage(body),
-                                        "response": {
-                                            "path": responsePath,
-                                            "valid": regex.test(responsePath),
-                                        },
                                     },
                                 });
                             } else {
@@ -190,12 +193,7 @@ Pulse.prototype.logout = function () {
     let deferred = q.defer();
     let that     = this;
 
-    hasInternet({
-        timeout: 5000,
-        retries: 3,
-        domainName: "portal.adtpulse.com",
-        port: 53,
-    }).then(function () {
+    hasInternet(hasInternetSettings).then(function () {
         if (!authenticated) {
             deferred.resolve({
                 "action": "LOGOUT",
@@ -254,12 +252,7 @@ Pulse.prototype.getDeviceStatus = function () {
     let deferred = q.defer();
     let that     = this;
 
-    hasInternet({
-        timeout: 5000,
-        retries: 3,
-        domainName: "portal.adtpulse.com",
-        port: 53,
-    }).then(function () {
+    hasInternet(hasInternetSettings).then(function () {
         that.consoleLogger("ADT Pulse: Getting device information...", "log");
 
         // Get security panel information, first.
@@ -293,10 +286,6 @@ Pulse.prototype.getDeviceStatus = function () {
                         "info": {
                             "error": error,
                             "message": that.getErrorMessage(body),
-                            "response": {
-                                "path": responsePath,
-                                "valid": regex.test(responsePath),
-                            },
                         },
                     });
                 } else {
@@ -338,10 +327,6 @@ Pulse.prototype.getDeviceStatus = function () {
                                     "info": {
                                         "error": error,
                                         "message": that.getErrorMessage(body),
-                                        "response": {
-                                            "path": responsePath,
-                                            "valid": regex.test(responsePath),
-                                        },
                                     },
                                 });
                             } else {
@@ -419,12 +404,7 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
     let deferred = q.defer();
     let that     = this;
 
-    hasInternet({
-        timeout: 5000,
-        retries: 3,
-        domainName: "portal.adtpulse.com",
-        port: 53,
-    }).then(function () {
+    hasInternet(hasInternetSettings).then(function () {
         /**
          * Pulse URLs to set device status.
          *
@@ -483,10 +463,6 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
                         "info": {
                             "error": error,
                             "message": that.getErrorMessage(body),
-                            "response": {
-                                "path": responsePath,
-                                "valid": regex.test(responsePath),
-                            },
                         },
                     });
                 } else {
@@ -533,10 +509,6 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
                                         "info": {
                                             "error": error,
                                             "message": that.getErrorMessage(body),
-                                            "response": {
-                                                "path": responsePath,
-                                                "valid": regex.test(responsePath),
-                                            },
                                         },
                                     });
                                 } else {
@@ -592,12 +564,7 @@ Pulse.prototype.getZoneStatus = function () {
     let deferred = q.defer();
     let that     = this;
 
-    hasInternet({
-        timeout: 5000,
-        retries: 3,
-        domainName: "portal.adtpulse.com",
-        port: 53,
-    }).then(function () {
+    hasInternet(hasInternetSettings).then(function () {
         that.consoleLogger("ADT Pulse: Getting zone status...", "log");
 
         request.get(
@@ -631,10 +598,6 @@ Pulse.prototype.getZoneStatus = function () {
                         "info": {
                             "error": error,
                             "message": that.getErrorMessage(body),
-                            "response": {
-                                "path": responsePath,
-                                "valid": regex.test(responsePath),
-                            },
                         },
                     });
                 } else {
@@ -702,12 +665,7 @@ Pulse.prototype.performPortalSync = function () {
     let deferred = q.defer();
     let that     = this;
 
-    hasInternet({
-        timeout: 5000,
-        retries: 3,
-        domainName: "portal.adtpulse.com",
-        port: 53,
-    }).then(function () {
+    hasInternet(hasInternetSettings).then(function () {
         that.consoleLogger("ADT Pulse: Performing portal sync...", "log");
 
         request.get(
@@ -742,15 +700,11 @@ Pulse.prototype.performPortalSync = function () {
                         "info": {
                             "error": error,
                             "message": that.getErrorMessage(body),
-                            "response": {
-                                "path": responsePath,
-                                "valid": regex.test(responsePath),
-                            },
                         },
                     });
                 } else {
                     /**
-                     * May return status codes like this:
+                     * May return sync codes like this:
                      *   1-0-0
                      *   2-0-0
                      *   [integer]-0-0

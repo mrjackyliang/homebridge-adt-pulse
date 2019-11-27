@@ -47,7 +47,7 @@ function ADTPulsePlatform(log, config, api) {
     this.log    = log;
     this.config = config;
 
-    // Where the security panel and sensors are cached.
+    // Where the security panel and sensors are held.
     this.accessories  = [];
     this.deviceStatus = [];
     this.zoneStatus   = [];
@@ -108,8 +108,6 @@ function ADTPulsePlatform(log, config, api) {
          * and register new accessories.
          */
         this.api.on("didFinishLaunching", function () {
-            that.logMessage("Cached accessories loaded successfully...", 40);
-
             that.portalSync();
         });
     }
@@ -128,7 +126,7 @@ function ADTPulsePlatform(log, config, api) {
 ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
     let that = this;
 
-    // Update the name to remove round brackets.
+    // Remove round brackets from accessory name.
     accessory.displayName = accessory.displayName.replace(/[()]/gi, "");
 
     // Get accessory information.
@@ -140,7 +138,7 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
     this.logMessage(`Configuring cached accessory... ${name} (${id})`, 30);
     this.logMessage(accessory, 40);
 
-    // Accessory is always reachable.
+    // Always reachable.
     accessory.updateReachability(true);
 
     // When "Identify Accessory" is tapped.
@@ -300,7 +298,7 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
         let newAccessory   = new Accessory(name, uuid);
         let validAccessory = true;
 
-        // Accessory is always reachable.
+        // Always reachable.
         newAccessory.updateReachability(true);
 
         switch (type) {
@@ -481,16 +479,17 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function (type, accessory) {
         const deviceModel   = deviceType.substr(deviceType.indexOf("-") + 2);
         const deviceSummary = `"${deviceState}" / "${deviceStatus}"`.toLowerCase();
 
-        const deviceUUID   = UUIDGen.generate("system-1");
+        const deviceId     = "system-1";
+        const deviceUUID   = UUIDGen.generate(deviceId);
         const deviceLoaded = _.find(this.accessories, ["UUID", deviceUUID]);
 
-        this.logMessage("Preparing to add device accessory...", 30);
+        this.logMessage(`Preparing to add device (${deviceId}) accessory...`, 30);
         this.logMessage(accessory, 40);
 
         if (deviceLoaded === undefined) {
             this.addAccessory(
                 "system",
-                "system-1",
+                deviceId,
                 deviceName,
                 deviceMake,
                 deviceModel,
@@ -530,7 +529,7 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function (type, accessory) {
                 break;
         }
 
-        this.logMessage("Preparing to add zone accessory...", 30);
+        this.logMessage(`Preparing to add zone (${zoneId}) accessory...`, 30);
         this.logMessage(accessory, 40);
 
         if (zoneLoaded === undefined) {
@@ -684,7 +683,7 @@ ADTPulsePlatform.prototype.portalSync = function () {
                         const zone = _.find(this.zoneStatus, {"id": id});
 
                         // Do not remove security panel(s).
-                        if (type !== "system" && zone === undefined) {
+                        if (zone === undefined && type !== "system") {
                             await this.removeAccessory(accessory);
                         }
                     });
@@ -1124,6 +1123,8 @@ ADTPulsePlatform.prototype.getZoneStatus = function (type, id) {
  * @param {string} type  - Can be "doorWindow", "glass", "motion", "co", "fire".
  * @param {string} state - Can be "devStatOK", "devStatOpen", "devStatMotion", "devStatTamper", "devStatAlarm".
  *
+ * @returns {(null|number)}
+ *
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.formatZoneStatus = function (type, state) {
@@ -1133,7 +1134,7 @@ ADTPulsePlatform.prototype.formatZoneStatus = function (type, state) {
         case "doorWindow":
             if (state === "devStatOK") {
                 status = Characteristic.ContactSensorState.CONTACT_DETECTED;
-            } else if (state === "devStatOpen" || state === "devStatTamper") {
+            } else if (["devStatOpen", "devStatTamper"].includes(state)) {
                 status = Characteristic.ContactSensorState.CONTACT_NOT_DETECTED;
             }
             break;
@@ -1150,7 +1151,7 @@ ADTPulsePlatform.prototype.formatZoneStatus = function (type, state) {
             if (state === "devStatOK") {
                 // No motion detected.
                 status = false;
-            } else if (state === "devStatMotion" || state === "devStatTamper") {
+            } else if (["devStatMotion", "devStatTamper"].includes(state)) {
                 // Motion detected.
                 status = true;
             }
@@ -1158,14 +1159,14 @@ ADTPulsePlatform.prototype.formatZoneStatus = function (type, state) {
         case "co":
             if (state === "devStatOK") {
                 status = Characteristic.CarbonMonoxideDetected.CO_LEVELS_NORMAL;
-            } else if (state === "devStatAlarm" || state === "devStatTamper") {
+            } else if (["devStatAlarm", "devStatTamper"].includes(state)) {
                 status = Characteristic.CarbonMonoxideDetected.CO_LEVELS_ABNORMAL;
             }
             break;
         case "fire":
             if (state === "devStatOK") {
                 status = Characteristic.SmokeDetected.SMOKE_NOT_DETECTED;
-            } else if (state === "devStatAlarm" || state === "devStatTamper") {
+            } else if (["devStatAlarm", "devStatTamper"].includes(state)) {
                 status = Characteristic.SmokeDetected.SMOKE_DETECTED;
             }
             break;
