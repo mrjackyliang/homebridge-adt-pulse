@@ -69,7 +69,8 @@ function ADTPulsePlatform(log, config, api) {
     this.logLevel = _.get(this.config, "logLevel");
 
     // Timers.
-    this.syncInterval = 3;
+    this.syncInterval      = 3;
+    this.setDeviceInterval = 4;
 
     // Check for credentials.
     if (!this.username || !this.password) {
@@ -1072,7 +1073,7 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
 
             setTimeout(() => {
                 callback(null);
-            }, this.syncInterval * 1000);
+            }, this.setDeviceInterval * 1000);
         })
         .catch((error) => {
             const action  = _.get(error, "action");

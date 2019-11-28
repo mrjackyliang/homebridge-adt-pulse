@@ -8,7 +8,7 @@ To use this plugin, here are two simple steps you need to follow:
 2. Configure the plugin using the configuration below.
 3. Restart Homebridge.
 
-You can also search `adt-pulse` using [Onzu's Homebridge Config UI](https://github.com/oznu/homebridge-config-ui-x). Then proceed to configure with the instructions below.
+You can also search `adt-pulse` using [Onzu's Homebridge Config UI](https://github.com/oznu/homebridge-config-ui-x). Then proceed to configure the plugin using the included settings in the plugin page.
 
 ## Configuration
 When configuring this plugin, simply add the platform to your existing `config.json` file. Mind that the `platform` name must always be `ADTPulse`.
@@ -17,7 +17,7 @@ When configuring this plugin, simply add the platform to your existing `config.j
   "platforms": [
     {
       "platform": "ADTPulse",
-      "name": "ADT-Pulse",
+      "name": "ADT Pulse",
       "username": "email@email.com",
       "password": "1234567890",
       "logLevel": 30

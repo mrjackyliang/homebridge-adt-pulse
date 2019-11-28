@@ -752,7 +752,7 @@ Pulse.prototype.getErrorMessage = function (responseBody) {
     errorMessage = errorMessage.replace(/<br\/>/ig, " ");
 
     // Remove all HTML code.
-    errorMessage.replace(/(<([^>]+)>)/ig, "");
+    errorMessage = errorMessage.replace(/(<([^>]+)>)/ig, "");
 
     // If empty message, return null.
     return (errorMessage) ? errorMessage : null;
