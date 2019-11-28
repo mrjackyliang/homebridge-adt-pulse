@@ -13,12 +13,14 @@
         "url": "git://github.com/mrjackyliang/homebridge-adt-pulse.git"
     },
     "keywords": [
+        "homebridge",
         "homebridge-plugin",
         "homekit",
         "adt",
         "adt-pulse",
         "icontrol",
-        "security"
+        "security",
+        "security-system"
     ],
     "author": "Jacky Liang",
     "license": "ISC",
