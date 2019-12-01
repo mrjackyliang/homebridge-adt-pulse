@@ -1,6 +1,10 @@
 ADT Pulse for Homebridge
 =========================
 
+[![NPM Version](https://img.shields.io/npm/v/homebridge-adt-pulse.svg?style=flat-square&color=blue)](https://www.npmjs.com/package/homebridge-adt-pulse)
+[![NPM Downloads](https://img.shields.io/npm/dt/homebridge-adt-pulse.svg?style=flat-square&color=success)](https://www.npmjs.com/package/homebridge-adt-pulse)
+[![NPM License](https://img.shields.io/npm/l/homebridge-adt-pulse.svg?style=flat-square&color=orange)](https://www.npmjs.com/package/homebridge-adt-pulse)
+
 This is a Homebridge plugin for ADT Pulse users that allows homeowners to control their security systems and view sensor status through HomeKit. The API relies on the ADT Pulse Web Portal (powered by Icontrol One).
 
 To use this plugin, here are two simple steps you need to follow:

@@ -33,9 +33,9 @@ module.exports = function (homebridge) {
 /**
  * Platform constructor.
  *
- * @param {function} log    - Native log function.
- * @param {Object}   config - Platform plugin configuration from "config.json".
- * @param {Object}   api    - The Homebridge API. Null for older versions.
+ * @param {Logger} log    - Homebridge log function.
+ * @param {Object} config - Platform plugin configuration from "config.json".
+ * @param {Object} api    - The Homebridge API. Null for older versions.
  *
  * @constructor
  *
@@ -69,8 +69,7 @@ function ADTPulsePlatform(log, config, api) {
     this.logLevel = _.get(this.config, "logLevel");
 
     // Timers.
-    this.syncInterval      = 3;
-    this.setDeviceInterval = 4;
+    this.syncInterval = 3;
 
     // Check for credentials.
     if (!this.username || !this.password) {
@@ -114,7 +113,6 @@ function ADTPulsePlatform(log, config, api) {
     }
 }
 
-// noinspection JSUnusedGlobalSymbols
 /**
  * Restore cached accessories.
  *
@@ -1073,7 +1071,7 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
 
             setTimeout(() => {
                 callback(null);
-            }, this.setDeviceInterval * 1000);
+            }, this.syncInterval * 1000);
         })
         .catch((error) => {
             const action  = _.get(error, "action");
@@ -1194,7 +1192,7 @@ ADTPulsePlatform.prototype.logMessage = function (content, priority) {
 
     if (logLevel >= priority) {
         /**
-         * Messages won't be logged if not within specs.
+         * Messages won't be logged if not within specifications.
          * Homebridge Debug Mode must be enabled for priorities 40 and 50.
          */
         switch (priority) {

@@ -181,7 +181,6 @@ Pulse.prototype.login = function () {
     return deferred.promise;
 };
 
-// noinspection JSUnusedGlobalSymbols
 /**
  * ADT Pulse logout.
  *
