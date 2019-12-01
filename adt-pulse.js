@@ -742,9 +742,10 @@ Pulse.prototype.performPortalSync = function () {
  * @since 1.0.0
  */
 Pulse.prototype.getErrorMessage = function (responseBody) {
-    let errorMessage = responseBody.match(/<div id="warnMsgContents" class="p_signinWarning">(.*?)<\/div>/g);
+    // Returns array or null.
+    let errorMessage = (responseBody) ? responseBody.match(/<div id="warnMsgContents" class="p_signinWarning">(.*?)<\/div>/g) : null;
 
-    // Array or null. Returns string.
+    // Returns string.
     errorMessage = (errorMessage) ? errorMessage[0] : "";
 
     // Replace single line break with space.
