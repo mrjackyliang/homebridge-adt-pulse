@@ -9,34 +9,17 @@
  * @since 1.0.0
  */
 const cheerio     = require("cheerio");
-const q           = require("q");
+const Q           = require("q");
 const request     = require("request");
 const _           = require("lodash");
 const hasInternet = require("internet-available");
 
 /**
- * Browser configuration.
- *
- * The variable "jar" is for storing browser session cookies.
+ * Browser session cookies.
  *
  * @since 1.0.0
  */
-const userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36";
-const accept    = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3";
-
-let jar;
-
-/**
- * Settings for internet-available.
- *
- * @since 1.0.0
- */
-const hasInternetSettings = {
-    timeout: 5000,
-    retries: 3,
-    domainName: "portal.adtpulse.com",
-    port: 53,
-};
+let jar = undefined;
 
 /**
  * Track login, login statuses, portal versions.
@@ -50,7 +33,7 @@ let lastKnownVersion = "";
 /**
  * ADT Pulse constructor.
  *
- * @param {Object} options - Stores the configuration.
+ * @param {Object} options - The configuration.
  *
  * @constructor
  *
@@ -70,10 +53,10 @@ Pulse = function (options) {
  * @since 1.0.0
  */
 Pulse.prototype.login = function () {
-    let deferred = q.defer();
+    let deferred = Q.defer();
     let that     = this;
 
-    hasInternet(hasInternetSettings).then(function () {
+    this.hasInternetWrapper(deferred, function () {
         if (authenticated) {
             deferred.resolve({
                 "action": "LOGIN",
@@ -92,36 +75,20 @@ Pulse.prototype.login = function () {
 
             request.get(
                 "https://portal.adtpulse.com",
-                {
-                    jar: jar,
-                    headers: {
-                        "Accept": accept,
-                        "User-Agent": userAgent,
-                    },
-                    ciphers: [
-                        "ECDHE-RSA-AES256-GCM-SHA384",
-                        "ECDHE-RSA-AES128-GCM-SHA256"
-                    ].join(":"),
-                },
+                that.generateRequestOptions(),
                 function () {
                     request.post(
                         "https://portal.adtpulse.com/myhome/access/signin.jsp",
-                        {
+                        that.generateRequestOptions({
                             followAllRedirects: true,
-                            jar: jar,
                             headers: {
                                 "Host": "portal.adtpulse.com",
-                                "User-Agent": userAgent,
                             },
                             form: {
                                 username: that.username,
                                 password: that.password,
                             },
-                            ciphers: [
-                                "ECDHE-RSA-AES256-GCM-SHA384",
-                                "ECDHE-RSA-AES128-GCM-SHA256"
-                            ].join(":"),
-                        },
+                        }),
                         function (error, response, body) {
                             isAuthenticating = false;
 
@@ -168,14 +135,6 @@ Pulse.prototype.login = function () {
                 }
             );
         }
-    }).catch(function () {
-        that.consoleLogger("ADT Pulse: Internet connection is offline or \"https://portal.adtpulse.com\" is unavailable.", "error");
-
-        deferred.reject({
-            "action": "HOST_UNREACHABLE",
-            "success": false,
-            "info": null,
-        });
     });
 
     return deferred.promise;
@@ -189,10 +148,10 @@ Pulse.prototype.login = function () {
  * @since 1.0.0
  */
 Pulse.prototype.logout = function () {
-    let deferred = q.defer();
+    let deferred = Q.defer();
     let that     = this;
 
-    hasInternet(hasInternetSettings).then(function () {
+    this.hasInternetWrapper(deferred, function () {
         if (!authenticated) {
             deferred.resolve({
                 "action": "LOGOUT",
@@ -204,16 +163,7 @@ Pulse.prototype.logout = function () {
 
             request.get(
                 "https://portal.adtpulse.com/myhome/access/signout.jsp",
-                {
-                    jar: jar,
-                    headers: {
-                        "User-Agent": userAgent,
-                    },
-                    ciphers: [
-                        "ECDHE-RSA-AES256-GCM-SHA384",
-                        "ECDHE-RSA-AES128-GCM-SHA256"
-                    ].join(":"),
-                },
+                that.generateRequestOptions(),
                 function () {
                     authenticated = false;
 
@@ -227,14 +177,6 @@ Pulse.prototype.logout = function () {
                 }
             );
         }
-    }).catch(function () {
-        that.consoleLogger("ADT Pulse: Internet connection is offline or \"https://portal.adtpulse.com\" is unavailable.", "error");
-
-        deferred.reject({
-            "action": "HOST_UNREACHABLE",
-            "success": false,
-            "info": null,
-        });
     });
 
     return deferred.promise;
@@ -248,25 +190,16 @@ Pulse.prototype.logout = function () {
  * @since 1.0.0
  */
 Pulse.prototype.getDeviceStatus = function () {
-    let deferred = q.defer();
+    let deferred = Q.defer();
     let that     = this;
 
-    hasInternet(hasInternetSettings).then(function () {
+    this.hasInternetWrapper(deferred, function () {
         that.consoleLogger("ADT Pulse: Getting device information...", "log");
 
         // Get security panel information, first.
         request.get(
             "https://portal.adtpulse.com/myhome/system/device.jsp?id=1",
-            {
-                jar: jar,
-                headers: {
-                    "User-Agent": userAgent,
-                },
-                ciphers: [
-                    "ECDHE-RSA-AES256-GCM-SHA384",
-                    "ECDHE-RSA-AES128-GCM-SHA256"
-                ].join(":"),
-            },
+            that.generateRequestOptions(),
             function (error, response, body) {
                 const regex        = new RegExp("^(\/myhome\/)(.*)(\/system\/device\.jsp)(.*)$");
                 const responsePath = _.get(response, "request.uri.path");
@@ -298,16 +231,7 @@ Pulse.prototype.getDeviceStatus = function () {
                     // Then, get security panel status.
                     request.get(
                         "https://portal.adtpulse.com/myhome/ajax/orb.jsp",
-                        {
-                            jar: jar,
-                            headers: {
-                                "User-Agent": userAgent,
-                            },
-                            ciphers: [
-                                "ECDHE-RSA-AES256-GCM-SHA384",
-                                "ECDHE-RSA-AES128-GCM-SHA256"
-                            ].join(":"),
-                        },
+                        that.generateRequestOptions(),
                         function (error, response, body) {
                             const regex        = new RegExp("^(\/myhome\/)(.*)(\/ajax\/orb\.jsp)$");
                             const responsePath = _.get(response, "request.uri.path");
@@ -376,14 +300,6 @@ Pulse.prototype.getDeviceStatus = function () {
                 }
             }
         );
-    }).catch(function () {
-        that.consoleLogger("ADT Pulse: Internet connection is offline or \"https://portal.adtpulse.com\" is unavailable.", "error");
-
-        deferred.reject({
-            "action": "HOST_UNREACHABLE",
-            "success": false,
-            "info": null,
-        });
     });
 
     return deferred.promise;
@@ -392,18 +308,18 @@ Pulse.prototype.getDeviceStatus = function () {
 /**
  * ADT Pulse set device status.
  *
- * @param {string} armState - Can be "disarmed", "disarmed+with+alarm", "away", "stay".
- * @param {string} arm      - Can be "off", "away", "stay".
+ * @param {string} armState - Can be "disarmed", "disarmed+with+alarm", "away", or "stay".
+ * @param {string} arm      - Can be "off", "away", or "stay".
  *
  * @returns {Q.Promise<Object>}
  *
  * @since 1.0.0
  */
 Pulse.prototype.setDeviceStatus = function (armState, arm) {
-    let deferred = q.defer();
+    let deferred = Q.defer();
     let that     = this;
 
-    hasInternet(hasInternetSettings).then(function () {
+    this.hasInternetWrapper(deferred, function () {
         /**
          * Pulse URLs to set device status.
          *
@@ -433,17 +349,11 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
 
         request.get(
             url,
-            {
-                jar: jar,
+            that.generateRequestOptions({
                 headers: {
-                    "User-Agent": userAgent,
                     "Referer": "https://portal.adtpulse.com/myhome/summary/summary.jsp",
-                },
-                ciphers: [
-                    "ECDHE-RSA-AES256-GCM-SHA384",
-                    "ECDHE-RSA-AES128-GCM-SHA256"
-                ].join(":"),
-            },
+                }
+            }),
             function (error, response, body) {
                 const regex        = new RegExp("^(\/myhome\/)(.*)(\/quickcontrol\/armDisarm\.jsp)(.*)$");
                 const responsePath = _.get(response, "request.uri.path");
@@ -479,17 +389,11 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
 
                         request.get(
                             forceUrl,
-                            {
-                                jar: jar,
+                            that.generateRequestOptions({
                                 headers: {
-                                    "User-Agent": userAgent,
                                     "Referer": "https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp"
-                                },
-                                ciphers: [
-                                    "ECDHE-RSA-AES256-GCM-SHA384",
-                                    "ECDHE-RSA-AES128-GCM-SHA256"
-                                ].join(":"),
-                            },
+                                }
+                            }),
                             function (error, response, body) {
                                 const regex        = new RegExp("^(\/myhome\/)(.*)(\/quickcontrol\/serv\/RunRRACommand)(.*)$");
                                 const responsePath = _.get(response, "request.uri.path");
@@ -518,7 +422,8 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
                                         "success": true,
                                         "info": {
                                             "forceArm": true,
-                                            "setStatusTo": arm,
+                                            "previousArm": armState,
+                                            "afterArm": arm,
                                         },
                                     });
                                 }
@@ -532,21 +437,14 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
                             "success": true,
                             "info": {
                                 "forceArm": false,
-                                "setStatusTo": arm,
+                                "previousArm": armState,
+                                "afterArm": arm,
                             },
                         });
                     }
                 }
             }
         );
-    }).catch(function () {
-        that.consoleLogger("ADT Pulse: Internet connection is offline or \"https://portal.adtpulse.com\" is unavailable.", "error");
-
-        deferred.reject({
-            "action": "HOST_UNREACHABLE",
-            "success": false,
-            "info": null,
-        });
     });
 
     return deferred.promise;
@@ -560,24 +458,15 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
  * @since 1.0.0
  */
 Pulse.prototype.getZoneStatus = function () {
-    let deferred = q.defer();
+    let deferred = Q.defer();
     let that     = this;
 
-    hasInternet(hasInternetSettings).then(function () {
+    this.hasInternetWrapper(deferred, function () {
         that.consoleLogger("ADT Pulse: Getting zone status...", "log");
 
         request.get(
             "https://portal.adtpulse.com/myhome/ajax/homeViewDevAjax.jsp",
-            {
-                jar: jar,
-                headers: {
-                    "User-Agent": userAgent,
-                },
-                ciphers: [
-                    "ECDHE-RSA-AES256-GCM-SHA384",
-                    "ECDHE-RSA-AES128-GCM-SHA256"
-                ].join(":"),
-            },
+            that.generateRequestOptions(),
             function (error, response, body) {
                 const regex        = new RegExp("^(\/myhome\/)(.*)(\/ajax\/homeViewDevAjax\.jsp)$");
                 const responsePath = _.get(response, "request.uri.path");
@@ -640,14 +529,6 @@ Pulse.prototype.getZoneStatus = function () {
                 }
             }
         );
-    }).catch(function () {
-        that.consoleLogger("ADT Pulse: Internet connection is offline or \"https://portal.adtpulse.com\" is unavailable.", "error");
-
-        deferred.reject({
-            "action": "HOST_UNREACHABLE",
-            "success": false,
-            "info": null,
-        });
     });
 
     return deferred.promise;
@@ -661,25 +542,19 @@ Pulse.prototype.getZoneStatus = function () {
  * @since 1.0.0
  */
 Pulse.prototype.performPortalSync = function () {
-    let deferred = q.defer();
+    let deferred = Q.defer();
     let that     = this;
 
-    hasInternet(hasInternetSettings).then(function () {
+    this.hasInternetWrapper(deferred, function () {
         that.consoleLogger("ADT Pulse: Performing portal sync...", "log");
 
         request.get(
             "https://portal.adtpulse.com/myhome/Ajax/SyncCheckServ" + "?t=" + Date.now(),
-            {
-                jar: jar,
+            that.generateRequestOptions({
                 headers: {
-                    "User-Agent": userAgent,
                     "Referer": "https://portal.adtpulse.com/myhome/summary/summary.jsp",
-                },
-                ciphers: [
-                    "ECDHE-RSA-AES256-GCM-SHA384",
-                    "ECDHE-RSA-AES128-GCM-SHA256"
-                ].join(":"),
-            },
+                }
+            }),
             function (error, response, body) {
                 const regex        = new RegExp("^(\/myhome\/)(.*)(\/Ajax\/SyncCheckServ)(.*)$");
                 const responsePath = _.get(response, "request.uri.path");
@@ -719,8 +594,29 @@ Pulse.prototype.performPortalSync = function () {
                 }
             }
         );
-    }).catch(function () {
-        that.consoleLogger("ADT Pulse: Internet connection is offline or \"https://portal.adtpulse.com\" is unavailable.", "error");
+    });
+
+    return deferred.promise;
+};
+
+/**
+ * Internet available wrapper.
+ *
+ * @param {Q.Deferred} deferred    - Used for rejecting promises.
+ * @param {function}   runFunction - Run function if internet is available.
+ *
+ * @since 1.0.0
+ */
+Pulse.prototype.hasInternetWrapper = function (deferred, runFunction) {
+    const settings = {
+        timeout: 5000,
+        retries: 3,
+        domainName: "portal.adtpulse.com",
+        port: 53,
+    };
+
+    hasInternet(settings).then(runFunction).catch(() => {
+        this.consoleLogger("ADT Pulse: Internet connection is offline or \"https://portal.adtpulse.com\" is unavailable.", "error");
 
         deferred.reject({
             "action": "HOST_UNREACHABLE",
@@ -728,8 +624,32 @@ Pulse.prototype.performPortalSync = function () {
             "info": null,
         });
     });
+};
 
-    return deferred.promise;
+/**
+ * Request options generator.
+ *
+ * @param {Object} additionalOptions - Additional options.
+ *
+ * @returns {Object}
+ *
+ * @since 1.0.0
+ */
+Pulse.prototype.generateRequestOptions = function (additionalOptions = {}) {
+    const options = {
+        jar: jar,
+        headers: {
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
+        },
+        ciphers: [
+            "ECDHE-RSA-AES256-GCM-SHA384",
+            "ECDHE-RSA-AES128-GCM-SHA256"
+        ].join(":"),
+    };
+
+    // Merge additional options.
+    return _.merge(options, additionalOptions);
 };
 
 /**
@@ -749,7 +669,7 @@ Pulse.prototype.getErrorMessage = function (responseBody) {
     errorMessage = (errorMessage) ? errorMessage[0] : "";
 
     // Replace single line break with space.
-    errorMessage = errorMessage.replace(/<br\/>/ig, " ");
+    errorMessage = errorMessage.replace(/<br ?\/?>/ig, " ");
 
     // Remove all HTML code.
     errorMessage = errorMessage.replace(/(<([^>]+)>)/ig, "");
@@ -762,7 +682,7 @@ Pulse.prototype.getErrorMessage = function (responseBody) {
  * ADT Pulse console logger.
  *
  * @param {string} content - The message or content being recorded into the logs.
- * @param {string} type   - Can be "error", "warn", or "log".
+ * @param {string} type    - Can be "error", "warn", or "log".
  *
  * @since 1.0.0
  */

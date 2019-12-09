@@ -6,12 +6,15 @@
 const _     = require("lodash");
 const Pulse = require("./adt-pulse.js");
 
-let Accessory, Service, Characteristic, UUIDGen;
+let Accessory,
+    Service,
+    Characteristic,
+    UUIDGen;
 
 /**
  * Register the platform plugin.
  *
- * @param {Object} homebridge - The Homebridge API.
+ * @param {Object} homebridge - Homebridge API.
  *
  * @since 1.0.0
  */
@@ -35,15 +38,13 @@ module.exports = function (homebridge) {
  *
  * @param {Logger} log    - Homebridge log function.
  * @param {Object} config - Platform plugin configuration from "config.json".
- * @param {Object} api    - The Homebridge API. Null for older versions.
+ * @param {Object} api    - Homebridge API. Null for older versions.
  *
  * @constructor
  *
  * @since 1.0.0
  */
 function ADTPulsePlatform(log, config, api) {
-    let that = this;
-
     this.log    = log;
     this.config = config;
 
@@ -69,7 +70,8 @@ function ADTPulsePlatform(log, config, api) {
     this.logLevel = _.get(this.config, "logLevel");
 
     // Timers.
-    this.syncInterval = 3;
+    this.syncInterval     = 3;
+    this.setDeviceTimeout = 8;
 
     // Check for credentials.
     if (!this.username || !this.password) {
@@ -93,22 +95,12 @@ function ADTPulsePlatform(log, config, api) {
     });
 
     if (api) {
-        /**
-         * Save the API object as plugin needs to register
-         * new accessories via this object.
-         */
+        // Register new accessories via this object.
         this.api = api;
 
-        /**
-         * Listen to event "didFinishLaunching".
-         *
-         * Means homebridge already finished loading cached accessories.
-         * This plugin should only register new accessories that
-         * does not exist in Homebridge after this event, or start to discover
-         * and register new accessories.
-         */
-        this.api.on("didFinishLaunching", function () {
-            that.portalSync();
+        // Start portal sync.
+        this.api.on("didFinishLaunching", () => {
+            this.portalSync();
         });
     }
 }
@@ -123,12 +115,13 @@ function ADTPulsePlatform(log, config, api) {
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
-    let that = this;
-
-    // Remove round brackets from accessory name.
+    /**
+     * Home app: Names must start and end with a letter or number.
+     *
+     * @type {string}
+     */
     accessory.displayName = accessory.displayName.replace(/[()]/gi, "");
 
-    // Get accessory information.
     const name      = _.get(accessory, "displayName");
     const id        = _.get(accessory, "context.id");
     const type      = _.get(accessory, "context.type");
@@ -141,8 +134,8 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
     accessory.updateReachability(true);
 
     // When "Identify Accessory" is tapped.
-    accessory.on("identify", function (paired, callback) {
-        that.logMessage(`Identifying accessory... ${name} (${id})`, 30);
+    accessory.on("identify", (paired, callback) => {
+        this.logMessage(`Identifying cached accessory... ${name} (${id})`, 30);
         callback();
     });
 
@@ -150,120 +143,47 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
         case "system":
             accessory.getService(Service.SecuritySystem)
                 .getCharacteristic(Characteristic.SecuritySystemTargetState)
-                .on("get", (callback) => {
-                    const status = this.getDeviceStatus("configure", accessory, id, name, lastState);
-
-                    that.logMessage(`Getting ${name} (${id}) target status... ${status}`, 50);
-
-                    callback(null, status);
-                })
+                .on("get", callback => this.getDeviceAccessory("configure", "target", id, name, accessory, lastState, callback))
                 .on("set", (state, callback) => {
-                    this.setDeviceStatus(accessory, state, callback);
+                    this.setDeviceStatus(accessory, state);
+
+                    setTimeout(() => {
+                        callback(null, state);
+                    }, this.setDeviceTimeout * 1000);
                 });
 
             accessory.getService(Service.SecuritySystem)
                 .getCharacteristic(Characteristic.SecuritySystemCurrentState)
-                .on("get", (callback) => {
-                    const status = this.getDeviceStatus("configure", accessory, id, name, lastState);
-
-                    that.logMessage(`Getting ${name} (${id}) current status... ${status}`, 50);
-
-                    callback(null, status);
-                });
+                .on("get", callback => this.getDeviceAccessory("configure", "current", id, name, accessory, lastState, callback));
             break;
         case "doorWindow":
             accessory.getService(Service.ContactSensor)
                 .getCharacteristic(Characteristic.ContactSensorState)
-                .on("get", function (callback) {
-                    let status = that.getZoneStatus(type, id);
-
-                    // If not available, load default state, else load last state.
-                    if (status === null && lastState === null) {
-                        status = Characteristic.ContactSensorState.CONTACT_DETECTED;
-                    } else if (status === null) {
-                        status = lastState;
-                    }
-
-                    that.logMessage(`Getting ${name} (${id}) status... ${status}`, 50);
-
-                    callback(null, status);
-                });
+                .on("get", callback => this.getZoneAccessory("configure", type, id, name, accessory, lastState, callback));
             break;
         case "glass":
             // HAP does not support tamper sensors yet, so I will use motion since the interface is similar.
             accessory.getService(Service.MotionSensor)
                 .getCharacteristic(Characteristic.MotionDetected)
-                .on("get", function (callback) {
-                    let status = that.getZoneStatus(type, id);
-
-                    // If not available, load default state, else load last state.
-                    if (status === null && lastState === null) {
-                        status = false;
-                    } else if (status === null) {
-                        status = lastState;
-                    }
-
-                    that.logMessage(`Getting ${name} (${id}) status... ${status}`, 50);
-
-                    callback(null, status);
-                });
+                .on("get", callback => this.getZoneAccessory("configure", type, id, name, accessory, lastState, callback));
             break;
         case "motion":
             accessory.getService(Service.MotionSensor)
                 .getCharacteristic(Characteristic.MotionDetected)
-                .on("get", function (callback) {
-                    let status = that.getZoneStatus(type, id);
-
-                    // If not available, load default state, else load last state.
-                    if (status === null && lastState === null) {
-                        status = false;
-                    } else if (status === null) {
-                        status = lastState;
-                    }
-
-                    that.logMessage(`Getting ${name} (${id}) status... ${status}`, 50);
-
-                    callback(null, status);
-                });
+                .on("get", callback => this.getZoneAccessory("configure", type, id, name, accessory, lastState, callback));
             break;
         case "co":
             accessory.getService(Service.CarbonMonoxideSensor)
                 .getCharacteristic(Characteristic.CarbonMonoxideDetected)
-                .on("get", function (callback) {
-                    let status = that.getZoneStatus(type, id);
-
-                    // If not available, load default state, else load last state.
-                    if (status === null && lastState === null) {
-                        status = Characteristic.CarbonMonoxideDetected.CO_LEVELS_NORMAL;
-                    } else if (status === null) {
-                        status = lastState;
-                    }
-
-                    that.logMessage(`Getting ${name} (${id}) status... ${status}`, 50);
-
-                    callback(null, status);
-                });
+                .on("get", callback => this.getZoneAccessory("configure", type, id, name, accessory, lastState, callback));
             break;
         case "fire":
             accessory.getService(Service.SmokeSensor)
                 .getCharacteristic(Characteristic.SmokeDetected)
-                .on("get", function (callback) {
-                    let status = that.getZoneStatus(type, id);
-
-                    // If not available, load default state, else load last state.
-                    if (status === null && lastState === null) {
-                        status = Characteristic.SmokeDetected.SMOKE_NOT_DETECTED;
-                    } else if (status === null) {
-                        status = lastState;
-                    }
-
-                    that.logMessage(`Getting ${name} (${id}) status... ${status}`, 50);
-
-                    callback(null, status);
-                });
+                .on("get", callback => this.getZoneAccessory("configure", type, id, name, accessory, lastState, callback));
             break;
         default:
-            this.logMessage(`Invalid or unsupported accessory... ${type}`, 10);
+            this.logMessage(`Failed to configure invalid or unsupported accessory... ${type}`, 10);
             break;
     }
 
@@ -275,7 +195,7 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
  *
  * Call this function manually during plugin initialization.
  *
- * @param {string} type  - Can be "system", "doorWindow", "glass", "motion", "co", "fire".
+ * @param {string} type  - Can be "system", "doorWindow", "glass", "motion", "co", or "fire".
  * @param {string} id    - The accessory unique identification code.
  * @param {string} name  - The name of the accessory.
  * @param {string} make  - The manufacturer of the accessory.
@@ -285,8 +205,6 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model, state) {
-    let that = this;
-
     const uuid            = UUIDGen.generate(id);
     const accessoryLoaded = _.find(this.accessories, ["UUID", uuid]);
 
@@ -294,129 +212,63 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
     if (accessoryLoaded === undefined) {
         this.logMessage(`Adding new accessory... ${name} (${id})`, 30);
 
-        let newAccessory   = new Accessory(name, uuid);
+        let accessory      = new Accessory(name, uuid);
         let validAccessory = true;
 
         // Always reachable.
-        newAccessory.updateReachability(true);
+        accessory.updateReachability(true);
 
         switch (type) {
             case "system":
-                newAccessory.addService(Service.SecuritySystem, name);
+                accessory.addService(Service.SecuritySystem, name);
 
-                newAccessory.getService(Service.SecuritySystem)
+                accessory
+                    .getService(Service.SecuritySystem)
                     .getCharacteristic(Characteristic.SecuritySystemTargetState)
-                    .on("get", (callback) => {
-                        const status = this.getDeviceStatus("add", newAccessory, id, name, state);
-
-                        that.logMessage(`Getting ${name} (${id}) target status... ${status}`, 50);
-
-                        callback(null, status);
-                    })
+                    .on("get", callback => this.getDeviceAccessory("add", "target", id, name, accessory, state, callback))
                     .on("set", (state, callback) => {
-                        this.setDeviceStatus(newAccessory, state, callback);
+                        this.setDeviceStatus(accessory, state);
+
+                        setTimeout(() => {
+                            callback(null, state);
+                        }, this.setDeviceTimeout * 1000);
                     });
 
-                newAccessory.getService(Service.SecuritySystem)
+                accessory
+                    .getService(Service.SecuritySystem)
                     .getCharacteristic(Characteristic.SecuritySystemCurrentState)
-                    .on("get", (callback) => {
-                        const status = this.getDeviceStatus("add", newAccessory, id, name, state);
-
-                        that.logMessage(`Getting ${name} (${id}) current status... ${status}`, 50);
-
-                        callback(null, status);
-                    });
+                    .on("get", callback => this.getDeviceAccessory("add", "current", id, name, accessory, state, callback));
                 break;
             case "doorWindow":
-                newAccessory.addService(Service.ContactSensor, name)
+                accessory
+                    .addService(Service.ContactSensor, name)
                     .getCharacteristic(Characteristic.ContactSensorState)
-                    .on("get", function (callback) {
-                        const status = that.getZoneStatus(type, id);
-
-                        // Save the last state so cached accessory will have a state to load.
-                        if (status !== null) {
-                            newAccessory.context.lastState = status;
-                        } else {
-                            newAccessory.context.lastState = this.formatZoneStatus(type, state);
-                        }
-
-                        that.logMessage(`Getting ${name} (${id}) status... ${status}`, 50);
-
-                        callback(null, status);
-                    });
+                    .on("get", callback => this.getZoneAccessory("add", type, id, name, accessory, state, callback));
                 break;
             case "glass":
-                // HAP does not support tamper sensors yet, so I will use motion since the interface is similar.
-                newAccessory.addService(Service.MotionSensor, name)
+                // HAP does not support tamper sensors, so motion will be used since the interface is similar.
+                accessory
+                    .addService(Service.MotionSensor, name)
                     .getCharacteristic(Characteristic.MotionDetected)
-                    .on("get", function (callback) {
-                        const status = that.getZoneStatus(type, id);
-
-                        // Save the last state so cached accessory will have a state to load.
-                        if (status !== null) {
-                            newAccessory.context.lastState = status;
-                        } else {
-                            newAccessory.context.lastState = this.formatZoneStatus(type, state);
-                        }
-
-                        that.logMessage(`Getting ${name} (${id}) status... ${status}`, 50);
-
-                        callback(null, status);
-                    });
+                    .on("get", callback => this.getZoneAccessory("add", type, id, name, accessory, state, callback));
                 break;
             case "motion":
-                newAccessory.addService(Service.MotionSensor, name)
+                accessory
+                    .addService(Service.MotionSensor, name)
                     .getCharacteristic(Characteristic.MotionDetected)
-                    .on("get", function (callback) {
-                        const status = that.getZoneStatus(type, id);
-
-                        // Save the last state so cached accessory will have a state to load.
-                        if (status !== null) {
-                            newAccessory.context.lastState = status;
-                        } else {
-                            newAccessory.context.lastState = this.formatZoneStatus(type, state);
-                        }
-
-                        that.logMessage(`Getting ${name} (${id}) status... ${status}`, 50);
-
-                        callback(null, status);
-                    });
+                    .on("get", callback => this.getZoneAccessory("add", type, id, name, accessory, state, callback));
                 break;
             case "co":
-                newAccessory.addService(Service.CarbonMonoxideSensor, name)
+                accessory
+                    .addService(Service.CarbonMonoxideSensor, name)
                     .getCharacteristic(Characteristic.CarbonMonoxideDetected)
-                    .on("get", function (callback) {
-                        const status = that.getZoneStatus(type, id);
-
-                        // Save the last state so cached accessory will have a state to load.
-                        if (status !== null) {
-                            newAccessory.context.lastState = status;
-                        } else {
-                            newAccessory.context.lastState = this.formatZoneStatus(type, state);
-                        }
-
-                        that.logMessage(`Getting ${name} (${id}) status... ${status}`, 50);
-
-                        callback(null, status);
-                    });
+                    .on("get", callback => this.getZoneAccessory("add", type, id, name, accessory, state, callback));
                 break;
             case "fire":
-                newAccessory.addService(Service.SmokeSensor, name)
+                accessory
+                    .addService(Service.SmokeSensor, name)
                     .getCharacteristic(Characteristic.SmokeDetected)
-                    .on("get", function (callback) {
-                        const status = that.getZoneStatus(type, id);
-
-                        // Save the last state so cached accessory will have a state to load.
-                        if (status !== null) {
-                            newAccessory.context.lastState = status;
-                        } else {
-                            newAccessory.context.lastState = this.formatZoneStatus(type, state);
-                        }
-
-                        that.logMessage(`Getting ${name} (${id}) status... ${status}`, 50);
-
-                        callback(null, status);
-                    });
+                    .on("get", callback => this.getZoneAccessory("add", type, id, name, accessory, state, callback));
                 break;
             default:
                 validAccessory = false;
@@ -425,32 +277,33 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
 
         if (validAccessory) {
             // Set accessory context.
-            newAccessory.context.id   = id;
-            newAccessory.context.type = type;
+            _.set(accessory, "context.id", id);
+            _.set(accessory, "context.type", type);
 
             // Set accessory information.
-            newAccessory.getService(Service.AccessoryInformation)
+            accessory
+                .getService(Service.AccessoryInformation)
                 .setCharacteristic(Characteristic.Manufacturer, make)
                 .setCharacteristic(Characteristic.SerialNumber, id)
                 .setCharacteristic(Characteristic.Model, model);
 
             // When "Identify Accessory" is tapped.
-            newAccessory.on("identify", function (paired, callback) {
-                that.logMessage(`Identifying accessory... ${newAccessory.displayName} (${id})`, 30);
+            accessory.on("identify", (paired, callback) => {
+                this.logMessage(`Identifying new accessory... ${accessory.displayName} (${id})`, 30);
                 callback();
             });
 
             // Make accessory active.
-            this.accessories.push(newAccessory);
+            this.accessories.push(accessory);
 
             // Save accessory to database.
             this.api.registerPlatformAccessories(
                 "homebridge-adt-pulse",
                 "ADTPulse",
-                [newAccessory]
+                [accessory]
             );
         } else {
-            this.logMessage(`Invalid or unsupported accessory... ${type}`, 10);
+            this.logMessage(`Failed to register invalid or unsupported accessory... ${type}`, 10);
         }
     } else {
         this.logMessage(`Skipping duplicate accessory... ${uuid}`, 20);
@@ -475,6 +328,7 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function (type, accessory) {
         const deviceState  = _.get(accessory, "state");
         const deviceStatus = _.get(accessory, "status");
 
+        const deviceKind    = "system";
         const deviceModel   = deviceType.substr(deviceType.indexOf("-") + 2);
         const deviceSummary = `"${deviceState}" / "${deviceStatus}"`.toLowerCase();
 
@@ -487,7 +341,7 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function (type, accessory) {
 
         if (deviceLoaded === undefined) {
             this.addAccessory(
-                "system",
+                deviceKind,
                 deviceId,
                 deviceName,
                 deviceMake,
@@ -501,9 +355,11 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function (type, accessory) {
         const zoneTags  = _.get(accessory, "tags");
         const zoneState = _.get(accessory, "state");
 
+        const zoneMake = "ADT";
+        const zoneKind = zoneTags.substr(zoneTags.indexOf(",") + 1);
+
         const zoneUUID   = UUIDGen.generate(zoneId);
         const zoneLoaded = _.find(this.accessories, ["UUID", zoneUUID]);
-        const zoneKind   = zoneTags.substr(zoneTags.indexOf(",") + 1);
 
         let zoneModel;
 
@@ -536,7 +392,7 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function (type, accessory) {
                 zoneKind,
                 zoneId,
                 zoneName,
-                "ADT",
+                zoneMake,
                 zoneModel,
                 zoneState
             );
@@ -573,9 +429,101 @@ ADTPulsePlatform.prototype.removeAccessory = function (accessory) {
 };
 
 /**
+ * Get device accessory.
+ *
+ * @param {string}   mode      - Can be "add" or "configure".
+ * @param {string}   type      - Can be "target" or "current".
+ * @param {string}   id        - The accessory unique identification code.
+ * @param {string}   name      - The name of the accessory.
+ * @param {Object}   accessory - The accessory.
+ * @param {string}   summary   - The last known summary of the accessory.
+ * @param {function} callback  - Homebridge callback function.
+ *
+ * @since 1.0.0
+ */
+ADTPulsePlatform.prototype.getDeviceAccessory = function (mode, type, id, name, accessory, summary, callback) {
+    const lastState = _.get(accessory, "context.lastState");
+
+    let status = this.getDeviceStatus(true);
+
+    switch (mode) {
+        case "configure":
+            if (status === undefined && lastState.includes("undefined")) {
+                status = this.formatGetDeviceStatus(summary);
+            } else if (status === undefined) {
+                status = this.formatGetDeviceStatus(lastState);
+            } else {
+                _.set(accessory, "context.lastState", this.getDeviceStatus(false));
+            }
+            break;
+        case "add":
+            if (status === undefined) {
+                status = this.formatGetDeviceStatus(summary);
+            }
+
+            _.set(accessory, "context.lastState", summary);
+            break;
+        default:
+            this.logMessage(`Unknown mode ${mode}.`, 10);
+            break;
+    }
+
+    this.logMessage(`Getting ${name} (${id}) ${type} status... ${status}`, 50);
+
+    callback(null, status);
+};
+
+/**
+ * Get zone accessory.
+ *
+ * @param {string}   mode      - Can be "add" or "configure".
+ * @param {string}   type      - Can be "doorWindow", "glass", "motion", "co", or "fire".
+ * @param {string}   id        - The accessory unique identification code.
+ * @param {string}   name      - The name of the accessory.
+ * @param {Object}   accessory - The accessory.
+ * @param {string}   state     - The last known state of the accessory.
+ * @param {function} callback  - Homebridge callback function.
+ *
+ * @since 1.0.0
+ */
+ADTPulsePlatform.prototype.getZoneAccessory = function (mode, type, id, name, accessory, state, callback) {
+    const lastState = _.get(accessory, "context.lastState");
+
+    let status = this.getZoneStatus(type, id, true);
+
+    switch (mode) {
+        case "configure":
+            if (status === undefined && lastState === undefined) {
+                status = this.formatGetZoneStatus(type, state);
+            } else if (status === undefined) {
+                status = this.formatGetZoneStatus(type, lastState);
+            } else {
+                _.set(accessory, "context.lastState", this.getZoneStatus(type, id, false));
+            }
+            break;
+        case "add":
+            if (status === undefined) {
+                status = this.formatGetZoneStatus(type, state);
+            }
+
+            _.set(accessory, "context.lastState", state);
+            break;
+        default:
+            this.logMessage(`Unknown mode ${mode}.`, 10);
+            break;
+    }
+
+    this.logMessage(`Getting ${name} (${id}) status... ${status}`, 50);
+
+    callback(null, status);
+};
+
+/**
  * Sync with portal.
  *
  * Retrieve latest status, add/remove accessories.
+ *
+ * @since 1.0.0
  */
 ADTPulsePlatform.prototype.portalSync = function () {
     clearTimeout(this.portalSyncSession);
@@ -588,7 +536,7 @@ ADTPulsePlatform.prototype.portalSync = function () {
 
         this.theAlarm
             .login()
-            .then((response) => {
+            .then(response => {
                 const version          = _.get(response, "info.version", undefined);
                 const supportedVersion = ["17.0.0-69", "17.0.0-71"];
 
@@ -600,7 +548,7 @@ ADTPulsePlatform.prototype.portalSync = function () {
                 this.sessionVersion = version;
             })
             .then(() => this.theAlarm.performPortalSync())
-            .then(async (syncCode) => {
+            .then(async syncCode => {
                 const theSyncCode = _.get(syncCode, "info.syncCode");
 
                 // Runs if status changes.
@@ -610,7 +558,7 @@ ADTPulsePlatform.prototype.portalSync = function () {
                     // Add or update accessories.
                     await this.theAlarm
                         .getDeviceStatus()
-                        .then(async (device) => {
+                        .then(async device => {
                             const deviceInfo   = _.get(device, "info");
                             const deviceUUID   = UUIDGen.generate("system-1");
                             const deviceLoaded = _.find(this.accessories, ["UUID", deviceUUID]);
@@ -626,13 +574,13 @@ ADTPulsePlatform.prototype.portalSync = function () {
                             }
                         })
                         .then(() => this.theAlarm.getZoneStatus())
-                        .then((zones) => {
+                        .then(zones => {
                             const zonesInfo = _.get(zones, "info");
 
                             // Set latest status into instance.
                             this.zoneStatus = zonesInfo;
 
-                            _.forEach(zonesInfo, async (zone) => {
+                            _.forEach(zonesInfo, async zone => {
                                 const zoneId       = _.get(zone, "id");
                                 const zoneTags     = _.get(zone, "tags");
                                 const zoneType     = zoneTags.substr(zoneTags.indexOf(",") + 1);
@@ -647,36 +595,10 @@ ADTPulsePlatform.prototype.portalSync = function () {
                                 }
                             });
                         })
-                        .catch((error) => {
-                            const action  = _.get(error, "action");
-                            const message = _.get(error, "info.message");
-
-                            switch (action) {
-                                case "GET_DEVICE_INFO":
-                                    this.logMessage("Get device information failed.", 10);
-                                    if (message) this.logMessage(message, 10);
-                                    break;
-                                case "GET_DEVICE_STATUS":
-                                    this.logMessage("Get device status failed.", 10);
-                                    if (message) this.logMessage(message, 10);
-                                    break;
-                                case "GET_ZONE_STATUS":
-                                    this.logMessage("Get zone status failed.", 10);
-                                    if (message) this.logMessage(message, 10);
-                                    break;
-                                case "HOST_UNREACHABLE":
-                                    this.logMessage("Internet disconnected or portal unreachable.", 10);
-                                    if (message) this.logMessage(message, 10);
-                                    break;
-                                default:
-                                    this.logMessage(`Action failed on ${action}.`, 10);
-                                    if (message) this.logMessage(message, 10);
-                                    break;
-                            }
-                        });
+                        .catch(error => this.catchErrors(error));
 
                     // Remove obsolete zones.
-                    _.forEach(this.accessories, async (accessory) => {
+                    _.forEach(this.accessories, async accessory => {
                         const id   = await _.get(accessory, "context.id");
                         const type = await _.get(accessory, "context.type");
                         const zone = _.find(this.zoneStatus, {"id": id});
@@ -694,38 +616,8 @@ ADTPulsePlatform.prototype.portalSync = function () {
             .then(() => {
                 this.isSyncing = false;
             })
-            .catch((error) => {
-                const action  = _.get(error, "action");
-                const message = _.get(error, "info.message");
-
-                switch (action) {
-                    case "LOGIN":
-                        if (message.match(/(Sign In unsuccessful\.)/g)) {
-                            this.failedLoginTimes++;
-                        }
-
-                        // If login fails twice.
-                        if (this.failedLoginTimes >= 2) {
-                            this.logMessage("Login failed more than once. Portal sync terminated.", 10);
-                            if (message) this.logMessage(message, 10);
-                        } else {
-                            this.logMessage("Login failed. Trying again.", 20);
-                            if (message) this.logMessage(message, 20);
-                        }
-                        break;
-                    case "SYNC":
-                        this.logMessage("Portal sync failed. Attempting to fix connection...", 40);
-                        if (message) this.logMessage(message, 40);
-                        break;
-                    case "HOST_UNREACHABLE":
-                        this.logMessage("Internet disconnected or portal unreachable.", 10);
-                        if (message) this.logMessage(message, 10);
-                        break;
-                    default:
-                        this.logMessage(`Action failed on ${action}.`, 10);
-                        if (message) this.logMessage(message, 10);
-                        break;
-                }
+            .catch(error => {
+                this.catchErrors(error);
 
                 this.isSyncing = false;
             });
@@ -747,7 +639,7 @@ ADTPulsePlatform.prototype.portalSync = function () {
 /**
  * Force accessories to update.
  *
- * @param {string} type - Can be "system", "doorWindow", "glass", "motion", "co", "fire".
+ * @param {string} type - Can be "system", "doorWindow", "glass", "motion", "co", or "fire".
  * @param {string} id   - The accessory unique identification code.
  *
  * @since 1.0.0
@@ -755,47 +647,55 @@ ADTPulsePlatform.prototype.portalSync = function () {
 ADTPulsePlatform.prototype.devicePolling = function (type, id) {
     const uuid      = UUIDGen.generate(id);
     const accessory = _.find(this.accessories, ["UUID", uuid]);
+    const name      = _.get(accessory, "displayName");
 
     if (accessory !== undefined) {
-        this.logMessage(`Polling device status for ${accessory.displayName}...`, 50);
+        this.logMessage(`Polling device status for ${name} (${id})...`, 50);
 
         switch (type) {
             case "system":
-                accessory.getService(Service.SecuritySystem)
+                accessory
+                    .getService(Service.SecuritySystem)
                     .getCharacteristic(Characteristic.SecuritySystemTargetState)
                     .getValue();
 
-                accessory.getService(Service.SecuritySystem)
+                accessory
+                    .getService(Service.SecuritySystem)
                     .getCharacteristic(Characteristic.SecuritySystemCurrentState)
                     .getValue();
                 break;
             case "doorWindow":
-                accessory.getService(Service.ContactSensor)
+                accessory
+                    .getService(Service.ContactSensor)
                     .getCharacteristic(Characteristic.ContactSensorState)
                     .getValue();
                 break;
             case "glass":
-                accessory.getService(Service.MotionSensor)
+                accessory
+                    .getService(Service.MotionSensor)
                     .getCharacteristic(Characteristic.MotionDetected)
                     .getValue();
                 break;
             case "motion":
-                accessory.getService(Service.MotionSensor)
+                accessory
+                    .getService(Service.MotionSensor)
                     .getCharacteristic(Characteristic.MotionDetected)
                     .getValue();
                 break;
             case "co":
-                accessory.getService(Service.CarbonMonoxideSensor)
+                accessory
+                    .getService(Service.CarbonMonoxideSensor)
                     .getCharacteristic(Characteristic.CarbonMonoxideDetected)
                     .getValue();
                 break;
             case "fire":
-                accessory.getService(Service.SmokeSensor)
+                accessory
+                    .getService(Service.SmokeSensor)
                     .getCharacteristic(Characteristic.SmokeDetected)
                     .getValue();
                 break;
             default:
-                this.logMessage(`Invalid or unsupported accessory... ${type}`, 10);
+                this.logMessage(`Failed to poll invalid or unsupported accessory... ${type}`, 10);
                 break;
         }
     }
@@ -804,80 +704,48 @@ ADTPulsePlatform.prototype.devicePolling = function (type, id) {
 /**
  * Get device status.
  *
- * @param {string} mode      - Can be "add" or "configure".
- * @param {Object} accessory - The accessory.
- * @param {string} id        - The accessory unique identification code.
- * @param {string} name      - The name of the accessory.
- * @param {string} summary   - The last known summary of the accessory.
+ * @param {boolean} format - Format device status to Homebridge.
  *
- * @returns {(null|number)}
+ * @returns {(undefined|number|string)}
  *
  * @since 1.0.0
  */
-ADTPulsePlatform.prototype.getDeviceStatus = function (mode, accessory, id, name, summary) {
-    const cacheDevice  = this.deviceStatus;
-    const cacheState   = _.get(cacheDevice, "state");
-    const cacheStatus  = _.get(cacheDevice, "status");
-    const cacheSummary = `"${cacheState}" / "${cacheStatus}"`.toLowerCase();
+ADTPulsePlatform.prototype.getDeviceStatus = function (format) {
+    const device  = this.deviceStatus;
+    const state   = _.get(device, "state");
+    const status  = _.get(device, "status");
+    const summary = `"${state}" / "${status}"`.toLowerCase();
 
-    let status = null;
-
-    switch (mode) {
-        case "add":
-            if (!cacheSummary.includes("undefined")) {
-                status                      = this.formatDeviceStatus(cacheSummary);
-                accessory.context.lastState = cacheSummary;
-            } else {
-                status                      = this.formatDeviceStatus(summary);
-                accessory.context.lastState = summary;
-            }
-            break;
-        case "configure":
-            if (cacheSummary.includes("undefined") && summary === undefined) {
-                status                      = this.formatDeviceStatus("\"Disarmed\" / \"All Quiet\"");
-                accessory.context.lastState = "\"disarmed\" / \"all quiet\"";
-            } else if (cacheSummary.includes("undefined")) {
-                status                      = this.formatDeviceStatus(summary);
-                accessory.context.lastState = summary;
-            } else {
-                status                      = this.formatDeviceStatus(cacheSummary);
-                accessory.context.lastState = cacheSummary;
-            }
-            break;
-        default:
-            this.logMessage(`Unknown mode ${mode}.`, 10);
-            break;
-    }
-
-    return status;
+    return (format) ? this.formatGetDeviceStatus(summary) : summary;
 };
 
 /**
- * Format device status.
+ * Format get device status.
  *
- * Converts the device state and device status from ADT Pulse to Homebridge / HAP compatible.
+ * Converts the device state and status from ADT Pulse to Homebridge compatible.
  *
  * @param {string} summary - The last known summary of the accessory.
  *
- * @returns {(null|number)}
+ * @returns {(undefined|number)}
  *
  * @since 1.0.0
  */
-ADTPulsePlatform.prototype.formatDeviceStatus = function (summary) {
-    const lowerCaseSummary = summary.toLowerCase();
-    const disarmed         = lowerCaseSummary.includes("disarmed");
-    const uncleared_alarm  = lowerCaseSummary.includes("uncleared alarm");
-    const alarm            = lowerCaseSummary.includes("alarm");
-    const arm_away         = lowerCaseSummary.includes("armed away");
-    const arm_stay         = lowerCaseSummary.includes("armed stay");
-    const arm_night        = lowerCaseSummary.includes("armed night");
+ADTPulsePlatform.prototype.formatGetDeviceStatus = function (summary) {
+    const lowerCaseSummary   = summary.toLowerCase();
+    const alarm              = lowerCaseSummary.includes("alarm");
+    const uncleared_alarm    = lowerCaseSummary.includes("uncleared alarm");
+    const status_unavailable = lowerCaseSummary.includes("status unavailable");
+    const disarmed           = lowerCaseSummary.includes("disarmed");
+    const arm_away           = lowerCaseSummary.includes("armed away");
+    const arm_stay           = lowerCaseSummary.includes("armed stay");
+    const arm_night          = lowerCaseSummary.includes("armed night");
 
-    let status = null;
+    let status = undefined;
 
-    if (disarmed || uncleared_alarm) {
-        status = Characteristic.SecuritySystemCurrentState.DISARMED;
-    } else if (alarm) {
+    if (alarm && !uncleared_alarm) {
         status = Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
+    } else if (uncleared_alarm || status_unavailable || disarmed) {
+        status = Characteristic.SecuritySystemCurrentState.DISARMED;
     } else if (arm_away) {
         status = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
     } else if (arm_stay) {
@@ -892,208 +760,120 @@ ADTPulsePlatform.prototype.formatDeviceStatus = function (summary) {
 /**
  * Set device status.
  *
- * @param {Object}   accessory - The accessory.
- * @param {number}   arm       - Defined status to change device to.
- * @param {function} callback  - Homebridge callback.
+ * @param {Object} accessory - The accessory.
+ * @param {number} arm       - Defined status to change device to.
  *
  * @since 1.0.0
  */
-ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback) {
+ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm) {
     const name      = _.get(accessory, "displayName");
     const id        = _.get(accessory, "context.id");
-    const lastState = _.get(accessory, "context.lastState", "").toLowerCase();
+    const lastState = _.get(accessory, "context.lastState").toLowerCase();
 
-    this.logMessage(`Setting ${name} (${id}) status to ${arm}...`, 30);
-    this.logMessage(`${name} (${id}) last known state is ${lastState}...`, 40);
+    let oldArmState   = this.formatSetDeviceStatus(lastState, "armState");
+    const newArmState = this.formatSetDeviceStatus(arm, "arm");
 
-    // Setting device status.
+    if (!oldArmState) {
+        this.logMessage(`Unknown lastState context ${lastState}...`, 10);
+        return;
+    }
+
+    this.logMessage(`Setting ${name} (${id}) status from ${oldArmState} to ${newArmState}...`, 30);
+    this.logMessage(`Last state for ${name} (${id}) is ${lastState}...`, 40);
+
     this.theAlarm
         .login()
         .then(async () => {
-            // Check if Disarmed, Armed Away, Armed Stay, or Armed Night.
-            if (lastState.includes("disarmed")) {
-                this.logMessage(`${name} (${id}) is currently disarmed...`, 40);
+            // Attempt to clear the alarms first.
+            if (lastState.includes("alarm")) {
+                if (["carbon monoxide", "fire", "burglary"].includes(lastState)) {
+                    this.logMessage(`Alarm is active! Disarming the ${name} (${id})...`, 20);
 
-                // Clear the alarms first.
-                if (lastState.includes("uncleared alarm")) {
-                    this.logMessage(`Clearing the ${name} (${id}) alarm...`, 40);
-
-                    await this.theAlarm.setDeviceStatus("disarmed+with+alarm", "off");
-                } else if (lastState.includes("alarm")) {
-                    this.logMessage(`Disarming and clearing the ${name} (${id}) alarm...`, 40);
-
-                    await this.theAlarm.setDeviceStatus("disarmed", "off");
-                    await this.theAlarm.setDeviceStatus("disarmed+with+alarm", "off");
+                    await this.theAlarm.setDeviceStatus(oldArmState, "off")
+                        .then(response => this.thenResponse(response))
+                        .catch(error => this.catchErrors(error));
                 }
 
-                switch (arm) {
-                    case Characteristic.SecuritySystemTargetState.AWAY_ARM:
-                        this.logMessage(`Arming the ${name} (${id}) to away...`, 40);
+                this.logMessage(`Alarm is inactive. Clearing the ${name} (${id}) alarm...`, 20);
 
-                        await this.theAlarm.setDeviceStatus("disarmed", "away");
-                        break;
-                    case Characteristic.SecuritySystemTargetState.STAY_ARM:
-                        this.logMessage(`Arming the ${name} (${id}) to stay...`, 40);
+                // Clear the uncleared alarm.
+                await this.theAlarm.setDeviceStatus("disarmed+with+alarm", "off")
+                    .then(response => this.thenResponse(response))
+                    .catch(error => this.catchErrors(error));
 
-                        await this.theAlarm.setDeviceStatus("disarmed", "stay");
-                        break;
-                    case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
-                        this.logMessage(`Arming the ${name} (${id}) to night...`, 40);
+                // Make sure oldArmState is manually reset.
+                oldArmState = "disarmed";
 
-                        await this.theAlarm.setDeviceStatus("disarmed", "night");
-                        break;
-                    case Characteristic.SecuritySystemTargetState.DISARM:
-                        this.logMessage(`Arming the ${name} (${id}) to disarmed...`, 40);
-                        this.logMessage("Already Disarmed. Cannot disarm again.", 20);
-                        break;
-                    default:
-                        this.logMessage(`Unknown arm status ${arm}...`, 10);
-                        break;
+                // If disarm, job is finished.
+                if (newArmState === "off") {
+                    return;
                 }
-            } else if (lastState.includes("armed away")) {
-                this.logMessage(`${name} (${id}) is currently armed away...`, 40);
+            }
 
-                // Clear the alarms first.
-                if (lastState.includes("alarm")) {
-                    this.logMessage(`Disarming and clearing the ${name} (${id}) alarm...`, 40);
+            // Set the device status.
+            if (oldArmState !== newArmState) {
+                const arm_stay  = Characteristic.SecuritySystemTargetState.STAY_ARM;
+                const arm_away  = Characteristic.SecuritySystemTargetState.AWAY_ARM;
+                const arm_night = Characteristic.SecuritySystemTargetState.NIGHT_ARM;
 
-                    await this.theAlarm.setDeviceStatus("away", "off");
-                    await this.theAlarm.setDeviceStatus("disarmed+with+alarm", "off");
-                }
+                // If device is not disarmed, and you are attempting to arm.
+                if (oldArmState !== "disarmed" && [arm_stay, arm_away, arm_night].includes(arm)) {
+                    this.logMessage(`Switching arm modes. Disarming ${name} (${id}) first...`, 30);
 
-                switch (arm) {
-                    case Characteristic.SecuritySystemTargetState.AWAY_ARM:
-                        this.logMessage(`Arming the ${name} (${id}) to away...`, 40);
-                        this.logMessage("Already Armed Away. Cannot arm away again.", 20);
-                        break;
-                    case Characteristic.SecuritySystemTargetState.STAY_ARM:
-                        this.logMessage(`Arming the ${name} (${id}) to stay...`, 40);
+                    await this.theAlarm.setDeviceStatus(oldArmState, "off")
+                        .then(response => this.thenResponse(response))
+                        .catch(error => this.catchErrors(error));
 
-                        await this.theAlarm.setDeviceStatus("away", "off");
-                        await this.theAlarm.setDeviceStatus("disarmed", "stay");
-                        break;
-                    case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
-                        this.logMessage(`Arming the ${name} (${id}) to night...`, 40);
-
-                        await this.theAlarm.setDeviceStatus("away", "off");
-                        await this.theAlarm.setDeviceStatus("disarmed", "night");
-                        break;
-                    case Characteristic.SecuritySystemTargetState.DISARM:
-                        this.logMessage(`Arming the ${name} (${id}) to disarmed...`, 40);
-
-                        await this.theAlarm.setDeviceStatus("away", "off");
-                        break;
-                    default:
-                        this.logMessage(`Unknown arm status ${arm}...`, 10);
-                        break;
-                }
-            } else if (lastState.includes("armed stay")) {
-                this.logMessage(`${name} (${id}) is currently armed stay...`, 40);
-
-                // Clear the alarms first.
-                if (lastState.includes("alarm")) {
-                    this.logMessage(`Disarming and clearing the ${name} (${id}) alarm...`, 40);
-
-                    await this.theAlarm.setDeviceStatus("stay", "off");
-                    await this.theAlarm.setDeviceStatus("disarmed+with+alarm", "off");
+                    // Make sure oldArmState is manually reset.
+                    oldArmState = "disarmed";
                 }
 
-                switch (arm) {
-                    case Characteristic.SecuritySystemTargetState.AWAY_ARM:
-                        this.logMessage(`Arming the ${name} (${id}) to away...`, 40);
-
-                        await this.theAlarm.setDeviceStatus("stay", "off");
-                        await this.theAlarm.setDeviceStatus("disarmed", "away");
-                        break;
-                    case Characteristic.SecuritySystemTargetState.STAY_ARM:
-                        this.logMessage(`Arming the ${name} (${id}) to stay...`, 40);
-                        this.logMessage("Already Armed Stay. Cannot arm stay again.", 20);
-                        break;
-                    case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
-                        this.logMessage(`Arming the ${name} (${id}) to night...`, 40);
-
-                        await this.theAlarm.setDeviceStatus("stay", "off");
-                        await this.theAlarm.setDeviceStatus("disarmed", "night");
-                        break;
-                    case Characteristic.SecuritySystemTargetState.DISARM:
-                        this.logMessage(`Arming the ${name} (${id}) to disarmed...`, 40);
-
-                        await this.theAlarm.setDeviceStatus("stay", "off");
-                        break;
-                    default:
-                        this.logMessage(`Unknown arm status ${arm}...`, 10);
-                        break;
-                }
-            } else if (lastState.includes("armed night")) {
-                this.logMessage(`${name} (${id}) is currently armed night...`, 40);
-
-                // Clear the alarms first.
-                if (lastState.includes("alarm")) {
-                    this.logMessage(`Disarming and clearing the ${name} (${id}) alarm...`, 40);
-
-                    await this.theAlarm.setDeviceStatus("night", "off");
-                    await this.theAlarm.setDeviceStatus("disarmed+with+alarm", "off");
-                }
-
-                switch (arm) {
-                    case Characteristic.SecuritySystemTargetState.AWAY_ARM:
-                        this.logMessage(`Arming the ${name} (${id}) to away...`, 40);
-
-                        await this.theAlarm.setDeviceStatus("night", "off");
-                        await this.theAlarm.setDeviceStatus("disarmed", "away");
-                        break;
-                    case Characteristic.SecuritySystemTargetState.STAY_ARM:
-                        this.logMessage(`Arming the ${name} (${id}) to stay...`, 40);
-
-                        await this.theAlarm.setDeviceStatus("night", "off");
-                        await this.theAlarm.setDeviceStatus("disarmed", "stay");
-                        break;
-                    case Characteristic.SecuritySystemTargetState.NIGHT_ARM:
-                        this.logMessage(`Arming the ${name} (${id}) to night...`, 40);
-                        this.logMessage("Already Armed Night. Cannot arm night again.", 20);
-                        break;
-                    case Characteristic.SecuritySystemTargetState.DISARM:
-                        this.logMessage(`Arming the ${name} (${id}) to disarmed...`, 40);
-
-                        await this.theAlarm.setDeviceStatus("night", "off");
-                        break;
-                    default:
-                        this.logMessage(`Unknown arm status ${arm}...`, 10);
-                        break;
-                }
+                await this.theAlarm.setDeviceStatus(oldArmState, newArmState)
+                    .then(response => this.thenResponse(response))
+                    .catch(error => this.catchErrors(error));
             } else {
-                this.logMessage(`lastState context with "${lastState}" is unknown.`, 10);
+                this.logMessage(`Already set to ${newArmState}. Cannot set from ${oldArmState} to ${newArmState}`, 20);
             }
         })
-        .then(() => {
-            const armString = arm.toString();
-            accessory.getService(Service.SecuritySystem).setCharacteristic(Characteristic.SecuritySystemCurrentState, armString);
+        .catch(error => this.catchErrors(error));
+};
 
-            setTimeout(() => {
-                callback(null);
-            }, this.syncInterval * 1000);
-        })
-        .catch((error) => {
-            const action  = _.get(error, "action");
-            const message = _.get(error, "info.message");
+/**
+ * Format set device status.
+ *
+ * @param {(string|number)} status - The device status.
+ * @param {string}          type   - Can be "armState" or "arm".
+ *
+ * @returns {(null|string)}
+ *
+ * @since 1.0.0
+ */
+ADTPulsePlatform.prototype.formatSetDeviceStatus = function (status, type) {
+    let string = null;
 
-            switch (action) {
-                case "SET_DEVICE_STATUS":
-                    this.logMessage("Set device status failed.", 10);
-                    if (message) this.logMessage(message, 10);
-                    break;
-                case "HOST_UNREACHABLE":
-                    this.logMessage("Internet disconnected or portal unreachable.", 10);
-                    if (message) this.logMessage(message, 10);
-                    break;
-                default:
-                    this.logMessage(`Action failed on ${action}.`, 10);
-                    if (message) this.logMessage(message, 10);
-                    break;
-            }
+    if (type === "armState") {
+        if (status.includes("disarmed")) {
+            string = "disarmed";
+        } else if (status.includes("armed away")) {
+            string = "away";
+        } else if (status.includes("armed stay")) {
+            string = "stay";
+        } else if (status.includes("armed night")) {
+            string = "night";
+        }
+    } else if (type === "arm") {
+        if (status === 0) {
+            string = "stay";
+        } else if (status === 1) {
+            string = "away";
+        } else if (status === 2) {
+            string = "night";
+        } else if (status === 3) {
+            string = "off";
+        }
+    }
 
-            callback(null);
-        });
+    return string;
 };
 
 /**
@@ -1101,39 +881,41 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm, callback)
  *
  * Returns the correct zone status from "this.zoneStatus" array.
  *
- * @param {string} type - Can be "system", "doorWindow", "glass", "motion", "co", "fire".
- * @param {string} id   - The accessory unique identification code.
+ * @param {string}  type   - Can be "system", "doorWindow", "glass", "motion", "co", or "fire".
+ * @param {string}  id     - The accessory unique identification code.
+ * @param {boolean} format - Format device status to Homebridge.
+ *
+ * @returns {(undefined|number|boolean|string)}
  *
  * @since 1.0.0
  */
-ADTPulsePlatform.prototype.getZoneStatus = function (type, id) {
+ADTPulsePlatform.prototype.getZoneStatus = function (type, id, format) {
     const zone  = _.find(this.zoneStatus, ["id", id]);
     const state = _.get(zone, "state");
 
-    // If state is undefined, this function will return null.
-    return this.formatZoneStatus(type, state);
+    return (format) ? this.formatGetZoneStatus(type, state) : state;
 };
 
 /**
- * Format zone status.
+ * Format get zone status.
  *
- * Converts the zone status from ADT Pulse "devStat" icon classes to Homebridge / HAP compatible.
+ * Converts the zone status from ADT Pulse "devStat" icon classes to Homebridge compatible.
  *
- * @param {string} type  - Can be "doorWindow", "glass", "motion", "co", "fire".
- * @param {string} state - Can be "devStatOK", "devStatOpen", "devStatMotion", "devStatTamper", "devStatAlarm".
+ * @param {string} type  - Can be "doorWindow", "glass", "motion", "co", or "fire".
+ * @param {string} state - Can be "devStatOK", "devStatOpen", "devStatMotion", "devStatTamper", or "devStatAlarm".
  *
- * @returns {(null|number)}
+ * @returns {(undefined|number|boolean)}
  *
  * @since 1.0.0
  */
-ADTPulsePlatform.prototype.formatZoneStatus = function (type, state) {
-    let status = null;
+ADTPulsePlatform.prototype.formatGetZoneStatus = function (type, state) {
+    let status = undefined;
 
     switch (type) {
         case "doorWindow":
             if (state === "devStatOK") {
                 status = Characteristic.ContactSensorState.CONTACT_DETECTED;
-            } else if (["devStatOpen", "devStatTamper"].includes(state)) {
+            } else if (state === "devStatOpen" || state === "devStatTamper") {
                 status = Characteristic.ContactSensorState.CONTACT_NOT_DETECTED;
             }
             break;
@@ -1150,7 +932,7 @@ ADTPulsePlatform.prototype.formatZoneStatus = function (type, state) {
             if (state === "devStatOK") {
                 // No motion detected.
                 status = false;
-            } else if (["devStatMotion", "devStatTamper"].includes(state)) {
+            } else if (state === "devStatMotion" || state === "devStatTamper") {
                 // Motion detected.
                 status = true;
             }
@@ -1158,14 +940,14 @@ ADTPulsePlatform.prototype.formatZoneStatus = function (type, state) {
         case "co":
             if (state === "devStatOK") {
                 status = Characteristic.CarbonMonoxideDetected.CO_LEVELS_NORMAL;
-            } else if (["devStatAlarm", "devStatTamper"].includes(state)) {
+            } else if (state === "devStatAlarm" || state === "devStatTamper") {
                 status = Characteristic.CarbonMonoxideDetected.CO_LEVELS_ABNORMAL;
             }
             break;
         case "fire":
             if (state === "devStatOK") {
                 status = Characteristic.SmokeDetected.SMOKE_NOT_DETECTED;
-            } else if (["devStatAlarm", "devStatTamper"].includes(state)) {
+            } else if (state === "devStatAlarm" || state === "devStatTamper") {
                 status = Characteristic.SmokeDetected.SMOKE_DETECTED;
             }
             break;
@@ -1178,12 +960,91 @@ ADTPulsePlatform.prototype.formatZoneStatus = function (type, state) {
 };
 
 /**
+ * Then response (for setDeviceStatus only).
+ *
+ * @param {Object} response - The response object from setDeviceStatus.
+ *
+ * @since 1.0.0
+ */
+ADTPulsePlatform.prototype.thenResponse = function (response) {
+    const forceArm = _.get(response, "info.forceArm");
+
+    if (forceArm) {
+        this.logMessage("Some sensors are open or reporting motion. Forcing Arm...", 20);
+    }
+
+    if (response) {
+        this.logMessage(response, 40);
+    }
+};
+
+/**
+ * Catch errors.
+ *
+ * @param {Object} error - The error response object.
+ *
+ * @since 1.0.0
+ */
+ADTPulsePlatform.prototype.catchErrors = function (error) {
+    const action      = _.get(error, "action");
+    const infoMessage = _.get(error, "info.message");
+
+    let priority;
+
+    switch (action) {
+        case "LOGIN":
+            if (infoMessage.match(/(Sign In unsuccessful\.)/g)) {
+                this.failedLoginTimes++;
+            }
+
+            // If login fails twice.
+            if (this.failedLoginTimes >= 2) {
+                this.logMessage("Login failed more than once. Portal sync terminated.", priority = 10);
+            } else {
+                this.logMessage("Login failed. Trying again...", priority = 20);
+            }
+            break;
+        case "SYNC":
+            this.logMessage("Portal sync failed. Attempting to fix connection...", priority = 40);
+            break;
+        case "GET_DEVICE_INFO":
+            this.logMessage("Get device information failed.", priority = 10);
+            break;
+        case "GET_DEVICE_STATUS":
+            this.logMessage("Get device status failed.", priority = 10);
+            break;
+        case "GET_ZONE_STATUS":
+            this.logMessage("Get zone status failed.", priority = 10);
+            break;
+        case "SET_DEVICE_STATUS":
+            this.logMessage("Set device status failed.", priority = 10);
+            break;
+        case "HOST_UNREACHABLE":
+            this.logMessage("Internet disconnected or portal unreachable. Trying again...", priority = 10);
+            break;
+        default:
+            this.logMessage(`Action failed on ${action}.`, priority = 10);
+            break;
+    }
+
+    if (infoMessage && priority) {
+        this.logMessage(infoMessage, priority);
+    }
+
+    if (error) {
+        this.logMessage(error, 40);
+    }
+};
+
+/**
  * Log message.
  *
  * Manages the messages that will be recorded in the logs.
  *
- * @param {string|Object} content  - The message or content being recorded into the logs.
- * @param {number}        priority - 10 (error), 20 (warn), 30 (info), 40 (debug), 50 (verbose).
+ * @param {(string|Object)} content  - The message or content being recorded into the logs.
+ * @param {number}          priority - 10 (error), 20 (warn), 30 (info), 40 (debug), 50 (verbose).
+ *
+ * @since 1.0.0
  */
 ADTPulsePlatform.prototype.logMessage = function (content, priority) {
     const logLevel = this.logLevel;
@@ -1192,7 +1053,7 @@ ADTPulsePlatform.prototype.logMessage = function (content, priority) {
 
     if (logLevel >= priority) {
         /**
-         * Messages won't be logged if not within specifications.
+         * Messages won't be logged if priority is wrong.
          * Homebridge Debug Mode must be enabled for priorities 40 and 50.
          */
         switch (priority) {

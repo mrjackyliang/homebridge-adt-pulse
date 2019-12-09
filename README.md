@@ -45,9 +45,7 @@ The supported hardware configurations are listed below:
 5. ADT Carbon Monoxide Detector (`co`)
 6. ADT Fire (Smoke/Heat) Detector (`fire`)
 
-If you have a sensor that is unsupported by this plugin, please [request a feature](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new?template=feature_request.md) so I can add support for it into the plugin.
-
-Please mind that I DO NOT have plans to support smart devices or cameras connected to the ADT Pulse service. I recommend using another `homebridge-plugin` or the [official ADT Pulse app](https://www.adt.com/help/faq/adt-pulse/adt-pulse-mobile-app) for that.
+If you have a sensor that is unsupported by this plugin, please [request a feature](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new?template=feature_request.md) so I can add support for it into the plugin. Please mind that I DO NOT have plans to support smart devices or cameras connected to the ADT Pulse service. I recommend using another `homebridge-plugin` for that.
 
 ## Force Arming (Arm Away/Stay/Night)
 Due to the nature of how HomeKit and ADT Pulse processes `setDeviceStatus` commands, this plugin will force arm when it detects active motion or open sensors.
