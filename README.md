@@ -8,7 +8,7 @@ ADT Pulse for Homebridge
 
 This is a Homebridge plugin for ADT Pulse users that allows homeowners to control their security systems and view sensor status through HomeKit. The API relies on the ADT Pulse Web Portal (powered by Icontrol One).
 
-To use this plugin, here are two simple steps you need to follow:
+To use this plugin, here are three simple steps you need to follow:
 1. Run `npm install homebridge-adt-pulse`
 2. Configure the plugin using the configuration below.
 3. Restart Homebridge.
@@ -97,4 +97,4 @@ The script provides an active connection to the ADT Pulse portal. Here are a lis
 ## Credits and Appreciation
 If you would like to show your appreciation for its continued development, you can optionally make a small donation to my company, [CBN Ventures](https://cbnventures.io), through [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=L59Y27M66FG26&source=url).
 
-Also, giving HUGE thanks to [@kevinmkickey](https://github.com/kevinmhickey/adt-pulse) for providing the ADT Pulse script. This plugin would not have happened without this script.
+Also a HUGE thank you to [@kevinmkickey](https://github.com/kevinmhickey/adt-pulse) for providing the ADT Pulse script.
