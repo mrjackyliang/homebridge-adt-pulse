@@ -22,7 +22,7 @@
                 "format": "email",
                 "minLength": 6,
                 "maxLength": 50,
-                "description": "The email address used to login at https://portal.adtpulse.com/"
+                "description": "Email address used for ADT Pulse login"
             },
             "password": {
                 "title": "Password",
@@ -31,7 +31,7 @@
                 "required": true,
                 "minLength": 8,
                 "maxLength": 50,
-                "description": "The password used to login at https://portal.adtpulse.com/"
+                "description": "Password used for ADT Pulse login"
             },
             "logLevel": {
                 "title": "Log Level",
@@ -75,6 +75,29 @@
             }
         }
     },
+    "layout": [
+        {
+            "key": "name"
+        },
+        {
+            "display": "flex",
+            "flex-flow": "row nowrap",
+            "justify-content": "space-between",
+            "items": [
+                {
+                    "key": "username",
+                    "flex": "1 0 0px"
+                },
+                {
+                    "key": "password",
+                    "flex": "1 0 0px"
+                }
+            ]
+        },
+        {
+            "key": "logLevel"
+        }
+    ],
     "form": null,
     "display": null
 }
