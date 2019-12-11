@@ -500,13 +500,15 @@ Pulse.prototype.getZoneStatus = function () {
                         const name  = device["name"];
                         const tags  = device["tags"];
                         const state = device["state"]["icon"];
+                        const index = device["devIndex"];
 
                         /**
-                         * Examples of output.
+                         * Expected output.
                          *
                          * id:    sensor-[integer]
                          * name:  device name
                          * tags:  sensor,[doorWindow,motion,glass,co,fire]
+                         * index: [E][integer]VER[integer]
                          * state: devStatOK (device okay)
                          *        devStatOpen (door/window opened)
                          *        devStatMotion (detected motion)
@@ -514,10 +516,11 @@ Pulse.prototype.getZoneStatus = function () {
                          *        devStatAlarm (detected CO/Smoke)
                          */
                         return {
-                            'id': id,
-                            'name': name,
-                            'tags': tags,
-                            'state': state,
+                            "id": id,
+                            "name": name,
+                            "tags": tags,
+                            "index": index,
+                            "state": state,
                         };
                     });
 

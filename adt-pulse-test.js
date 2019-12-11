@@ -35,7 +35,7 @@ const action   = process.argv.indexOf("--action");
 const debug    = process.argv.indexOf("--debug");
 
 /**
- * Script argument values.
+ * Values for script arguments.
  *
  * @since 1.0.0
  */
@@ -73,20 +73,20 @@ if (debugValue === "true") {
 }
 
 /**
- * Initialize ADT Pulse function.
+ * Initialize main script.
  *
  * @type {Pulse}
  *
  * @since 1.0.0
  */
-let myAlarm = new Pulse({
+let pulse = new Pulse({
     "username": usernameValue,
     "password": passwordValue,
     "debug": debugValue,
 });
 
 /**
- * ADT Pulse actions.
+ * Actions.
  *
  * @since 1.0.0
  */
@@ -94,60 +94,60 @@ switch (actionValue) {
     case "device-status":
         consoleLogger("ADT Pulse Test: Getting device status...");
 
-        myAlarm
+        pulse
             .login()
             .then(login => consoleLogger(login))
-            .then(() => myAlarm.getDeviceStatus())
+            .then(() => pulse.getDeviceStatus())
             .then(status => consoleLogger(status))
-            .then(() => myAlarm.logout())
+            .then(() => pulse.logout())
             .then(logout => consoleLogger(logout))
             .catch(error => consoleLogger(error, true));
         break;
     case "zone-status":
         consoleLogger("ADT Pulse Test: Getting zone status...");
 
-        myAlarm
+        pulse
             .login()
             .then(login => consoleLogger(login))
-            .then(() => myAlarm.getZoneStatus())
+            .then(() => pulse.getZoneStatus())
             .then(statuses => consoleLogger(statuses))
-            .then(() => myAlarm.logout())
+            .then(() => pulse.logout())
             .then(logout => consoleLogger(logout))
             .catch(error => consoleLogger(error, true));
         break;
     case "sync":
         consoleLogger("ADT Pulse Test: Performing portal sync...");
 
-        myAlarm
+        pulse
             .login()
             .then(login => consoleLogger(login))
-            .then(() => myAlarm.performPortalSync())
+            .then(() => pulse.performPortalSync())
             .then(syncCode => consoleLogger(syncCode))
-            .then(() => myAlarm.logout())
+            .then(() => pulse.logout())
             .then(logout => consoleLogger(logout))
             .catch(error => consoleLogger(error, true));
         break;
     case "disarm":
         consoleLogger("ADT Pulse Test: Disarming...");
 
-        myAlarm
+        pulse
             .login()
             .then(login => consoleLogger(login))
-            .then(() => myAlarm.getDeviceStatus())
+            .then(() => pulse.getDeviceStatus())
             .then(status => consoleLogger(status))
             .then(async () => {
                 // setDeviceStatus function may fail because a wrong armState was set.
-                await myAlarm
+                await pulse
                     .setDeviceStatus("away", "off")
                     .then(response => consoleLogger(response))
                     .catch(error => consoleLogger(error, true));
             })
             .then(() => {
                 setTimeout(() => {
-                    myAlarm
+                    pulse
                         .getDeviceStatus()
                         .then(status => consoleLogger(status))
-                        .then(() => myAlarm.logout())
+                        .then(() => pulse.logout())
                         .then(logout => consoleLogger(logout))
                         .catch(error => consoleLogger(error, true));
                 }, 1000);
@@ -157,24 +157,24 @@ switch (actionValue) {
     case "arm-away":
         consoleLogger("ADT Pulse Test: Arming away...");
 
-        myAlarm
+        pulse
             .login()
             .then(login => consoleLogger(login))
-            .then(() => myAlarm.getDeviceStatus())
+            .then(() => pulse.getDeviceStatus())
             .then(status => consoleLogger(status))
             .then(async () => {
                 // setDeviceStatus function may fail because a wrong armState was set.
-                await myAlarm
+                await pulse
                     .setDeviceStatus("disarmed", "away")
                     .then(response => consoleLogger(response))
                     .catch(error => consoleLogger(error, true));
             })
             .then(() => {
                 setTimeout(() => {
-                    myAlarm
+                    pulse
                         .getDeviceStatus()
                         .then(status => consoleLogger(status))
-                        .then(() => myAlarm.logout())
+                        .then(() => pulse.logout())
                         .then(logout => consoleLogger(logout))
                         .catch(error => consoleLogger(error, true));
                 }, 1000);
@@ -184,24 +184,24 @@ switch (actionValue) {
     case "arm-stay":
         consoleLogger("ADT Pulse Test: Arming stay...");
 
-        myAlarm
+        pulse
             .login()
             .then(login => consoleLogger(login))
-            .then(() => myAlarm.getDeviceStatus())
+            .then(() => pulse.getDeviceStatus())
             .then(status => consoleLogger(status))
             .then(async () => {
                 // setDeviceStatus function may fail because a wrong armState was set.
-                await myAlarm
+                await pulse
                     .setDeviceStatus("disarmed", "stay")
                     .then(response => consoleLogger(response))
                     .catch(error => consoleLogger(error, true));
             })
             .then(() => {
                 setTimeout(() => {
-                    myAlarm
+                    pulse
                         .getDeviceStatus()
                         .then(status => consoleLogger(status))
-                        .then(() => myAlarm.logout())
+                        .then(() => pulse.logout())
                         .then(logout => consoleLogger(logout))
                         .catch(error => consoleLogger(error, true));
                 }, 1000);
@@ -211,24 +211,24 @@ switch (actionValue) {
     case "arm-night":
         consoleLogger("ADT Pulse Test: Arming night...");
 
-        myAlarm
+        pulse
             .login()
             .then(login => consoleLogger(login))
-            .then(() => myAlarm.getDeviceStatus())
+            .then(() => pulse.getDeviceStatus())
             .then(status => consoleLogger(status))
             .then(async () => {
                 // setDeviceStatus function may fail because a wrong armState was set.
-                await myAlarm
+                await pulse
                     .setDeviceStatus("disarmed", "night")
                     .then(response => consoleLogger(response))
                     .catch(error => consoleLogger(error, true));
             })
             .then(() => {
                 setTimeout(() => {
-                    myAlarm
+                    pulse
                         .getDeviceStatus()
                         .then(status => consoleLogger(status))
-                        .then(() => myAlarm.logout())
+                        .then(() => pulse.logout())
                         .then(logout => consoleLogger(logout))
                         .catch(error => consoleLogger(error, true));
                 }, 1000);
@@ -241,7 +241,7 @@ switch (actionValue) {
 }
 
 /**
- * Logs respective statuses.
+ * Console logger.
  *
  * @param {(Object|string)} content - The message or content being recorded into the logs.
  * @param {boolean}         error   - If the message logged is an error.
