@@ -151,6 +151,8 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
             const uuid   = UUIDGen.generate(id);
             const sensor = _.find(this.accessories, ["UUID", uuid]);
 
+            console.log("Updating accessory information:", `${name} (${id}) / Zone ${sensorZone}`);
+
             if (sensorZone) {
                 sensor
                     .getService(Service.AccessoryInformation)
@@ -569,7 +571,7 @@ ADTPulsePlatform.prototype.portalSync = function () {
         this.pulse
             .login()
             .then(response => {
-                const version          = _.get(response, "info.version", undefined);
+                const version          = _.get(response, "info.version");
                 const supportedVersion = ["17.0.0-69", "17.0.0-71"];
 
                 if (version !== undefined && !supportedVersion.includes(version) && version !== this.sessionVersion) {
@@ -591,29 +593,36 @@ ADTPulsePlatform.prototype.portalSync = function () {
                     await this.pulse
                         .getDeviceStatus()
                         .then(async device => {
-                            const deviceInfo = _.get(device, "info");
+                            const deviceStatus = _.get(device, "info");
 
                             const deviceUUID   = UUIDGen.generate("system-1");
                             const deviceLoaded = _.find(this.accessories, ["UUID", deviceUUID]);
 
                             // Set latest status into instance.
-                            this.deviceStatus = deviceInfo;
+                            this.deviceStatus = deviceStatus;
 
                             // Add or update device.
                             if (deviceLoaded === undefined) {
-                                await this.prepareAddAccessory("device", deviceInfo);
+                                await this.pulse.getDeviceInformation()
+                                    .then(async device => {
+                                        const deviceInfo       = _.get(device, "info");
+                                        const deviceInfoStatus = _.merge(deviceInfo, deviceStatus);
+
+                                        await this.prepareAddAccessory("device", deviceInfoStatus);
+                                    })
+                                    .catch(error => this.catchErrors(error))
                             } else {
                                 this.devicePolling("system", "system-1");
                             }
                         })
                         .then(() => this.pulse.getZoneStatus())
                         .then(zones => {
-                            const zonesInfo = _.get(zones, "info");
+                            const zoneStatus = _.get(zones, "info");
 
                             // Set latest status into instance.
-                            this.zoneStatus = zonesInfo;
+                            this.zoneStatus = zoneStatus;
 
-                            _.forEach(zonesInfo, async zone => {
+                            _.forEach(zoneStatus, async zone => {
                                 const zoneId   = _.get(zone, "id");
                                 const zoneTags = _.get(zone, "tags");
 
@@ -673,7 +682,7 @@ ADTPulsePlatform.prototype.portalSync = function () {
     }
 
     // Force platform to retrieve latest status.
-    if (!(this.failedLoginTimes >= 2)) {
+    if (!(this.failedLoginTimes >= 3)) {
         this.portalSyncSession = setTimeout(
             () => {
                 this.portalSync();
@@ -816,7 +825,7 @@ ADTPulsePlatform.prototype.formatGetDeviceStatus = function (summary) {
 ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm) {
     const name      = _.get(accessory, "displayName");
     const id        = _.get(accessory, "context.id");
-    const lastState = _.get(accessory, "context.lastState").toLowerCase();
+    const lastState = _.get(accessory, "context.lastState", "").toLowerCase();
 
     let oldArmState   = this.formatSetDeviceStatus(lastState, "armState");
     const newArmState = this.formatSetDeviceStatus(arm, "arm");
@@ -859,7 +868,7 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm) {
             }
 
             // Set the device status.
-            if (oldArmState !== newArmState) {
+            if (oldArmState !== "disarmed" && newArmState !== "off" || oldArmState !== newArmState) {
                 const arm_stay  = Characteristic.SecuritySystemTargetState.STAY_ARM;
                 const arm_away  = Characteristic.SecuritySystemTargetState.AWAY_ARM;
                 const arm_night = Characteristic.SecuritySystemTargetState.NIGHT_ARM;
@@ -1046,7 +1055,7 @@ ADTPulsePlatform.prototype.catchErrors = function (error) {
             }
 
             // If login fails twice.
-            if (this.failedLoginTimes >= 2) {
+            if (this.failedLoginTimes >= 3) {
                 this.logMessage("Login failed more than once. Portal sync terminated.", priority = 10);
             } else {
                 this.logMessage("Login failed. Trying again...", priority = 20);

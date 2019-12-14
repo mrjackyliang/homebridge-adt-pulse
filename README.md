@@ -10,10 +10,10 @@ This is a Homebridge plugin for ADT Pulse users that allows homeowners to contro
 
 To use this plugin, here are three simple steps you need to follow:
 1. Run `npm install homebridge-adt-pulse`
-2. Configure the plugin using the configuration below.
+2. Configure the plugin using the [configuration example](#configuration).
 3. Restart Homebridge.
 
-You can also search `adt-pulse` using [Onzu's Homebridge Config UI](https://github.com/oznu/homebridge-config-ui-x). Then proceed to configure the plugin using the included settings in the plugin page.
+You can also search `adt-pulse` using [HOOBS](https://github.com/mkellsy/homebridge-config-ui) or [Onzu's Homebridge Config UI](https://github.com/oznu/homebridge-config-ui-x). Then proceed to configure the plugin using the included settings in the plugin page.
 
 ## Configuration
 When configuring this plugin, simply add the platform to your existing `config.json` file. Mind that the `platform` name must always be `ADTPulse`.
@@ -53,12 +53,12 @@ Please mind that I DO NOT have plans to support third-party devices connected to
 ## Force Arming (Arm Away/Stay/Night)
 Due to the nature of how HomeKit and ADT Pulse processes `setDeviceStatus` commands, this plugin will force arm when it detects active motion or open sensors.
 
-__Without force arm, arm away/stay/night may stall and reset to Disarm with no error response.__
+__Without force arm, arm away/stay/night may stall and reset to Disarm with no errors.__
 
 Before arming, please check the status of your Home (instructions below), as HomeKit will not check if your devices are in an active state.
 
-1. Open Home app.
-2. Tap __Details >__ (usually above __Favorite Accessories__).
+1. Open the Home app.
+2. Tap the Status Details (listed in the Home tab _below_ the title).
 3. View the __ATTENTION__ area of your home.
 
 ## Arm Night Support
@@ -85,7 +85,7 @@ There is a test script included in the package that performs specific actions us
 
 This script requires your username, password, and an action type.
 ```shell script
-node adt-pulse-test.js --username email@email.com --password 1234567890 --action [device-status,zone-status,sync,disarm,arm-away,arm-stay,arm-night] --debug [true,false]
+node adt-pulse-test --username email@email.com --password 1234567890 --action [device-information,device-status,zone-status,sync,disarm,arm-away,arm-stay,arm-night] --debug [true,false]
 ```
 
 ## Developer Information

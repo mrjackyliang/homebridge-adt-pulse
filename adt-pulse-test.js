@@ -6,7 +6,7 @@
  * Arguments:
  *     --username email@email.com
  *     --password 1234567890
- *     --action   [device-status,zone-status,sync,disarm,arm-away,arm-stay,arm-night]
+ *     --action   [device-information,device-status,zone-status,sync,disarm,arm-away,arm-stay,arm-night]
  *     --debug    [true,false]
  *
  * Usage:
@@ -91,6 +91,18 @@ let pulse = new Pulse({
  * @since 1.0.0
  */
 switch (actionValue) {
+    case "device-information":
+        consoleLogger("ADT Pulse Test: Getting device information...");
+
+        pulse
+            .login()
+            .then(login => consoleLogger(login))
+            .then(() => pulse.getDeviceInformation())
+            .then(information => consoleLogger(information))
+            .then(() => pulse.logout())
+            .then(logout => consoleLogger(logout))
+            .catch(error => consoleLogger(error, true));
+        break;
     case "device-status":
         consoleLogger("ADT Pulse Test: Getting device status...");
 
@@ -136,7 +148,9 @@ switch (actionValue) {
             .then(() => pulse.getDeviceStatus())
             .then(status => consoleLogger(status))
             .then(async () => {
-                // setDeviceStatus function may fail because a wrong armState was set.
+                /**
+                 * setDeviceStatus function may fail because a wrong armState was set.
+                 */
                 await pulse
                     .setDeviceStatus("away", "off")
                     .then(response => consoleLogger(response))
@@ -163,7 +177,9 @@ switch (actionValue) {
             .then(() => pulse.getDeviceStatus())
             .then(status => consoleLogger(status))
             .then(async () => {
-                // setDeviceStatus function may fail because a wrong armState was set.
+                /**
+                 * setDeviceStatus function may fail because a wrong armState was set.
+                 */
                 await pulse
                     .setDeviceStatus("disarmed", "away")
                     .then(response => consoleLogger(response))
@@ -190,7 +206,9 @@ switch (actionValue) {
             .then(() => pulse.getDeviceStatus())
             .then(status => consoleLogger(status))
             .then(async () => {
-                // setDeviceStatus function may fail because a wrong armState was set.
+                /**
+                 * setDeviceStatus function may fail because a wrong armState was set.
+                 */
                 await pulse
                     .setDeviceStatus("disarmed", "stay")
                     .then(response => consoleLogger(response))
@@ -217,7 +235,9 @@ switch (actionValue) {
             .then(() => pulse.getDeviceStatus())
             .then(status => consoleLogger(status))
             .then(async () => {
-                // setDeviceStatus function may fail because a wrong armState was set.
+                /**
+                 * setDeviceStatus function may fail because a wrong armState was set.
+                 */
                 await pulse
                     .setDeviceStatus("disarmed", "night")
                     .then(response => consoleLogger(response))
