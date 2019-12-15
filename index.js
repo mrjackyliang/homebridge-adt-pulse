@@ -868,7 +868,9 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm) {
             }
 
             // Set the device status.
-            if (oldArmState !== "disarmed" && newArmState !== "off" || oldArmState !== newArmState) {
+            if (oldArmState === newArmState || (oldArmState === "disarmed" && newArmState === "off")) {
+                this.logMessage(`Already set to ${newArmState}. Cannot set from ${oldArmState} to ${newArmState}.`, 20);
+            } else {
                 const arm_stay  = Characteristic.SecuritySystemTargetState.STAY_ARM;
                 const arm_away  = Characteristic.SecuritySystemTargetState.AWAY_ARM;
                 const arm_night = Characteristic.SecuritySystemTargetState.NIGHT_ARM;
@@ -888,8 +890,6 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm) {
                 await this.pulse.setDeviceStatus(oldArmState, newArmState)
                     .then(response => this.thenResponse(response))
                     .catch(error => this.catchErrors(error));
-            } else {
-                this.logMessage(`Already set to ${newArmState}. Cannot set from ${oldArmState} to ${newArmState}.`, 20);
             }
         })
         .catch(error => this.catchErrors(error));
