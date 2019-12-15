@@ -113,17 +113,6 @@ function ADTPulsePlatform(log, config, api) {
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
-    /**
-     * Fix: Names must start and end with a letter or number.
-     *
-     * TODO Remove in future versions.
-     *
-     * @type {string}
-     *
-     * @since 1.1.1
-     */
-    accessory.displayName = accessory.displayName.replace(/[()]/gi, "");
-
     const name      = _.get(accessory, "displayName");
     const id        = _.get(accessory, "context.id");
     const type      = _.get(accessory, "context.type");
@@ -134,32 +123,6 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
 
     // Always reachable.
     accessory.updateReachability(true);
-
-    /**
-     * Workaround: Update accessory zone information.
-     *
-     * TODO Remove in future versions.
-     *
-     * @since 1.5.2
-     */
-    setTimeout(() => {
-        if (id.includes("sensor")) {
-            const sensorAccessory = _.find(this.zoneStatus, ["id", id]);
-            const sensorIndex     = _.get(sensorAccessory, "index", "");
-            const sensorZone      = sensorIndex.replace(/((E?)([0-9]{1,2}))((VER)([0-9]+))/g, "$3");
-
-            const uuid   = UUIDGen.generate(id);
-            const sensor = _.find(this.accessories, ["UUID", uuid]);
-
-            console.log("Updating accessory information:", `${name} (${id}) / Zone ${sensorZone}`);
-
-            if (sensorZone) {
-                sensor
-                    .getService(Service.AccessoryInformation)
-                    .updateCharacteristic(Characteristic.SerialNumber, `${id} (${sensorZone})`);
-            }
-        }
-    }, 20000);
 
     // When "Identify Accessory" is tapped.
     accessory.on("identify", (paired, callback) => {
@@ -630,18 +593,6 @@ ADTPulsePlatform.prototype.portalSync = function () {
 
                                 const deviceUUID   = UUIDGen.generate(zoneId);
                                 const deviceLoaded = _.find(this.accessories, ["UUID", deviceUUID]);
-
-                                /**
-                                 * Debug: Discover bug related to broken zone tags.
-                                 *
-                                 * TODO Remove in future versions.
-                                 *
-                                 * @since 1.5.2
-                                 */
-                                if (!["doorWindow", "glass", "motion", "co", "fire"].includes(zoneType)) {
-                                    this.logMessage(zone, 10);
-                                    this.logMessage("Help me fix this issue! Create a bug report on GitHub with the logs above.", 10);
-                                }
 
                                 // Add or update zone.
                                 if (deviceLoaded === undefined) {

@@ -62,7 +62,7 @@ Before arming, please check the status of your Home (instructions below), as Hom
 3. View the __ATTENTION__ area of your home.
 
 ## Arm Night Support
-As for ADT Pulse systems, __Arm Night__ is only available for use through the panel itself. Although, it is not visible on the Web Portal or the mobile app, you can still place your system in __Arm Night__ mode with this plugin.
+As for ADT Pulse systems, __Arm Night__ is only available for use through the panel itself. Although it is not visible on the Web Portal or the mobile app, you can still place your system in __Arm Night__ mode with this plugin.
 
 Because of the force arming procedure (above), __please make sure no devices are open or reporting motion__ as this may render the __Arm Night__ mode less effective.
 
@@ -89,7 +89,7 @@ node adt-pulse-test --username email@email.com --password 1234567890 --action [d
 ```
 
 ## Developer Information
-The script provides an active connection to the ADT Pulse portal. Here are a list of must knows, just in case you might want to debug (or improve) the plugin:
+The script provides an active connection to the ADT Pulse portal. Here is a list of must-knows, just in case you might want to debug (or improve) the plugin:
 
 1. Device and zone statuses are polled every __3 seconds__. If there are more than 2 login failures, device polling and portal sync stops.
 2. Supported versions are `17.0.0-69` and `17.0.0-71`. If this plugin does not support either version, a warning will appear in the logs. Please [create a bug report](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new?template=bug_report.md) to let me know!
