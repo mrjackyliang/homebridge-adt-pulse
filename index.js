@@ -354,7 +354,7 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function (type, accessory) {
 
         const zoneMake = "ADT";
         const zoneKind = zoneTags.substr(zoneTags.indexOf(",") + 1);
-        const zoneArea = zoneIndex.replace(/((E?)([1-9]{1,2}))((VER)([1-9]+))/g, "$3");
+        const zoneArea = zoneIndex.replace(/((E?)([0-9]{1,2}))((VER)([1-9]+))/g, "$3");
 
         const zoneUUID   = UUIDGen.generate(zoneId);
         const zoneLoaded = _.find(this.accessories, ["UUID", zoneUUID]);
