@@ -11,6 +11,17 @@ let Accessory,
     Characteristic,
     UUIDGen;
 
+// noinspection JSUnusedLocalSymbols,SpellCheckingInspection
+/**
+ * Debug: Send logs to "https://console.re" for anonymous debugging.
+ *
+ * TODO Remove in future versions.
+ *
+ * @since 1.6.2
+ */
+let consolere = require('console-remote-client')
+    .connect('console.re','80','nsJJTsUAB6AUwcCNc4rzuPwcW9JAuCeXG8DeGtVypRpT2gFw');
+
 /**
  * Register the platform plugin.
  *
@@ -50,8 +61,8 @@ function ADTPulsePlatform(log, config, api) {
 
     // Where the security panel and sensors are held.
     this.accessories  = [];
-    this.deviceStatus = [];
-    this.zoneStatus   = [];
+    this.deviceStatus = {};
+    this.zoneStatus   = {};
 
     // Prevent account lockout.
     this.failedLoginTimes = 0;
@@ -136,13 +147,7 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
                 .getService(Service.SecuritySystem)
                 .getCharacteristic(Characteristic.SecuritySystemTargetState)
                 .on("get", callback => this.getDeviceAccessory("configure", "target", id, name, accessory, lastState, callback))
-                .on("set", (state, callback) => {
-                    this.setDeviceStatus(accessory, state);
-
-                    setTimeout(() => {
-                        callback(null, state);
-                    }, this.setDeviceTimeout * 1000);
-                });
+                .on("set", (state, callback) => this.setDeviceAccessory(accessory, state, callback));
 
             accessory
                 .getService(Service.SecuritySystem)
@@ -220,13 +225,7 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
                     .getService(Service.SecuritySystem)
                     .getCharacteristic(Characteristic.SecuritySystemTargetState)
                     .on("get", callback => this.getDeviceAccessory("add", "target", id, name, accessory, state, callback))
-                    .on("set", (state, callback) => {
-                        this.setDeviceStatus(accessory, state);
-
-                        setTimeout(() => {
-                            callback(null, state);
-                        }, this.setDeviceTimeout * 1000);
-                    });
+                    .on("set", (state, callback) => this.setDeviceAccessory(accessory, state, callback));
 
                 accessory
                     .getService(Service.SecuritySystem)
@@ -354,7 +353,7 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function (type, accessory) {
 
         const zoneMake = "ADT";
         const zoneKind = zoneTags.substr(zoneTags.indexOf(",") + 1);
-        const zoneArea = zoneIndex.replace(/((E?)([0-9]{1,2}))((VER)([1-9]+))/g, "$3");
+        const zoneArea = zoneIndex.replace(/((E?)([0-9]{1,2}))((VER)([0-9]+))/g, "$3");
 
         const zoneUUID   = UUIDGen.generate(zoneId);
         const zoneLoaded = _.find(this.accessories, ["UUID", zoneUUID]);
@@ -445,7 +444,7 @@ ADTPulsePlatform.prototype.getDeviceAccessory = function (mode, type, id, name, 
 
     switch (mode) {
         case "configure":
-            if (status === undefined && lastState.includes("undefined")) {
+            if (status === undefined && lastState === undefined) {
                 status = this.formatGetDeviceStatus(summary);
             } else if (status === undefined) {
                 status = this.formatGetDeviceStatus(lastState);
@@ -468,6 +467,23 @@ ADTPulsePlatform.prototype.getDeviceAccessory = function (mode, type, id, name, 
     this.logMessage(`Getting ${name} (${id}) ${type} status... ${status}`, 50);
 
     callback(null, status);
+};
+
+/**
+ * Set device accessory.
+ *
+ * @param {Object}   accessory - The accessory.
+ * @param {number}   state     - The state that accessory is being set to.
+ * @param {function} callback  - Homebridge callback function.
+ *
+ * @since 1.0.0
+ */
+ADTPulsePlatform.prototype.setDeviceAccessory = function (accessory, state, callback) {
+    this.setDeviceStatus(accessory, state);
+
+    setTimeout(() => {
+        callback(null, state);
+    }, this.setDeviceTimeout * 1000);
 };
 
 /**
@@ -561,6 +577,20 @@ ADTPulsePlatform.prototype.portalSync = function () {
                             const deviceUUID   = UUIDGen.generate("system-1");
                             const deviceLoaded = _.find(this.accessories, ["UUID", deviceUUID]);
 
+                            /**
+                             * Debug: Discover bug related to wrong armState logs.
+                             *
+                             * TODO Remove in future releases.
+                             *
+                             * @since 1.6.2
+                             */
+                            if (_.get(this.deviceStatus, "summary") !== _.get(deviceStatus, "summary")) {
+                                console.log("");
+                                console.re.debug("old status:", this.deviceStatus);
+                                console.re.debug("new status:", deviceStatus);
+                                console.log("");
+                            }
+
                             // Set latest status into instance.
                             this.deviceStatus = deviceStatus;
 
@@ -593,6 +623,19 @@ ADTPulsePlatform.prototype.portalSync = function () {
 
                                 const deviceUUID   = UUIDGen.generate(zoneId);
                                 const deviceLoaded = _.find(this.accessories, ["UUID", deviceUUID]);
+
+                                /**
+                                 * Debug: Discover bug related to broken zone tags.
+                                 *
+                                 * TODO Remove in future versions.
+                                 *
+                                 * @since 1.6.2
+                                 */
+                                if (!["doorWindow", "glass", "motion", "co", "fire"].includes(zoneType)) {
+                                    console.log("");
+                                    console.re.debug("Unknown zone:", zone);
+                                    console.log("");
+                                }
 
                                 // Add or update zone.
                                 if (deviceLoaded === undefined) {
@@ -995,7 +1038,7 @@ ADTPulsePlatform.prototype.thenResponse = function (response) {
  */
 ADTPulsePlatform.prototype.catchErrors = function (error) {
     const action      = _.get(error, "action");
-    const infoMessage = _.get(error, "info.message");
+    const infoMessage = _.get(error, "info.message", "");
 
     let priority;
 

@@ -374,6 +374,7 @@ Pulse.prototype.getDeviceStatus = function () {
                         "action": "GET_DEVICE_STATUS",
                         "success": true,
                         "info": {
+                            "summary": textSummary,
                             "state": theState,
                             "status": theStatus,
                         },
