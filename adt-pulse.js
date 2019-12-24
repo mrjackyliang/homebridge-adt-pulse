@@ -97,7 +97,7 @@ Pulse.prototype.login = function () {
                     } else {
                         authenticated = false;
 
-                        const version = responsePath.match(regex)[2];
+                        const version = responsePath.replace(regex, "$2");
 
                         // Saves last known version for reuse later.
                         lastKnownVersion = version;
@@ -139,7 +139,9 @@ Pulse.prototype.login = function () {
                                 } else {
                                     authenticated = true;
 
-                                    const siteId = body.match(/(\?networkid=)(.*)(&partner=adt)/)[2];
+                                    const $           = cheerio.load(body);
+                                    const signoutLink = $("#p_signout1").attr("href");
+                                    const siteId      = (signoutLink !== undefined) ? signoutLink.replace(/(.*)(networkid=)(.*)(&)(.*)/g, "$3") : undefined;
 
                                     // Saves last known site ID for reuse later.
                                     lastKnownSiteId = siteId;
@@ -343,8 +345,8 @@ Pulse.prototype.getDeviceStatus = function () {
                 } else {
                     const $           = cheerio.load(body);
                     const textSummary = $("#divOrbTextSummary span").text();
-                    const theState    = textSummary.substr(0, textSummary.indexOf("."));
-                    const theStatus   = textSummary.substr(textSummary.indexOf(".") + 2).slice(0, -1);
+                    const theState    = textSummary.replace(/([A-Z a-z ]+)(\.[  ]?)([A-Z a-z 0-9]*)(\.?)(.*)/g, "$1");
+                    const theStatus   = textSummary.replace(/([A-Z a-z ]+)(\.[  ]?)([A-Z a-z 0-9]*)(\.?)(.*)/g, "$3");
 
                     this.consoleLogger("ADT Pulse: Get device status success.", "log");
 
@@ -459,7 +461,7 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
                 } else {
                     const $       = cheerio.load(body);
                     const onClick = $("#arm_button_1").attr("onclick");
-                    const satCode = (onClick !== undefined) ? onClick.split("sat=")[1].split("&")[0] : undefined;
+                    const satCode = (onClick !== undefined) ? onClick.replace(/(.*)(\?sat=)([0-9a-z-]*)(&href=)(.*)/g, "$3") : undefined;
 
                     const forceUrl = `https://portal.adtpulse.com/myhome/${lastKnownVersion}/quickcontrol/serv/RunRRACommand`;
                     const forceArg = `?sat=${satCode}&href=rest/adt/ui/client/security/setForceArm&armstate=forcearm&arm=${arm}`;
@@ -575,18 +577,19 @@ Pulse.prototype.getZoneStatus = function () {
                         },
                     });
                 } else {
-                    const allDevices = JSON.parse(body)["items"];
+                    const rawJson    = JSON.parse(body);
+                    const allDevices = _.get(rawJson, "items");
                     const sensors    = _.filter(allDevices, function (device) {
-                        return device["id"].indexOf("sensor-") > -1;
+                        return _.get(device, "id").indexOf("sensor-") > -1;
                     });
 
                     // Only sensors are supported.
                     const output = _.map(sensors, function (device) {
-                        const id    = device["id"];
-                        const name  = device["name"];
-                        const tags  = device["tags"];
-                        const state = device["state"]["icon"];
-                        const index = device["devIndex"];
+                        const id    = _.get(device, "id");
+                        const name  = _.get(device, "name");
+                        const tags  = _.get(device, "tags");
+                        const state = _.get(device, "state.icon");
+                        const index = _.get(device, "devIndex");
 
                         /**
                          * Expected output.

@@ -20,7 +20,16 @@ let Accessory,
  * @since 1.6.2
  */
 let consolere = require('console-remote-client')
-    .connect('console.re','80','nsJJTsUAB6AUwcCNc4rzuPwcW9JAuCeXG8DeGtVypRpT2gFw');
+    .connect('console.re', '80', 'vHeMZvGjaBWjN29b8PARrCpBNtHTWYteMGFejmxDwgUpan9SMU');
+
+/**
+ * Debug: 10-digit random identifier to group logs.
+ *
+ * TODO Remove in future versions.
+ *
+ * @since 1.6.3
+ */
+const randomIdentifier = Math.floor(Math.random() * 9999999999);
 
 /**
  * Register the platform plugin.
@@ -572,27 +581,45 @@ ADTPulsePlatform.prototype.portalSync = function () {
                     await this.pulse
                         .getDeviceStatus()
                         .then(async device => {
-                            const deviceStatus = _.get(device, "info");
+                            const deviceStatus  = _.get(device, "info");
+                            const deviceSummary = _.get(deviceStatus, "summary");
 
                             const deviceUUID   = UUIDGen.generate("system-1");
                             const deviceLoaded = _.find(this.accessories, ["UUID", deviceUUID]);
 
                             /**
-                             * Debug: Discover bug related to wrong armState logs.
+                             * Debug: Discover bug related to weird armState logs.
                              *
                              * TODO Remove in future releases.
                              *
                              * @since 1.6.2
                              */
-                            if (_.get(this.deviceStatus, "summary") !== _.get(deviceStatus, "summary")) {
+                            const oldStatus1 = _.get(this.deviceStatus, "summary");
+                            const oldStatus2 = _.get(this.deviceStatus, "state");
+                            const oldStatus3 = _.get(this.deviceStatus, "status");
+                            const newStatus1 = _.get(deviceStatus, "summary");
+                            const newStatus2 = _.get(deviceStatus, "state");
+                            const newStatus3 = _.get(deviceStatus, "status");
+                            if (oldStatus1 !== newStatus1) {
                                 console.log("");
-                                console.re.debug("old status:", this.deviceStatus);
-                                console.re.debug("new status:", deviceStatus);
+                                console.re.debug(`⚠️ ========== STATUS CHANGE - START ${randomIdentifier} ========== ⚠️`);
+                                console.re.debug(`old summary: ${oldStatus1}`);
+                                console.re.debug(`old state: ${oldStatus2}`);
+                                console.re.debug(`old status: ${oldStatus3}`);
+                                console.re.debug(`new summary: ${newStatus1}`);
+                                console.re.debug(`new state: ${newStatus2}`);
+                                console.re.debug(`new status: ${newStatus3}`);
+                                console.re.debug(`⚠️ ========== STATUS CHANGE --- END ${randomIdentifier} ========== ⚠️`);
                                 console.log("");
                             }
 
                             // Set latest status into instance.
                             this.deviceStatus = deviceStatus;
+
+                            // Do not poll or add offline device.
+                            if (deviceSummary.includes("Status Unavailable")) {
+                                return;
+                            }
 
                             // Add or update device.
                             if (deviceLoaded === undefined) {
@@ -616,25 +643,18 @@ ADTPulsePlatform.prototype.portalSync = function () {
                             this.zoneStatus = zoneStatus;
 
                             _.forEach(zoneStatus, async zone => {
-                                const zoneId   = _.get(zone, "id");
-                                const zoneTags = _.get(zone, "tags");
+                                const zoneId    = _.get(zone, "id");
+                                const zoneTags  = _.get(zone, "tags");
+                                const zoneState = _.get(zone, "state");
 
                                 const zoneType = zoneTags.substr(zoneTags.indexOf(",") + 1);
 
                                 const deviceUUID   = UUIDGen.generate(zoneId);
                                 const deviceLoaded = _.find(this.accessories, ["UUID", deviceUUID]);
 
-                                /**
-                                 * Debug: Discover bug related to broken zone tags.
-                                 *
-                                 * TODO Remove in future versions.
-                                 *
-                                 * @since 1.6.2
-                                 */
-                                if (!["doorWindow", "glass", "motion", "co", "fire"].includes(zoneType)) {
-                                    console.log("");
-                                    console.re.debug("Unknown zone:", zone);
-                                    console.log("");
+                                // Do not poll or add offline zone.
+                                if (zoneTags === "sensor" && zoneState === "devStatUnknown") {
+                                    return;
                                 }
 
                                 // Add or update zone.
@@ -824,13 +844,32 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm) {
     let oldArmState   = this.formatSetDeviceStatus(lastState, "armState");
     const newArmState = this.formatSetDeviceStatus(arm, "arm");
 
-    if (!oldArmState) {
-        this.logMessage(`Unknown lastState context ${lastState}...`, 10);
-        return;
-    }
+    /**
+     * Debug: Discover bug related to weird armState logs.
+     *
+     * TODO Remove in future releases.
+     *
+     * @since 1.6.3
+     */
+    console.log("");
+    console.re.debug(`🚨 ========== SET DEVICE ---- START ${randomIdentifier} ========== 🚨`);
+    console.re.debug(`lastState: ${lastState}`);
+    console.re.debug(`arm: ${arm}`);
+    console.re.debug(`oldArmState: ${oldArmState}`);
+    console.re.debug(`newArmState: ${newArmState}`);
+    console.re.debug(`🚨 ========== SET DEVICE ------ END ${randomIdentifier} ========== 🚨`);
+    console.log("");
 
     this.logMessage(`Setting ${name} (${id}) status from ${oldArmState} to ${newArmState}...`, 30);
     this.logMessage(`Last state for ${name} (${id}) is ${lastState}...`, 40);
+
+    if (lastState.includes("status unavailable")) {
+        this.logMessage(`Unable to set ${name} (${id}) status. The ADT Pulse Gateway is offline.`, 10);
+        return;
+    } else if (!oldArmState) {
+        this.logMessage(`Unknown lastState context ${lastState}...`, 10);
+        return;
+    }
 
     this.pulse
         .login()
