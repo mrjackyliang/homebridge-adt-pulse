@@ -29,7 +29,7 @@ let consolere = require('console-remote-client')
  *
  * @since 1.6.3
  */
-const randomIdentifier = Math.floor(Math.random() * 9999999999);
+const randomIdentifier = Math.floor(Math.random() * (9999999999 - 1000000000 + 1) + 1000000000);
 
 /**
  * Register the platform plugin.
@@ -114,6 +114,27 @@ function ADTPulsePlatform(log, config, api) {
         "debug": (this.logLevel >= 40),
     });
 
+    /**
+     * Debug: Get system information.
+     *
+     * TODO Remove in future releases.
+     *
+     * @since 1.6.4
+     */
+    const systemArch     = _.get(process, "arch");
+    const systemPlatform = _.get(process, "platform");
+    const nodeVer        = _.get(process, "versions.node");
+    const homebridgeVer  = _.get(api, "serverVersion");
+    const pluginVer      = _.get(process, "env.npm_package_version");
+    console.log("");
+    console.re.debug(`✅ ========== FINISH LAUNCH - START ${randomIdentifier} ========== ✅`);
+    console.re.debug(`running on: ${systemPlatform} (${systemArch})`);
+    console.re.debug(`node version: ${nodeVer}`);
+    console.re.debug(`homebridge version: ${homebridgeVer}`);
+    console.re.debug(`plugin version: ${pluginVer} `);
+    console.re.debug(`✅️ ========== FINISH LAUNCH --- END ${randomIdentifier} ========== ✅`);
+    console.log("");
+
     if (api) {
         // Register new accessories via this object.
         this.api = api;
@@ -143,6 +164,17 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
 
     // Always reachable.
     accessory.updateReachability(true);
+
+    /**
+     * Workaround: Update accessory information.
+     *
+     * TODO Remove in future versions.
+     *
+     * @since 1.6.4
+     */
+    accessory
+        .getService(Service.AccessoryInformation)
+        .updateCharacteristic(Characteristic.FirmwareRevision, "1.0");
 
     // When "Identify Accessory" is tapped.
     accessory.on("identify", (paired, callback) => {
@@ -205,13 +237,13 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
 /**
  * Add accessory.
  *
- * @param {string} type  - Can be "system", "doorWindow", "glass", "motion", "co", or "fire".
- * @param {string} id    - The accessory unique identification code.
- * @param {string} name  - The name of the accessory.
- * @param {string} make  - The manufacturer of the accessory.
- * @param {string} model - The model of the accessory.
- * @param {string} zone  - The zone of the accessory.
- * @param {string} state - The last known state of the accessory.
+ * @param {string}             type  - Can be "system", "doorWindow", "glass", "motion", "co", or "fire".
+ * @param {string}             id    - The accessory unique identification code.
+ * @param {string}             name  - The name of the accessory.
+ * @param {string}             make  - The manufacturer of the accessory.
+ * @param {string}             model - The model of the accessory.
+ * @param {(undefined|string)} zone  - The zone of the accessory.
+ * @param {string}             state - The last known state of the accessory.
  *
  * @since 1.0.0
  */
@@ -290,7 +322,8 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
                 .getService(Service.AccessoryInformation)
                 .setCharacteristic(Characteristic.Manufacturer, make)
                 .setCharacteristic(Characteristic.SerialNumber, (zone) ? `${id} (${zone})` : id)
-                .setCharacteristic(Characteristic.Model, model);
+                .setCharacteristic(Characteristic.Model, model)
+                .setCharacteristic(Characteristic.FirmwareRevision, "1.0");
 
             // When "Identify Accessory" is tapped.
             accessory.on("identify", (paired, callback) => {
@@ -564,6 +597,20 @@ ADTPulsePlatform.prototype.portalSync = function () {
 
                 if (version !== undefined && !supportedVersion.includes(version) && version !== this.sessionVersion) {
                     this.logMessage(`Web Portal version ${version} does not match ${supportedVersion.join(" or ")}.`, 20);
+
+                    /**
+                     * Debug: Find newly released web portal versions.
+                     *
+                     * TODO Remove in future releases.
+                     *
+                     * @since 1.6.4
+                     */
+                    console.log("");
+                    console.re.debug(`👴🏻 ========== WRONG VERSION - START ${randomIdentifier} ========== 👴🏻`);
+                    console.re.debug(`supported version: ${supportedVersion.join(", ")}`);
+                    console.re.debug(`web portal version: ${version}`);
+                    console.re.debug(`👴🏻 ========== WRONG VERSION --- END ${randomIdentifier} ========== 👴🏻`);
+                    console.log("");
                 }
 
                 // Bind version to session so message does not bombard logs.

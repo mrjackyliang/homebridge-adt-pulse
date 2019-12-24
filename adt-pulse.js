@@ -392,8 +392,8 @@ Pulse.prototype.getDeviceStatus = function () {
 /**
  * ADT Pulse set device status.
  *
- * @param {string} armState - Can be "disarmed", "disarmed+with+alarm", "away", or "stay".
- * @param {string} arm      - Can be "off", "away", or "stay".
+ * @param {string} armState - Can be "disarmed", "disarmed+with+alarm", "away", "stay", or "night".
+ * @param {string} arm      - Can be "off", "away", "stay", or "night".
  *
  * @returns {Q.Promise<Object>}
  *
