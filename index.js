@@ -924,8 +924,8 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm) {
         .login()
         .then(async () => {
             // Attempt to clear the alarms first.
-            if (lastState.includes("alarm")) {
-                if (["carbon monoxide", "fire", "burglary"].includes(lastState)) {
+            if (latestState.includes("alarm")) {
+                if (["carbon monoxide", "fire", "burglary"].includes(latestState)) {
                     this.logMessage(`Alarm is active! Disarming the ${name} (${id})...`, 20);
 
                     await this.pulse.setDeviceStatus(oldArmState, "off")
