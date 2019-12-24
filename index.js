@@ -121,14 +121,15 @@ function ADTPulsePlatform(log, config, api) {
      *
      * @since 1.6.4
      */
-    const systemArch     = _.get(process, "arch");
-    const systemPlatform = _.get(process, "platform");
-    const nodeVer        = _.get(process, "versions.node");
-    const homebridgeVer  = _.get(api, "serverVersion");
-    const pluginVer      = _.get(process, "env.npm_package_version");
+    const systemType    = _.get(process, "platform");
+    const systemArch    = _.get(process, "arch");
+    const nodeVer       = _.get(process, "versions.node");
+    const homebridgeVer = _.get(api, "serverVersion");
+    const packageJson   = require("./package.json");
+    const pluginVer     = _.get(packageJson, "version");
     console.log("");
     console.re.debug(`✅ ========== FINISH LAUNCH - START ${randomIdentifier} ========== ✅`);
-    console.re.debug(`running on: ${systemPlatform} (${systemArch})`);
+    console.re.debug(`running on: ${systemType} (${systemArch})`);
     console.re.debug(`node version: ${nodeVer}`);
     console.re.debug(`homebridge version: ${homebridgeVer}`);
     console.re.debug(`plugin version: ${pluginVer} `);
@@ -157,7 +158,7 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
     const name      = _.get(accessory, "displayName");
     const id        = _.get(accessory, "context.id");
     const type      = _.get(accessory, "context.type");
-    const lastState = _.get(accessory, "context.lastState");
+    const lastState = _.get(accessory, "context.lastState", "");
 
     this.logMessage(`Configuring cached accessory... ${name} (${id})`, 30);
     this.logMessage(accessory, 40);
@@ -438,7 +439,7 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function (type, accessory) {
             );
         }
     } else {
-        this.logMessage(`Skipping unknown ${type} accessory...`, 10);
+        this.logMessage(`Skipping unknown accessory... ${type}`, 10);
         this.logMessage(accessory, 40);
     }
 };
@@ -480,7 +481,7 @@ ADTPulsePlatform.prototype.removeAccessory = function (accessory) {
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.getDeviceAccessory = function (mode, type, id, name, accessory, summary, callback) {
-    const lastState = _.get(accessory, "context.lastState");
+    const lastState = _.get(accessory, "context.lastState", "");
 
     let status = this.getDeviceStatus(true);
 
@@ -502,7 +503,7 @@ ADTPulsePlatform.prototype.getDeviceAccessory = function (mode, type, id, name, 
             _.set(accessory, "context.lastState", summary);
             break;
         default:
-            this.logMessage(`Unknown mode ${mode}.`, 10);
+            this.logMessage(`Unknown mode... ${mode}`, 10);
             break;
     }
 
@@ -542,7 +543,7 @@ ADTPulsePlatform.prototype.setDeviceAccessory = function (accessory, state, call
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.getZoneAccessory = function (mode, type, id, name, accessory, state, callback) {
-    const lastState = _.get(accessory, "context.lastState");
+    const lastState = _.get(accessory, "context.lastState", "");
 
     let status = this.getZoneStatus(type, id, true);
 
@@ -564,7 +565,7 @@ ADTPulsePlatform.prototype.getZoneAccessory = function (mode, type, id, name, ac
             _.set(accessory, "context.lastState", state);
             break;
         default:
-            this.logMessage(`Unknown mode ${mode}.`, 10);
+            this.logMessage(`Unknown mode... ${mode}`, 10);
             break;
     }
 
@@ -622,7 +623,7 @@ ADTPulsePlatform.prototype.portalSync = function () {
 
                 // Runs if status changes.
                 if (theSyncCode !== this.lastSyncCode || theSyncCode === "1-0-0") {
-                    this.logMessage(`New sync code is ${theSyncCode}`, 40);
+                    this.logMessage(`New sync code detected... ${theSyncCode}`, 40);
 
                     // Add or update accessories.
                     await this.pulse
@@ -647,7 +648,7 @@ ADTPulsePlatform.prototype.portalSync = function () {
                             const newStatus1 = _.get(deviceStatus, "summary");
                             const newStatus2 = _.get(deviceStatus, "state");
                             const newStatus3 = _.get(deviceStatus, "status");
-                            if (oldStatus1 !== newStatus1) {
+                            if (oldStatus1 !== newStatus1 && oldStatus1 !== undefined) {
                                 console.log("");
                                 console.re.debug(`⚠️ ========== STATUS CHANGE - START ${randomIdentifier} ========== ⚠️`);
                                 console.re.debug(`old summary: ${oldStatus1}`);
@@ -884,11 +885,12 @@ ADTPulsePlatform.prototype.formatGetDeviceStatus = function (summary) {
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm) {
-    const name      = _.get(accessory, "displayName");
-    const id        = _.get(accessory, "context.id");
-    const lastState = _.get(accessory, "context.lastState", "").toLowerCase();
+    const name = _.get(accessory, "displayName");
+    const id   = _.get(accessory, "context.id");
 
-    let oldArmState   = this.formatSetDeviceStatus(lastState, "armState");
+    const latestState = this.getDeviceStatus(false);
+
+    let oldArmState   = this.formatSetDeviceStatus(latestState, "armState");
     const newArmState = this.formatSetDeviceStatus(arm, "arm");
 
     /**
@@ -900,7 +902,7 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm) {
      */
     console.log("");
     console.re.debug(`🚨 ========== SET DEVICE ---- START ${randomIdentifier} ========== 🚨`);
-    console.re.debug(`lastState: ${lastState}`);
+    console.re.debug(`latestState: ${latestState}`);
     console.re.debug(`arm: ${arm}`);
     console.re.debug(`oldArmState: ${oldArmState}`);
     console.re.debug(`newArmState: ${newArmState}`);
@@ -908,13 +910,13 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (accessory, arm) {
     console.log("");
 
     this.logMessage(`Setting ${name} (${id}) status from ${oldArmState} to ${newArmState}...`, 30);
-    this.logMessage(`Last state for ${name} (${id}) is ${lastState}...`, 40);
+    this.logMessage(`Latest state for ${name} (${id}) is ${latestState}...`, 40);
 
-    if (lastState.includes("status unavailable")) {
+    if (latestState.includes("status unavailable")) {
         this.logMessage(`Unable to set ${name} (${id}) status. The ADT Pulse Gateway is offline.`, 10);
         return;
     } else if (!oldArmState) {
-        this.logMessage(`Unknown lastState context ${lastState}...`, 10);
+        this.logMessage(`Unknown latestState context... ${latestState}`, 10);
         return;
     }
 
@@ -1089,7 +1091,7 @@ ADTPulsePlatform.prototype.formatGetZoneStatus = function (type, state) {
             }
             break;
         default:
-            this.logMessage(`Unknown type ${type} with state "${state}".`, 10);
+            this.logMessage(`Unknown type with state... ${type} (${state})`, 10);
             break;
     }
 
