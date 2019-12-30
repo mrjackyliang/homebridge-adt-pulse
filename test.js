@@ -10,7 +10,7 @@
  *     --debug    [true,false]
  *
  * Usage:
- *     node adt-pulse-test.js --username ! --password % --action @ --debug #
+ *     node test --username ! --password % --action @ --debug #
  *
  * Replace:
  *     ! - Account username
@@ -22,7 +22,7 @@
  *
  * @since 1.0.0
  */
-const Pulse = require("./adt-pulse");
+const Pulse = require("./main");
 
 /**
  * Script arguments.
