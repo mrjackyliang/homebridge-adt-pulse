@@ -1,6 +1,6 @@
 {
     "name": "homebridge-adt-pulse",
-    "version": "1.6.8",
+    "version": "1.6.9",
     "description": "Homebridge security system platform for ADT Pulse",
     "main": "plugin.js",
     "scripts": {

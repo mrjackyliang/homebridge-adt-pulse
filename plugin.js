@@ -198,10 +198,9 @@ ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
                 .on("get", callback => this.getZoneAccessory(type, id, name, callback));
             break;
         case "glass":
-            // HAP does not support tamper sensors yet, so I will use motion since the interface is similar.
             accessory
-                .getService(Service.MotionSensor)
-                .getCharacteristic(Characteristic.MotionDetected)
+                .getService(Service.OccupancySensor)
+                .getCharacteristic(Characteristic.OccupancyDetected)
                 .on("get", callback => this.getZoneAccessory(type, id, name, callback));
             break;
         case "motion":
@@ -276,10 +275,9 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
                     .on("get", callback => this.getZoneAccessory(type, id, name, callback));
                 break;
             case "glass":
-                // HAP does not support tamper sensors, so motion will be used since the interface is similar.
                 accessory
-                    .addService(Service.MotionSensor, name)
-                    .getCharacteristic(Characteristic.MotionDetected)
+                    .addService(Service.OccupancySensor, name)
+                    .getCharacteristic(Characteristic.OccupancyDetected)
                     .on("get", callback => this.getZoneAccessory(type, id, name, callback));
                 break;
             case "motion":
@@ -794,10 +792,10 @@ ADTPulsePlatform.prototype.formatGetZoneStatus = function (type, state) {
         case "glass":
             if (state === "devStatOK") {
                 // No glass broken.
-                status = false;
+                status = Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED;
             } else if (state === "devStatTamper") {
                 // Glass broken.
-                status = true;
+                status = Characteristic.OccupancyDetected.OCCUPANCY_DETECTED;
             }
             break;
         case "motion":
@@ -943,16 +941,7 @@ ADTPulsePlatform.prototype.portalSync = function () {
                         })
                         .then(() => this.pulse.getZoneStatus())
                         .then(zones => {
-                            /**
-                             * Update: Upgrade glass break sensors to occupancy sensors.
-                             *
-                             * TODO Remove in future releases.
-                             *
-                             * @since 1.6.8
-                             */
-                            //const zoneStatus = _.get(zones, "info");
-                            let zoneStatus = _.get(zones, "info");
-                            _.remove(zoneStatus, ["tags", "sensor,glass"]);
+                            const zoneStatus = _.get(zones, "info");
 
                             // Set latest status into instance.
                             this.zoneStatus = zoneStatus;
@@ -1058,8 +1047,8 @@ ADTPulsePlatform.prototype.devicePolling = function (type, id) {
                 break;
             case "glass":
                 accessory
-                    .getService(Service.MotionSensor)
-                    .getCharacteristic(Characteristic.MotionDetected)
+                    .getService(Service.OccupancySensor)
+                    .getCharacteristic(Characteristic.OccupancyDetected)
                     .getValue();
                 break;
             case "motion":
