@@ -943,7 +943,16 @@ ADTPulsePlatform.prototype.portalSync = function () {
                         })
                         .then(() => this.pulse.getZoneStatus())
                         .then(zones => {
-                            const zoneStatus = _.get(zones, "info");
+                            /**
+                             * Update: Upgrade glass break sensors to occupancy sensors.
+                             *
+                             * TODO Remove in future releases.
+                             *
+                             * @since 1.6.8
+                             */
+                            //const zoneStatus = _.get(zones, "info");
+                            let zoneStatus = _.get(zones, "info");
+                            _.remove(zoneStatus, ["tags", "sensor,glass"]);
 
                             // Set latest status into instance.
                             this.zoneStatus = zoneStatus;
