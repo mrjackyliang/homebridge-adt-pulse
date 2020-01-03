@@ -11,26 +11,6 @@ let Accessory,
     Characteristic,
     UUIDGen;
 
-// noinspection JSUnusedLocalSymbols,SpellCheckingInspection
-/**
- * Debug: Send logs to "https://console.re" for anonymous debugging.
- *
- * TODO Remove in future versions.
- *
- * @since 1.6.2
- */
-let consolere = require("console-remote-client")
-    .connect("console.re", "443", "vHeMZvGjaBWjN29b8PARrCpBNtHTWYteMGFejmxDwgUpan9SMU");
-
-/**
- * Debug: 10-digit random identifier to group logs.
- *
- * TODO Remove in future versions.
- *
- * @since 1.6.3
- */
-const randomIdentifier = Math.floor(Math.random() * (9999999999 - 1000000000 + 1) + 1000000000);
-
 /**
  * Register the platform plugin.
  *
@@ -88,10 +68,19 @@ function ADTPulsePlatform(log, config, api) {
     this.username = _.get(this.config, "username");
     this.password = _.get(this.config, "password");
     this.logLevel = _.get(this.config, "logLevel");
+    this.resetAll = _.get(this.config, "resetAll");
 
     // Timers.
     this.syncInterval     = 3;
     this.setDeviceTimeout = 8;
+
+    // Setup logging function.
+    if (typeof this.logLevel !== "number" || ![10, 20, 30, 40, 50].includes(this.logLevel)) {
+        if (this.logLevel !== undefined) {
+            this.log.warn("\"logLevel\" should be a specific number (10, 20, 30, 40, or 50). Defaulting to 30.");
+        }
+        this.logLevel = 30;
+    }
 
     // Check for credentials.
     if (!this.username || !this.password) {
@@ -99,12 +88,12 @@ function ADTPulsePlatform(log, config, api) {
         return;
     }
 
-    // Setup logging function.
-    if (typeof this.logLevel !== "number" || ![10, 20, 30, 40, 50].includes(this.logLevel)) {
-        if (this.logLevel !== undefined) {
-            this.log.warn("Log level should be a specific number (10, 20, 30, 40, or 50). Defaulting to 30.");
+    // Prevent accidental reset.
+    if (typeof this.resetAll !== "boolean") {
+        if (this.resetAll !== undefined) {
+            this.logMessage("\"resetAll\" setting should be true or false. Defaulting to false.", 20);
         }
-        this.logLevel = 30;
+        this.resetAll = false;
     }
 
     // Initialize main script.
@@ -114,35 +103,20 @@ function ADTPulsePlatform(log, config, api) {
         "debug": (this.logLevel >= 40),
     });
 
-    /**
-     * Debug: Get system information.
-     *
-     * TODO Remove in future releases.
-     *
-     * @since 1.6.4
-     */
-    const systemType    = _.get(process, "platform");
-    const systemArch    = _.get(process, "arch");
-    const nodeVer       = _.get(process, "versions.node");
-    const homebridgeVer = _.get(api, "serverVersion");
-    const packageJson   = require("./package.json");
-    const pluginVer     = _.get(packageJson, "version");
-    console.log("");
-    console.re.debug(`✅ ========== FINISH LAUNCH - START ${randomIdentifier} ========== ✅`);
-    console.re.debug(`running on: ${systemType} (${systemArch})`);
-    console.re.debug(`node version: ${nodeVer}`);
-    console.re.debug(`homebridge version: ${homebridgeVer}`);
-    console.re.debug(`plugin version: ${pluginVer} `);
-    console.re.debug(`✅ ========== FINISH LAUNCH --- END ${randomIdentifier} ========== ✅`);
-    console.log("");
-
     if (api) {
         // Register new accessories via this object.
         this.api = api;
 
-        // Start portal sync.
         this.api.on("didFinishLaunching", () => {
-            this.portalSync();
+            if (this.resetAll) {
+                this.logMessage("Removing all ADT Pulse accessories from Homebridge...", 20);
+
+                _.forEachRight(this.accessories, accessory => {
+                    this.removeAccessory(accessory);
+                });
+            } else {
+                this.portalSync();
+            }
         });
     }
 }
@@ -155,19 +129,9 @@ function ADTPulsePlatform(log, config, api) {
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.configureAccessory = function (accessory) {
-    const name = _.get(accessory, "displayName");
     const id   = _.get(accessory, "context.id");
+    const name = _.get(accessory, "displayName");
     const type = _.get(accessory, "context.type");
-
-    // noinspection JSUnresolvedVariable
-    /**
-     * Update: Remove lastState from accessory context.
-     *
-     * TODO Remove in future versions.
-     *
-     * @since 1.6.7
-     */
-    delete accessory.context.lastState;
 
     this.logMessage(`Configuring cached accessory... ${name} (${id})`, 30);
     this.logMessage(accessory, 40);
@@ -248,7 +212,7 @@ ADTPulsePlatform.prototype.addAccessory = function (type, id, name, make, model,
 
     // Add new accessories only.
     if (accessoryLoaded === undefined) {
-        this.logMessage(`Adding new accessory... ${name} (${id})`, 30);
+        this.logMessage(`Adding accessory... ${name} (${id})`, 30);
 
         let accessory      = new Accessory(name, uuid);
         let validAccessory = true;
@@ -439,14 +403,14 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function (type, accessory) {
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.removeAccessory = function (accessory) {
-    const name    = _.get(accessory, "displayName");
-    const id      = _.get(accessory, "context.id");
-    const removed = _.remove(this.accessories, ["UUID", accessory.UUID]);
+    const id   = _.get(accessory, "context.id");
+    const name = _.get(accessory, "displayName");
 
-    this.logMessage(`Removing obsolete accessory... ${name} (${id})`, 30);
-    this.logMessage(removed, 40);
+    this.logMessage(`Removing accessory... ${name} (${id})`, 30);
+    this.logMessage(accessory, 40);
 
-    // Unregister accessory.
+    _.remove(this.accessories, ["UUID", accessory.UUID]);
+
     this.api.unregisterPlatformAccessories(
         "homebridge-adt-pulse",
         "ADTPulse",
@@ -615,22 +579,6 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (id, name, arm) {
 
     let oldArmState = this.formatSetDeviceStatus(latestState, "armState");
     let newArmState = this.formatSetDeviceStatus(arm, "arm");
-
-    /**
-     * Debug: Discover bug related to weird armState logs.
-     *
-     * TODO Remove in future releases.
-     *
-     * @since 1.6.3
-     */
-    console.log("");
-    console.re.debug(`🚨 ========== SET DEVICE ---- START ${randomIdentifier} ========== 🚨`);
-    console.re.debug(`latestState: ${latestState}`);
-    console.re.debug(`arm: ${arm}`);
-    console.re.debug(`oldArmState: ${oldArmState}`);
-    console.re.debug(`newArmState: ${newArmState}`);
-    console.re.debug(`🚨 ========== SET DEVICE ------ END ${randomIdentifier} ========== 🚨`);
-    console.log("");
 
     this.logMessage(`Setting ${name} (${id}) status from ${oldArmState} to ${newArmState}...`, 30);
     this.logMessage(`Latest state for ${name} (${id}) is ${latestState}...`, 40);
@@ -853,20 +801,6 @@ ADTPulsePlatform.prototype.portalSync = function () {
 
                 if (version !== undefined && !supportedVersion.includes(version) && version !== this.sessionVersion) {
                     this.logMessage(`Web Portal version ${version} does not match ${supportedVersion.join(" or ")}.`, 20);
-
-                    /**
-                     * Debug: Find newly released web portal versions.
-                     *
-                     * TODO Remove in future releases.
-                     *
-                     * @since 1.6.4
-                     */
-                    console.log("");
-                    console.re.debug(`❌ ========== WRONG VERSION - START ${randomIdentifier} ========== ❌`);
-                    console.re.debug(`supported version: ${supportedVersion.join(", ")}`);
-                    console.re.debug(`web portal version: ${version}`);
-                    console.re.debug(`❌ ========== WRONG VERSION --- END ${randomIdentifier} ========== ❌`);
-                    console.log("");
                 }
 
                 // Bind version to session so message does not bombard logs.
@@ -890,32 +824,6 @@ ADTPulsePlatform.prototype.portalSync = function () {
                             const deviceUUID   = UUIDGen.generate("system-1");
                             const deviceLoaded = _.find(this.accessories, ["UUID", deviceUUID]);
 
-                            /**
-                             * Debug: Discover bug related to weird armState logs.
-                             *
-                             * TODO Remove in future releases.
-                             *
-                             * @since 1.6.2
-                             */
-                            const oldStatus1 = _.get(this.deviceStatus, "summary");
-                            const oldStatus2 = _.get(this.deviceStatus, "state");
-                            const oldStatus3 = _.get(this.deviceStatus, "status");
-                            const newStatus1 = _.get(deviceStatus, "summary");
-                            const newStatus2 = _.get(deviceStatus, "state");
-                            const newStatus3 = _.get(deviceStatus, "status");
-                            if (oldStatus1 !== newStatus1) {
-                                console.log("");
-                                console.re.debug(`⚠️ ========== STATUS CHANGE - START ${randomIdentifier} ========== ⚠️`);
-                                console.re.debug(`old summary: ${oldStatus1}`);
-                                console.re.debug(`old state: ${oldStatus2}`);
-                                console.re.debug(`old status: ${oldStatus3}`);
-                                console.re.debug(`new summary: ${newStatus1}`);
-                                console.re.debug(`new state: ${newStatus2}`);
-                                console.re.debug(`new status: ${newStatus3}`);
-                                console.re.debug(`⚠️ ========== STATUS CHANGE --- END ${randomIdentifier} ========== ⚠️`);
-                                console.log("");
-                            }
-
                             // Set latest status into instance.
                             this.deviceStatus = deviceStatus;
 
@@ -926,15 +834,13 @@ ADTPulsePlatform.prototype.portalSync = function () {
 
                             // Add or update device.
                             if (deviceLoaded === undefined) {
-                                await this.pulse.getDeviceInformation()
-                                    .then(async device => {
-                                        const deviceInfo       = _.get(device, "info");
-                                        const deviceInfoStatus = _.merge(deviceInfo, deviceStatus);
+                                const getDeviceInfo    = await this.pulse.getDeviceInformation()
+                                    .catch(error => this.catchErrors(error));
+                                const deviceInfo       = _.get(getDeviceInfo, "info");
+                                const deviceInfoStatus = _.merge(deviceInfo, deviceStatus);
 
-                                        await this.prepareAddAccessory("device", deviceInfoStatus);
-                                        await this.devicePolling("system", "system-1");
-                                    })
-                                    .catch(error => this.catchErrors(error))
+                                this.prepareAddAccessory("device", deviceInfoStatus);
+                                this.devicePolling("system", "system-1");
                             } else {
                                 this.devicePolling("system", "system-1");
                             }
@@ -946,7 +852,7 @@ ADTPulsePlatform.prototype.portalSync = function () {
                             // Set latest status into instance.
                             this.zoneStatus = zoneStatus;
 
-                            _.forEach(zoneStatus, async zone => {
+                            _.forEach(zoneStatus, zone => {
                                 const zoneId    = _.get(zone, "id");
                                 const zoneTags  = _.get(zone, "tags");
                                 const zoneState = _.get(zone, "state");
@@ -963,8 +869,8 @@ ADTPulsePlatform.prototype.portalSync = function () {
 
                                 // Add or update zone.
                                 if (deviceLoaded === undefined) {
-                                    await this.prepareAddAccessory("zone", zone);
-                                    await this.devicePolling(zoneType, zoneId);
+                                    this.prepareAddAccessory("zone", zone);
+                                    this.devicePolling(zoneType, zoneId);
                                 } else {
                                     this.devicePolling(zoneType, zoneId);
                                 }
@@ -973,14 +879,15 @@ ADTPulsePlatform.prototype.portalSync = function () {
                         .catch(error => this.catchErrors(error));
 
                     // Remove obsolete zones.
-                    _.forEach(this.accessories, async accessory => {
-                        const id   = await _.get(accessory, "context.id");
-                        const type = await _.get(accessory, "context.type");
+                    _.forEachRight(this.accessories, accessory => {
+                        const id   = _.get(accessory, "context.id");
+                        const type = _.get(accessory, "context.type");
                         const zone = _.find(this.zoneStatus, { "id": id });
 
                         // Do not remove security panel(s).
                         if (zone === undefined && type !== "system") {
-                            await this.removeAccessory(accessory);
+                            this.logMessage(`Preparing to remove zone (${id}) accessory...`, 30);
+                            this.removeAccessory(accessory);
                         }
                     });
 
@@ -1140,7 +1047,7 @@ ADTPulsePlatform.prototype.catchErrors = function (error) {
             this.logMessage("Internet disconnected or portal unreachable. Trying again...", priority = 10);
             break;
         default:
-            this.logMessage(`Action failed on ${action}.`, priority = 10);
+            this.logMessage(`An unknown error occurred.`, priority = 10);
             break;
     }
 
@@ -1148,7 +1055,9 @@ ADTPulsePlatform.prototype.catchErrors = function (error) {
         this.logMessage(infoMessage, priority);
     }
 
-    if (error) {
+    if (error && !action) {
+        this.logMessage(error, 10);
+    } else if (error) {
         this.logMessage(error, 40);
     }
 };
@@ -1186,6 +1095,8 @@ ADTPulsePlatform.prototype.logMessage = function (content, priority) {
                 break;
             case 50:
                 log.debug(content);
+                break;
+            default:
                 break;
         }
     }

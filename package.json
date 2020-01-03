@@ -1,6 +1,6 @@
 {
     "name": "homebridge-adt-pulse",
-    "version": "1.6.9",
+    "version": "1.7.0",
     "description": "Homebridge security system platform for ADT Pulse",
     "main": "plugin.js",
     "scripts": {
@@ -33,7 +33,6 @@
     },
     "dependencies": {
         "cheerio": "^1.0.0-rc.3",
-        "console-remote-client": "^0.5.1",
         "internet-available": "^1.0.0",
         "lodash": "^4.17.15",
         "q": "^1.5.1",

@@ -25,7 +25,8 @@ When configuring this plugin, simply add the platform to your existing `config.j
       "name": "ADT Pulse",
       "username": "email@email.com",
       "password": "1234567890",
-      "logLevel": 30
+      "logLevel": 30,
+      "resetAll": false
     },
     {
       "platform": "...",
@@ -73,19 +74,30 @@ The default is `30`. Configure `logLevel` with the values below:
 * Set `logLevel` to `10` for errors only.
 * Set `logLevel` to `20` for warnings (and the above).
 * Set `logLevel` to `30` for info (and the above).
-* Set `logLevel` to `40` for debug (and the above).
+* Set `logLevel` to `40` for debugging (and the above).
 * Set `logLevel` to `50` for verbose (and the above).
 
-NOTE: If the `logLevel` setting is incorrectly specified, a warning will be shown then subsequently set to `30`.
+__NOTE:__ If the `logLevel` setting is incorrectly specified, a warning will be shown then subsequently set to `30`.
 
-NOTE 2: Don't forget to enable Homebridge Debug Mode when setting `logLevel` to `40` or above or else debug messages won't be shown.
+__NOTE 2:__ Don't forget to enable Homebridge Debug Mode when setting `logLevel` to `40` or above or else debug messages won't be shown.
+
+## Resetting the Plugin
+Managing many accessories in a Homebridge environment is already a seemingly hard task, and sometimes you might want to step back and just delete all the cached ADT Pulse accessories.
+
+The default is `false`. Configure `resetAll` with the values below:
+* Set `resetAll` to `true` for reset mode.
+* Set `resetAll` to `false` for normal mode.
+
+__NOTE:__ To prevent accidental removal of all accessories, this setting can only be configured manually in the `config.json` file.
+
+__NOTE 2:__ Once reset is complete, remember to remove the `resetAll` clause or else the plugin will just start in reset mode again.
 
 ## Test Script
 There is a test script included in the package that performs specific actions used by the plugin. Feel free to test it out, and report any bugs you see.
 
 This script requires your username, password, and an action type.
 ```shell script
-node test --username email@email.com --password 1234567890 --action [device-information,device-status,zone-status,sync,disarm,arm-away,arm-stay,arm-night] --debug [true,false]
+node test-api --username email@email.com --password 1234567890 --action [device-information,device-status,zone-status,sync,disarm,arm-away,arm-stay,arm-night] --debug [true,false]
 ```
 
 ## Developer Information
