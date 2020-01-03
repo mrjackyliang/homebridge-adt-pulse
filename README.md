@@ -82,15 +82,15 @@ __NOTE:__ If the `logLevel` setting is incorrectly specified, a warning will be 
 __NOTE 2:__ Don't forget to enable Homebridge Debug Mode when setting `logLevel` to `40` or above or else debug messages won't be shown.
 
 ## Resetting the Plugin
-Managing many accessories in a Homebridge environment is already a seemingly hard task, and sometimes you might want to step back and just delete all the cached ADT Pulse accessories.
+Managing many accessories in a Homebridge environment is already a seemingly hard task, and sometimes you might want to step back and just do a reset.
 
 The default is `false`. Configure `resetAll` with the values below:
 * Set `resetAll` to `true` for reset mode.
 * Set `resetAll` to `false` for normal mode.
 
-__NOTE:__ To prevent accidental removal of all accessories, the `resetAll` setting can only be configured manually in the `config.json` file.
+__NOTE:__ To prevent accidental removal of all accessories, the `resetAll` setting can be configured manually in the `config.json` file.
 
-__NOTE 2:__ Once reset is complete, remember to set the `resetAll` back to `false` or else the plugin will just repeat reset mode again.
+__NOTE 2:__ Once reset is complete, remember to set the `resetAll` setting back to `false` or else the plugin will just repeat the reset mode again.
 
 ## Test Script
 There is a test script included in the package that performs specific actions used by the plugin. Feel free to test it out, and report any bugs you see.
