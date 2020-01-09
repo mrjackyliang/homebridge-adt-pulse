@@ -108,6 +108,8 @@ function ADTPulsePlatform(log, config, api) {
         this.api = api;
 
         this.api.on("didFinishLaunching", () => {
+            this.logSystemInformation(api);
+
             if (this.resetAll) {
                 this.logMessage("Removing all ADT Pulse accessories from Homebridge...", 20);
 
@@ -403,12 +405,18 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function (type, accessory) {
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.removeAccessory = function (accessory) {
+    if (!accessory) {
+        this.logMessage(`Failed to remove invalid accessory... ${accessory}`, 10);
+        return;
+    }
+
     const id   = _.get(accessory, "context.id");
     const name = _.get(accessory, "displayName");
 
     this.logMessage(`Removing accessory... ${name} (${id})`, 30);
     this.logMessage(accessory, 40);
 
+    // Remove from accessory array.
     _.remove(this.accessories, ["UUID", accessory.UUID]);
 
     this.api.unregisterPlatformAccessories(
@@ -803,7 +811,7 @@ ADTPulsePlatform.prototype.portalSync = function () {
                     this.logMessage(`Web Portal version ${version} does not match ${supportedVersion.join(" or ")}.`, 20);
                 }
 
-                // Bind version to session so message does not bombard logs.
+                // Bind version to session so message does not bomb logs.
                 this.sessionVersion = version;
             })
             .then(() => this.pulse.performPortalSync())
@@ -1060,6 +1068,27 @@ ADTPulsePlatform.prototype.catchErrors = function (error) {
     } else if (error) {
         this.logMessage(error, 40);
     }
+};
+
+/**
+ * Log system information.
+ *
+ * @param {Object} api - Homebridge API. Null for older versions.
+ *
+ * @since 1.0.0
+ */
+ADTPulsePlatform.prototype.logSystemInformation = function (api) {
+    const platform   = _.get(process, "platform");
+    const arch       = _.get(process, "arch");
+    const pkgJson    = require("./package.json");
+    const pkgJsonVer = _.get(pkgJson, "version");
+    const nodeVer    = _.get(process, "versions.node");
+    const homeVer    = _.get(api, "serverVersion");
+
+    this.logMessage(`running on ${platform} (${arch})`, 30);
+    this.logMessage(`homebridge-adt-pulse v${pkgJsonVer}`, 30);
+    this.logMessage(`node v${nodeVer}`, 30);
+    this.logMessage(`homebridge v${homeVer}`, 30);
 };
 
 /**

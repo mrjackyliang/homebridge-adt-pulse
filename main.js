@@ -9,10 +9,10 @@
  * @since 1.0.0
  */
 const cheerio     = require("cheerio");
+const hasInternet = require("internet-available");
 const Q           = require("q");
 const request     = require("request");
 const _           = require("lodash");
-const hasInternet = require("internet-available");
 
 /**
  * Browser session cookies.
