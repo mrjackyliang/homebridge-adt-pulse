@@ -1,38 +1,38 @@
 ---
 name: Bug report
-about: Create a report to help us improve
-title: ''
-labels: ''
+about: Found an issue? Report the problem here.
+title: 'DESCRIBE THE BUG HERE AS SYSTEMATICALLY AS POSSIBLE'
+labels: 'bug'
 assignees: ''
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+### Describe the bug:
+What do you think the problem relates to?
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+### Steps to reproduce the bug:
+1. 
 
-**Expected behavior**
+### Expected behavior:
 A clear and concise description of what you expected to happen.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+### The Apple device you are using:
+- Device: [e.g. iPhone 11 Pro]
+- OS: [e.g. iOS 13.3]
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+### Homebridge information:
+Find these 4 lines in the beginning of the logs, then replace the text inside the grave accents:
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+```sh
+[1/1/2020, 0:00:00 PM] [ADT Pulse] running on linux (arm)
+[1/1/2020, 0:00:00 PM] [ADT Pulse] homebridge-adt-pulse v1.0.0
+[1/1/2020, 0:00:00 PM] [ADT Pulse] node v12.13.0
+[1/1/2020, 0:00:00 PM] [ADT Pulse] homebridge v0.4.50
+```
 
-**Additional context**
-Add any other context about the problem here.
+### Logs related to this bug:
+Attempt to locate the bug in the logs, then replace `SAMPLE TEXT` inside the grave accents:
+
+```sh
+SAMPLE TEXT
+```
