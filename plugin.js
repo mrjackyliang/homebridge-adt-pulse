@@ -4,7 +4,9 @@
  * @since 1.0.0
  */
 const _     = require("lodash");
-const Pulse = require("./main");
+
+const packageJson = require("./package");
+const Pulse       = require("./main");
 
 let Accessory,
     Service,
@@ -108,7 +110,13 @@ function ADTPulsePlatform(log, config, api) {
         this.api = api;
 
         this.api.on("didFinishLaunching", () => {
-            this.logSystemInformation(api);
+          this.logSystemInformation(
+            _.get(process, 'platform'),
+            _.get(process, 'arch'),
+            _.get(packageJson, 'version'),
+            _.get(process, 'versions.node'),
+            _.get(api, 'serverVersion'),
+          );
 
             if (this.resetAll) {
                 this.logMessage("Removing all ADT Pulse accessories from Homebridge...", 20);
@@ -532,37 +540,37 @@ ADTPulsePlatform.prototype.getDeviceStatus = function (type, format) {
 ADTPulsePlatform.prototype.formatGetDeviceStatus = function (type, summary) {
     const lowerCaseSummary = summary.toLowerCase();
     const alarm            = lowerCaseSummary.includes("alarm");
-    const uncleared_alarm  = lowerCaseSummary.includes("uncleared alarm");
+    const unclearedAlarm   = lowerCaseSummary.includes("uncleared alarm");
     const disarmed         = lowerCaseSummary.includes("disarmed");
-    const arm_away         = lowerCaseSummary.includes("armed away");
-    const arm_stay         = lowerCaseSummary.includes("armed stay");
-    const arm_night        = lowerCaseSummary.includes("armed night");
+    const armAway          = lowerCaseSummary.includes("armed away");
+    const armStay          = lowerCaseSummary.includes("armed stay");
+    const armNight         = lowerCaseSummary.includes("armed night");
 
     let status = undefined;
 
-    if (alarm && !uncleared_alarm) {
+    if (alarm && !unclearedAlarm) {
         if (type === "current") {
             status = Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
         }
-    } else if (uncleared_alarm || disarmed) {
+    } else if (unclearedAlarm || disarmed) {
         if (type === "current") {
             status = Characteristic.SecuritySystemCurrentState.DISARMED;
         } else if (type === "target") {
             status = Characteristic.SecuritySystemTargetState.DISARM;
         }
-    } else if (arm_away) {
+    } else if (armAway) {
         if (type === "current") {
             status = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
         } else if (type === "target") {
             status = Characteristic.SecuritySystemTargetState.AWAY_ARM;
         }
-    } else if (arm_stay) {
+    } else if (armStay) {
         if (type === "current") {
             status = Characteristic.SecuritySystemCurrentState.STAY_ARM;
         } else if (type === "target") {
             status = Characteristic.SecuritySystemTargetState.STAY_ARM;
         }
-    } else if (arm_night) {
+    } else if (armNight) {
         if (type === "current") {
             status = Characteristic.SecuritySystemCurrentState.NIGHT_ARM;
         } else if (type === "target") {
@@ -632,12 +640,12 @@ ADTPulsePlatform.prototype.setDeviceStatus = function (id, name, arm) {
             if (oldArmState === newArmState || (oldArmState === "disarmed" && newArmState === "off")) {
                 this.logMessage(`Already set to ${newArmState}. Cannot set from ${oldArmState} to ${newArmState}.`, 20);
             } else {
-                const arm_stay  = Characteristic.SecuritySystemTargetState.STAY_ARM;
-                const arm_away  = Characteristic.SecuritySystemTargetState.AWAY_ARM;
-                const arm_night = Characteristic.SecuritySystemTargetState.NIGHT_ARM;
+                const armStay  = Characteristic.SecuritySystemTargetState.STAY_ARM;
+                const armAway  = Characteristic.SecuritySystemTargetState.AWAY_ARM;
+                const armNight = Characteristic.SecuritySystemTargetState.NIGHT_ARM;
 
                 // If device is not disarmed, and you are attempting to arm.
-                if (oldArmState !== "disarmed" && [arm_stay, arm_away, arm_night].includes(arm)) {
+                if (oldArmState !== "disarmed" && [armStay, armAway, armNight].includes(arm)) {
                     this.logMessage(`Switching arm modes. Disarming ${name} (${id}) first...`, 30);
 
                     await this.pulse.setDeviceStatus(oldArmState, "off")
@@ -827,7 +835,6 @@ ADTPulsePlatform.prototype.portalSync = function () {
                         .getDeviceStatus()
                         .then(async device => {
                             const deviceStatus  = _.get(device, "info");
-                            const deviceSummary = _.get(deviceStatus, "summary");
 
                             const deviceUUID   = UUIDGen.generate("system-1");
                             const deviceLoaded = _.find(this.accessories, ["UUID", deviceUUID]);
@@ -835,23 +842,20 @@ ADTPulsePlatform.prototype.portalSync = function () {
                             // Set latest status into instance.
                             this.deviceStatus = deviceStatus;
 
-                            // Do not poll or add offline device.
-                            if (deviceSummary.includes("Status Unavailable")) {
-                                return;
-                            }
-
                             // Add or update device.
                             if (deviceLoaded === undefined) {
-                                const getDeviceInfo    = await this.pulse.getDeviceInformation()
-                                    .catch(error => this.catchErrors(error));
-                                const deviceInfo       = _.get(getDeviceInfo, "info");
-                                const deviceInfoStatus = _.merge(deviceInfo, deviceStatus);
+                                try {
+                                    const getDeviceInfo    = await this.pulse.getDeviceInformation();
+                                    const deviceInfo       = _.get(getDeviceInfo, "info");
+                                    const deviceInfoStatus = _.merge(deviceInfo, deviceStatus);
 
-                                this.prepareAddAccessory("device", deviceInfoStatus);
-                                this.devicePolling("system", "system-1");
-                            } else {
-                                this.devicePolling("system", "system-1");
+                                    this.prepareAddAccessory("device", deviceInfoStatus);
+                                } catch (error) {
+                                    this.catchErrors(error);
+                                }
                             }
+
+                            this.devicePolling("system", "system-1");
                         })
                         .then(() => this.pulse.getZoneStatus())
                         .then(zones => {
@@ -863,25 +867,23 @@ ADTPulsePlatform.prototype.portalSync = function () {
                             _.forEach(zoneStatus, zone => {
                                 const zoneId    = _.get(zone, "id");
                                 const zoneTags  = _.get(zone, "tags");
-                                const zoneState = _.get(zone, "state");
 
                                 const zoneType = zoneTags.substr(zoneTags.indexOf(",") + 1);
 
                                 const deviceUUID   = UUIDGen.generate(zoneId);
                                 const deviceLoaded = _.find(this.accessories, ["UUID", deviceUUID]);
 
-                                // Do not poll or add offline zone.
-                                if (zoneTags === "sensor" && zoneState === "devStatUnknown") {
+                                // Do not poll or add unknown sensor type.
+                                if (zoneTags === "sensor") {
                                     return;
                                 }
 
                                 // Add or update zone.
                                 if (deviceLoaded === undefined) {
                                     this.prepareAddAccessory("zone", zone);
-                                    this.devicePolling(zoneType, zoneId);
-                                } else {
-                                    this.devicePolling(zoneType, zoneId);
                                 }
+
+                                this.devicePolling(zoneType, zoneId);
                             });
                         })
                         .catch(error => this.catchErrors(error));
@@ -1073,22 +1075,19 @@ ADTPulsePlatform.prototype.catchErrors = function (error) {
 /**
  * Log system information.
  *
- * @param {Object} api - Homebridge API. Null for older versions.
+ * @param {string} platform      - The current platform.
+ * @param {string} arch          - The current architecture.
+ * @param {string} pluginVer     - The plugin version.
+ * @param {string} nodeVer       - The node version.
+ * @param {string} homebridgeVer - The homebridge version.
  *
  * @since 1.0.0
  */
-ADTPulsePlatform.prototype.logSystemInformation = function (api) {
-    const platform   = _.get(process, "platform");
-    const arch       = _.get(process, "arch");
-    const pkgJson    = require("./package.json");
-    const pkgJsonVer = _.get(pkgJson, "version");
-    const nodeVer    = _.get(process, "versions.node");
-    const homeVer    = _.get(api, "serverVersion");
-
+ADTPulsePlatform.prototype.logSystemInformation = function (platform, arch, pluginVer, nodeVer, homebridgeVer) {
     this.logMessage(`running on ${platform} (${arch})`, 30);
-    this.logMessage(`homebridge-adt-pulse v${pkgJsonVer}`, 30);
+    this.logMessage(`homebridge-adt-pulse v${pluginVer}`, 30);
     this.logMessage(`node v${nodeVer}`, 30);
-    this.logMessage(`homebridge v${homeVer}`, 30);
+    this.logMessage(`homebridge v${homebridgeVer}`, 30);
 };
 
 /**

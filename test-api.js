@@ -269,9 +269,9 @@ switch (actionValue) {
  * @since 1.0.0
  */
 function consoleLogger(content, error = false) {
-    if (typeof content === "object") {
-        (error) ? console.error("\n", content, "\n") : console.log("\n", content, "\n");
+    if (error) {
+      console.error(content);
     } else {
-        (error) ? console.error(content) : console.log(content);
+      console.log(content);
     }
 }
