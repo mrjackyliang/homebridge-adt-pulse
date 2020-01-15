@@ -8,11 +8,11 @@
  *
  * @since 1.0.0
  */
-const cheerio     = require("cheerio");
-const hasInternet = require("internet-available");
-const Q           = require("q");
-const request     = require("request");
-const _           = require("lodash");
+const cheerio = require('cheerio');
+const hasInternet = require('internet-available');
+const Q = require('q');
+const request = require('request');
+const _ = require('lodash');
 
 /**
  * Browser session cookies.
@@ -26,9 +26,9 @@ let jar;
  *
  * @since 1.0.0
  */
-let authenticated    = false;
-let lastKnownVersion = "";
-let lastKnownSiteId  = "";
+let authenticated = false;
+let lastKnownVersion = '';
+let lastKnownSiteId = '';
 
 /**
  * ADT Pulse constructor.
@@ -40,9 +40,9 @@ let lastKnownSiteId  = "";
  * @since 1.0.0
  */
 function Pulse(options) {
-    this.username = _.get(options, "username", "");
-    this.password = _.get(options, "password", "");
-    this.debug    = _.get(options, "debug", false);
+  this.username = _.get(options, 'username', '');
+  this.password = _.get(options, 'password', '');
+  this.debug = _.get(options, 'debug', false);
 }
 
 /**
@@ -52,121 +52,121 @@ function Pulse(options) {
  *
  * @since 1.0.0
  */
-Pulse.prototype.login = function () {
-    const deferred = Q.defer();
+Pulse.prototype.login = function login() {
+  const deferred = Q.defer();
 
-    this.hasInternetWrapper(deferred, () => {
-        if (authenticated) {
-            deferred.resolve({
-                "action": "LOGIN",
-                "success": true,
-                "info": {
-                    "version": lastKnownVersion,
-                    "siteId": lastKnownSiteId,
-                },
+  this.hasInternetWrapper(deferred, () => {
+    if (authenticated) {
+      deferred.resolve({
+        action: 'LOGIN',
+        success: true,
+        info: {
+          version: lastKnownVersion,
+          siteId: lastKnownSiteId,
+        },
+      });
+    } else {
+      this.consoleLogger('ADT Pulse: Logging in...', 'log');
+
+      // Request a new cookie session.
+      jar = request.jar();
+
+      request.get(
+        'https://portal.adtpulse.com',
+        this.generateRequestOptions(),
+        (error, response, body) => {
+          const regex = new RegExp(/(\/myhome\/)([0-9.-]+)(\/access\/signin\.jsp)/);
+          const responsePath = _.get(response, 'request.uri.path');
+
+          this.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, 'log');
+          this.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, 'log');
+
+          if (error || !regex.test(responsePath)) {
+            authenticated = false;
+
+            this.consoleLogger('ADT Pulse: Login failed.', 'error');
+
+            deferred.reject({
+              action: 'LOGIN',
+              success: false,
+              info: {
+                error,
+                message: this.getErrorMessage(body),
+              },
             });
-        } else {
-            this.consoleLogger("ADT Pulse: Logging in...", "log");
+          } else {
+            authenticated = false;
 
-            // Request a new cookie session.
-            jar = request.jar();
+            const version = responsePath.replace(regex, '$2');
 
-            request.get(
-                "https://portal.adtpulse.com",
-                this.generateRequestOptions(),
-                (error, response, body) => {
-                    const regex        = new RegExp("^(\/myhome\/)([0-9.-]+)(\/access\/signin\.jsp)$");
-                    const responsePath = _.get(response, "request.uri.path");
+            // Saves last known version for reuse later.
+            lastKnownVersion = version;
 
-                    this.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
-                    this.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
+            this.consoleLogger(`ADT Pulse: Web portal version -> ${version}`, 'log');
 
-                    if (error || !regex.test(responsePath)) {
-                        authenticated = false;
+            request.post(
+              `https://portal.adtpulse.com/myhome/${lastKnownVersion}/access/signin.jsp`,
+              this.generateRequestOptions({
+                followAllRedirects: true,
+                headers: {
+                  Referer: `https://portal.adtpulse.com/myhome/${lastKnownVersion}/access/signin.jsp`,
+                },
+                form: {
+                  usernameForm: this.username,
+                  passwordForm: this.password,
+                },
+              }),
+              (postError, postResponse, postBody) => {
+                const postRegex = new RegExp(/(\/myhome\/)([0-9.-]+)(\/summary\/summary\.jsp)/);
+                const postResponsePath = _.get(postResponse, 'request.uri.path');
 
-                        this.consoleLogger("ADT Pulse: Login failed.", "error");
+                this.consoleLogger(`ADT Pulse: Response path -> ${postResponsePath}`, 'log');
+                this.consoleLogger(`ADT Pulse: Response path matches -> ${postRegex.test(postResponsePath)}`, 'log');
 
-                        deferred.reject({
-                            "action": "LOGIN",
-                            "success": false,
-                            "info": {
-                                "error": error,
-                                "message": this.getErrorMessage(body),
-                            },
-                        });
-                    } else {
-                        authenticated = false;
+                if (postError || !postRegex.test(postResponsePath)) {
+                  authenticated = false;
 
-                        const version = responsePath.replace(regex, "$2");
+                  this.consoleLogger('ADT Pulse: Login failed.', 'error');
 
-                        // Saves last known version for reuse later.
-                        lastKnownVersion = version;
+                  deferred.reject({
+                    action: 'LOGIN',
+                    success: false,
+                    info: {
+                      error: postError,
+                      message: this.getErrorMessage(postBody),
+                    },
+                  });
+                } else {
+                  authenticated = true;
 
-                        this.consoleLogger(`ADT Pulse: Web portal version -> ${version}`, "log");
+                  const $ = cheerio.load(postBody);
+                  const signoutLink = $('#p_signout1').attr('href');
+                  const siteId = (signoutLink !== undefined) ? signoutLink.replace(/(.*)(networkid=)(.*)(&)(.*)/g, '$3') : undefined;
 
-                        request.post(
-                            `https://portal.adtpulse.com/myhome/${lastKnownVersion}/access/signin.jsp`,
-                            this.generateRequestOptions({
-                                followAllRedirects: true,
-                                headers: {
-                                    "Referer": `https://portal.adtpulse.com/myhome/${lastKnownVersion}/access/signin.jsp`,
-                                },
-                                form: {
-                                    usernameForm: this.username,
-                                    passwordForm: this.password,
-                                },
-                            }),
-                            (postError, postResponse, postBody) => {
-                                const postRegex        = new RegExp("^(\/myhome\/)([0-9.-]+)(\/summary\/summary\.jsp)$");
-                                const postResponsePath = _.get(postResponse, "request.uri.path");
+                  // Saves last known site ID for reuse later.
+                  lastKnownSiteId = siteId;
 
-                                this.consoleLogger(`ADT Pulse: Response path -> ${postResponsePath}`, "log");
-                                this.consoleLogger(`ADT Pulse: Response path matches -> ${postRegex.test(postResponsePath)}`, "log");
+                  this.consoleLogger(`ADT Pulse: Site ID -> ${siteId}`, 'log');
+                  this.consoleLogger('ADT Pulse: Login success.', 'log');
 
-                                if (postError || !postRegex.test(postResponsePath)) {
-                                    authenticated = false;
-
-                                    this.consoleLogger("ADT Pulse: Login failed.", "error");
-
-                                    deferred.reject({
-                                        "action": "LOGIN",
-                                        "success": false,
-                                        "info": {
-                                            "error": postError,
-                                            "message": this.getErrorMessage(postBody),
-                                        },
-                                    });
-                                } else {
-                                    authenticated = true;
-
-                                    const $           = cheerio.load(postBody);
-                                    const signoutLink = $("#p_signout1").attr("href");
-                                    const siteId      = (signoutLink !== undefined) ? signoutLink.replace(/(.*)(networkid=)(.*)(&)(.*)/g, "$3") : undefined;
-
-                                    // Saves last known site ID for reuse later.
-                                    lastKnownSiteId = siteId;
-
-                                    this.consoleLogger(`ADT Pulse: Site ID -> ${siteId}`, "log");
-                                    this.consoleLogger("ADT Pulse: Login success.", "log");
-
-                                    deferred.resolve({
-                                        "action": "LOGIN",
-                                        "success": true,
-                                        "info": {
-                                            "version": lastKnownVersion,
-                                            "siteId": lastKnownSiteId,
-                                        },
-                                    });
-                                }
-                            }
-                        );
-                    }
+                  deferred.resolve({
+                    action: 'LOGIN',
+                    success: true,
+                    info: {
+                      version: lastKnownVersion,
+                      siteId: lastKnownSiteId,
+                    },
+                  });
                 }
+              },
             );
-        }
-    });
+          }
+        },
+      );
+    }
+  });
 
-    return deferred.promise;
+  return deferred.promise;
 };
 
 /**
@@ -176,63 +176,63 @@ Pulse.prototype.login = function () {
  *
  * @since 1.0.0
  */
-Pulse.prototype.logout = function () {
-    const deferred = Q.defer();
+Pulse.prototype.logout = function logout() {
+  const deferred = Q.defer();
 
-    this.hasInternetWrapper(deferred, () => {
-        if (!authenticated) {
-            deferred.resolve({
-                "action": "LOGOUT",
-                "success": true,
-                "info": null,
+  this.hasInternetWrapper(deferred, () => {
+    if (!authenticated) {
+      deferred.resolve({
+        action: 'LOGOUT',
+        success: true,
+        info: null,
+      });
+    } else {
+      this.consoleLogger('ADT Pulse: Logging out...', 'log');
+
+      request.get(
+        `https://portal.adtpulse.com/myhome/${lastKnownVersion}/access/signout.jsp?networkid=${lastKnownSiteId}&partner=adt`,
+        this.generateRequestOptions({
+          headers: {
+            Referer: `https://portal.adtpulse.com/myhome/${lastKnownVersion}/summary/summary.jsp`,
+          },
+        }),
+        (error, response, body) => {
+          const regex = new RegExp(/(\/myhome\/)([0-9.-]+)(\/access\/signin\.jsp)(.*)/);
+          const responsePath = _.get(response, 'request.uri.path');
+
+          this.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, 'log');
+          this.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, 'log');
+
+          if (error || !regex.test(responsePath)) {
+            authenticated = true;
+
+            this.consoleLogger('ADT Pulse: Logout failed.', 'error');
+
+            deferred.reject({
+              action: 'LOGOUT',
+              success: false,
+              info: {
+                error,
+                message: this.getErrorMessage(body),
+              },
             });
-        } else {
-            this.consoleLogger("ADT Pulse: Logging out...", "log");
+          } else {
+            authenticated = false;
 
-            request.get(
-                `https://portal.adtpulse.com/myhome/${lastKnownVersion}/access/signout.jsp?networkid=${lastKnownSiteId}&partner=adt`,
-                this.generateRequestOptions({
-                    headers: {
-                        "Referer": `https://portal.adtpulse.com/myhome/${lastKnownVersion}/summary/summary.jsp`,
-                    },
-                }),
-                (error, response, body) => {
-                    const regex        = new RegExp("^(\/myhome\/)([0-9.-]+)(\/access\/signin\.jsp)(.*)$");
-                    const responsePath = _.get(response, "request.uri.path");
+            this.consoleLogger('ADT Pulse: Logout success.', 'log');
 
-                    this.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
-                    this.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
+            deferred.resolve({
+              action: 'LOGOUT',
+              success: true,
+              info: null,
+            });
+          }
+        },
+      );
+    }
+  });
 
-                    if (error || !regex.test(responsePath)) {
-                        authenticated = true;
-
-                        this.consoleLogger("ADT Pulse: Logout failed.", "error");
-
-                        deferred.reject({
-                            "action": "LOGOUT",
-                            "success": false,
-                            "info": {
-                                "error": error,
-                                "message": this.getErrorMessage(body),
-                            },
-                        });
-                    } else {
-                        authenticated = false;
-
-                        this.consoleLogger("ADT Pulse: Logout success.", "log");
-
-                        deferred.resolve({
-                            "action": "LOGOUT",
-                            "success": true,
-                            "info": null,
-                        });
-                    }
-                }
-            );
-        }
-    });
-
-    return deferred.promise;
+  return deferred.promise;
 };
 
 /**
@@ -242,62 +242,62 @@ Pulse.prototype.logout = function () {
  *
  * @since 1.0.0
  */
-Pulse.prototype.getDeviceInformation = function () {
-    const deferred = Q.defer();
+Pulse.prototype.getDeviceInformation = function getDeviceInformation() {
+  const deferred = Q.defer();
 
-    this.hasInternetWrapper(deferred, () => {
-        this.consoleLogger("ADT Pulse: Getting device information...", "log");
+  this.hasInternetWrapper(deferred, () => {
+    this.consoleLogger('ADT Pulse: Getting device information...', 'log');
 
-        request.get(
-            `https://portal.adtpulse.com/myhome/${lastKnownVersion}/system/device.jsp?id=1`,
-            this.generateRequestOptions({
-                headers: {
-                    "Referer": `https://portal.adtpulse.com/myhome/${lastKnownVersion}/system/system.jsp`,
-                },
-            }),
-            (error, response, body) => {
-                const regex        = new RegExp("^(\/myhome\/)([0-9.-]+)(\/system\/device\.jsp)(.*)$");
-                const responsePath = _.get(response, "request.uri.path");
+    request.get(
+      `https://portal.adtpulse.com/myhome/${lastKnownVersion}/system/device.jsp?id=1`,
+      this.generateRequestOptions({
+        headers: {
+          Referer: `https://portal.adtpulse.com/myhome/${lastKnownVersion}/system/system.jsp`,
+        },
+      }),
+      (error, response, body) => {
+        const regex = new RegExp(/(\/myhome\/)([0-9.-]+)(\/system\/device\.jsp)(.*)/);
+        const responsePath = _.get(response, 'request.uri.path');
 
-                this.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
-                this.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
+        this.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, 'log');
+        this.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, 'log');
 
-                if (error || !regex.test(responsePath)) {
-                    authenticated = false;
+        if (error || !regex.test(responsePath)) {
+          authenticated = false;
 
-                    this.consoleLogger("ADT Pulse: Get device information failed.", "error");
+          this.consoleLogger('ADT Pulse: Get device information failed.', 'error');
 
-                    deferred.reject({
-                        "action": "GET_DEVICE_INFO",
-                        "success": false,
-                        "info": {
-                            "error": error,
-                            "message": this.getErrorMessage(body),
-                        },
-                    });
-                } else {
-                    const $          = cheerio.load(body);
-                    const deviceName = $("td.InputFieldDescriptionL:contains(\"Name\")").next().text().trim();
-                    const deviceMake = $("td.InputFieldDescriptionL:contains(\"Manufacturer\")").next().text().trim();
-                    const deviceType = $("td.InputFieldDescriptionL:contains(\"Type\")").next().text().trim();
+          deferred.reject({
+            action: 'GET_DEVICE_INFO',
+            success: false,
+            info: {
+              error,
+              message: this.getErrorMessage(body),
+            },
+          });
+        } else {
+          const $ = cheerio.load(body);
+          const deviceName = $('td.InputFieldDescriptionL:contains("Name")').next().text().trim();
+          const deviceMake = $('td.InputFieldDescriptionL:contains("Manufacturer")').next().text().trim();
+          const deviceType = $('td.InputFieldDescriptionL:contains("Type")').next().text().trim();
 
-                    this.consoleLogger("ADT Pulse: Get device information success.", "log");
+          this.consoleLogger('ADT Pulse: Get device information success.', 'log');
 
-                    deferred.resolve({
-                        "action": "GET_DEVICE_INFO",
-                        "success": true,
-                        "info": {
-                            "name": deviceName,
-                            "make": deviceMake,
-                            "type": deviceType,
-                        },
-                    });
-                }
-            }
-        );
-    });
+          deferred.resolve({
+            action: 'GET_DEVICE_INFO',
+            success: true,
+            info: {
+              name: deviceName,
+              make: deviceMake,
+              type: deviceType,
+            },
+          });
+        }
+      },
+    );
+  });
 
-    return deferred.promise;
+  return deferred.promise;
 };
 
 /**
@@ -307,86 +307,86 @@ Pulse.prototype.getDeviceInformation = function () {
  *
  * @since 1.0.0
  */
-Pulse.prototype.getDeviceStatus = function () {
-    const deferred = Q.defer();
+Pulse.prototype.getDeviceStatus = function getDeviceStatus() {
+  const deferred = Q.defer();
 
-    this.hasInternetWrapper(deferred, () => {
-        this.consoleLogger("ADT Pulse: Getting device status...", "log");
+  this.hasInternetWrapper(deferred, () => {
+    this.consoleLogger('ADT Pulse: Getting device status...', 'log');
 
-        // Then, get security panel status.
-        request.get(
-            `https://portal.adtpulse.com/myhome/${lastKnownVersion}/ajax/orb.jsp`,
-            this.generateRequestOptions({
-                headers: {
-                    "Accept": "*/*",
-                    "Referer": `https://portal.adtpulse.com/myhome/${lastKnownVersion}/summary/summary.jsp`,
-                },
-            }),
-            (error, response, body) => {
-                const regex        = new RegExp("^(\/myhome\/)([0-9.-]+)(\/ajax\/orb\.jsp)$");
-                const responsePath = _.get(response, "request.uri.path");
+    // Then, get security panel status.
+    request.get(
+      `https://portal.adtpulse.com/myhome/${lastKnownVersion}/ajax/orb.jsp`,
+      this.generateRequestOptions({
+        headers: {
+          Accept: '*/*',
+          Referer: `https://portal.adtpulse.com/myhome/${lastKnownVersion}/summary/summary.jsp`,
+        },
+      }),
+      (error, response, body) => {
+        const regex = new RegExp(/(\/myhome\/)([0-9.-]+)(\/ajax\/orb\.jsp)/);
+        const responsePath = _.get(response, 'request.uri.path');
 
-                this.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
-                this.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
+        this.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, 'log');
+        this.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, 'log');
 
-                if (error || !regex.test(responsePath) || body.indexOf("<html") > -1) {
-                    authenticated = false;
+        if (error || !regex.test(responsePath) || body.indexOf('<html') > -1) {
+          authenticated = false;
 
-                    this.consoleLogger("ADT Pulse: Get device status failed.", "error");
+          this.consoleLogger('ADT Pulse: Get device status failed.', 'error');
 
-                    deferred.reject({
-                        "action": "GET_DEVICE_STATUS",
-                        "success": false,
-                        "info": {
-                            "error": error,
-                            "message": this.getErrorMessage(body),
-                        },
-                    });
-                } else {
-                    const $           = cheerio.load(body);
-                    const textSummary = $("#divOrbTextSummary span").text();
-                    const theState    = textSummary.replace(/([A-Z a-z ]+)(\.[  ]?)([A-Z a-z 0-9]*)(\.?)(.*)/g, "$1");
-                    const theStatus   = textSummary.replace(/([A-Z a-z ]+)(\.[  ]?)([A-Z a-z 0-9]*)(\.?)(.*)/g, "$3");
+          deferred.reject({
+            action: 'GET_DEVICE_STATUS',
+            success: false,
+            info: {
+              error,
+              message: this.getErrorMessage(body),
+            },
+          });
+        } else {
+          const $ = cheerio.load(body);
+          const textSummary = $('#divOrbTextSummary span').text();
+          const theState = textSummary.replace(/([A-Z a-z ]+)(\.[  ]?)([A-Z a-z 0-9]*)(\.?)(.*)/g, '$1');
+          const theStatus = textSummary.replace(/([A-Z a-z ]+)(\.[  ]?)([A-Z a-z 0-9]*)(\.?)(.*)/g, '$3');
 
-                    this.consoleLogger("ADT Pulse: Get device status success.", "log");
+          this.consoleLogger('ADT Pulse: Get device status success.', 'log');
 
-                    /**
-                     * These are the possible states and statuses.
-                     *
-                     * State:
-                     *   "Disarmed"
-                     *   "Armed Away"
-                     *   "Armed Stay"
-                     *   "Armed Night"
-                     *   "Status Unavailable"
-                     * Status:
-                     *   "All Quiet"
-                     *   "1 Sensor Open" or "x Sensors Open"
-                     *   "Sensor Bypassed" or "Sensors Bypassed"
-                     *   "Sensor Tripped" or "Sensors Tripped"
-                     *   "Motion"
-                     *   "Uncleared Alarm"
-                     *   "Carbon Monoxide Alarm"
-                     *   "FIRE ALARM"
-                     *   "BURGLARY ALARM"
-                     *   "Sensor Problem"
-                     *   ""
-                     */
-                    deferred.resolve({
-                        "action": "GET_DEVICE_STATUS",
-                        "success": true,
-                        "info": {
-                            "summary": textSummary,
-                            "state": theState,
-                            "status": theStatus,
-                        },
-                    });
-                }
-            }
-        );
-    });
+          /**
+           * These are the possible states and statuses.
+           *
+           * State:
+           *   "Disarmed"
+           *   "Armed Away"
+           *   "Armed Stay"
+           *   "Armed Night"
+           *   "Status Unavailable"
+           * Status:
+           *   "All Quiet"
+           *   "1 Sensor Open" or "x Sensors Open"
+           *   "Sensor Bypassed" or "Sensors Bypassed"
+           *   "Sensor Tripped" or "Sensors Tripped"
+           *   "Motion"
+           *   "Uncleared Alarm"
+           *   "Carbon Monoxide Alarm"
+           *   "FIRE ALARM"
+           *   "BURGLARY ALARM"
+           *   "Sensor Problem"
+           *   ""
+           */
+          deferred.resolve({
+            action: 'GET_DEVICE_STATUS',
+            success: true,
+            info: {
+              summary: textSummary,
+              state: theState,
+              status: theStatus,
+            },
+          });
+        }
+      },
+    );
+  });
 
-    return deferred.promise;
+  return deferred.promise;
 };
 
 /**
@@ -417,116 +417,116 @@ Pulse.prototype.getDeviceStatus = function () {
  *
  * @since 1.0.0
  */
-Pulse.prototype.setDeviceStatus = function (armState, arm) {
-    const deferred = Q.defer();
+Pulse.prototype.setDeviceStatus = function setDeviceStatus(armState, arm) {
+  const deferred = Q.defer();
 
-    this.hasInternetWrapper(deferred, () => {
-        const url = `https://portal.adtpulse.com/myhome/${lastKnownVersion}/quickcontrol/armDisarm.jsp`;
-        const arg = `?href=rest/adt/ui/client/security/setArmState&armstate=${armState}&arm=${arm}`;
+  this.hasInternetWrapper(deferred, () => {
+    const url = `https://portal.adtpulse.com/myhome/${lastKnownVersion}/quickcontrol/armDisarm.jsp`;
+    const arg = `?href=rest/adt/ui/client/security/setArmState&armstate=${armState}&arm=${arm}`;
 
-        this.consoleLogger("ADT Pulse: Setting device status...", "log");
+    this.consoleLogger('ADT Pulse: Setting device status...', 'log');
 
-        request.get(
-            url + arg,
-            this.generateRequestOptions({
+    request.get(
+      url + arg,
+      this.generateRequestOptions({
+        headers: {
+          Referer: `https://portal.adtpulse.com/myhome/${lastKnownVersion}/summary/summary.jsp`,
+        },
+      }),
+      (error, response, body) => {
+        const regex = new RegExp(/(\/myhome\/)([0-9.-]+)(\/quickcontrol\/armDisarm\.jsp)(.*)/);
+        const responsePath = _.get(response, 'request.uri.path');
+
+        this.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, 'log');
+        this.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, 'log');
+
+        if (error || !regex.test(responsePath)) {
+          authenticated = false;
+
+          this.consoleLogger(`ADT Pulse: Set device status to ${arm} failed.`, 'error');
+
+          deferred.reject({
+            action: 'SET_DEVICE_STATUS',
+            success: false,
+            info: {
+              error,
+              message: this.getErrorMessage(body),
+            },
+          });
+        } else {
+          const $ = cheerio.load(body);
+          const onClick = $('#arm_button_1').attr('onclick');
+          const satCode = (onClick !== undefined) ? onClick.replace(/(.*)(\?sat=)([0-9a-z-]*)(&href=)(.*)/g, '$3') : undefined;
+
+          const forceUrl = `https://portal.adtpulse.com/myhome/${lastKnownVersion}/quickcontrol/serv/RunRRACommand`;
+          const forceArg = `?sat=${satCode}&href=rest/adt/ui/client/security/setForceArm&armstate=forcearm&arm=${arm}`;
+
+          // Check if system requires force arming.
+          if (['away', 'stay', 'night'].includes(arm) && onClick !== undefined && satCode !== undefined) {
+            this.consoleLogger('ADT Pulse: Some sensors are open or reporting motion. Arming Anyway...', 'warn');
+
+            request.get(
+              forceUrl + forceArg,
+              this.generateRequestOptions({
                 headers: {
-                    "Referer": `https://portal.adtpulse.com/myhome/${lastKnownVersion}/summary/summary.jsp`,
+                  Accept: '*/*',
+                  Referer: `https://portal.adtpulse.com/myhome/${lastKnownVersion}/quickcontrol/armDisarm.jsp`,
                 },
-            }),
-            (error, response, body) => {
-                const regex        = new RegExp("^(\/myhome\/)([0-9.-]+)(\/quickcontrol\/armDisarm\.jsp)(.*)$");
-                const responsePath = _.get(response, "request.uri.path");
+              }),
+              (forceError, forceResponse, forceBody) => {
+                const forceRegex = new RegExp(/(\/myhome\/)([0-9.-]+)(\/quickcontrol\/serv\/RunRRACommand)(.*)/);
+                const forceResponsePath = _.get(forceResponse, 'request.uri.path');
 
-                this.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
-                this.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
+                this.consoleLogger(`ADT Pulse: Response path -> ${forceResponsePath}`, 'log');
+                this.consoleLogger(`ADT Pulse: Response path matches -> ${forceRegex.test(forceResponsePath)}`, 'log');
 
-                if (error || !regex.test(responsePath)) {
-                    authenticated = false;
+                if (forceError || !forceRegex.test(forceResponsePath)) {
+                  authenticated = false;
 
-                    this.consoleLogger(`ADT Pulse: Set device status to ${arm} failed.`, "error");
+                  this.consoleLogger(`ADT Pulse: Set device status to ${arm} failed.`, 'error');
 
-                    deferred.reject({
-                        "action": "SET_DEVICE_STATUS",
-                        "success": false,
-                        "info": {
-                            "error": error,
-                            "message": this.getErrorMessage(body),
-                        },
-                    });
+                  deferred.reject({
+                    action: 'SET_DEVICE_STATUS',
+                    success: false,
+                    info: {
+                      error: forceError,
+                      message: this.getErrorMessage(forceBody),
+                    },
+                  });
                 } else {
-                    const $       = cheerio.load(body);
-                    const onClick = $("#arm_button_1").attr("onclick");
-                    const satCode = (onClick !== undefined) ? onClick.replace(/(.*)(\?sat=)([0-9a-z-]*)(&href=)(.*)/g, "$3") : undefined;
+                  this.consoleLogger(`ADT Pulse: Set device status to ${arm} success.`, 'log');
 
-                    const forceUrl = `https://portal.adtpulse.com/myhome/${lastKnownVersion}/quickcontrol/serv/RunRRACommand`;
-                    const forceArg = `?sat=${satCode}&href=rest/adt/ui/client/security/setForceArm&armstate=forcearm&arm=${arm}`;
-
-                    // Check if system requires force arming.
-                    if (["away", "stay", "night"].includes(arm) && onClick !== undefined && satCode !== undefined) {
-                        this.consoleLogger("ADT Pulse: Some sensors are open or reporting motion. Arming Anyway...", "warn");
-
-                        request.get(
-                            forceUrl + forceArg,
-                            this.generateRequestOptions({
-                                headers: {
-                                    "Accept": "*/*",
-                                    "Referer": `https://portal.adtpulse.com/myhome/${lastKnownVersion}/quickcontrol/armDisarm.jsp`,
-                                },
-                            }),
-                            (forceError, forceResponse, forceBody) => {
-                                const forceRegex        = new RegExp("^(\/myhome\/)([0-9.-]+)(\/quickcontrol\/serv\/RunRRACommand)(.*)$");
-                                const forceResponsePath = _.get(forceResponse, "request.uri.path");
-
-                                this.consoleLogger(`ADT Pulse: Response path -> ${forceResponsePath}`, "log");
-                                this.consoleLogger(`ADT Pulse: Response path matches -> ${forceRegex.test(forceResponsePath)}`, "log");
-
-                                if (forceError || !forceRegex.test(forceResponsePath)) {
-                                    authenticated = false;
-
-                                    this.consoleLogger(`ADT Pulse: Set device status to ${arm} failed.`, "error");
-
-                                    deferred.reject({
-                                        "action": "SET_DEVICE_STATUS",
-                                        "success": false,
-                                        "info": {
-                                            "error": forceError,
-                                            "message": this.getErrorMessage(forceBody),
-                                        },
-                                    });
-                                } else {
-                                    this.consoleLogger(`ADT Pulse: Set device status to ${arm} success.`, "log");
-
-                                    deferred.resolve({
-                                        "action": "SET_DEVICE_STATUS",
-                                        "success": true,
-                                        "info": {
-                                            "forceArm": true,
-                                            "previousArm": armState,
-                                            "afterArm": arm,
-                                        },
-                                    });
-                                }
-                            }
-                        );
-                    } else {
-                        this.consoleLogger(`ADT Pulse: Set device status to ${arm} success.`, "log");
-
-                        deferred.resolve({
-                            "action": "SET_DEVICE_STATUS",
-                            "success": true,
-                            "info": {
-                                "forceArm": false,
-                                "previousArm": armState,
-                                "afterArm": arm,
-                            },
-                        });
-                    }
+                  deferred.resolve({
+                    action: 'SET_DEVICE_STATUS',
+                    success: true,
+                    info: {
+                      forceArm: true,
+                      previousArm: armState,
+                      afterArm: arm,
+                    },
+                  });
                 }
-            }
-        );
-    });
+              },
+            );
+          } else {
+            this.consoleLogger(`ADT Pulse: Set device status to ${arm} success.`, 'log');
 
-    return deferred.promise;
+            deferred.resolve({
+              action: 'SET_DEVICE_STATUS',
+              success: true,
+              info: {
+                forceArm: false,
+                previousArm: armState,
+                afterArm: arm,
+              },
+            });
+          }
+        }
+      },
+    );
+  });
+
+  return deferred.promise;
 };
 
 /**
@@ -536,92 +536,90 @@ Pulse.prototype.setDeviceStatus = function (armState, arm) {
  *
  * @since 1.0.0
  */
-Pulse.prototype.getZoneStatus = function () {
-    const deferred = Q.defer();
+Pulse.prototype.getZoneStatus = function getZoneStatus() {
+  const deferred = Q.defer();
 
-    this.hasInternetWrapper(deferred, () => {
-        this.consoleLogger("ADT Pulse: Getting zone status...", "log");
+  this.hasInternetWrapper(deferred, () => {
+    this.consoleLogger('ADT Pulse: Getting zone status...', 'log');
 
-        request.get(
-            `https://portal.adtpulse.com/myhome/${lastKnownVersion}/ajax/homeViewDevAjax.jsp`,
-            this.generateRequestOptions({
-                headers: {
-                    "Accept": "*/*",
-                    "Referer": `https://portal.adtpulse.com/myhome/${lastKnownVersion}/summary/summary.jsp`,
-                },
-            }),
-            (error, response, body) => {
-                const regex        = new RegExp("^(\/myhome\/)([0-9.-]+)(\/ajax\/homeViewDevAjax\.jsp)$");
-                const responsePath = _.get(response, "request.uri.path");
+    request.get(
+      `https://portal.adtpulse.com/myhome/${lastKnownVersion}/ajax/homeViewDevAjax.jsp`,
+      this.generateRequestOptions({
+        headers: {
+          Accept: '*/*',
+          Referer: `https://portal.adtpulse.com/myhome/${lastKnownVersion}/summary/summary.jsp`,
+        },
+      }),
+      (error, response, body) => {
+        const regex = new RegExp(/(\/myhome\/)([0-9.-]+)(\/ajax\/homeViewDevAjax\.jsp)/);
+        const responsePath = _.get(response, 'request.uri.path');
 
-                this.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
-                this.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
+        this.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, 'log');
+        this.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, 'log');
 
-                // If error, wrong path, or HTML format.
-                if (error || !regex.test(responsePath) || body.indexOf("<html") > -1) {
-                    authenticated = false;
+        // If error, wrong path, or HTML format.
+        if (error || !regex.test(responsePath) || body.indexOf('<html') > -1) {
+          authenticated = false;
 
-                    this.consoleLogger("ADT Pulse: Get zone status failed.", "error");
+          this.consoleLogger('ADT Pulse: Get zone status failed.', 'error');
 
-                    deferred.reject({
-                        "action": "GET_ZONE_STATUS",
-                        "success": false,
-                        "info": {
-                            "error": error,
-                            "message": this.getErrorMessage(body),
-                        },
-                    });
-                } else {
-                    const rawJson    = JSON.parse(body);
-                    const allDevices = _.get(rawJson, "items");
-                    const sensors    = _.filter(allDevices, function (device) {
-                        return _.get(device, "id").indexOf("sensor-") > -1;
-                    });
+          deferred.reject({
+            action: 'GET_ZONE_STATUS',
+            success: false,
+            info: {
+              error,
+              message: this.getErrorMessage(body),
+            },
+          });
+        } else {
+          const rawJson = JSON.parse(body);
+          const allDevices = _.get(rawJson, 'items');
+          const sensors = _.filter(allDevices, (device) => _.get(device, 'id').indexOf('sensor-') > -1);
 
-                    // Only sensors are supported.
-                    const output = _.map(sensors, function (device) {
-                        const id    = _.get(device, "id");
-                        const name  = _.get(device, "name");
-                        const tags  = _.get(device, "tags");
-                        const state = _.get(device, "state.icon");
-                        const index = _.get(device, "devIndex");
+          // Only sensors are supported.
+          const output = _.map(sensors, (device) => {
+            const id = _.get(device, 'id');
+            const name = _.get(device, 'name');
+            const tags = _.get(device, 'tags');
+            const state = _.get(device, 'state.icon');
+            const index = _.get(device, 'devIndex');
 
-                        /**
-                         * Expected output.
-                         *
-                         * id:    sensor-[integer]
-                         * name:  device name
-                         * tags:  sensor,[doorWindow,motion,glass,co,fire]
-                         * index: [E][integer]VER[integer]
-                         * state: devStatOK (device okay)
-                         *        devStatOpen (door/window opened)
-                         *        devStatMotion (detected motion)
-                         *        devStatTamper (glass broken or device tamper)
-                         *        devStatAlarm (detected CO/Smoke)
-                         *        devStatUnknown (device offline)
-                         */
-                        return {
-                            "id": id,
-                            "name": name,
-                            "tags": tags,
-                            "index": index,
-                            "state": state,
-                        };
-                    });
+            /**
+             * Expected output.
+             *
+             * id:    sensor-[integer]
+             * name:  device name
+             * tags:  sensor,[doorWindow,motion,glass,co,fire]
+             * index: [E][integer]VER[integer]
+             * state: devStatOK (device okay)
+             *        devStatOpen (door/window opened)
+             *        devStatMotion (detected motion)
+             *        devStatTamper (glass broken or device tamper)
+             *        devStatAlarm (detected CO/Smoke)
+             *        devStatUnknown (device offline)
+             */
+            return {
+              id,
+              name,
+              tags,
+              index,
+              state,
+            };
+          });
 
-                    this.consoleLogger("ADT Pulse: Get zone status success.", "log");
+          this.consoleLogger('ADT Pulse: Get zone status success.', 'log');
 
-                    deferred.resolve({
-                        "action": "GET_ZONE_STATUS",
-                        "success": true,
-                        "info": output,
-                    });
-                }
-            }
-        );
-    });
+          deferred.resolve({
+            action: 'GET_ZONE_STATUS',
+            success: true,
+            info: output,
+          });
+        }
+      },
+    );
+  });
 
-    return deferred.promise;
+  return deferred.promise;
 };
 
 /**
@@ -631,64 +629,64 @@ Pulse.prototype.getZoneStatus = function () {
  *
  * @since 1.0.0
  */
-Pulse.prototype.performPortalSync = function () {
-    const deferred = Q.defer();
+Pulse.prototype.performPortalSync = function performPortalSync() {
+  const deferred = Q.defer();
 
-    this.hasInternetWrapper(deferred, () => {
-        this.consoleLogger("ADT Pulse: Performing portal sync...", "log");
+  this.hasInternetWrapper(deferred, () => {
+    this.consoleLogger('ADT Pulse: Performing portal sync...', 'log');
 
-        request.get(
-            `https://portal.adtpulse.com/myhome/${lastKnownVersion}/Ajax/SyncCheckServ?t=` + Date.now(),
-            this.generateRequestOptions({
-                headers: {
-                    "Accept": "*/*",
-                    "Referer": `https://portal.adtpulse.com/myhome/${lastKnownVersion}/summary/summary.jsp`,
-                },
-            }),
-            (error, response, body) => {
-                const regex        = new RegExp("^(\/myhome\/)([0-9.-]+)(\/Ajax\/SyncCheckServ)(.*)$");
-                const responsePath = _.get(response, "request.uri.path");
+    request.get(
+      `https://portal.adtpulse.com/myhome/${lastKnownVersion}/Ajax/SyncCheckServ?t=${Date.now()}`,
+      this.generateRequestOptions({
+        headers: {
+          Accept: '*/*',
+          Referer: `https://portal.adtpulse.com/myhome/${lastKnownVersion}/summary/summary.jsp`,
+        },
+      }),
+      (error, response, body) => {
+        const regex = new RegExp(/(\/myhome\/)([0-9.-]+)(\/Ajax\/SyncCheckServ)(.*)/);
+        const responsePath = _.get(response, 'request.uri.path');
 
-                this.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, "log");
-                this.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, "log");
+        this.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, 'log');
+        this.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, 'log');
 
-                // If error, wrong path, or HTML format.
-                if (error || !regex.test(responsePath) || body.indexOf("<html") > -1) {
-                    authenticated = false;
+        // If error, wrong path, or HTML format.
+        if (error || !regex.test(responsePath) || body.indexOf('<html') > -1) {
+          authenticated = false;
 
-                    this.consoleLogger("ADT Pulse: Portal sync failed.", "error");
+          this.consoleLogger('ADT Pulse: Portal sync failed.', 'error');
 
-                    deferred.reject({
-                        "action": "SYNC",
-                        "success": false,
-                        "info": {
-                            "error": error,
-                            "message": this.getErrorMessage(body),
-                        },
-                    });
-                } else {
-                    this.consoleLogger("ADT Pulse: Portal sync success.", "log");
+          deferred.reject({
+            action: 'SYNC',
+            success: false,
+            info: {
+              error,
+              message: this.getErrorMessage(body),
+            },
+          });
+        } else {
+          this.consoleLogger('ADT Pulse: Portal sync success.', 'log');
 
-                    /**
-                     * May return sync codes like this:
-                     *   1-0-0
-                     *   2-0-0
-                     *   [integer]-0-0
-                     *   [integer]-[integer]-0
-                     */
-                    deferred.resolve({
-                        "action": "SYNC",
-                        "success": true,
-                        "info": {
-                            "syncCode": body,
-                        },
-                    });
-                }
-            }
-        );
-    });
+          /**
+           * May return sync codes like this:
+           *   1-0-0
+           *   2-0-0
+           *   [integer]-0-0
+           *   [integer]-[integer]-0
+           */
+          deferred.resolve({
+            action: 'SYNC',
+            success: true,
+            info: {
+              syncCode: body,
+            },
+          });
+        }
+      },
+    );
+  });
 
-    return deferred.promise;
+  return deferred.promise;
 };
 
 /**
@@ -699,23 +697,23 @@ Pulse.prototype.performPortalSync = function () {
  *
  * @since 1.0.0
  */
-Pulse.prototype.hasInternetWrapper = function (deferred, runFunction) {
-    const settings = {
-        timeout: 5000,
-        retries: 3,
-        domainName: "portal.adtpulse.com",
-        port: 53,
-    };
+Pulse.prototype.hasInternetWrapper = function hasInternetWrapper(deferred, runFunction) {
+  const settings = {
+    timeout: 5000,
+    retries: 3,
+    domainName: 'portal.adtpulse.com',
+    port: 53,
+  };
 
-    hasInternet(settings).then(runFunction).catch(() => {
-        this.consoleLogger("ADT Pulse: Internet connection is offline or \"https://portal.adtpulse.com\" is unavailable.", "error");
+  hasInternet(settings).then(runFunction).catch(() => {
+    this.consoleLogger('ADT Pulse: Internet connection is offline or "https://portal.adtpulse.com" is unavailable.', 'error');
 
-        deferred.reject({
-            "action": "HOST_UNREACHABLE",
-            "success": false,
-            "info": null,
-        });
+    deferred.reject({
+      action: 'HOST_UNREACHABLE',
+      success: false,
+      info: null,
     });
+  });
 };
 
 /**
@@ -727,22 +725,22 @@ Pulse.prototype.hasInternetWrapper = function (deferred, runFunction) {
  *
  * @since 1.0.0
  */
-Pulse.prototype.generateRequestOptions = function (additionalOptions = {}) {
-    const options = {
-        jar: jar,
-        headers: {
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-            "Host": "portal.adtpulse.com",
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36",
-        },
-        ciphers: [
-            "ECDHE-RSA-AES256-GCM-SHA384",
-            "ECDHE-RSA-AES128-GCM-SHA256"
-        ].join(":"),
-    };
+Pulse.prototype.generateRequestOptions = function generateRequestOptions(additionalOptions = {}) {
+  const options = {
+    jar,
+    headers: {
+      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+      Host: 'portal.adtpulse.com',
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36',
+    },
+    ciphers: [
+      'ECDHE-RSA-AES256-GCM-SHA384',
+      'ECDHE-RSA-AES128-GCM-SHA256',
+    ].join(':'),
+  };
 
-    // Merge additional options.
-    return _.merge(options, additionalOptions);
+  // Merge additional options.
+  return _.merge(options, additionalOptions);
 };
 
 /**
@@ -754,21 +752,21 @@ Pulse.prototype.generateRequestOptions = function (additionalOptions = {}) {
  *
  * @since 1.0.0
  */
-Pulse.prototype.getErrorMessage = function (responseBody) {
-    // Returns array or null.
-    let errorMessage = (responseBody) ? responseBody.match(/<div id="warnMsgContents" class="p_signinWarning">(.*?)<\/div>/g) : null;
+Pulse.prototype.getErrorMessage = function getErrorMessage(responseBody) {
+  // Returns array or null.
+  let errorMessage = (responseBody) ? responseBody.match(/<div id="warnMsgContents" class="p_signinWarning">(.*?)<\/div>/g) : null;
 
-    // Returns string.
-    errorMessage = (errorMessage) ? errorMessage[0] : "";
+  // Returns string.
+  errorMessage = (errorMessage) ? errorMessage[0] : '';
 
-    // Replace single line break with space.
-    errorMessage = errorMessage.replace(/<br ?\/?>/ig, " ");
+  // Replace single line break with space.
+  errorMessage = errorMessage.replace(/<br ?\/?>/ig, ' ');
 
-    // Remove all HTML code.
-    errorMessage = errorMessage.replace(/(<([^>]+)>)/ig, "");
+  // Remove all HTML code.
+  errorMessage = errorMessage.replace(/(<([^>]+)>)/ig, '');
 
-    // If empty message, return null.
-    return (errorMessage) ? errorMessage : null;
+  // If empty message, return null.
+  return (errorMessage) || null;
 };
 
 /**
@@ -779,20 +777,22 @@ Pulse.prototype.getErrorMessage = function (responseBody) {
  *
  * @since 1.0.0
  */
-Pulse.prototype.consoleLogger = function (content, type) {
-    if (this.debug) {
-        switch (type) {
-            case "error":
-                console.error(content);
-                break;
-            case "warn":
-                console.warn(content);
-                break;
-            case "log":
-                console.log(content);
-                break;
-        }
+Pulse.prototype.consoleLogger = function consoleLogger(content, type) {
+  if (this.debug) {
+    switch (type) {
+      case 'error':
+        console.error(content);
+        break;
+      case 'warn':
+        console.warn(content);
+        break;
+      case 'log':
+        console.log(content);
+        break;
+      default:
+        break;
     }
+  }
 };
 
 module.exports = Pulse;

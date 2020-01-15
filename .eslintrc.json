@@ -21,6 +21,12 @@
         ],
         "max-len": [
             "off"
+        ],
+        "no-irregular-whitespace": [
+            "error",
+            {
+                "skipRegExps": true
+            }
         ]
     }
 }
