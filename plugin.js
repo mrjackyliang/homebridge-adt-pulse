@@ -56,7 +56,7 @@ function ADTPulsePlatform(log, config, api) {
 
   // Setup logging function.
   if (typeof this.logLevel !== 'number' || ![10, 20, 30, 40, 50].includes(this.logLevel)) {
-    if (this.logLevel) {
+    if (this.logLevel !== undefined) {
       this.log.warn('"logLevel" should be a specific number (10, 20, 30, 40, or 50). Defaulting to 30.');
     }
     this.logLevel = 30;
@@ -70,7 +70,7 @@ function ADTPulsePlatform(log, config, api) {
 
   // Prevent accidental reset.
   if (typeof this.resetAll !== 'boolean') {
-    if (this.resetAll) {
+    if (this.resetAll !== undefined) {
       this.logMessage('"resetAll" setting should be true or false. Defaulting to false.', 20);
     }
     this.resetAll = false;
@@ -201,7 +201,7 @@ ADTPulsePlatform.prototype.addAccessory = function addAccessory(type, id, name, 
   const accessoryLoaded = _.find(this.accessories, ['UUID', uuid]);
 
   // Add new accessories only.
-  if (!accessoryLoaded) {
+  if (accessoryLoaded === undefined) {
     this.logMessage(`Adding accessory... ${name} (${id})`, 30);
 
     let validAccessory = true;
@@ -316,7 +316,7 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function prepareAddAccessory(ty
     this.logMessage(`Preparing to add device (${deviceId}) accessory...`, 30);
     this.logMessage(accessory, 40);
 
-    if (!deviceLoaded) {
+    if (deviceLoaded === undefined) {
       this.addAccessory(
         deviceKind,
         deviceId,
@@ -367,7 +367,7 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function prepareAddAccessory(ty
     this.logMessage(`Preparing to add zone (${zoneId}) accessory...`, 30);
     this.logMessage(accessory, 40);
 
-    if (!zoneLoaded) {
+    if (zoneLoaded === undefined) {
       this.addAccessory(
         zoneKind,
         zoneId,
@@ -392,7 +392,7 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function prepareAddAccessory(ty
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.removeAccessory = function removeAccessory(accessory) {
-  if (!accessory) {
+  if (_.get(accessory, 'UUID') === undefined) {
     this.logMessage(`Failed to remove invalid accessory... ${accessory}`, 10);
     return;
   }
@@ -428,7 +428,7 @@ ADTPulsePlatform.prototype.getDeviceAccessory = function getDeviceAccessory(type
 
   let error = false;
 
-  if (!status) {
+  if (status === undefined) {
     error = true;
   }
 
@@ -470,7 +470,7 @@ ADTPulsePlatform.prototype.getZoneAccessory = function getZoneAccessory(type, id
 
   let error = false;
 
-  if (!status) {
+  if (status === undefined) {
     error = true;
   }
 
@@ -794,7 +794,7 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
         const version = _.get(response, 'info.version');
         const supportedVersion = ['17.0.0-69', '17.0.0-71'];
 
-        if (version && !supportedVersion.includes(version) && version !== this.sessionVersion) {
+        if (version !== undefined && !supportedVersion.includes(version) && version !== this.sessionVersion) {
           this.logMessage(`Web Portal version ${version} does not match ${supportedVersion.join(' or ')}.`, 20);
         }
 
@@ -822,7 +822,7 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
               this.deviceStatus = deviceStatus;
 
               // Add or update device.
-              if (!deviceLoaded) {
+              if (deviceLoaded === undefined) {
                 try {
                   const getDeviceInfo = await this.pulse.getDeviceInformation();
                   const deviceInfo = _.get(getDeviceInfo, 'info');
@@ -858,7 +858,7 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
                 }
 
                 // Add or update zone.
-                if (!deviceLoaded) {
+                if (deviceLoaded === undefined) {
                   this.prepareAddAccessory('zone', zone);
                 }
 
@@ -874,7 +874,7 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
             const zone = _.find(this.zoneStatus, { id });
 
             // Do not remove security panel(s).
-            if (!zone && type !== 'system') {
+            if (zone === undefined && type !== 'system') {
               this.logMessage(`Preparing to remove zone (${id}) accessory...`, 30);
               this.removeAccessory(accessory);
             }
@@ -920,7 +920,7 @@ ADTPulsePlatform.prototype.devicePolling = function devicePolling(type, id) {
   const accessory = _.find(this.accessories, ['UUID', uuid]);
   const name = _.get(accessory, 'displayName');
 
-  if (accessory) {
+  if (accessory !== undefined) {
     this.logMessage(`Polling device status for ${name} (${id})...`, 50);
 
     switch (type) {
