@@ -9,7 +9,7 @@
  *     --action   [device-information,device-status,zone-status,sync,disarm,arm-away,arm-stay,arm-night]
  *
  * Usage:
- *     node test-api --username ! --password % --action @
+ *     node api-test --username ! --password % --action @
  *
  * Replace:
  *     ! - Account username
@@ -20,7 +20,7 @@
  *
  * @since 1.0.0
  */
-const Pulse = require('./main');
+const Pulse = require('./api');
 
 /**
  * Script arguments.

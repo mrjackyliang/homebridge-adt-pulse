@@ -6,7 +6,7 @@
 const _ = require('lodash');
 
 const packageJson = require('./package');
-const Pulse = require('./main');
+const Pulse = require('./api');
 
 let Accessory;
 let Service;
@@ -792,7 +792,7 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
       .login()
       .then((response) => {
         const version = _.get(response, 'info.version');
-        const supportedVersion = ['17.0.0-69', '17.0.0-71'];
+        const supportedVersion = ['17.0.0-71', '18.0.0-78'];
 
         if (version !== undefined && !supportedVersion.includes(version) && version !== this.sessionVersion) {
           this.logMessage(`Web Portal version ${version} does not match ${supportedVersion.join(' or ')}.`, 20);
@@ -1047,7 +1047,7 @@ ADTPulsePlatform.prototype.catchErrors = function catchErrors(error) {
   if (error && !action) {
     this.logMessage(error, 10);
   } else if (error) {
-    this.logMessage(error, 40);
+    this.logMessage(error, priority || 40);
   }
 };
 

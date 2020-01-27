@@ -98,14 +98,14 @@ There is a test script included in the package that performs specific actions us
 
 This script requires your username, password, and an action type.
 ```shell script
-node test-api --username email@email.com --password 1234567890 --action [device-information,device-status,zone-status,sync,disarm,arm-away,arm-stay,arm-night]
+node api-test --username email@email.com --password 1234567890 --action [device-information,device-status,zone-status,sync,disarm,arm-away,arm-stay,arm-night]
 ```
 
 ## Developer Information
 The script provides an active connection to the ADT Pulse portal. Here is a list of must-knows, just in case you might want to debug (or improve) the plugin:
 
 1. Device and zone statuses are polled every __3 seconds__. If there are more than 2 login failures, device polling and portal sync stops.
-2. Supported versions are `17.0.0-69` and `17.0.0-71`. If this plugin does not support either version, a warning will appear in the logs. Please [create a bug report](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new?template=bug_report.md) to let me know!
+2. Supported versions are `17.0.0-71` and `18.0.0-78`. If this plugin does not support either version, a warning will appear in the logs. Please [create a bug report](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new?template=bug_report.md) to let me know!
 
 ## Credits and Appreciation
 If you would like to show your appreciation for its continued development, you can optionally become my supporter on [GitHub Sponsors](https://github.com/sponsors/mrjackyliang) or [Patreon](https://www.patreon.com/mrjackyliang)!
