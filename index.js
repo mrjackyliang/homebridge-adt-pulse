@@ -17,8 +17,8 @@ let UUIDGen;
  * Platform constructor.
  *
  * @param {Logger} log    - Homebridge log function.
- * @param {Object} config - Platform plugin configuration from "config.json".
- * @param {Object} api    - Homebridge API. Null for older versions.
+ * @param {object} config - Platform plugin configuration from "config.json".
+ * @param {object} api    - Homebridge API. Null for older versions.
  *
  * @constructor
  *
@@ -113,7 +113,7 @@ function ADTPulsePlatform(log, config, api) {
 /**
  * Restore cached accessories.
  *
- * @param {Object} accessory - The accessory.
+ * @param {object} accessory - The accessory.
  *
  * @since 1.0.0
  */
@@ -296,7 +296,7 @@ ADTPulsePlatform.prototype.addAccessory = function addAccessory(type, id, name, 
  * Prepare to add accessory.
  *
  * @param {string} type      - Could either be "device" or "zone".
- * @param {Object} accessory - The accessory.
+ * @param {object} accessory - The accessory.
  *
  * @since 1.0.0
  */
@@ -387,7 +387,7 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function prepareAddAccessory(ty
 /**
  * Remove accessory.
  *
- * @param {Object} accessory - The accessory.
+ * @param {object} accessory - The accessory.
  *
  * @since 1.0.0
  */
@@ -975,7 +975,7 @@ ADTPulsePlatform.prototype.devicePolling = function devicePolling(type, id) {
 /**
  * Then response (for setDeviceStatus only).
  *
- * @param {Object} response - The response object from setDeviceStatus.
+ * @param {object} response - The response object from setDeviceStatus.
  *
  * @since 1.0.0
  */
@@ -994,12 +994,13 @@ ADTPulsePlatform.prototype.thenResponse = function thenResponse(response) {
 /**
  * Catch errors.
  *
- * @param {Object} error - The error response object.
+ * @param {object} error - The error response object.
  *
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.catchErrors = function catchErrors(error) {
   const action = _.get(error, 'action');
+  const infoError = _.get(error, 'info.error');
   const infoMessage = _.get(error, 'info.message', '');
 
   let priority;
@@ -1040,15 +1041,15 @@ ADTPulsePlatform.prototype.catchErrors = function catchErrors(error) {
       break;
   }
 
-  if (infoMessage && priority) {
+  if (infoMessage) {
     this.logMessage(infoMessage, priority);
   }
 
-  if (error && !action) {
-    this.logMessage(error, 10);
-  } else if (error) {
-    this.logMessage(error, priority || 40);
+  if (infoError) {
+    this.logMessage(infoError, priority);
   }
+
+  this.logMessage(error, 40);
 };
 
 /**
@@ -1072,7 +1073,7 @@ ADTPulsePlatform.prototype.logSystemInformation = function logSystemInformation(
 /**
  * Log message.
  *
- * @param {(string|Object)} content  - The message or content being recorded into the logs.
+ * @param {(string|object)} content  - The message or content being recorded into the logs.
  * @param {number}          priority - 10 (error), 20 (warn), 30 (info), 40 (debug), 50 (verbose).
  *
  * @since 1.0.0
@@ -1110,7 +1111,7 @@ ADTPulsePlatform.prototype.logMessage = function logMessage(content, priority) {
 /**
  * Register the platform plugin.
  *
- * @param {Object} homebridge - Homebridge API.
+ * @param {object} homebridge - Homebridge API.
  *
  * @since 1.0.0
  */
