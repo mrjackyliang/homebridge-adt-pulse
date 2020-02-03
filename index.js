@@ -33,12 +33,13 @@ function ADTPulsePlatform(log, config, api) {
   this.deviceStatus = {};
   this.zoneStatus = {};
 
-  // Prevent account lockout.
+  // Keep track of failed increments.
   this.failedLoginTimes = 0;
+  this.stalledSyncTimes = 0;
 
   // Keeps track of device updates.
   this.lastSyncCode = '1-0-0';
-  this.portalSyncSession = undefined;
+  this.portalSyncSession = {};
   this.isSyncing = false;
 
   // Session data.
@@ -780,15 +781,19 @@ ADTPulsePlatform.prototype.formatGetZoneStatus = function formatGetZoneStatus(ty
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.portalSync = function portalSync() {
-  clearTimeout(this.portalSyncSession);
+  clearTimeout(this.portalSyncSession.timer);
 
   // Begin portal sync.
   if (this.isSyncing !== true) {
     this.isSyncing = true;
 
+    // Reset stalled sync increments.
+    this.stalledSyncTimes = 0;
+
     this.logMessage('Synchronizing with ADT Pulse Web Portal...', 40);
 
-    this.pulse
+    // Store in session, so it's easy to wipe out later.
+    this.portalSyncSession.function = this.pulse
       .login()
       .then((response) => {
         const version = _.get(response, 'info.version');
@@ -888,17 +893,26 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
         this.isSyncing = false;
       })
       .catch((error) => {
-        this.catchErrors(error);
-
         this.isSyncing = false;
+
+        this.catchErrors(error);
       });
+  } else if (this.stalledSyncTimes >= 5) {
+    this.isSyncing = false;
+
+    // Reset sync session.
+    this.portalSyncSession = {};
+
+    this.logMessage('Portal sync stalled. Cleaning up and resetting...', 40);
   } else {
+    this.stalledSyncTimes += 1;
+
     this.logMessage('Portal sync is already in progress...', 40);
   }
 
   // Force platform to retrieve latest status.
   if (!(this.failedLoginTimes >= 3)) {
-    this.portalSyncSession = setTimeout(
+    this.portalSyncSession.timer = setTimeout(
       () => {
         this.portalSync();
       },
@@ -1046,7 +1060,13 @@ ADTPulsePlatform.prototype.catchErrors = function catchErrors(error) {
   }
 
   if (infoError) {
-    this.logMessage(infoError, priority);
+    const message = _.get(infoError, 'message');
+
+    if (message) {
+      this.logMessage(`Error: ${message}`, priority);
+    } else {
+      this.logMessage(infoError, priority);
+    }
   }
 
   this.logMessage(error, 40);
