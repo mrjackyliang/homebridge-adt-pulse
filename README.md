@@ -7,7 +7,7 @@ ADT Pulse for Homebridge
 [![Become a GitHub Sponsor](https://img.shields.io/badge/sponsor-github-black?style=flat-square&color=orange)](https://github.com/sponsors/mrjackyliang)
 [![Become a Patreon](https://img.shields.io/badge/donate-patreon-orange?style=flat-square&color=red)](https://www.patreon.com/mrjackyliang)
 
-This is a Homebridge plugin for ADT Pulse users that allows homeowners to control their security systems and view sensor status through HomeKit. The API relies on the ADT Pulse Web Portal (powered by Icontrol One).
+This is a Homebridge plugin for ADT Pulse users that allow homeowners to control their security system and view sensor status through HomeKit. The API relies on the ADT Pulse Web Portal (powered by Icontrol One).
 
 To use this plugin, here are three simple steps you need to follow:
 1. Run `npm install homebridge-adt-pulse`
@@ -83,7 +83,7 @@ __NOTE:__ If the `logLevel` setting is incorrectly specified, a warning will be 
 __NOTE 2:__ Don't forget to enable Homebridge Debug Mode when setting `logLevel` to `40` or above or else debug messages won't be shown.
 
 ## Resetting the Plugin
-Managing many accessories in a Homebridge environment is already a seemingly hard task, and sometimes you might want to step back and just do a reset.
+Managing many accessories in a Homebridge environment is already a seemingly hard task, and sometimes you might want to step back and do a reset.
 
 The default is `false`. Configure `resetAll` with the values below:
 * Set `resetAll` to `true` for reset mode.
