@@ -911,7 +911,7 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
   }
 
   // Force platform to retrieve latest status.
-  if (!(this.failedLoginTimes >= 3)) {
+  if (!(this.failedLoginTimes >= 2)) {
     this.portalSyncSession.timer = setTimeout(
       () => {
         this.portalSync();
@@ -1026,8 +1026,8 @@ ADTPulsePlatform.prototype.catchErrors = function catchErrors(error) {
       }
 
       // If login fails twice.
-      if (this.failedLoginTimes >= 3) {
-        this.logMessage('Login failed more than once. Portal sync terminated.', priority = 10);
+      if (this.failedLoginTimes > 2) {
+        this.logMessage('Login failed more than two times. Portal sync terminated.', priority = 10);
       } else {
         this.logMessage('Login failed. Trying again...', priority = 20);
       }
