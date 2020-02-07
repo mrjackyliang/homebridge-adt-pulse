@@ -72,6 +72,12 @@
         "required": false,
         "pattern": "^([1-5])([0])$",
         "description": "Higher levels mean more logs will show. Turn on Homebridge Debug Mode for levels 40 and 50. Recommended setting is \"Info (Level 30)\""
+      },
+      "logActivity": {
+        "title": "Log Activity",
+        "type": "boolean",
+        "default": true,
+        "required": false
       }
     }
   },
@@ -96,6 +102,9 @@
     },
     {
       "key": "logLevel"
+    },
+    {
+      "key": "logActivity"
     }
   ],
   "form": null,

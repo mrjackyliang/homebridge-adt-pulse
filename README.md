@@ -27,6 +27,7 @@ When configuring this plugin, simply add the platform to your existing `config.j
       "username": "email@email.com",
       "password": "1234567890",
       "logLevel": 30,
+      "logActivity": true,
       "resetAll": false
     },
     {
@@ -82,6 +83,15 @@ __NOTE:__ If the `logLevel` setting is incorrectly specified, a warning will be 
 
 __NOTE 2:__ Don't forget to enable Homebridge Debug Mode when setting `logLevel` to `40` or above or else debug messages won't be shown.
 
+## Log Activity
+While the plugin is running, it has the ability to record alarm and sensor activity from the ADT Pulse portal to the Homebridge logs. _Optional_.
+
+The default is `true`. Configure `logActivity` with the values below:
+* Set `logActivity` to `true` for active mode.
+* Set `logActivity` to `false` for passive mode.
+
+__NOTE:__ Logging alarm and sensor activity requires the `logLevel` setting to be set to `30` or greater.
+
 ## Resetting the Plugin
 Managing many accessories in a Homebridge environment is already a seemingly hard task, and sometimes you might want to step back and do a reset.
 
@@ -110,4 +120,4 @@ The script provides an active connection to the ADT Pulse portal. Here is a list
 ## Credits and Appreciation
 If you would like to show your appreciation for its continued development, you can optionally become my supporter on [GitHub Sponsors](https://github.com/sponsors/mrjackyliang) or [Patreon](https://www.patreon.com/mrjackyliang)!
 
-Also a HUGE thank you to [@kevinmkickey](https://github.com/kevinmhickey/adt-pulse) for providing the ADT Pulse script.
+Also a HUGE thank you to [@kevinmkickey](https://github.com/kevinmhickey) for providing the [ADT Pulse script](https://github.com/kevinmhickey/adt-pulse).

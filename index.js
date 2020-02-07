@@ -33,7 +33,7 @@ function ADTPulsePlatform(log, config, api) {
   this.deviceStatus = {};
   this.zoneStatus = {};
 
-  // Keep track of failed increments.
+  // Keeps track of failed times.
   this.failedLoginTimes = 0;
   this.stalledSyncTimes = 0;
 
@@ -45,10 +45,11 @@ function ADTPulsePlatform(log, config, api) {
   // Session data.
   this.sessionVersion = '';
 
-  // Credentials could be null.
+  // These variables could be undefined.
   this.username = _.get(this.config, 'username');
   this.password = _.get(this.config, 'password');
   this.logLevel = _.get(this.config, 'logLevel');
+  this.logActivity = _.get(this.config, 'logActivity');
   this.resetAll = _.get(this.config, 'resetAll');
 
   // Timers.
@@ -67,6 +68,14 @@ function ADTPulsePlatform(log, config, api) {
   if (!this.username || !this.password) {
     this.logMessage('Missing required username or password in configuration.', 10);
     return;
+  }
+
+  // Check if log activity is enabled.
+  if (typeof this.logActivity !== 'boolean') {
+    if (this.logActivity !== undefined) {
+      this.logMessage('"logActivity" setting should be true or false. Defaulting to true.', 20);
+    }
+    this.logActivity = true;
   }
 
   // Prevent accidental reset.
@@ -823,6 +832,23 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
               const deviceUUID = UUIDGen.generate('system-1');
               const deviceLoaded = _.find(this.accessories, ['UUID', deviceUUID]);
 
+              if (this.logActivity) {
+                const deviceId = 'system-1';
+                const deviceName = 'Security Panel';
+
+                const oldState = _.get(this.deviceStatus, 'state');
+                const oldStatus = _.get(this.deviceStatus, 'status');
+                const newState = _.get(deviceStatus, 'state');
+                const newStatus = _.get(deviceStatus, 'status');
+
+                const oldSummary = `${oldState} / ${oldStatus}`.toLowerCase();
+                const newSummary = `${newState} / ${newStatus}`.toLowerCase();
+
+                if (!oldSummary.includes('undefined') && oldSummary !== newSummary) {
+                  this.logMessage(`${deviceName} (${deviceId}) changed from "${oldSummary}" to "${newSummary}".`, 30);
+                }
+              }
+
               // Set latest status into instance.
               this.deviceStatus = deviceStatus;
 
@@ -844,6 +870,29 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
             .then(() => this.pulse.getZoneStatus())
             .then((zones) => {
               const zoneStatus = _.get(zones, 'info');
+
+              if (this.logActivity) {
+                _.forEach(zoneStatus, (zone) => {
+                  const zoneId = _.get(zone, 'id');
+                  const zoneName = _.get(zone, 'name');
+                  const zoneTags = _.get(zone, 'tags');
+
+                  const matchStatus = _.find(this.zoneStatus, {
+                    id: zoneId,
+                    tags: zoneTags,
+                  });
+
+                  const oldStatus = _.get(matchStatus, 'state');
+                  const newStatus = _.get(zone, 'state');
+
+                  if (oldStatus !== undefined && oldStatus !== newStatus) {
+                    const convertOld = this.convertZoneStatus(oldStatus, zoneTags);
+                    const convertNew = this.convertZoneStatus(newStatus, zoneTags);
+
+                    this.logMessage(`${zoneName} (${zoneId}) changed from "${convertOld}" to "${convertNew}".`, 30);
+                  }
+                });
+              }
 
               // Set latest status into instance.
               this.zoneStatus = zoneStatus;
@@ -919,6 +968,48 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
       this.syncInterval * 1000,
     );
   }
+};
+
+/**
+ * Convert "devStat" zone statuses to human readable format.
+ *
+ * @param {string} status - The raw "devStat" zone status.
+ * @param {string} type   - Can be "sensor,doorWindow", "sensor,glass", "sensor,motion", "sensor,co", or "sensor,fire".
+ *
+ * @returns {(string|undefined)}
+ *
+ * @since 1.0.0
+ */
+ADTPulsePlatform.prototype.convertZoneStatus = function convertZoneStatus(status, type) {
+  let newStatus;
+
+  if (typeof status === 'string') {
+    const processedStatus = status.replace('devStat', '').toLowerCase();
+
+    if (processedStatus === 'ok') {
+      switch (type) {
+        case 'sensor,doorWindow':
+          newStatus = 'closed';
+          break;
+        case 'sensor,glass':
+          newStatus = 'not tripped';
+          break;
+        case 'sensor,motion':
+          newStatus = 'no motion';
+          break;
+        case 'sensor,co':
+        case 'sensor,fire':
+          newStatus = 'no alarm';
+          break;
+        default:
+          break;
+      }
+    } else {
+      newStatus = processedStatus;
+    }
+  }
+
+  return newStatus || status;
 };
 
 /**
