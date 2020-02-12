@@ -16,7 +16,7 @@
  *     % - Account password
  *     @ - Action type
  *
- * @type {function(Object): void}
+ * @type {function(object): void}
  *
  * @since 1.0.0
  */

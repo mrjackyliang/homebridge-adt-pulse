@@ -33,7 +33,7 @@ let lastKnownSiteId = '';
 /**
  * ADT Pulse constructor.
  *
- * @param {Object} options - The configuration.
+ * @param {object} options - The configuration.
  *
  * @constructor
  *
@@ -48,7 +48,7 @@ function Pulse(options) {
 /**
  * ADT Pulse login.
  *
- * @returns {Q.Promise<Object>}
+ * @returns {Q.Promise<object>}
  *
  * @since 1.0.0
  */
@@ -172,7 +172,7 @@ Pulse.prototype.login = function login() {
 /**
  * ADT Pulse logout.
  *
- * @returns {Q.Promise<Object>}
+ * @returns {Q.Promise<object>}
  *
  * @since 1.0.0
  */
@@ -238,7 +238,7 @@ Pulse.prototype.logout = function logout() {
 /**
  * ADT Pulse get device information.
  *
- * @returns {Q.Promise<Object>}
+ * @returns {Q.Promise<object>}
  *
  * @since 1.0.0
  */
@@ -303,7 +303,7 @@ Pulse.prototype.getDeviceInformation = function getDeviceInformation() {
 /**
  * ADT Pulse get device status.
  *
- * @returns {Q.Promise<Object>}
+ * @returns {Q.Promise<object>}
  *
  * @since 1.0.0
  */
@@ -413,7 +413,7 @@ Pulse.prototype.getDeviceStatus = function getDeviceStatus() {
  * @param {string} armState - Can be "disarmed", "disarmed+with+alarm", "away", "stay", or "night".
  * @param {string} arm      - Can be "off", "away", "stay", or "night".
  *
- * @returns {Q.Promise<Object>}
+ * @returns {Q.Promise<object>}
  *
  * @since 1.0.0
  */
@@ -532,7 +532,7 @@ Pulse.prototype.setDeviceStatus = function setDeviceStatus(armState, arm) {
 /**
  * ADT Pulse get zone status.
  *
- * @returns {Q.Promise<Object>}
+ * @returns {Q.Promise<object>}
  *
  * @since 1.0.0
  */
@@ -625,7 +625,7 @@ Pulse.prototype.getZoneStatus = function getZoneStatus() {
 /**
  * ADT Pulse sync protocol.
  *
- * @returns {Q.Promise<Object>}
+ * @returns {Q.Promise<object>}
  *
  * @since 1.0.0
  */
@@ -719,9 +719,9 @@ Pulse.prototype.hasInternetWrapper = function hasInternetWrapper(deferred, runFu
 /**
  * Request options generator.
  *
- * @param {Object} additionalOptions - Additional options.
+ * @param {object} additionalOptions - Additional options.
  *
- * @returns {Object}
+ * @returns {object}
  *
  * @since 1.0.0
  */

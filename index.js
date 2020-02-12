@@ -497,7 +497,7 @@ ADTPulsePlatform.prototype.getZoneAccessory = function getZoneAccessory(type, id
  * @param {string}  type   - Can be "target" or "current".
  * @param {boolean} format - Format device status to Homebridge.
  *
- * @returns {(undefined|number|string)}
+ * @returns {(undefined|string|number)}
  *
  * @since 1.0.0
  */
@@ -704,7 +704,7 @@ ADTPulsePlatform.prototype.formatSetDeviceStatus = function formatSetDeviceStatu
  * @param {string}  id     - The accessory unique identification code.
  * @param {boolean} format - Format device status to Homebridge.
  *
- * @returns {(undefined|number|boolean|string)}
+ * @returns {(undefined|string|number|boolean)}
  *
  * @since 1.0.0
  */
@@ -976,7 +976,7 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
  * @param {string} status - The raw "devStat" zone status.
  * @param {string} type   - Can be "sensor,doorWindow", "sensor,glass", "sensor,motion", "sensor,co", or "sensor,fire".
  *
- * @returns {(string|undefined)}
+ * @returns {(undefined|string)}
  *
  * @since 1.0.0
  */
@@ -1184,7 +1184,7 @@ ADTPulsePlatform.prototype.logSystemInformation = function logSystemInformation(
 /**
  * Log message.
  *
- * @param {(string|object)} content  - The message or content being recorded into the logs.
+ * @param {(object|string)} content  - The message or content being recorded into the logs.
  * @param {number}          priority - 10 (error), 20 (warn), 30 (info), 40 (debug), 50 (verbose).
  *
  * @since 1.0.0
