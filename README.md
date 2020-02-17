@@ -84,7 +84,7 @@ __NOTE:__ If the `logLevel` setting is incorrectly specified, a warning will be 
 __NOTE 2:__ Don't forget to enable Homebridge Debug Mode when setting `logLevel` to `40` or above or else debug messages won't be shown.
 
 ## Log Activity
-While the plugin is running, it has the ability to record alarm and sensor activity from the ADT Pulse portal to the Homebridge logs. _Optional_.
+While the plugin is running, it has the ability to record alarm and sensor activity from the ADT Pulse portal to the Homebridge logs. _Optional._
 
 The default is `true`. Configure `logActivity` with the values below:
 * Set `logActivity` to `true` for active mode.
@@ -93,7 +93,7 @@ The default is `true`. Configure `logActivity` with the values below:
 __NOTE:__ Logging alarm and sensor activity requires the `logLevel` setting to be set to `30` or greater.
 
 ## Resetting the Plugin
-Managing many accessories in a Homebridge environment is already a seemingly hard task, and sometimes you might want to step back and do a reset.
+Managing many accessories in a Homebridge environment is already a seemingly hard task, and sometimes you might want to step back and do a reset. _Optional._
 
 The default is `false`. Configure `resetAll` with the values below:
 * Set `resetAll` to `true` for reset mode.
