@@ -22,11 +22,29 @@
     "max-len": [
       "off"
     ],
-    "no-irregular-whitespace": [
+    "no-multi-spaces": [
       "error",
       {
-        "skipRegExps": true
+        "exceptions": {
+          "VariableDeclarator": true,
+          "AssignmentExpression": true
+        }
       }
     ]
-  }
+  },
+  "overrides": [
+    {
+      "files": [
+        "api.js"
+      ],
+      "rules": {
+        "no-irregular-whitespace": [
+          "error",
+          {
+            "skipRegExps": true
+          }
+        ]
+      }
+    }
+  ]
 }

@@ -27,13 +27,13 @@ const Pulse = require('./api');
  *
  * @since 1.0.0
  */
-const username = process.argv.indexOf('--username');
+const username      = process.argv.indexOf('--username');
 const usernameValue = (username > -1) ? process.argv[username + 1] : '';
 
-const password = process.argv.indexOf('--password');
+const password      = process.argv.indexOf('--password');
 const passwordValue = (password > -1) ? process.argv[password + 1] : '';
 
-const action = process.argv.indexOf('--action');
+const action      = process.argv.indexOf('--action');
 const actionValue = (action > -1) ? process.argv[action + 1] : '';
 
 /**
