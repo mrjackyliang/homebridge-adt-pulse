@@ -119,7 +119,6 @@ function ADTPulsePlatform(log, config, api) {
   }
 }
 
-// noinspection JSUnusedGlobalSymbols
 /**
  * Restore cached accessories.
  *
