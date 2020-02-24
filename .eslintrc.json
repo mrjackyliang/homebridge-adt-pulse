@@ -1,50 +1,51 @@
 {
-  "env": {
-    "commonjs": true,
-    "es6": true,
-    "node": true
-  },
-  "extends": [
-    "airbnb-base"
-  ],
-  "globals": {
-    "Atomics": "readonly",
-    "SharedArrayBuffer": "readonly"
-  },
-  "parserOptions": {
-    "ecmaVersion": 2018,
-    "sourceType": "script"
-  },
-  "rules": {
-    "no-console": [
-      "off"
+    "env": {
+        "browser": false,
+        "commonjs": true,
+        "es6": true,
+        "node": true
+    },
+    "extends": [
+        "airbnb-base"
     ],
-    "max-len": [
-      "off"
-    ],
-    "no-multi-spaces": [
-      "error",
-      {
-        "exceptions": {
-          "VariableDeclarator": true,
-          "AssignmentExpression": true
-        }
-      }
-    ]
-  },
-  "overrides": [
-    {
-      "files": [
-        "api.js"
-      ],
-      "rules": {
-        "no-irregular-whitespace": [
-          "error",
-          {
-            "skipRegExps": true
-          }
+    "globals": {
+        "Atomics": "readonly",
+        "SharedArrayBuffer": "readonly"
+    },
+    "parserOptions": {
+        "ecmaVersion": 2018,
+        "sourceType": "script"
+    },
+    "rules": {
+        "no-console": [
+            "off"
+        ],
+        "max-len": [
+            "off"
+        ],
+        "no-multi-spaces": [
+            "error",
+            {
+                "exceptions": {
+                    "VariableDeclarator": true,
+                    "AssignmentExpression": true
+                }
+            }
         ]
-      }
-    }
-  ]
+    },
+    "overrides": [
+        {
+            "files": [
+                "api.js"
+            ],
+            "rules": {
+                "no-irregular-whitespace": [
+                    "error",
+                    {
+                        "skipRegExps": true
+                    }
+                ]
+            }
+        }
+    ]
 }

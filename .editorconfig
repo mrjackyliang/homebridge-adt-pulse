@@ -6,10 +6,24 @@ end_of_line = lf
 indent_size = 4
 indent_style = space
 insert_final_newline = true
+max_line_length = 120
 trim_trailing_whitespace = true
 
-[*.js]
+[{*.cjs, *.js}]
 indent_size = 2
+tab_width = 2
+ij_continuation_indent_size = 2
+ij_javascript_align_var_statements = 2
+ij_javascript_force_quote_style = true
+ij_javascript_keep_simple_methods_in_one_line = true
+ij_javascript_object_literal_wrap = split_into_lines
+ij_javascript_spaces_within_imports = true
+ij_javascript_spaces_within_object_literal_braces = true
+ij_javascript_use_double_quotes = false
+ij_javascript_var_declaration_wrap = split_into_lines
 
-[*.json]
+[{*.ts, *.ats}]
 indent_size = 2
+tab_width = 2
+ij_continuation_indent_size = 2
+ij_typescript_spaces_within_imports = true
