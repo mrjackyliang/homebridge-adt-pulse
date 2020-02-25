@@ -49,7 +49,7 @@ The supported hardware configurations are listed below:
 5. ADT Carbon Monoxide Detector (`co`)
 6. ADT Fire (Smoke/Heat) Detector (`fire`)
 
-If you have a sensor that is unsupported by this plugin, please [request a feature](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new?template=feature_request.md) so I can add support for it.
+If you have a sensor that is unsupported by this plugin, please [submit an issue](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new/choose) so I can add support for it.
 
 Please mind that I DO NOT have plans to support devices connected to the ADT Pulse Z-Wave Platform. You may use another `homebridge-plugin` for that.
 
@@ -115,7 +115,7 @@ node api-test --username email@email.com --password 1234567890 --action [device-
 The script provides an active connection to the ADT Pulse portal. Here is a list of must-knows, just in case you might want to debug (or improve) the plugin:
 
 1. Device and zone statuses are polled every __3 seconds__. If there are more than 2 login failures, device polling and portal sync stops.
-2. Supported versions are `17.0.0-71` and `18.0.0-78`. If this plugin does not support either version, a warning will appear in the logs. Please [create a bug report](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new?template=bug_report.md) to let me know!
+2. Supported versions are `17.0.0-71` and `18.0.0-78`. If this plugin does not support either version, a warning will appear in the logs. Please [submit an issue](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new/choose) to let me know!
 
 ## Credits and Appreciation
 If you would like to show your appreciation for its continued development, you can optionally become my supporter on [GitHub Sponsors](https://github.com/sponsors/mrjackyliang) or [Patreon](https://www.patreon.com/mrjackyliang)!
