@@ -60,9 +60,9 @@ __Without force arm, arm away/stay/night may stall and reset to Disarm with no e
 
 Before arming, please check the status of your Home (instructions below), as HomeKit will not check if your devices are in an active state.
 
-1. Open the Home app.
-2. Tap the Status Details (listed in the Home tab _below_ the title).
-3. View the __ATTENTION__ area of your home.
+1. Open the Home app
+2. Tap the Status Details (listed in the Home tab _below_ the title)
+3. View the __ATTENTION__ area of your home
 
 ## Arm Night Support
 As for ADT Pulse systems, __Arm Night__ is only available for use through the panel itself. Although it is not visible on the Web Portal or the mobile app, you can still place your system in __Arm Night__ mode with this plugin.
@@ -73,11 +73,11 @@ Because of the force arming procedure (above), __please make sure no devices are
 Debugging is difficult without the proper information, in such, this plugin offers a way to filter out messages sent to the logs. _Optional._
 
 The default is `30`. Configure `logLevel` with the values below:
-* Set `logLevel` to `10` for errors only.
-* Set `logLevel` to `20` for warnings (and the above).
-* Set `logLevel` to `30` for info (and the above).
-* Set `logLevel` to `40` for debugging (and the above).
-* Set `logLevel` to `50` for verbose (and the above).
+* Set `logLevel` to `10` for errors only
+* Set `logLevel` to `20` for warnings (and the above)
+* Set `logLevel` to `30` for info (and the above)
+* Set `logLevel` to `40` for debugging (and the above)
+* Set `logLevel` to `50` for verbose (and the above)
 
 __NOTE:__ If the `logLevel` setting is incorrectly specified, a warning will be shown then subsequently set to `30`.
 
@@ -87,8 +87,8 @@ __NOTE 2:__ Don't forget to enable Homebridge Debug Mode when setting `logLevel`
 While the plugin is running, it has the ability to record alarm and sensor activity from the ADT Pulse portal to the Homebridge logs. _Optional._
 
 The default is `true`. Configure `logActivity` with the values below:
-* Set `logActivity` to `true` for active mode.
-* Set `logActivity` to `false` for passive mode.
+* Set `logActivity` to `true` for active mode
+* Set `logActivity` to `false` for passive mode
 
 __NOTE:__ Logging alarm and sensor activity requires the `logLevel` setting to be set to `30` or greater.
 
@@ -96,8 +96,8 @@ __NOTE:__ Logging alarm and sensor activity requires the `logLevel` setting to b
 Managing many accessories in a Homebridge environment is already a seemingly hard task, and sometimes you might want to step back and do a reset. _Optional._
 
 The default is `false`. Configure `resetAll` with the values below:
-* Set `resetAll` to `true` for reset mode.
-* Set `resetAll` to `false` for normal mode.
+* Set `resetAll` to `true` for reset mode
+* Set `resetAll` to `false` for normal mode
 
 __NOTE:__ To prevent accidental removal of all accessories, the `resetAll` setting can be configured manually in the `config.json` file.
 
