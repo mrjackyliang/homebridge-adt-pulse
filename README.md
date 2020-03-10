@@ -11,8 +11,8 @@ This is a Homebridge plugin for ADT Pulse users that allow homeowners to control
 
 To use this plugin, here are three simple steps you need to follow:
 1. Run `npm install homebridge-adt-pulse`
-2. Configure the plugin using the [configuration example](#configuration).
-3. Restart Homebridge.
+2. Configure the plugin using the [configuration example](#configuration)
+3. Restart Homebridge
 
 You can also search `adt-pulse` using [HOOBS](https://github.com/mkellsy/homebridge-config-ui) or [Onzu's Homebridge Config UI](https://github.com/oznu/homebridge-config-ui-x). Then proceed to configure the plugin using the included settings in the plugin page.
 
