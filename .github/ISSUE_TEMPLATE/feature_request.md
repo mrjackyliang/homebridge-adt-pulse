@@ -7,6 +7,12 @@ assignees: ''
 
 ---
 
+### Before requesting a feature, check all boxes:
+- [ ] DOES NOT relate to the Z-Wave platform
+- [ ] DOES NOT relate to anything other than ADT Pulse
+
+Please check both boxes like this `[x]`. If they are not checked, the feature request will be closed without an official reply.
+
 ### Is your feature request related to a problem? Please describe.
 A clear and concise description of what the problem is. For example, I'm always frustrated when [...]
 

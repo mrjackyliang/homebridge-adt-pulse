@@ -3,7 +3,7 @@ ADT Pulse for Homebridge
 
 [![NPM Version](https://img.shields.io/npm/v/homebridge-adt-pulse.svg?style=flat-square&color=blue)](https://www.npmjs.com/package/homebridge-adt-pulse)
 [![NPM Downloads](https://img.shields.io/npm/dt/homebridge-adt-pulse.svg?style=flat-square&color=success)](https://www.npmjs.com/package/homebridge-adt-pulse)
-[![NPM License](https://img.shields.io/npm/l/homebridge-adt-pulse.svg?style=flat-square&color=yellow)](https://www.npmjs.com/package/homebridge-adt-pulse)
+[![GitHub License](https://img.shields.io/github/license/mrjackyliang/homebridge-adt-pulse?style=flat-square&color=yellow)](https://github.com/mrjackyliang/homebridge-adt-pulse/blob/master/LICENSE)
 [![Become a GitHub Sponsor](https://img.shields.io/badge/sponsor-github-black?style=flat-square&color=orange)](https://github.com/sponsors/mrjackyliang)
 [![Become a Patreon](https://img.shields.io/badge/donate-patreon-orange?style=flat-square&color=red)](https://www.patreon.com/mrjackyliang)
 

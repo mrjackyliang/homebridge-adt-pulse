@@ -16,6 +16,7 @@ ij_continuation_indent_size = 2
 ij_javascript_align_var_statements = 2
 ij_javascript_force_quote_style = true
 ij_javascript_keep_simple_methods_in_one_line = true
+ij_javascript_method_call_chain_wrap = normal
 ij_javascript_object_literal_wrap = split_into_lines
 ij_javascript_spaces_within_imports = true
 ij_javascript_spaces_within_object_literal_braces = true
