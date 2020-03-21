@@ -676,15 +676,15 @@ Pulse.prototype.getZoneStatusOrb = function getZoneStatusOrb() {
             let theTag;
 
             if (theName && theState !== 'devStatUnknown') {
-              if (theName.includes('Door') || theName.includes('Window')) {
+              if (['Door', 'Window', 'DR', 'WIN', 'SLIDER', 'NOOK'].includes(theName)) {
                 theTag = 'sensor,doorWindow';
-              } else if (theName.includes('Glass')) {
+              } else if (['Glass'].includes(theName)) {
                 theTag = 'sensor,glass';
-              } else if (theName.includes('Motion')) {
+              } else if (['Motion', 'MOTION'].includes(theName)) {
                 theTag = 'sensor,motion';
-              } else if (theName.includes('Gas')) {
+              } else if (['Gas'].includes(theName)) {
                 theTag = 'sensor,co';
-              } else if (theName.includes('Smoke') || theName.includes('Heat')) {
+              } else if (['Smoke', 'Heat', 'SMOKE'].includes(theName)) {
                 theTag = 'sensor,fire';
               }
             }
