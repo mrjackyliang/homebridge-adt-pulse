@@ -108,7 +108,7 @@ There is a test script included in the package that performs specific actions us
 
 This script requires your username, password, and an action type.
 ```shell script
-node api-test --username email@email.com --password 1234567890 --action [device-information,device-status,zone-status,sync,disarm,arm-away,arm-stay,arm-night]
+node api-test --username email@email.com --password 1234567890 --action [device-information,device-status,zone-status,zone-status-orb,sync,disarm,arm-away,arm-stay,arm-night]
 ```
 
 ## Developer Information

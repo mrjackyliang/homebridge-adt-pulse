@@ -313,7 +313,6 @@ Pulse.prototype.getDeviceStatus = function getDeviceStatus() {
   this.hasInternetWrapper(deferred, () => {
     this.consoleLogger('ADT Pulse: Getting device status...', 'log');
 
-    // Then, get security panel status.
     request.get(
       `https://portal.adtpulse.com/myhome/${lastKnownVersion}/ajax/orb.jsp`,
       this.generateRequestOptions({
@@ -557,7 +556,6 @@ Pulse.prototype.getZoneStatus = function getZoneStatus() {
         this.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, 'log');
         this.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, 'log');
 
-        // If error, wrong path, or HTML format.
         if (error || !regex.test(responsePath) || body.indexOf('<html') > -1) {
           authenticated = false;
 
@@ -578,11 +576,11 @@ Pulse.prototype.getZoneStatus = function getZoneStatus() {
 
           // Only sensors are supported.
           const output = _.map(sensors, (device) => {
-            const id    = _.get(device, 'id');
             const name = _.get(device, 'name');
             const tags = _.get(device, 'tags');
             const state = _.get(device, 'state.icon');
             const index = _.get(device, 'devIndex');
+            const id = (index) ? index.replace(/((E?)([0-9]{1,2}))((VER)([0-9]+))/g, '$3') : 0;
 
             /**
              * Expected output.
@@ -599,7 +597,7 @@ Pulse.prototype.getZoneStatus = function getZoneStatus() {
              *        devStatUnknown (device offline)
              */
             return {
-              id,
+              id: `sensor-${id}`,
               name,
               tags,
               index,
@@ -611,6 +609,113 @@ Pulse.prototype.getZoneStatus = function getZoneStatus() {
 
           deferred.resolve({
             action: 'GET_ZONE_STATUS',
+            success: true,
+            info: output,
+          });
+        }
+      },
+    );
+  });
+
+  return deferred.promise;
+};
+
+/**
+ * ADT Pulse get zone status via orb.
+ *
+ * @returns {Q.Promise<object>}
+ *
+ * @since 1.0.0
+ */
+Pulse.prototype.getZoneStatusOrb = function getZoneStatusOrb() {
+  const deferred = Q.defer();
+
+  this.hasInternetWrapper(deferred, () => {
+    this.consoleLogger('ADT Pulse: Getting zone status (via orb)...', 'log');
+
+    request.get(
+      `https://portal.adtpulse.com/myhome/${lastKnownVersion}/ajax/orb.jsp`,
+      this.generateRequestOptions({
+        headers: {
+          Accept: '*/*',
+          Referer: `https://portal.adtpulse.com/myhome/${lastKnownVersion}/summary/summary.jsp`,
+        },
+      }),
+      (error, response, body) => {
+        const regex = new RegExp(/(\/myhome\/)([0-9.-]+)(\/ajax\/orb\.jsp)/);
+        const responsePath = _.get(response, 'request.uri.path');
+
+        this.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, 'log');
+        this.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, 'log');
+
+        if (error || !regex.test(responsePath) || body.indexOf('<html') > -1) {
+          authenticated = false;
+
+          this.consoleLogger('ADT Pulse: Get zone status (via orb) failed.', 'error');
+
+          deferred.reject({
+            action: 'GET_ZONE_STATUS_ORB',
+            success: false,
+            info: {
+              error,
+              message: this.getErrorMessage(body),
+            },
+          });
+        } else {
+          const $ = cheerio.load(body);
+          const sensors = $('#orbSensorsList table tr.p_listRow').toArray();
+
+          const output = _.map(sensors, (sensor) => {
+            const theSensor = cheerio.load(sensor);
+            const theName = theSensor('a.p_deviceNameText').html();
+            const theZone = theSensor('span.p_grayNormalText').html();
+            const theZoneNumber = (theZone) ? theZone.replace(/(Zone&#xA0;)([0-9]{1,2})/, '$2') : 0;
+            const theZoneIndex = (theZoneNumber < 10) ? `E${theZoneNumber}` : theZoneNumber;
+            const theState = theSensor('span.devStatIcon canvas').attr('icon');
+
+            let theTag;
+
+            if (theName && theState !== 'devStatUnknown') {
+              if (theName.includes('Door') || theName.includes('Window')) {
+                theTag = 'sensor,doorWindow';
+              } else if (theName.includes('Glass')) {
+                theTag = 'sensor,glass';
+              } else if (theName.includes('Motion')) {
+                theTag = 'sensor,motion';
+              } else if (theName.includes('Gas')) {
+                theTag = 'sensor,co';
+              } else if (theName.includes('Smoke') || theName.includes('Heat')) {
+                theTag = 'sensor,fire';
+              }
+            }
+
+            /**
+             * Expected output.
+             *
+             * id:    sensor-[integer]
+             * name:  device name
+             * tags:  sensor,[doorWindow,motion,glass,co,fire]
+             * index: [E][integer]VER[integer]
+             * state: devStatOK (device okay)
+             *        devStatOpen (door/window opened)
+             *        devStatMotion (detected motion)
+             *        devStatTamper (glass broken or device tamper)
+             *        devStatAlarm (detected CO/Smoke)
+             *        devStatUnknown (device offline)
+             */
+            return {
+              id: `sensor-${theZoneNumber}`,
+              name: theName || 'Unknown Sensor',
+              tags: theTag || 'sensor',
+              index: `${theZoneIndex}VER1`,
+              state: theState || 'devStatUnknown',
+            };
+          });
+
+          this.consoleLogger('ADT Pulse: Get zone status (via orb) success.', 'log');
+
+          deferred.resolve({
+            action: 'GET_ZONE_STATUS_ORB',
             success: true,
             info: output,
           });
@@ -650,7 +755,6 @@ Pulse.prototype.performPortalSync = function performPortalSync() {
         this.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, 'log');
         this.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, 'log');
 
-        // If error, wrong path, or HTML format.
         if (error || !regex.test(responsePath) || body.indexOf('<html') > -1) {
           authenticated = false;
 

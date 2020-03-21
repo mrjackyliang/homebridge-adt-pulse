@@ -866,7 +866,7 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
 
               this.devicePolling('system', 'system-1');
             })
-            .then(() => this.pulse.getZoneStatus())
+            .then(() => this.pulse.getZoneStatusOrb())
             .then((zones) => {
               const zoneStatus = _.get(zones, 'info');
 

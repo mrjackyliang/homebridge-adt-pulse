@@ -112,6 +112,18 @@ switch (actionValue) {
       .then((logout) => console.log(logout))
       .catch((error) => console.error(error));
     break;
+  case 'zone-status-orb':
+    console.log('ADT Pulse Test: Getting zone status (via orb)...');
+
+    pulse
+      .login()
+      .then((login) => console.log(login))
+      .then(() => pulse.getZoneStatusOrb())
+      .then((statuses) => console.log(statuses))
+      .then(() => pulse.logout())
+      .then((logout) => console.log(logout))
+      .catch((error) => console.error(error));
+    break;
   case 'sync':
     console.log('ADT Pulse Test: Performing portal sync...');
 
