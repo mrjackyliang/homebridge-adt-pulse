@@ -22,15 +22,6 @@
         ],
         "max-len": [
             "off"
-        ],
-        "no-multi-spaces": [
-            "error",
-            {
-                "exceptions": {
-                    "VariableDeclarator": true,
-                    "AssignmentExpression": true
-                }
-            }
         ]
     },
     "overrides": [

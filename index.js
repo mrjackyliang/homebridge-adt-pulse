@@ -6,7 +6,7 @@
 const _ = require('lodash');
 
 const packageJson = require('./package');
-const Pulse       = require('./api');
+const Pulse = require('./api');
 
 let Accessory;
 let Service;
@@ -25,35 +25,35 @@ let UUIDGen;
  * @since 1.0.0
  */
 function ADTPulsePlatform(log, config, api) {
-  this.log    = log;
+  this.log = log;
   this.config = config;
 
   // Where the security panel and sensors are held.
-  this.accessories  = [];
+  this.accessories = [];
   this.deviceStatus = {};
-  this.zoneStatus   = {};
+  this.zoneStatus = {};
 
   // Keeps track of failed times.
   this.failedLoginTimes = 0;
   this.stalledSyncTimes = 0;
 
   // Keeps track of device updates.
-  this.lastSyncCode      = '1-0-0';
+  this.lastSyncCode = '1-0-0';
   this.portalSyncSession = {};
-  this.isSyncing         = false;
+  this.isSyncing = false;
 
   // Session data.
   this.sessionVersion = '';
 
   // These variables could be undefined.
-  this.username    = _.get(this.config, 'username');
-  this.password    = _.get(this.config, 'password');
-  this.logLevel    = _.get(this.config, 'logLevel');
+  this.username = _.get(this.config, 'username');
+  this.password = _.get(this.config, 'password');
+  this.logLevel = _.get(this.config, 'logLevel');
   this.logActivity = _.get(this.config, 'logActivity');
-  this.resetAll    = _.get(this.config, 'resetAll');
+  this.resetAll = _.get(this.config, 'resetAll');
 
   // Timers.
-  this.syncInterval     = 3;
+  this.syncInterval = 3;
   this.setDeviceTimeout = 8;
 
   // Setup logging function.
@@ -127,7 +127,7 @@ function ADTPulsePlatform(log, config, api) {
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.configureAccessory = function configureAccessory(accessory) {
-  const id   = _.get(accessory, 'context.id');
+  const id = _.get(accessory, 'context.id');
   const name = _.get(accessory, 'displayName');
   const type = _.get(accessory, 'context.type');
 
@@ -205,8 +205,8 @@ ADTPulsePlatform.prototype.configureAccessory = function configureAccessory(acce
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.addAccessory = function addAccessory(type, id, name, make, model, zone, firmware) {
-  const uuid            = UUIDGen.generate(id);
-  const accessory       = new Accessory(name, uuid);
+  const uuid = UUIDGen.generate(id);
+  const accessory = new Accessory(name, uuid);
   const accessoryLoaded = _.find(this.accessories, ['UUID', uuid]);
 
   // Add new accessories only.
@@ -315,11 +315,11 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function prepareAddAccessory(ty
     const deviceMake = _.get(accessory, 'make');
     const deviceType = _.get(accessory, 'type');
 
-    const deviceKind  = 'system';
+    const deviceKind = 'system';
     const deviceModel = deviceType.substr(deviceType.indexOf('-') + 2);
 
-    const deviceId     = 'system-1';
-    const deviceUUID   = UUIDGen.generate(deviceId);
+    const deviceId = 'system-1';
+    const deviceUUID = UUIDGen.generate(deviceId);
     const deviceLoaded = _.find(this.accessories, ['UUID', deviceUUID]);
 
     this.logMessage(`Preparing to add device (${deviceId}) accessory...`, 30);
@@ -337,9 +337,9 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function prepareAddAccessory(ty
       );
     }
   } else if (type === 'zone') {
-    const zoneId    = _.get(accessory, 'id');
-    const zoneName  = _.get(accessory, 'name', '').replace(/[()]/gi, '');
-    const zoneTags  = _.get(accessory, 'tags');
+    const zoneId = _.get(accessory, 'id');
+    const zoneName = _.get(accessory, 'name', '').replace(/[()]/gi, '');
+    const zoneTags = _.get(accessory, 'tags');
     const zoneIndex = _.get(accessory, 'index');
 
     const zoneMake = 'ADT';
@@ -347,7 +347,7 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function prepareAddAccessory(ty
     const zoneArea = zoneIndex.replace(/((E?)([0-9]{1,2}))((VER)([0-9]+))/g, '$3');
     const zoneFirm = zoneIndex.replace(/((E?)([0-9]{1,2}))((VER)([0-9]+))/g, '$6');
 
-    const zoneUUID   = UUIDGen.generate(zoneId);
+    const zoneUUID = UUIDGen.generate(zoneId);
     const zoneLoaded = _.find(this.accessories, ['UUID', zoneUUID]);
 
     let zoneModel;
@@ -406,7 +406,7 @@ ADTPulsePlatform.prototype.removeAccessory = function removeAccessory(accessory)
     return;
   }
 
-  const id   = _.get(accessory, 'context.id');
+  const id = _.get(accessory, 'context.id');
   const name = _.get(accessory, 'displayName');
 
   this.logMessage(`Removing accessory... ${name} (${id})`, 30);
@@ -501,7 +501,7 @@ ADTPulsePlatform.prototype.getZoneAccessory = function getZoneAccessory(type, id
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.getDeviceStatus = function getDeviceStatus(type, format) {
-  const device  = this.deviceStatus;
+  const device = this.deviceStatus;
   const summary = _.get(device, 'summary');
 
   if (typeof summary === 'string') {
@@ -529,12 +529,12 @@ ADTPulsePlatform.prototype.getDeviceStatus = function getDeviceStatus(type, form
  */
 ADTPulsePlatform.prototype.formatGetDeviceStatus = function formatGetDeviceStatus(type, summary) {
   const lowerCaseSummary = summary.toLowerCase();
-  const alarm            = lowerCaseSummary.includes('alarm');
-  const unclearedAlarm   = lowerCaseSummary.includes('uncleared alarm');
-  const disarmed         = lowerCaseSummary.includes('disarmed');
-  const armAway          = lowerCaseSummary.includes('armed away');
-  const armStay          = lowerCaseSummary.includes('armed stay');
-  const armNight         = lowerCaseSummary.includes('armed night');
+  const alarm = lowerCaseSummary.includes('alarm');
+  const unclearedAlarm = lowerCaseSummary.includes('uncleared alarm');
+  const disarmed = lowerCaseSummary.includes('disarmed');
+  const armAway = lowerCaseSummary.includes('armed away');
+  const armStay = lowerCaseSummary.includes('armed stay');
+  const armNight = lowerCaseSummary.includes('armed night');
 
   let status;
 
@@ -632,8 +632,8 @@ ADTPulsePlatform.prototype.setDeviceStatus = function setDeviceStatus(id, name, 
       if (oldArmState === newArmState || (oldArmState === 'disarmed' && newArmState === 'off')) {
         this.logMessage(`Already set to ${newArmState}. Cannot set from ${oldArmState} to ${newArmState}.`, 20);
       } else {
-        const armStay  = Characteristic.SecuritySystemTargetState.STAY_ARM;
-        const armAway  = Characteristic.SecuritySystemTargetState.AWAY_ARM;
+        const armStay = Characteristic.SecuritySystemTargetState.STAY_ARM;
+        const armAway = Characteristic.SecuritySystemTargetState.AWAY_ARM;
         const armNight = Characteristic.SecuritySystemTargetState.NIGHT_ARM;
 
         // If device is not disarmed, and you are attempting to arm.
@@ -708,7 +708,7 @@ ADTPulsePlatform.prototype.formatSetDeviceStatus = function formatSetDeviceStatu
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.getZoneStatus = function getZoneStatus(type, id, format) {
-  const zone  = _.find(this.zoneStatus, ['id', id]);
+  const zone = _.find(this.zoneStatus, ['id', id]);
   const state = _.get(zone, 'state');
 
   if (typeof state === 'string') {
@@ -804,7 +804,7 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
     this.portalSyncSession.function = this.pulse
       .login()
       .then((response) => {
-        const version          = _.get(response, 'info.version');
+        const version = _.get(response, 'info.version');
         const supportedVersion = ['17.0.0-71', '18.0.0-78'];
 
         if (version !== undefined && !supportedVersion.includes(version) && version !== this.sessionVersion) {
@@ -828,16 +828,16 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
             .then(async (device) => {
               const deviceStatus = _.get(device, 'info');
 
-              const deviceUUID   = UUIDGen.generate('system-1');
+              const deviceUUID = UUIDGen.generate('system-1');
               const deviceLoaded = _.find(this.accessories, ['UUID', deviceUUID]);
 
               if (this.logActivity) {
-                const deviceId   = 'system-1';
+                const deviceId = 'system-1';
                 const deviceName = 'Security Panel';
 
-                const oldState  = _.get(this.deviceStatus, 'state');
+                const oldState = _.get(this.deviceStatus, 'state');
                 const oldStatus = _.get(this.deviceStatus, 'status');
-                const newState  = _.get(deviceStatus, 'state');
+                const newState = _.get(deviceStatus, 'state');
                 const newStatus = _.get(deviceStatus, 'status');
 
                 const oldSummary = `${oldState} / ${oldStatus}`.toLowerCase();
@@ -854,8 +854,8 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
               // Add or update device.
               if (deviceLoaded === undefined) {
                 try {
-                  const getDeviceInfo    = await this.pulse.getDeviceInformation();
-                  const deviceInfo       = _.get(getDeviceInfo, 'info');
+                  const getDeviceInfo = await this.pulse.getDeviceInformation();
+                  const deviceInfo = _.get(getDeviceInfo, 'info');
                   const deviceInfoStatus = _.merge(deviceInfo, deviceStatus);
 
                   this.prepareAddAccessory('device', deviceInfoStatus);
@@ -872,7 +872,7 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
 
               if (this.logActivity) {
                 _.forEach(zoneStatus, (zone) => {
-                  const zoneId   = _.get(zone, 'id');
+                  const zoneId = _.get(zone, 'id');
                   const zoneName = _.get(zone, 'name');
                   const zoneTags = _.get(zone, 'tags');
 
@@ -897,12 +897,12 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
               this.zoneStatus = zoneStatus;
 
               _.forEach(zoneStatus, (zone) => {
-                const zoneId   = _.get(zone, 'id');
+                const zoneId = _.get(zone, 'id');
                 const zoneTags = _.get(zone, 'tags');
 
                 const zoneType = zoneTags.substr(zoneTags.indexOf(',') + 1);
 
-                const deviceUUID   = UUIDGen.generate(zoneId);
+                const deviceUUID = UUIDGen.generate(zoneId);
                 const deviceLoaded = _.find(this.accessories, ['UUID', deviceUUID]);
 
                 // Do not poll or add unknown sensor type.
@@ -922,7 +922,7 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
 
           // Remove obsolete zones.
           _.forEachRight(this.accessories, (accessory) => {
-            const id   = _.get(accessory, 'context.id');
+            const id = _.get(accessory, 'context.id');
             const type = _.get(accessory, 'context.type');
             const zone = _.find(this.zoneStatus, { id });
 
@@ -1020,9 +1020,9 @@ ADTPulsePlatform.prototype.convertZoneStatus = function convertZoneStatus(status
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.devicePolling = function devicePolling(type, id) {
-  const uuid      = UUIDGen.generate(id);
+  const uuid = UUIDGen.generate(id);
   const accessory = _.find(this.accessories, ['UUID', uuid]);
-  const name      = _.get(accessory, 'displayName');
+  const name = _.get(accessory, 'displayName');
 
   if (accessory !== undefined) {
     this.logMessage(`Polling device status for ${name} (${id})...`, 50);
@@ -1103,8 +1103,8 @@ ADTPulsePlatform.prototype.thenResponse = function thenResponse(response) {
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.catchErrors = function catchErrors(error) {
-  const action      = _.get(error, 'action');
-  const infoError   = _.get(error, 'info.error');
+  const action = _.get(error, 'action');
+  const infoError = _.get(error, 'info.error');
   const infoMessage = _.get(error, 'info.message', '');
 
   let priority;
@@ -1226,10 +1226,10 @@ ADTPulsePlatform.prototype.logMessage = function logMessage(content, priority) {
  * @since 1.0.0
  */
 module.exports = function plugin(homebridge) {
-  Accessory      = homebridge.platformAccessory;
-  Service        = homebridge.hap.Service;
+  Accessory = homebridge.platformAccessory;
+  Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
-  UUIDGen        = homebridge.hap.uuid;
+  UUIDGen = homebridge.hap.uuid;
 
   // Register the platform into Homebridge.
   homebridge.registerPlatform(

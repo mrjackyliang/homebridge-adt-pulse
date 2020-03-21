@@ -13,7 +13,6 @@ trim_trailing_whitespace = true
 indent_size = 2
 tab_width = 2
 ij_continuation_indent_size = 2
-ij_javascript_align_var_statements = 2
 ij_javascript_force_quote_style = true
 ij_javascript_keep_simple_methods_in_one_line = true
 ij_javascript_method_call_chain_wrap = normal

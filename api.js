@@ -8,11 +8,11 @@
  *
  * @since 1.0.0
  */
-const cheerio     = require('cheerio');
+const cheerio = require('cheerio');
 const hasInternet = require('internet-available');
-const Q           = require('q');
-const request     = require('request');
-const _           = require('lodash');
+const Q = require('q');
+const request = require('request');
+const _ = require('lodash');
 
 /**
  * Browser session cookies.
@@ -26,9 +26,9 @@ let jar;
  *
  * @since 1.0.0
  */
-let authenticated    = false;
+let authenticated = false;
 let lastKnownVersion = '';
-let lastKnownSiteId  = '';
+let lastKnownSiteId = '';
 
 /**
  * ADT Pulse constructor.
@@ -42,7 +42,7 @@ let lastKnownSiteId  = '';
 function Pulse(options) {
   this.username = _.get(options, 'username', '');
   this.password = _.get(options, 'password', '');
-  this.debug    = _.get(options, 'debug', false);
+  this.debug = _.get(options, 'debug', false);
 }
 
 /**
@@ -75,7 +75,7 @@ Pulse.prototype.login = function login() {
         'https://portal.adtpulse.com',
         this.generateRequestOptions(),
         (error, response, body) => {
-          const regex        = new RegExp(/(\/myhome\/)([0-9.-]+)(\/access\/signin\.jsp)/);
+          const regex = new RegExp(/(\/myhome\/)([0-9.-]+)(\/access\/signin\.jsp)/);
           const responsePath = _.get(response, 'request.uri.path');
 
           this.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, 'log');
@@ -117,7 +117,7 @@ Pulse.prototype.login = function login() {
                 },
               }),
               (postError, postResponse, postBody) => {
-                const postRegex        = new RegExp(/(\/myhome\/)([0-9.-]+)(\/summary\/summary\.jsp)/);
+                const postRegex = new RegExp(/(\/myhome\/)([0-9.-]+)(\/summary\/summary\.jsp)/);
                 const postResponsePath = _.get(postResponse, 'request.uri.path');
 
                 this.consoleLogger(`ADT Pulse: Response path -> ${postResponsePath}`, 'log');
@@ -139,9 +139,9 @@ Pulse.prototype.login = function login() {
                 } else {
                   authenticated = true;
 
-                  const $           = cheerio.load(postBody);
+                  const $ = cheerio.load(postBody);
                   const signoutLink = $('#p_signout1').attr('href');
-                  const siteId      = (signoutLink !== undefined) ? signoutLink.replace(/(.*)(networkid=)(.*)(&)(.*)/g, '$3') : undefined;
+                  const siteId = (signoutLink !== undefined) ? signoutLink.replace(/(.*)(networkid=)(.*)(&)(.*)/g, '$3') : undefined;
 
                   // Saves last known site ID for reuse later.
                   lastKnownSiteId = siteId;
@@ -197,7 +197,7 @@ Pulse.prototype.logout = function logout() {
           },
         }),
         (error, response, body) => {
-          const regex        = new RegExp(/(\/myhome\/)([0-9.-]+)(\/access\/signin\.jsp)(.*)/);
+          const regex = new RegExp(/(\/myhome\/)([0-9.-]+)(\/access\/signin\.jsp)(.*)/);
           const responsePath = _.get(response, 'request.uri.path');
 
           this.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, 'log');
@@ -256,7 +256,7 @@ Pulse.prototype.getDeviceInformation = function getDeviceInformation() {
         },
       }),
       (error, response, body) => {
-        const regex        = new RegExp(/(\/myhome\/)([0-9.-]+)(\/system\/device\.jsp)(.*)/);
+        const regex = new RegExp(/(\/myhome\/)([0-9.-]+)(\/system\/device\.jsp)(.*)/);
         const responsePath = _.get(response, 'request.uri.path');
 
         this.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, 'log');
@@ -276,7 +276,7 @@ Pulse.prototype.getDeviceInformation = function getDeviceInformation() {
             },
           });
         } else {
-          const $          = cheerio.load(body);
+          const $ = cheerio.load(body);
           const deviceName = $('td.InputFieldDescriptionL:contains("Name")').next().text().trim();
           const deviceMake = $('td.InputFieldDescriptionL:contains("Manufacturer")').next().text().trim();
           const deviceType = $('td.InputFieldDescriptionL:contains("Type")').next().text().trim();
@@ -323,7 +323,7 @@ Pulse.prototype.getDeviceStatus = function getDeviceStatus() {
         },
       }),
       (error, response, body) => {
-        const regex        = new RegExp(/(\/myhome\/)([0-9.-]+)(\/ajax\/orb\.jsp)/);
+        const regex = new RegExp(/(\/myhome\/)([0-9.-]+)(\/ajax\/orb\.jsp)/);
         const responsePath = _.get(response, 'request.uri.path');
 
         this.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, 'log');
@@ -343,10 +343,10 @@ Pulse.prototype.getDeviceStatus = function getDeviceStatus() {
             },
           });
         } else {
-          const $           = cheerio.load(body);
+          const $ = cheerio.load(body);
           const textSummary = $('#divOrbTextSummary span').text();
-          const theState    = textSummary.replace(/([A-Z a-z ]+)(\.[  ]?)([A-Z a-z 0-9]*)(\.?)(.*)/g, '$1');
-          const theStatus   = textSummary.replace(/([A-Z a-z ]+)(\.[  ]?)([A-Z a-z 0-9]*)(\.?)(.*)/g, '$3');
+          const theState = textSummary.replace(/([A-Z a-z ]+)(\.[  ]?)([A-Z a-z 0-9]*)(\.?)(.*)/g, '$1');
+          const theStatus = textSummary.replace(/([A-Z a-z ]+)(\.[  ]?)([A-Z a-z 0-9]*)(\.?)(.*)/g, '$3');
 
           this.consoleLogger('ADT Pulse: Get device status success.', 'log');
 
@@ -434,7 +434,7 @@ Pulse.prototype.setDeviceStatus = function setDeviceStatus(armState, arm) {
         },
       }),
       (error, response, body) => {
-        const regex        = new RegExp(/(\/myhome\/)([0-9.-]+)(\/quickcontrol\/armDisarm\.jsp)(.*)/);
+        const regex = new RegExp(/(\/myhome\/)([0-9.-]+)(\/quickcontrol\/armDisarm\.jsp)(.*)/);
         const responsePath = _.get(response, 'request.uri.path');
 
         this.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, 'log');
@@ -454,7 +454,7 @@ Pulse.prototype.setDeviceStatus = function setDeviceStatus(armState, arm) {
             },
           });
         } else {
-          const $       = cheerio.load(body);
+          const $ = cheerio.load(body);
           const onClick = $('#arm_button_1').attr('onclick');
           const satCode = (onClick !== undefined) ? onClick.replace(/(.*)(\?sat=)([0-9a-z-]*)(&href=)(.*)/g, '$3') : undefined;
 
@@ -474,7 +474,7 @@ Pulse.prototype.setDeviceStatus = function setDeviceStatus(armState, arm) {
                 },
               }),
               (forceError, forceResponse, forceBody) => {
-                const forceRegex        = new RegExp(/(\/myhome\/)([0-9.-]+)(\/quickcontrol\/serv\/RunRRACommand)(.*)/);
+                const forceRegex = new RegExp(/(\/myhome\/)([0-9.-]+)(\/quickcontrol\/serv\/RunRRACommand)(.*)/);
                 const forceResponsePath = _.get(forceResponse, 'request.uri.path');
 
                 this.consoleLogger(`ADT Pulse: Response path -> ${forceResponsePath}`, 'log');
@@ -551,7 +551,7 @@ Pulse.prototype.getZoneStatus = function getZoneStatus() {
         },
       }),
       (error, response, body) => {
-        const regex        = new RegExp(/(\/myhome\/)([0-9.-]+)(\/ajax\/homeViewDevAjax\.jsp)/);
+        const regex = new RegExp(/(\/myhome\/)([0-9.-]+)(\/ajax\/homeViewDevAjax\.jsp)/);
         const responsePath = _.get(response, 'request.uri.path');
 
         this.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, 'log');
@@ -572,15 +572,15 @@ Pulse.prototype.getZoneStatus = function getZoneStatus() {
             },
           });
         } else {
-          const rawJson    = JSON.parse(body);
+          const rawJson = JSON.parse(body);
           const allDevices = _.get(rawJson, 'items');
-          const sensors    = _.filter(allDevices, (device) => _.get(device, 'id').indexOf('sensor-') > -1);
+          const sensors = _.filter(allDevices, (device) => _.get(device, 'id').indexOf('sensor-') > -1);
 
           // Only sensors are supported.
           const output = _.map(sensors, (device) => {
             const id    = _.get(device, 'id');
-            const name  = _.get(device, 'name');
-            const tags  = _.get(device, 'tags');
+            const name = _.get(device, 'name');
+            const tags = _.get(device, 'tags');
             const state = _.get(device, 'state.icon');
             const index = _.get(device, 'devIndex');
 
@@ -644,7 +644,7 @@ Pulse.prototype.performPortalSync = function performPortalSync() {
         },
       }),
       (error, response, body) => {
-        const regex        = new RegExp(/(\/myhome\/)([0-9.-]+)(\/Ajax\/SyncCheckServ)(.*)/);
+        const regex = new RegExp(/(\/myhome\/)([0-9.-]+)(\/Ajax\/SyncCheckServ)(.*)/);
         const responsePath = _.get(response, 'request.uri.path');
 
         this.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, 'log');
