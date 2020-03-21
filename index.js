@@ -194,17 +194,15 @@ ADTPulsePlatform.prototype.configureAccessory = function configureAccessory(acce
 /**
  * Add accessory.
  *
- * @param {string}             type     - Can be "system", "doorWindow", "glass", "motion", "co", or "fire".
- * @param {string}             id       - The accessory unique identification code.
- * @param {string}             name     - The name of the accessory.
- * @param {string}             make     - The manufacturer of the accessory.
- * @param {string}             model    - The model of the accessory.
- * @param {(undefined|string)} zone     - The zone of the accessory.
- * @param {(undefined|string)} firmware - The firmware revision of the accessory.
+ * @param {string} type  - Can be "system", "doorWindow", "glass", "motion", "co", or "fire".
+ * @param {string} id    - The accessory unique identification code.
+ * @param {string} name  - The name of the accessory.
+ * @param {string} make  - The manufacturer of the accessory.
+ * @param {string} model - The model of the accessory.
  *
  * @since 1.0.0
  */
-ADTPulsePlatform.prototype.addAccessory = function addAccessory(type, id, name, make, model, zone, firmware) {
+ADTPulsePlatform.prototype.addAccessory = function addAccessory(type, id, name, make, model) {
   const uuid = UUIDGen.generate(id);
   const accessory = new Accessory(name, uuid);
   const accessoryLoaded = _.find(this.accessories, ['UUID', uuid]);
@@ -274,9 +272,9 @@ ADTPulsePlatform.prototype.addAccessory = function addAccessory(type, id, name, 
       accessory
         .getService(Service.AccessoryInformation)
         .setCharacteristic(Characteristic.Manufacturer, make)
-        .setCharacteristic(Characteristic.SerialNumber, (zone) ? `${id} (${zone})` : id)
+        .setCharacteristic(Characteristic.SerialNumber, id)
         .setCharacteristic(Characteristic.Model, model)
-        .setCharacteristic(Characteristic.FirmwareRevision, (firmware) || '1.0');
+        .setCharacteristic(Characteristic.FirmwareRevision, '1.0');
 
       // When "Identify Accessory" is tapped.
       accessory.on('identify', (paired, callback) => {
@@ -332,20 +330,15 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function prepareAddAccessory(ty
         deviceName,
         deviceMake,
         deviceModel,
-        undefined,
-        undefined,
       );
     }
   } else if (type === 'zone') {
     const zoneId = _.get(accessory, 'id');
     const zoneName = _.get(accessory, 'name', '').replace(/[()]/gi, '');
     const zoneTags = _.get(accessory, 'tags');
-    const zoneIndex = _.get(accessory, 'index');
 
     const zoneMake = 'ADT';
     const zoneKind = zoneTags.substr(zoneTags.indexOf(',') + 1);
-    const zoneArea = zoneIndex.replace(/((E?)([0-9]{1,2}))((VER)([0-9]+))/g, '$3');
-    const zoneFirm = zoneIndex.replace(/((E?)([0-9]{1,2}))((VER)([0-9]+))/g, '$6');
 
     const zoneUUID = UUIDGen.generate(zoneId);
     const zoneLoaded = _.find(this.accessories, ['UUID', zoneUUID]);
@@ -383,8 +376,6 @@ ADTPulsePlatform.prototype.prepareAddAccessory = function prepareAddAccessory(ty
         zoneName,
         zoneMake,
         zoneModel,
-        zoneArea,
-        zoneFirm,
       );
     }
   } else {

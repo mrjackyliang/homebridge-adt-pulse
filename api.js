@@ -580,7 +580,9 @@ Pulse.prototype.getZoneStatus = function getZoneStatus() {
             const tags = _.get(device, 'tags');
             const state = _.get(device, 'state.icon');
             const index = _.get(device, 'devIndex');
-            const id = (index) ? index.replace(/((E?)([0-9]{1,2}))((VER)([0-9]+))/g, '$3') : 0;
+
+            const indexNumber = (index) ? index.replace(/((E?)([0-9]{1,2}))((VER)([0-9]+))/g, '$3') : 0;
+            const id = `sensor-${indexNumber}`;
 
             /**
              * Expected output.
@@ -588,7 +590,6 @@ Pulse.prototype.getZoneStatus = function getZoneStatus() {
              * id:    sensor-[integer]
              * name:  device name
              * tags:  sensor,[doorWindow,motion,glass,co,fire]
-             * index: [E][integer]VER[integer]
              * state: devStatOK (device okay)
              *        devStatOpen (door/window opened)
              *        devStatMotion (detected motion)
@@ -597,10 +598,9 @@ Pulse.prototype.getZoneStatus = function getZoneStatus() {
              *        devStatUnknown (device offline)
              */
             return {
-              id: `sensor-${id}`,
+              id,
               name,
               tags,
-              index,
               state,
             };
           });
@@ -669,9 +669,9 @@ Pulse.prototype.getZoneStatusOrb = function getZoneStatusOrb() {
             const theSensor = cheerio.load(sensor);
             const theName = theSensor('a.p_deviceNameText').html();
             const theZone = theSensor('span.p_grayNormalText').html();
-            const theZoneNumber = (theZone) ? theZone.replace(/(Zone&#xA0;)([0-9]{1,2})/, '$2') : 0;
-            const theZoneIndex = (theZoneNumber < 10) ? `E${theZoneNumber}` : theZoneNumber;
             const theState = theSensor('span.devStatIcon canvas').attr('icon');
+
+            const theZoneNumber = (theZone) ? theZone.replace(/(Zone&#xA0;)([0-9]{1,2})/, '$2') : 0;
 
             let theTag;
 
@@ -695,7 +695,6 @@ Pulse.prototype.getZoneStatusOrb = function getZoneStatusOrb() {
              * id:    sensor-[integer]
              * name:  device name
              * tags:  sensor,[doorWindow,motion,glass,co,fire]
-             * index: [E][integer]VER[integer]
              * state: devStatOK (device okay)
              *        devStatOpen (door/window opened)
              *        devStatMotion (detected motion)
@@ -707,7 +706,6 @@ Pulse.prototype.getZoneStatusOrb = function getZoneStatusOrb() {
               id: `sensor-${theZoneNumber}`,
               name: theName || 'Unknown Sensor',
               tags: theTag || 'sensor',
-              index: `${theZoneIndex}VER1`,
               state: theState || 'devStatUnknown',
             };
           });
