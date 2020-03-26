@@ -675,16 +675,18 @@ Pulse.prototype.getZoneStatusOrb = function getZoneStatusOrb() {
 
             let theTag;
 
-            if (theName && theState !== 'devStatUnknown') {
-              if (theName.match(/^(.*)(Door|Window|DR|WIN|SLIDER|NOOK)(.*)$/g) !== null) {
+            if (typeof theName === 'string' && theState !== 'devStatUnknown') {
+              const theNameLowercase = theName.toLowerCase();
+
+              if (theNameLowercase.match(/^(.*)(door|window|dr|win|slider|nook)(.*)$/g) !== null) {
                 theTag = 'sensor,doorWindow';
-              } else if (theName.match(/^(.*)(Glass)(.*)$/g) !== null) {
+              } else if (theNameLowercase.match(/^(.*)(glass)(.*)$/g) !== null) {
                 theTag = 'sensor,glass';
-              } else if (theName.match(/^(.*)(Motion|MOTION)(.*)$/g) !== null) {
+              } else if (theNameLowercase.match(/^(.*)(motion)(.*)$/g) !== null) {
                 theTag = 'sensor,motion';
-              } else if (theName.match(/^(.*)(Gas)(.*)$/g) !== null) {
+              } else if (theNameLowercase.match(/^(.*)(gas)(.*)$/g) !== null) {
                 theTag = 'sensor,co';
-              } else if (theName.match(/^(.*)(Smoke|Heat|SMOKE)(.*)$/g) !== null) {
+              } else if (theNameLowercase.match(/^(.*)(smoke|heat)(.*)$/g) !== null) {
                 theTag = 'sensor,fire';
               }
             }
@@ -704,7 +706,7 @@ Pulse.prototype.getZoneStatusOrb = function getZoneStatusOrb() {
              */
             return {
               id: `sensor-${theZoneNumber}`,
-              name: theName || 'Unknown Sensor',
+              name: theName || '',
               tags: theTag || 'sensor',
               state: theState || 'devStatUnknown',
             };
