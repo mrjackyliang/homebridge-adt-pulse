@@ -78,6 +78,12 @@
                 "type": "boolean",
                 "default": true,
                 "required": false
+            },
+            "removeObsoleteZones": {
+                "title": "Remove Obsolete Zones",
+                "type": "boolean",
+                "default": true,
+                "required": false
             }
         }
     },
@@ -105,6 +111,9 @@
         },
         {
             "key": "logActivity"
+        },
+        {
+            "key": "removeObsoleteZones"
         }
     ],
     "form": null,

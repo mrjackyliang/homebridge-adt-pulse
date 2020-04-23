@@ -101,24 +101,12 @@ switch (actionValue) {
       .catch((error) => console.error(error));
     break;
   case 'zone-status':
-    console.log('ADT Pulse Test: Getting zone status...');
-
-    pulse
-      .login()
-      .then((login) => console.log(login))
-      .then(() => pulse.getZoneStatus())
-      .then((statuses) => console.log(statuses))
-      .then(() => pulse.logout())
-      .then((logout) => console.log(logout))
-      .catch((error) => console.error(error));
-    break;
-  case 'zone-status-orb':
     console.log('ADT Pulse Test: Getting zone status (via orb)...');
 
     pulse
       .login()
       .then((login) => console.log(login))
-      .then(() => pulse.getZoneStatusOrb())
+      .then(() => pulse.getZoneStatus())
       .then((statuses) => console.log(statuses))
       .then(() => pulse.logout())
       .then((logout) => console.log(logout))

@@ -28,6 +28,7 @@ When configuring this plugin, simply add the platform to your existing `config.j
       "password": "1234567890",
       "logLevel": 30,
       "logActivity": true,
+      "removeObsoleteZones": true,
       "resetAll": false
     },
     {
@@ -51,7 +52,7 @@ The supported hardware configurations are listed below:
 
 If you have a sensor that is unsupported by this plugin, please [submit an issue](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new/choose) so I can add support for it.
 
-Please mind that I DO NOT have plans to support devices connected to the ADT Pulse Z-Wave Platform. You may use another `homebridge-plugin` for that.
+Due to ADT Pulse limitations, accessories that are connected to the Z-Wave Platform cannot be supported. Consider using other Homebridge plugins.
 
 ## Force Arming (Arm Away/Stay/Night)
 Due to the nature of how HomeKit and ADT Pulse processes `setDeviceStatus` commands, this plugin will force arm when it detects active motion or open sensors.
@@ -92,6 +93,15 @@ The default is `true`. Configure `logActivity` with the values below:
 
 __NOTE:__ Logging alarm and sensor activity requires the `logLevel` setting to be set to `30` or greater.
 
+## Remove Obsolete Zones
+The plugin offers a way to automatically detect and remove obsolete zones. If you have recently experienced __sensor reset__ issues, you may disable this setting. _Optional._
+
+The default is `true`. Configure `removeObsoleteZones` with the values below:
+* Set `removeObsoleteZones` to `true` to enable removal
+* Set `removeObsoleteZones` to `false` to disable removal
+
+__NOTE:__ If you've recently had sensor(s) removed from ADT Pulse, the plugin will not remove those sensor(s) unless `removeObsoleteZones` is set to `true`.
+
 ## Resetting the Plugin
 Managing many accessories in a Homebridge environment is already a seemingly hard task, and sometimes you might want to step back and do a reset. _Optional._
 
@@ -108,7 +118,7 @@ There is a test script included in the package that performs specific actions us
 
 This script requires your username, password, and an action type.
 ```shell script
-node api-test --username email@email.com --password 1234567890 --action [device-information,device-status,zone-status,zone-status-orb,sync,disarm,arm-away,arm-stay,arm-night]
+node api-test --username email@email.com --password 1234567890 --action [device-information,device-status,zone-status,sync,disarm,arm-away,arm-stay,arm-night]
 ```
 
 ## Developer Information

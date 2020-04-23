@@ -50,6 +50,7 @@ function ADTPulsePlatform(log, config, api) {
   this.password = _.get(this.config, 'password');
   this.logLevel = _.get(this.config, 'logLevel');
   this.logActivity = _.get(this.config, 'logActivity');
+  this.removeObsoleteZones = _.get(this.config, 'removeObsoleteZones');
   this.resetAll = _.get(this.config, 'resetAll');
 
   // Timers.
@@ -70,12 +71,20 @@ function ADTPulsePlatform(log, config, api) {
     return;
   }
 
-  // Check if log activity is enabled.
+  // Check if log activity is configured.
   if (typeof this.logActivity !== 'boolean') {
     if (this.logActivity !== undefined) {
       this.logMessage('"logActivity" setting should be true or false. Defaulting to true.', 20);
     }
     this.logActivity = true;
+  }
+
+  // Check if obsolete zone removal is configured.
+  if (typeof this.removeObsoleteZones !== 'boolean') {
+    if (this.removeObsoleteZones !== undefined) {
+      this.logMessage('"removeObsoleteZones" setting should be true or false. Defaulting to true.', 20);
+    }
+    this.removeObsoleteZones = true;
   }
 
   // Prevent accidental reset.
@@ -857,7 +866,7 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
 
               this.devicePolling('system', 'system-1');
             })
-            .then(() => this.pulse.getZoneStatusOrb())
+            .then(() => this.pulse.getZoneStatus())
             .then((zones) => {
               const zoneStatus = _.get(zones, 'info');
 
@@ -919,8 +928,12 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
 
             // Do not remove security panel(s).
             if (zone === undefined && type !== 'system') {
-              this.logMessage(`Preparing to remove zone (${id}) accessory...`, 30);
-              this.removeAccessory(accessory);
+              if (this.removeObsoleteZones) {
+                this.logMessage(`Preparing to remove zone (${id}) accessory...`, 30);
+                this.removeAccessory(accessory);
+              } else {
+                this.logMessage(`Preparing to remove zone (${id}) accessory, but "removeObsoleteZones" is disabled...`, 40);
+              }
             }
           });
 
