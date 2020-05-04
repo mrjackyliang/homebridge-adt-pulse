@@ -97,8 +97,8 @@ __NOTE:__ Logging alarm and sensor activity requires the `logLevel` setting to b
 The plugin offers a way to automatically detect and remove obsolete zones. If you have recently experienced __sensor reset__ issues, you may disable this setting. _Optional._
 
 The default is `true`. Configure `removeObsoleteZones` with the values below:
-* Set `removeObsoleteZones` to `true` to enable removal
-* Set `removeObsoleteZones` to `false` to disable removal
+* Set `removeObsoleteZones` to `true` for removal mode
+* Set `removeObsoleteZones` to `false` for notification mode
 
 __NOTE:__ If you've recently had sensor(s) removed from ADT Pulse, the plugin will not remove those sensor(s) unless `removeObsoleteZones` is set to `true`.
 
@@ -125,7 +125,7 @@ node api-test --username email@email.com --password 1234567890 --action [device-
 The script provides an active connection to the ADT Pulse portal. Here is a list of must-knows, just in case you might want to debug (or improve) the plugin:
 
 1. Device and zone statuses are polled every __3 seconds__. If there are more than 2 login failures, device polling and portal sync stops.
-2. Supported versions are `17.0.0-71` and `18.0.0-78`. If this plugin does not support either version, a warning will appear in the logs. Please [submit an issue](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new/choose) to let me know!
+2. Supported versions are `18.0.0-78` and `19.0.0-89`. If this plugin does not support either version, a warning will appear in the logs. Please [submit an issue](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new/choose) to let me know!
 
 ## Credits and Appreciation
 If you would like to show your appreciation for its continued development, you can optionally become my supporter on [GitHub Sponsors](https://github.com/sponsors/mrjackyliang) or [Patreon](https://www.patreon.com/mrjackyliang)!

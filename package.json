@@ -1,6 +1,6 @@
 {
     "name": "homebridge-adt-pulse",
-    "version": "1.8.6",
+    "version": "1.8.7",
     "description": "Homebridge security system platform for ADT Pulse",
     "main": "index.js",
     "private": false,
@@ -52,6 +52,6 @@
         "eslint": "^6.8.0",
         "eslint-config-airbnb-base": "^14.1.0",
         "eslint-plugin-import": "^2.20.1",
-        "homebridge": "^0.4.53"
+        "homebridge": "^0.4.53",
     }
 }

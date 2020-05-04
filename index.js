@@ -805,10 +805,10 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
       .login()
       .then((response) => {
         const version = _.get(response, 'info.version');
-        const supportedVersion = ['17.0.0-71', '18.0.0-78'];
+        const supportedVersion = ['18.0.0-78', '19.0.0-89'];
 
         if (version !== undefined && !supportedVersion.includes(version) && version !== this.sessionVersion) {
-          this.logMessage(`Web Portal version ${version} does not match ${supportedVersion.join(' or ')}.`, 20);
+          this.logMessage(`Web Portal version ${version} detected. Test plugin to ensure system compatibility...`, 20);
         }
 
         // Bind version to session so message does not bomb logs.
@@ -932,7 +932,7 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
                 this.logMessage(`Preparing to remove zone (${id}) accessory...`, 30);
                 this.removeAccessory(accessory);
               } else {
-                this.logMessage(`Preparing to remove zone (${id}) accessory, but "removeObsoleteZones" is disabled...`, 40);
+                this.logMessage(`Preparing to remove zone (${id}) accessory, but "removeObsoleteZones" is disabled...`, 20);
               }
             }
           });
@@ -955,7 +955,7 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
     // Reset sync session.
     this.portalSyncSession = {};
 
-    this.logMessage('Portal sync stalled. Cleaning up and resetting...', 40);
+    this.logMessage('Portal sync stalled. Cleaning up and resetting...', 20);
   } else {
     this.stalledSyncTimes += 1;
 

@@ -3,7 +3,7 @@
     "pluginType": "platform",
     "singular": true,
     "headerDisplay": "An account to link your [ADT Pulse](https://portal.adtpulse.com/) system to Homebridge is required. This will be used to control your security panel and read sensor status.",
-    "footerDisplay": "If you need assistance, you may read the [plugin instructions](https://github.com/mrjackyliang/homebridge-adt-pulse#readme) or feel free to [create a bug report](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new?template=bug_report.md).",
+    "footerDisplay": "If you need assistance, you may read the [plugin instructions](https://github.com/mrjackyliang/homebridge-adt-pulse#readme) or feel free to [submit an issue](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new/choose).",
     "schema": {
         "type": "object",
         "properties": {
