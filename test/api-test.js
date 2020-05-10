@@ -20,7 +20,7 @@
  *
  * @since 1.0.0
  */
-const Pulse = require('./api');
+const Pulse = require('../api');
 
 /**
  * Script arguments.
@@ -101,7 +101,7 @@ switch (actionValue) {
       .catch((error) => console.error(error));
     break;
   case 'zone-status':
-    console.log('ADT Pulse Test: Getting zone status (via orb)...');
+    console.log('ADT Pulse Test: Getting zone status...');
 
     pulse
       .login()

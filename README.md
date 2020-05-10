@@ -7,7 +7,7 @@ ADT Pulse for Homebridge
 [![Become a GitHub Sponsor](https://img.shields.io/badge/sponsor-github-black?style=flat-square&color=orange)](https://github.com/sponsors/mrjackyliang)
 [![Become a Patreon](https://img.shields.io/badge/donate-patreon-orange?style=flat-square&color=red)](https://www.patreon.com/mrjackyliang)
 
-This is a Homebridge plugin for ADT Pulse users that allow homeowners to control their security system and view sensor status through HomeKit. The API relies on the ADT Pulse Web Portal (powered by Icontrol One).
+This is a [verified Homebridge plugin](https://github.com/homebridge/homebridge/wiki/verified-Plugins#verified-plugins) for ADT Pulse users that allow homeowners to control their security system and view sensor status through HomeKit. The API relies on the ADT Pulse Web Portal (by Icontrol One).
 
 To use this plugin, here are three simple steps you need to follow:
 1. Run `npm install homebridge-adt-pulse`
@@ -40,9 +40,9 @@ When configuring this plugin, simply add the platform to your existing `config.j
 ```
 
 ## Plugin Limitations
-Even though the name is stated as "ADT Pulse for Homebridge", this Homebridge plugin is limited in the hardware it may support. This plugin is NOT a complete replacement to the [official ADT Pulse app](https://www.adt.com/help/faq/adt-pulse/adt-pulse-mobile-app).
+Even though the plugin name is "ADT Pulse for Homebridge", this Homebridge plugin supports certain ADT hardware. In addition, this plugin is NOT a complete replacement to the [official ADT Pulse app](https://www.adt.com/help/faq/adt-pulse/adt-pulse-mobile-app).
 
-The supported hardware configurations are listed below:
+The hardware configurations supported by this plugin are:
 1. ADT Security Panel (`system`)
 2. ADT Door/Window Sensors (`doorWindow`)
 3. ADT Glass Break Detectors (`glass`)
@@ -80,7 +80,7 @@ The default is `30`. Configure `logLevel` with the values below:
 * Set `logLevel` to `40` for debugging (and the above)
 * Set `logLevel` to `50` for verbose (and the above)
 
-__NOTE:__ If the `logLevel` setting is incorrectly specified, a warning will be shown then subsequently set to `30`.
+__NOTE:__ If the `logLevel` setting has been specified incorrectly, a warning will be shown then subsequently set to `30`.
 
 __NOTE 2:__ Don't forget to enable Homebridge Debug Mode when setting `logLevel` to `40` or above or else debug messages won't be shown.
 
@@ -100,7 +100,7 @@ The default is `true`. Configure `removeObsoleteZones` with the values below:
 * Set `removeObsoleteZones` to `true` for removal mode
 * Set `removeObsoleteZones` to `false` for notification mode
 
-__NOTE:__ If you've recently had sensor(s) removed from ADT Pulse, the plugin will not remove those sensor(s) unless `removeObsoleteZones` is set to `true`.
+__NOTE:__ If recently, you had sensors removed from ADT Pulse, the plugin will not remove these sensors unless `removeObsoleteZones` is set to `true`.
 
 ## Resetting the Plugin
 Managing many accessories in a Homebridge environment is already a seemingly hard task, and sometimes you might want to step back and do a reset. _Optional._
@@ -113,21 +113,13 @@ __NOTE:__ To prevent accidental removal of all accessories, the `resetAll` setti
 
 __NOTE 2:__ Once reset is complete, remember to set the `resetAll` setting back to `false` or else the plugin will just repeat reset mode again.
 
-## Test Script
-There is a test script included in the package that performs specific actions used by the plugin. Feel free to test it out, and report any bugs you see.
-
-This script requires your username, password, and an action type.
-```shell script
-node api-test --username email@email.com --password 1234567890 --action [device-information,device-status,zone-status,sync,disarm,arm-away,arm-stay,arm-night]
-```
-
 ## Developer Information
 The script provides an active connection to the ADT Pulse portal. Here is a list of must-knows, just in case you might want to debug (or improve) the plugin:
 
-1. Device and zone statuses are polled every __3 seconds__. If there are more than 2 login failures, device polling and portal sync stops.
+1. Device and zone statuses will be fetched every __3 seconds__. If there are 2 or more login failures, device polling and portal sync stops.
 2. Supported versions are `18.0.0-78` and `19.0.0-89`. If this plugin does not support either version, a warning will appear in the logs. Please [submit an issue](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new/choose) to let me know!
 
 ## Credits and Appreciation
 If you would like to show your appreciation for its continued development, you can optionally become my supporter on [GitHub Sponsors](https://github.com/sponsors/mrjackyliang) or [Patreon](https://www.patreon.com/mrjackyliang)!
 
-Also a HUGE thank you to [@kevinmkickey](https://github.com/kevinmhickey) for providing the [ADT Pulse script](https://github.com/kevinmhickey/adt-pulse).
+Also, thank you to [@kevinmkickey](https://github.com/kevinmhickey) for providing the [ADT Pulse script](https://github.com/kevinmhickey/adt-pulse).

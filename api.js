@@ -54,6 +54,7 @@ function Pulse(options) {
  */
 Pulse.prototype.login = function login() {
   const deferred = Q.defer();
+  const that = this;
 
   this.hasInternetWrapper(deferred, () => {
     if (authenticated) {
@@ -112,8 +113,8 @@ Pulse.prototype.login = function login() {
                   Referer: `https://portal.adtpulse.com/myhome/${lastKnownVersion}/access/signin.jsp`,
                 },
                 form: {
-                  usernameForm: this.username,
-                  passwordForm: this.password,
+                  usernameForm: that.username,
+                  passwordForm: that.password,
                 },
               }),
               (postError, postResponse, postBody) => {
@@ -743,7 +744,7 @@ Pulse.prototype.generateRequestOptions = function generateRequestOptions(additio
     headers: {
       Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
       Host: 'portal.adtpulse.com',
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36',
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36',
     },
     ciphers: [
       'ECDHE-RSA-AES256-GCM-SHA384',
@@ -790,7 +791,9 @@ Pulse.prototype.getErrorMessage = function getErrorMessage(responseBody) {
  * @since 1.0.0
  */
 Pulse.prototype.consoleLogger = function consoleLogger(content, type) {
-  if (this.debug) {
+  const that = this;
+
+  if (that.debug) {
     switch (type) {
       case 'error':
         console.error(content);
