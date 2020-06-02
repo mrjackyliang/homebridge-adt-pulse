@@ -55,6 +55,7 @@ function ADTPulsePlatform(log, config, api) {
 
   // Timers.
   this.syncInterval = 3;
+  this.syncIntervalDelay = 600;
   this.setDeviceTimeout = 8;
 
   // Setup logging function.
@@ -107,13 +108,13 @@ function ADTPulsePlatform(log, config, api) {
     this.api = api;
 
     this.api.on('didFinishLaunching', () => {
-      this.logSystemInformation(
-        _.get(process, 'platform'),
-        _.get(process, 'arch'),
-        _.get(packageJson, 'version'),
-        _.get(process, 'versions.node'),
-        _.get(api, 'serverVersion'),
-      );
+      this.logSystemInformation({
+        platform: _.get(process, 'platform'),
+        arch: _.get(process, 'arch'),
+        pluginVer: _.get(packageJson, 'version'),
+        nodeVer: _.get(process, 'versions.node'),
+        homebridgeVer: _.get(api, 'serverVersion'),
+      });
 
       if (this.resetAll) {
         this.logMessage('Removing all ADT Pulse accessories from Homebridge...', 20);
@@ -976,15 +977,20 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
     this.logMessage('Portal sync is already in progress...', 40);
   }
 
-  // Force platform to retrieve latest status.
-  if (!(this.failedLoginTimes >= 2)) {
-    this.portalSyncSession.timer = setTimeout(
-      () => {
-        this.portalSync();
-      },
-      that.syncInterval * 1000,
-    );
-  }
+  // Refresh portal sync session.
+  this.portalSyncSession.timer = setTimeout(
+    () => {
+      if (this.failedLoginTimes > 2) {
+        this.failedLoginTimes = 0;
+      }
+
+      this.portalSync();
+    },
+    // If login failed more than 2 times.
+    (this.failedLoginTimes >= 2)
+      ? that.syncIntervalDelay * 1000
+      : that.syncInterval * 1000,
+  );
 };
 
 /**
@@ -1135,9 +1141,9 @@ ADTPulsePlatform.prototype.catchErrors = function catchErrors(error) {
         this.failedLoginTimes += 1;
       }
 
-      // If login fails twice.
+      // If login fails more than 2 times.
       if (this.failedLoginTimes > 2) {
-        this.logMessage('Login failed more than two times. Portal sync terminated.', priority = 10);
+        this.logMessage('Login failed more than 2 times. Portal sync restarting in 10 minutes...', priority = 10);
       } else {
         this.logMessage('Login failed. Trying again...', priority = 20);
       }
@@ -1185,19 +1191,15 @@ ADTPulsePlatform.prototype.catchErrors = function catchErrors(error) {
 /**
  * Log system information.
  *
- * @param {string} platform      - The current platform.
- * @param {string} arch          - The current architecture.
- * @param {string} pluginVer     - The plugin version.
- * @param {string} nodeVer       - The node version.
- * @param {string} homebridgeVer - The homebridge version.
+ * @param {SystemInfo} systemInfo - System information object.
  *
  * @since 1.0.0
  */
-ADTPulsePlatform.prototype.logSystemInformation = function logSystemInformation(platform, arch, pluginVer, nodeVer, homebridgeVer) {
-  this.logMessage(`running on ${platform} (${arch})`, 30);
-  this.logMessage(`homebridge-adt-pulse v${pluginVer}`, 30);
-  this.logMessage(`node v${nodeVer}`, 30);
-  this.logMessage(`homebridge v${homebridgeVer}`, 30);
+ADTPulsePlatform.prototype.logSystemInformation = function logSystemInformation(systemInfo) {
+  this.logMessage(`running on ${systemInfo.platform} (${systemInfo.arch})`, 30);
+  this.logMessage(`homebridge-adt-pulse v${systemInfo.pluginVer}`, 30);
+  this.logMessage(`node v${systemInfo.nodeVer}`, 30);
+  this.logMessage(`homebridge v${systemInfo.homebridgeVer}`, 30);
 };
 
 /**
