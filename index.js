@@ -514,13 +514,15 @@ ADTPulsePlatform.prototype.getZoneAccessory = function getZoneAccessory(type, id
 ADTPulsePlatform.prototype.getDeviceStatus = function getDeviceStatus(type, format) {
   const device = this.deviceStatus;
   const summary = _.get(device, 'summary');
+  const state = _.get(device, 'state');
+  const status = _.get(device, 'status');
 
   if (typeof summary === 'string') {
     if (format) {
       return this.formatGetDeviceStatus(type, summary);
     }
 
-    return summary.toLowerCase();
+    return `${state} / ${status}`.toLowerCase();
   }
 
   return undefined;
@@ -1191,7 +1193,12 @@ ADTPulsePlatform.prototype.catchErrors = function catchErrors(error) {
 /**
  * Log system information.
  *
- * @param {SystemInfo} systemInfo - System information object.
+ * @param {object} systemInfo               - System information object.
+ * @param {string} systemInfo.platform      - The current platform.
+ * @param {string} systemInfo.arch          - The current architecture.
+ * @param {string} systemInfo.pluginVer     - The plugin version.
+ * @param {string} systemInfo.nodeVer       - The node version.
+ * @param {string} systemInfo.homebridgeVer - The homebridge version.
  *
  * @since 1.0.0
  */

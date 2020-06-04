@@ -455,7 +455,7 @@ Pulse.prototype.setDeviceStatus = function setDeviceStatus(armState, arm) {
           });
         } else {
           const $ = cheerio.load(body);
-          const onClick = $('#arm_button_1').attr('onclick');
+          const onClick = $('input[id^="arm_button_"][value="Arm Anyway"]').attr('onclick');
           const satCode = (onClick !== undefined) ? onClick.replace(/(.*)(\?sat=)([0-9a-z-]*)(&href=)(.*)/g, '$3') : undefined;
 
           const forceUrl = `https://portal.adtpulse.com/myhome/${lastKnownVersion}/quickcontrol/serv/RunRRACommand`;
@@ -706,7 +706,7 @@ Pulse.prototype.performPortalSync = function performPortalSync() {
  * Internet available wrapper.
  *
  * @param {Q.Deferred} deferred    - Used for rejecting promises.
- * @param {function}   runFunction - Run function if internet is available.
+ * @param {Function}   runFunction - Run function if internet is available.
  *
  * @since 1.0.0
  */
@@ -722,7 +722,7 @@ Pulse.prototype.hasInternetWrapper = function hasInternetWrapper(deferred, runFu
     this.consoleLogger('ADT Pulse: Internet connection is offline or "https://portal.adtpulse.com" is unavailable.', 'error');
 
     deferred.reject({
-      action: 'HOST_UNREACHABLE',
+      action: 'CONNECT',
       success: false,
       info: null,
     });
@@ -779,7 +779,7 @@ Pulse.prototype.getErrorMessage = function getErrorMessage(responseBody) {
   errorMessage = errorMessage.replace(/(<([^>]+)>)/ig, '');
 
   // If empty message, return null.
-  return (errorMessage) || null;
+  return errorMessage || null;
 };
 
 /**
