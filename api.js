@@ -587,9 +587,7 @@ Pulse.prototype.getZoneStatus = function getZoneStatus() {
             if (typeof theName === 'string' && theState !== 'devStatUnknown') {
               const theNameLowercase = theName.toLowerCase();
 
-              if (theNameLowercase.match(/^(.*)(door|window|dr|win|slider|nook)(.*)$/g) !== null) {
-                theTag = 'sensor,doorWindow';
-              } else if (theNameLowercase.match(/^(.*)(glass)(.*)$/g) !== null) {
+              if (theNameLowercase.match(/^(.*)(glass)(.*)$/g) !== null) {
                 theTag = 'sensor,glass';
               } else if (theNameLowercase.match(/^(.*)(motion)(.*)$/g) !== null) {
                 theTag = 'sensor,motion';
@@ -597,6 +595,16 @@ Pulse.prototype.getZoneStatus = function getZoneStatus() {
                 theTag = 'sensor,co';
               } else if (theNameLowercase.match(/^(.*)(smoke|heat)(.*)$/g) !== null) {
                 theTag = 'sensor,fire';
+              } else if (theNameLowercase.match(/^(.*)(door|window|dr|win|slider)(.*)$/g) !== null) {
+                theTag = 'sensor,doorWindow';
+              } else if (theNameLowercase.match(/^(kitchen nook)|(z[0-9]{2} service)$/g) !== null) {
+                /**
+                 * GitHub users with special naming configurations.
+                 *
+                 * @Glitch482 - "KITCHEN NOOK"
+                 * @w1llf0rd  - "Z** Service"
+                 */
+                theTag = 'sensor,doorWindow';
               }
             }
 
