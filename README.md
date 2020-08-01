@@ -117,7 +117,7 @@ __NOTE 2:__ Once reset is complete, remember to set the `resetAll` setting back 
 The script provides an active connection to the ADT Pulse portal. Here is a list of must-knows, just in case you might want to debug (or improve) the plugin:
 
 1. Device and zone statuses will be fetched every __3 seconds__. If logins have failed more than 2 times, portal sync will pause for 10 minutes.
-2. Supported versions are `18.0.0-78` and `19.0.0-89`. If this plugin does not support either version, a warning will appear in the logs. Please [submit an issue](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new/choose) to let me know!
+2. Supported versions are `19.0.0-89` and `20.0.0-221`. If this plugin does not support either version, a warning will appear in the logs. Please [submit an issue](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new/choose) to let me know!
 
 ## Credits and Appreciation
 If you would like to show your appreciation for its continued development, you can optionally become my supporter on [GitHub Sponsors](https://github.com/sponsors/mrjackyliang) or [Patreon](https://www.patreon.com/mrjackyliang)!
