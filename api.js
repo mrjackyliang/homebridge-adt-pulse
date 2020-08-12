@@ -597,12 +597,13 @@ Pulse.prototype.getZoneStatus = function getZoneStatus() {
                 theTag = 'sensor,fire';
               } else if (theNameLowercase.match(/^(.*)(door|window|dr|win|slider)(.*)$/g) !== null) {
                 theTag = 'sensor,doorWindow';
-              } else if (theNameLowercase.match(/^(kitchen nook)|(z[0-9]{2} service)$/g) !== null) {
+              } else if (theNameLowercase.match(/^(kitchen nook)|(z[0-9]{2} service|kitchen (left|right) (back|side))$/g) !== null) {
                 /**
                  * GitHub users with special naming configurations.
                  *
                  * @Glitch482 - "KITCHEN NOOK"
                  * @w1llf0rd  - "Z** Service"
+                 * @tjclayton - "Kitchen Left/Right Back/Side"
                  */
                 theTag = 'sensor,doorWindow';
               }
