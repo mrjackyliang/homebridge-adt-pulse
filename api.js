@@ -22,6 +22,13 @@ const _ = require('lodash');
 let jar;
 
 /**
+ * Set country sub-domain.
+ *
+ * @since 1.0.0
+ */
+let countrySubDomain = '';
+
+/**
  * Track login, login statuses, portal versions.
  *
  * @since 1.0.0
@@ -42,7 +49,19 @@ let lastKnownSiteId = '';
 function Pulse(options) {
   this.username = _.get(options, 'username', '');
   this.password = _.get(options, 'password', '');
+  this.country = _.get(options, 'country', '');
   this.debug = _.get(options, 'debug', false);
+
+  // Configure country sub-domain.
+  switch (this.country) {
+    case 'ca':
+      countrySubDomain = 'portal-ca';
+      break;
+    case 'us':
+    default:
+      countrySubDomain = 'portal';
+      break;
+  }
 }
 
 /**
@@ -73,7 +92,7 @@ Pulse.prototype.login = function login() {
       jar = request.jar();
 
       request.get(
-        'https://portal.adtpulse.com',
+        `https://${countrySubDomain}.adtpulse.com`,
         this.generateRequestOptions(),
         (error, response, body) => {
           const regex = new RegExp(/(\/myhome\/)([0-9.-]+)(\/access\/signin\.jsp)/);
@@ -106,11 +125,11 @@ Pulse.prototype.login = function login() {
             this.consoleLogger(`ADT Pulse: Web portal version -> ${version}`, 'log');
 
             request.post(
-              `https://portal.adtpulse.com/myhome/${lastKnownVersion}/access/signin.jsp`,
+              `https://${countrySubDomain}.adtpulse.com/myhome/${lastKnownVersion}/access/signin.jsp`,
               this.generateRequestOptions({
                 followAllRedirects: true,
                 headers: {
-                  Referer: `https://portal.adtpulse.com/myhome/${lastKnownVersion}/access/signin.jsp`,
+                  Referer: `https://${countrySubDomain}.adtpulse.com/myhome/${lastKnownVersion}/access/signin.jsp`,
                 },
                 form: {
                   usernameForm: that.username,
@@ -191,10 +210,10 @@ Pulse.prototype.logout = function logout() {
       this.consoleLogger('ADT Pulse: Logging out...', 'log');
 
       request.get(
-        `https://portal.adtpulse.com/myhome/${lastKnownVersion}/access/signout.jsp?networkid=${lastKnownSiteId}&partner=adt`,
+        `https://${countrySubDomain}.adtpulse.com/myhome/${lastKnownVersion}/access/signout.jsp?networkid=${lastKnownSiteId}&partner=adt`,
         this.generateRequestOptions({
           headers: {
-            Referer: `https://portal.adtpulse.com/myhome/${lastKnownVersion}/summary/summary.jsp`,
+            Referer: `https://${countrySubDomain}.adtpulse.com/myhome/${lastKnownVersion}/summary/summary.jsp`,
           },
         }),
         (error, response, body) => {
@@ -250,10 +269,10 @@ Pulse.prototype.getDeviceInformation = function getDeviceInformation() {
     this.consoleLogger('ADT Pulse: Getting device information...', 'log');
 
     request.get(
-      `https://portal.adtpulse.com/myhome/${lastKnownVersion}/system/device.jsp?id=1`,
+      `https://${countrySubDomain}.adtpulse.com/myhome/${lastKnownVersion}/system/device.jsp?id=1`,
       this.generateRequestOptions({
         headers: {
-          Referer: `https://portal.adtpulse.com/myhome/${lastKnownVersion}/system/system.jsp`,
+          Referer: `https://${countrySubDomain}.adtpulse.com/myhome/${lastKnownVersion}/system/system.jsp`,
         },
       }),
       (error, response, body) => {
@@ -315,11 +334,11 @@ Pulse.prototype.getDeviceStatus = function getDeviceStatus() {
     this.consoleLogger('ADT Pulse: Getting device status...', 'log');
 
     request.get(
-      `https://portal.adtpulse.com/myhome/${lastKnownVersion}/ajax/orb.jsp`,
+      `https://${countrySubDomain}.adtpulse.com/myhome/${lastKnownVersion}/ajax/orb.jsp`,
       this.generateRequestOptions({
         headers: {
           Accept: '*/*',
-          Referer: `https://portal.adtpulse.com/myhome/${lastKnownVersion}/summary/summary.jsp`,
+          Referer: `https://${countrySubDomain}.adtpulse.com/myhome/${lastKnownVersion}/summary/summary.jsp`,
         },
       }),
       (error, response, body) => {
@@ -396,6 +415,7 @@ Pulse.prototype.getDeviceStatus = function getDeviceStatus() {
  * - When Disarming, armState will be set to "disarmed". It will be set to "off" after re-login.
  * - When Arming Night, armState will be set to "night+stay". It will be set to "night" after re-login.
  * - If alarm occurred, you must Clear Alarm before setting to Armed Away/Stay/Night.
+ * - For ADT Pulse Canada, you must replace the "portal" sub-domain to "portal-ca" sub-domain.
  *
  * Disarmed:
  * - Arm Away (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=away).
@@ -421,7 +441,7 @@ Pulse.prototype.setDeviceStatus = function setDeviceStatus(armState, arm) {
   const deferred = Q.defer();
 
   this.hasInternetWrapper(deferred, () => {
-    const url = `https://portal.adtpulse.com/myhome/${lastKnownVersion}/quickcontrol/armDisarm.jsp`;
+    const url = `https://${countrySubDomain}.adtpulse.com/myhome/${lastKnownVersion}/quickcontrol/armDisarm.jsp`;
     const arg = `?href=rest/adt/ui/client/security/setArmState&armstate=${armState}&arm=${arm}`;
 
     this.consoleLogger('ADT Pulse: Setting device status...', 'log');
@@ -430,7 +450,7 @@ Pulse.prototype.setDeviceStatus = function setDeviceStatus(armState, arm) {
       url + arg,
       this.generateRequestOptions({
         headers: {
-          Referer: `https://portal.adtpulse.com/myhome/${lastKnownVersion}/summary/summary.jsp`,
+          Referer: `https://${countrySubDomain}.adtpulse.com/myhome/${lastKnownVersion}/summary/summary.jsp`,
         },
       }),
       (error, response, body) => {
@@ -458,7 +478,7 @@ Pulse.prototype.setDeviceStatus = function setDeviceStatus(armState, arm) {
           const onClick = $('input[id^="arm_button_"][value="Arm Anyway"]').attr('onclick');
           const satCode = (onClick !== undefined) ? onClick.replace(/(.*)(\?sat=)([0-9a-z-]*)(&href=)(.*)/g, '$3') : undefined;
 
-          const forceUrl = `https://portal.adtpulse.com/myhome/${lastKnownVersion}/quickcontrol/serv/RunRRACommand`;
+          const forceUrl = `https://${countrySubDomain}.adtpulse.com/myhome/${lastKnownVersion}/quickcontrol/serv/RunRRACommand`;
           const forceArg = `?sat=${satCode}&href=rest/adt/ui/client/security/setForceArm&armstate=forcearm&arm=${arm}`;
 
           // Check if system requires force arming.
@@ -470,7 +490,7 @@ Pulse.prototype.setDeviceStatus = function setDeviceStatus(armState, arm) {
               this.generateRequestOptions({
                 headers: {
                   Accept: '*/*',
-                  Referer: `https://portal.adtpulse.com/myhome/${lastKnownVersion}/quickcontrol/armDisarm.jsp`,
+                  Referer: `https://${countrySubDomain}.adtpulse.com/myhome/${lastKnownVersion}/quickcontrol/armDisarm.jsp`,
                 },
               }),
               (forceError, forceResponse, forceBody) => {
@@ -543,11 +563,11 @@ Pulse.prototype.getZoneStatus = function getZoneStatus() {
     this.consoleLogger('ADT Pulse: Getting zone status...', 'log');
 
     request.get(
-      `https://portal.adtpulse.com/myhome/${lastKnownVersion}/ajax/orb.jsp`,
+      `https://${countrySubDomain}.adtpulse.com/myhome/${lastKnownVersion}/ajax/orb.jsp`,
       this.generateRequestOptions({
         headers: {
           Accept: '*/*',
-          Referer: `https://portal.adtpulse.com/myhome/${lastKnownVersion}/summary/summary.jsp`,
+          Referer: `https://${countrySubDomain}.adtpulse.com/myhome/${lastKnownVersion}/summary/summary.jsp`,
         },
       }),
       (error, response, body) => {
@@ -659,11 +679,11 @@ Pulse.prototype.performPortalSync = function performPortalSync() {
     this.consoleLogger('ADT Pulse: Performing portal sync...', 'log');
 
     request.get(
-      `https://portal.adtpulse.com/myhome/${lastKnownVersion}/Ajax/SyncCheckServ?t=${Date.now()}`,
+      `https://${countrySubDomain}.adtpulse.com/myhome/${lastKnownVersion}/Ajax/SyncCheckServ?t=${Date.now()}`,
       this.generateRequestOptions({
         headers: {
           Accept: '*/*',
-          Referer: `https://portal.adtpulse.com/myhome/${lastKnownVersion}/summary/summary.jsp`,
+          Referer: `https://${countrySubDomain}.adtpulse.com/myhome/${lastKnownVersion}/summary/summary.jsp`,
         },
       }),
       (error, response, body) => {
@@ -723,12 +743,12 @@ Pulse.prototype.hasInternetWrapper = function hasInternetWrapper(deferred, runFu
   const settings = {
     timeout: 5000,
     retries: 3,
-    domainName: 'portal.adtpulse.com',
+    domainName: `${countrySubDomain}.adtpulse.com`,
     port: 53,
   };
 
   hasInternet(settings).then(runFunction).catch(() => {
-    this.consoleLogger('ADT Pulse: Internet connection is offline or "https://portal.adtpulse.com" is unavailable.', 'error');
+    this.consoleLogger(`ADT Pulse: Internet connection is offline or "https://${countrySubDomain}.adtpulse.com" is unavailable.`, 'error');
 
     deferred.reject({
       action: 'CONNECT',
@@ -751,9 +771,9 @@ Pulse.prototype.generateRequestOptions = function generateRequestOptions(additio
   const options = {
     jar,
     headers: {
-      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-      Host: 'portal.adtpulse.com',
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36',
+      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+      Host: `${countrySubDomain}.adtpulse.com`,
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36',
     },
     ciphers: [
       'ECDHE-RSA-AES256-GCM-SHA384',

@@ -6,14 +6,16 @@
  * Arguments:
  *     --username email@email.com
  *     --password 1234567890
- *     --action   [device-information,device-status,zone-status,sync,disarm,arm-away,arm-stay,arm-night]
+ *     --country  us,ca
+ *     --action   device-information,device-status,zone-status,sync,disarm,arm-away,arm-stay,arm-night
  *
  * Usage:
- *     node api-test --username ! --password % --action @
+ *     node api-test --username ! --password % --country # --action @
  *
  * Replace:
  *     ! - Account username
  *     % - Account password
+ *     # - Country
  *     @ - Action type
  *
  * @type {function(object): void}
@@ -33,6 +35,9 @@ const usernameValue = (username > -1) ? process.argv[username + 1] : '';
 const password = process.argv.indexOf('--password');
 const passwordValue = (password > -1) ? process.argv[password + 1] : '';
 
+const country = process.argv.indexOf('--country');
+const countryValue = (country > -1) ? process.argv[country + 1] : '';
+
 const action = process.argv.indexOf('--action');
 const actionValue = (action > -1) ? process.argv[action + 1] : '';
 
@@ -48,6 +53,10 @@ if (!usernameValue || !passwordValue || !actionValue) {
 
   if (!passwordValue) {
     console.error('ADT Pulse Test: Password is empty.');
+  }
+
+  if (!countryValue) {
+    console.error('ADT Pulse Test: Country is empty.');
   }
 
   if (!actionValue) {
@@ -67,6 +76,7 @@ if (!usernameValue || !passwordValue || !actionValue) {
 const pulse = new Pulse({
   username: usernameValue,
   password: passwordValue,
+  country: countryValue,
   debug: true,
 });
 

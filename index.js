@@ -48,15 +48,16 @@ function ADTPulsePlatform(log, config, api) {
   // These variables could be undefined.
   this.username = _.get(this.config, 'username');
   this.password = _.get(this.config, 'password');
+  this.country = _.get(this.config, 'country');
   this.logLevel = _.get(this.config, 'logLevel');
   this.logActivity = _.get(this.config, 'logActivity');
   this.removeObsoleteZones = _.get(this.config, 'removeObsoleteZones');
   this.resetAll = _.get(this.config, 'resetAll');
 
   // Timers.
-  this.syncInterval = 3;
-  this.syncIntervalDelay = 600;
-  this.setDeviceTimeout = 8;
+  this.syncInterval = 3; // 3 seconds.
+  this.syncIntervalDelay = 600; // 10 minutes.
+  this.setDeviceTimeout = 8; // 8 seconds.
 
   // Setup logging function.
   if (typeof this.logLevel !== 'number' || ![10, 20, 30, 40, 50].includes(this.logLevel)) {
@@ -70,6 +71,14 @@ function ADTPulsePlatform(log, config, api) {
   if (!this.username || !this.password) {
     this.logMessage('Missing required username or password in configuration.', 10);
     return;
+  }
+
+  // Setup country configuration.
+  if (!['us', 'ca'].includes(this.country)) {
+    if (this.country !== undefined) {
+      this.logMessage('"country" setting should be "us" or "ca". Defaulting to "us".', 20);
+    }
+    this.country = 'us';
   }
 
   // Check if log activity is configured.
@@ -100,6 +109,7 @@ function ADTPulsePlatform(log, config, api) {
   this.pulse = new Pulse({
     username: this.username,
     password: this.password,
+    country: this.country,
     debug: (this.logLevel >= 40),
   });
 

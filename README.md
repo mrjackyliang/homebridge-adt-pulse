@@ -25,6 +25,7 @@ When configuring this plugin, simply add the platform to your existing `config.j
       "name": "ADT Pulse",
       "username": "email@email.com",
       "password": "1234567890",
+      "country": "us",
       "logLevel": 30,
       "logActivity": true,
       "removeObsoleteZones": true,
@@ -68,6 +69,15 @@ Before arming, please check the status of your Home (instructions below), as Hom
 As for ADT Pulse systems, __Arm Night__ is only available for use through the panel itself. Although it is not visible on the Web Portal or the mobile app, you can still place your system in __Arm Night__ mode with this plugin.
 
 Because of the force arming procedure (above), __please make sure no devices are open or reporting motion__ as this may render the __Arm Night__ mode less effective.
+
+## Set Country
+ADT Pulse is available both in the United States and Canada. Use this setting to toggle which country you will be using the plugin in. _Optional._
+
+The default is `us`. Configure `country` with the values below:
+* Set `country` to `us` for United States.
+* Set `country` to `ca` for Canada.
+
+__NOTE:__ If the `country` setting has been specified incorrectly, a warning will be shown then subsequently set to `us`.
 
 ## Log Level (Debugging)
 Debugging is difficult without the proper information, in such, this plugin offers a way to filter out messages sent to the logs. _Optional._
@@ -119,6 +129,6 @@ The script provides an active connection to the ADT Pulse portal. Here is a list
 2. Supported versions are `19.0.0-89` and `20.0.0-221`. If this plugin does not support either version, a warning will appear in the logs. Please [submit an issue](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new/choose) to let me know!
 
 ## Credits and Appreciation
-If you would like to show your appreciation for its continued development, you can optionally become my supporter on [GitHub Sponsors](https://github.com/sponsors/mrjackyliang) or [Patreon](https://www.patreon.com/mrjackyliang)!
+If you would like to show your appreciation for its continued development, you can optionally become my supporter on [GitHub Sponsors](https://github.com/sponsors/mrjackyliang)!
 
 Also, thank you to [@kevinmkickey](https://github.com/kevinmhickey) for providing the [ADT Pulse script](https://github.com/kevinmhickey/adt-pulse).
