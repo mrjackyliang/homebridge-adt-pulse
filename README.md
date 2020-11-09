@@ -74,8 +74,8 @@ Because of the force arming procedure (above), __please make sure no devices are
 ADT Pulse is available both in the United States and Canada. Use this setting to toggle which country you will be using the plugin in. _Optional._
 
 The default is `us`. Configure `country` with the values below:
-* Set `country` to `us` for United States.
-* Set `country` to `ca` for Canada.
+* Set `country` to `us` for United States
+* Set `country` to `ca` for Canada
 
 __NOTE:__ If the `country` setting has been specified incorrectly, a warning will be shown then subsequently set to `us`.
 
