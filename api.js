@@ -595,12 +595,12 @@ Pulse.prototype.getZoneStatus = function getZoneStatus() {
           const sensors = $('#orbSensorsList table tr.p_listRow').toArray();
 
           const output = _.map(sensors, (sensor) => {
-            const theSensor = cheerio.load(sensor);
+            const theSensor = cheerio.load([].concat(sensor));
             const theName = theSensor('a.p_deviceNameText').html();
             const theZone = theSensor('span.p_grayNormalText').html();
             const theState = theSensor('span.devStatIcon canvas').attr('icon');
 
-            const theZoneNumber = (theZone) ? theZone.replace(/(Zone&#xA0;)([0-9]{1,2})/, '$2') : 0;
+            const theZoneNumber = (theZone) ? theZone.replace(/(Zone)(&#xA0;|&nbsp;)([0-9]{1,2})/, '$3') : 0;
 
             let theTag;
 
