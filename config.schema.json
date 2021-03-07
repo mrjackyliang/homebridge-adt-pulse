@@ -44,7 +44,7 @@
                             "type": "string",
                             "default": "",
                             "required": true,
-                            "description": "The sensor name for which sensor you would like to override"
+                            "description": "The sensor name for the sensor you would like to override"
                         },
                         "type": {
                             "title": "Type",
@@ -83,7 +83,7 @@
                                 }
                             ],
                             "required": true,
-                            "description": "The sensor type for which sensor you would like to override"
+                            "description": "The sensor type for the sensor you would like to override"
                         }
                     }
                 },
