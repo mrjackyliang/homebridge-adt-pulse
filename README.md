@@ -19,23 +19,33 @@ You can also search `adt-pulse` using [HOOBS](https://github.com/mkellsy/homebri
 When configuring this plugin, simply add the platform to your existing `config.json` file. Mind that the `platform` name must always be `ADTPulse`.
 ```json
 {
-  "platforms": [
-    {
-      "platform": "ADTPulse",
-      "name": "ADT Pulse",
-      "username": "email@email.com",
-      "password": "1234567890",
-      "country": "us",
-      "logLevel": 30,
-      "logActivity": true,
-      "removeObsoleteZones": true,
-      "resetAll": false
-    },
-    {
-      "platform": "...",
-      "name": "..."
-    }
-  ]
+    "platforms": [
+        {
+            "platform": "ADTPulse",
+            "name": "ADT Pulse",
+            "username": "email@email.com",
+            "password": "1234567890",
+            "overrideSensors": [
+                {
+                    "name": "Sample Sensor 1",
+                    "type": "sensor,doorWindow"
+                },
+                {
+                    "name": "...",
+                    "type": "..."
+                }
+            ],
+            "country": "us",
+            "logLevel": 30,
+            "logActivity": true,
+            "removeObsoleteZones": true,
+            "resetAll": false
+        },
+        {
+            "platform": "...",
+            "name": "..."
+        }
+    ]
 }
 ```
 
@@ -69,6 +79,15 @@ Before arming, please check the status of your Home (instructions below), as Hom
 As for ADT Pulse systems, __Arm Night__ is only available for use through the panel itself. Although it is not visible on the Web Portal or the mobile app, you can still place your system in __Arm Night__ mode with this plugin.
 
 Because of the force arming procedure (above), __please make sure no devices are open or reporting motion__ as this may render the __Arm Night__ mode less effective.
+
+## Manually Override Sensors
+Due to ADT Pulse portal limitations, sensors may be inaccurately detected. Use this setting to manually override default detection features. _Optional._
+
+The default is `[]`. Configure `overrideSensors` with the values below:
+* Set `name` to the name that is displayed in the ADT Pulse portal
+* Set `type` to `sensor,doorWindow`, `sensor,glass`, `sensor,motion`, `sensor,co`, or `sensor,fire`
+
+__NOTE:__ Examples are noted above in the [configuration](#configuration) section.
 
 ## Set Country
 ADT Pulse is available both in the United States and Canada. Use this setting to toggle which country you will be using the plugin in. _Optional._
@@ -118,9 +137,7 @@ The default is `false`. Configure `resetAll` with the values below:
 * Set `resetAll` to `true` for reset mode
 * Set `resetAll` to `false` for normal mode
 
-__NOTE:__ To prevent accidental removal of all accessories, the `resetAll` setting can be configured manually in the `config.json` file.
-
-__NOTE 2:__ Once reset is complete, remember to set the `resetAll` setting back to `false` or else the plugin will just repeat reset mode again.
+__NOTE:__ Once reset is complete, remember to set the `resetAll` setting back to `false` or else the plugin will just repeat reset mode again.
 
 ## Developer Information
 The script provides an active connection to the ADT Pulse portal. Here is a list of must-knows, just in case you might want to debug (or improve) the plugin:

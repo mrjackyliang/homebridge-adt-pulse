@@ -48,6 +48,7 @@ function ADTPulsePlatform(log, config, api) {
   // These variables could be undefined.
   this.username = _.get(this.config, 'username');
   this.password = _.get(this.config, 'password');
+  this.overrideSensors = _.get(this.config, 'overrideSensors');
   this.country = _.get(this.config, 'country');
   this.logLevel = _.get(this.config, 'logLevel');
   this.logActivity = _.get(this.config, 'logActivity');
@@ -57,7 +58,7 @@ function ADTPulsePlatform(log, config, api) {
   // Timers.
   this.syncInterval = 3; // 3 seconds.
   this.syncIntervalDelay = 600; // 10 minutes.
-  this.setDeviceTimeout = 8; // 8 seconds.
+  this.setDeviceTimeout = 6; // 6 seconds.
 
   // Setup logging function.
   if (typeof this.logLevel !== 'number' || ![10, 20, 30, 40, 50].includes(this.logLevel)) {
@@ -71,6 +72,17 @@ function ADTPulsePlatform(log, config, api) {
   if (!this.username || !this.password) {
     this.logMessage('Missing required username or password in configuration.', 10);
     return;
+  }
+
+  // Check if override sensors is configured incorrectly.
+  if (
+    !_.isArray(this.overrideSensors)
+    || !_.every(this.overrideSensors, (sensor) => _.isString(_.get(sensor, 'name')) && _.isString(_.get(sensor, 'type')))
+  ) {
+    if (this.overrideSensors !== undefined) {
+      this.logMessage('"overrideSensors" setting is incorrectly defined. Defaulting to [].', 20);
+    }
+    this.overrideSensors = [];
   }
 
   // Setup country configuration.
@@ -109,6 +121,7 @@ function ADTPulsePlatform(log, config, api) {
   this.pulse = new Pulse({
     username: this.username,
     password: this.password,
+    overrideSensors: this.overrideSensors,
     country: this.country,
     debug: (this.logLevel >= 40),
   });
@@ -432,7 +445,7 @@ ADTPulsePlatform.prototype.removeAccessory = function removeAccessory(accessory)
   this.logMessage(accessory, 40);
 
   // Remove from accessory array.
-  _.remove(that.accessories, ['UUID', accessory.UUID]);
+  _.remove(that.accessories, (thatAccessory) => thatAccessory.UUID === accessory.UUID);
 
   that.api.unregisterPlatformAccessories(
     'homebridge-adt-pulse',
@@ -753,7 +766,7 @@ ADTPulsePlatform.prototype.getZoneStatus = function getZoneStatus(type, id, form
  * Converts the zone state from ADT Pulse "devStat" icon classes to Homebridge compatible.
  *
  * @param {string} type  - Can be "doorWindow", "glass", "motion", "co", or "fire".
- * @param {string} state - Can be "devStatOK", "devStatOpen", "devStatMotion", "devStatTamper", or "devStatAlarm".
+ * @param {string} state - Can be "devStatOK", "devStatLowBatt", "devStatOpen", "devStatMotion", "devStatTamper", or "devStatAlarm".
  *
  * @returns {(undefined|number|boolean)}
  *
@@ -764,35 +777,35 @@ ADTPulsePlatform.prototype.formatGetZoneStatus = function formatGetZoneStatus(ty
 
   switch (type) {
     case 'doorWindow':
-      if (state === 'devStatOK') {
+      if (state === 'devStatOK' || state === 'devStatLowBatt') {
         status = Characteristic.ContactSensorState.CONTACT_DETECTED;
       } else if (state === 'devStatOpen' || state === 'devStatTamper') {
         status = Characteristic.ContactSensorState.CONTACT_NOT_DETECTED;
       }
       break;
     case 'glass':
-      if (state === 'devStatOK') {
+      if (state === 'devStatOK' || state === 'devStatLowBatt') {
         status = Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED;
       } else if (state === 'devStatTamper') {
         status = Characteristic.OccupancyDetected.OCCUPANCY_DETECTED;
       }
       break;
     case 'motion':
-      if (state === 'devStatOK') {
+      if (state === 'devStatOK' || state === 'devStatLowBatt') {
         status = false;
       } else if (state === 'devStatMotion' || state === 'devStatTamper') {
         status = true;
       }
       break;
     case 'co':
-      if (state === 'devStatOK') {
+      if (state === 'devStatOK' || state === 'devStatLowBatt') {
         status = Characteristic.CarbonMonoxideDetected.CO_LEVELS_NORMAL;
       } else if (state === 'devStatAlarm' || state === 'devStatTamper') {
         status = Characteristic.CarbonMonoxideDetected.CO_LEVELS_ABNORMAL;
       }
       break;
     case 'fire':
-      if (state === 'devStatOK') {
+      if (state === 'devStatOK' || state === 'devStatLowBatt') {
         status = Characteristic.SmokeDetected.SMOKE_NOT_DETECTED;
       } else if (state === 'devStatAlarm' || state === 'devStatTamper') {
         status = Characteristic.SmokeDetected.SMOKE_DETECTED;
@@ -832,7 +845,7 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
       .login()
       .then((response) => {
         const version = _.get(response, 'info.version');
-        const supportedVersion = ['20.0.0-221', '20.0.0-244'];
+        const supportedVersion = ['20.0.0-244', '21.0.0-344'];
 
         if (version !== undefined && !supportedVersion.includes(version) && version !== this.sessionVersion) {
           this.logMessage(`Web Portal version ${version} detected. Test plugin to ensure system compatibility...`, 20);
@@ -1228,7 +1241,10 @@ ADTPulsePlatform.prototype.logSystemInformation = function logSystemInformation(
  * @since 1.0.0
  */
 ADTPulsePlatform.prototype.logMessage = function logMessage(content, priority) {
-  const { log, logLevel } = this;
+  const {
+    log,
+    logLevel,
+  } = this;
 
   if (logLevel >= priority) {
     /**

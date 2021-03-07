@@ -4,19 +4,23 @@
  * Test the ADT Pulse API responses using this script.
  *
  * Arguments:
- *     --username email@email.com
- *     --password 1234567890
- *     --country  us,ca
- *     --action   device-information,device-status,zone-status,sync,disarm,arm-away,arm-stay,arm-night
+ *     --username           email@email.com
+ *     --password           1234567890
+ *     --country            "us" or "ca"
+ *     --action             "device-information", "device-status", "zone-status", "sync", "disarm", "arm-away", "arm-stay", or "arm-night"
+ *     --overrideSensorName Sensor name as shown in ADT Pulse
+ *     --overrideSensorType "sensor,glass", "sensor,motion", "sensor,co", "sensor,fire", or "sensor,doorWindow"
  *
  * Usage:
- *     node api-test --username ! --password % --country # --action @
+ *     node api-test --username ! --password % --country # --action @ --overrideSensorName $ --overrideSensorType ~
  *
  * Replace:
  *     ! - Account username
  *     % - Account password
  *     # - Country
  *     @ - Action type
+ *     $ - Override sensor name (optional)
+ *     ~ - Override sensor type (optional)
  *
  * @type {function(object): void}
  *
@@ -41,12 +45,18 @@ const countryValue = (country > -1) ? process.argv[country + 1] : '';
 const action = process.argv.indexOf('--action');
 const actionValue = (action > -1) ? process.argv[action + 1] : '';
 
+const overrideSensorName = process.argv.indexOf('--overrideSensorName');
+const overrideSensorNameValue = (overrideSensorName > -1) ? process.argv[overrideSensorName + 1] : '';
+
+const overrideSensorType = process.argv.indexOf('--overrideSensorType');
+const overrideSensorTypeValue = (overrideSensorType > -1) ? process.argv[overrideSensorType + 1] : '';
+
 /**
  * Sanitize arguments.
  *
  * @since 1.0.0
  */
-if (!usernameValue || !passwordValue || !actionValue) {
+if (!usernameValue || !passwordValue || !countryValue || !actionValue) {
   if (!usernameValue) {
     console.error('ADT Pulse Test: Username is empty.');
   }
@@ -76,6 +86,10 @@ if (!usernameValue || !passwordValue || !actionValue) {
 const pulse = new Pulse({
   username: usernameValue,
   password: passwordValue,
+  overrideSensors: (overrideSensorNameValue && overrideSensorTypeValue) ? [{
+    name: overrideSensorNameValue,
+    type: overrideSensorTypeValue,
+  }] : [],
   country: countryValue,
   debug: true,
 });

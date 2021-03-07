@@ -49,6 +49,7 @@ let lastKnownSiteId = '';
 function Pulse(options) {
   this.username = _.get(options, 'username', '');
   this.password = _.get(options, 'password', '');
+  this.overrideSensors = _.get(options, 'overrideSensors', []);
   this.country = _.get(options, 'country', '');
   this.debug = _.get(options, 'debug', false);
 
@@ -606,8 +607,16 @@ Pulse.prototype.getZoneStatus = function getZoneStatus() {
 
             if (typeof theName === 'string' && theState !== 'devStatUnknown') {
               const theNameLowercase = theName.toLowerCase();
+              const theOverrideSensor = _.find(this.overrideSensors, (overrideSensor) => overrideSensor.name.toLowerCase() === theNameLowercase);
 
-              if (theNameLowercase.match(/^(.*)(glass)(.*)$/g) !== null) {
+              if (theOverrideSensor !== undefined) {
+                const theOverrideSensorType = _.get(theOverrideSensor, 'type');
+                const allowedSensorTypes = ['sensor,glass', 'sensor,motion', 'sensor,co', 'sensor,fire', 'sensor,doorWindow'];
+
+                this.consoleLogger(`ADT Pulse: ${theName} sensor type is manually overridden to "${theOverrideSensorType}".`, 'warn');
+
+                theTag = (allowedSensorTypes.includes(theOverrideSensorType)) ? theOverrideSensorType : undefined;
+              } else if (theNameLowercase.match(/^(.*)(glass)(.*)$/g) !== null) {
                 theTag = 'sensor,glass';
               } else if (theNameLowercase.match(/^(.*)(motion)(.*)$/g) !== null) {
                 theTag = 'sensor,motion';
@@ -616,15 +625,6 @@ Pulse.prototype.getZoneStatus = function getZoneStatus() {
               } else if (theNameLowercase.match(/^(.*)(smoke|heat)(.*)$/g) !== null) {
                 theTag = 'sensor,fire';
               } else if (theNameLowercase.match(/^(.*)(door|window|dr|win|slider)(.*)$/g) !== null) {
-                theTag = 'sensor,doorWindow';
-              } else if (theNameLowercase.match(/^(kitchen nook)|(z[0-9]{2} service|kitchen (left|right) (back|side))$/g) !== null) {
-                /**
-                 * GitHub users with special naming configurations.
-                 *
-                 * @Glitch482 - "KITCHEN NOOK"
-                 * @w1llf0rd  - "Z** Service"
-                 * @tjclayton - "Kitchen Left/Right Back/Side"
-                 */
                 theTag = 'sensor,doorWindow';
               }
             }
@@ -636,6 +636,7 @@ Pulse.prototype.getZoneStatus = function getZoneStatus() {
              * name:  device name
              * tags:  sensor,[doorWindow,motion,glass,co,fire]
              * state: devStatOK (device okay)
+             *        devStatLowBatt (device low battery)
              *        devStatOpen (door/window opened)
              *        devStatMotion (detected motion)
              *        devStatTamper (glass broken or device tamper)
@@ -773,7 +774,7 @@ Pulse.prototype.generateRequestOptions = function generateRequestOptions(additio
     headers: {
       Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
       Host: `${countrySubDomain}.adtpulse.com`,
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36',
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36',
     },
     ciphers: [
       'ECDHE-RSA-AES256-GCM-SHA384',

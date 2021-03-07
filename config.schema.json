@@ -33,6 +33,83 @@
                 "maxLength": 50,
                 "description": "Password used for ADT Pulse login"
             },
+            "overrideSensors": {
+                "title": "Override Sensors",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "title": "Name",
+                            "type": "string",
+                            "default": "",
+                            "required": true,
+                            "description": "The sensor name for which sensor you would like to override"
+                        },
+                        "type": {
+                            "title": "Type",
+                            "type": "string",
+                            "default": "",
+                            "oneOf": [
+                                {
+                                    "title": "Door/Window Sensor",
+                                    "enum": [
+                                        "sensor,doorWindow"
+                                    ]
+                                },
+                                {
+                                    "title": "Glass Break Detector",
+                                    "enum": [
+                                        "sensor,glass"
+                                    ]
+                                },
+                                {
+                                    "title": "Motion Sensor",
+                                    "enum": [
+                                        "sensor,motion"
+                                    ]
+                                },
+                                {
+                                    "title": "Carbon Monoxide Detector",
+                                    "enum": [
+                                        "sensor,co"
+                                    ]
+                                },
+                                {
+                                    "title": "Fire (Smoke/Heat) Detector",
+                                    "enum": [
+                                        "sensor,fire"
+                                    ]
+                                }
+                            ],
+                            "required": true,
+                            "description": "The sensor type for which sensor you would like to override"
+                        }
+                    }
+                },
+                "description": "When a sensor cannot be detected accurately, you can manually set the sensor here to override the default detection features"
+            },
+            "country": {
+                "title": "Country",
+                "type": "string",
+                "default": "us",
+                "oneOf": [
+                    {
+                        "title": "United States",
+                        "enum": [
+                            "us"
+                        ]
+                    },
+                    {
+                        "title": "Canada",
+                        "enum": [
+                            "ca"
+                        ]
+                    }
+                ],
+                "required": false,
+                "description": "Select a country where ADT Pulse will connect to"
+            },
             "logLevel": {
                 "title": "Log Level",
                 "type": "integer",
@@ -84,6 +161,12 @@
                 "type": "boolean",
                 "default": true,
                 "required": false
+            },
+            "resetAll": {
+                "title": "Reset Plugin \uD83D\uDED1",
+                "type": "boolean",
+                "default": false,
+                "required": false
             }
         }
     },
@@ -107,6 +190,17 @@
             ]
         },
         {
+            "key": "overrideSensors",
+            "buttonText": "Add Sensor",
+            "items": [
+                "overrideSensors[].name",
+                "overrideSensors[].type"
+            ]
+        },
+        {
+            "key": "country"
+        },
+        {
             "key": "logLevel"
         },
         {
@@ -114,6 +208,9 @@
         },
         {
             "key": "removeObsoleteZones"
+        },
+        {
+            "key": "resetAll"
         }
     ],
     "form": null,
