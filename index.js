@@ -494,7 +494,7 @@ ADTPulsePlatform.prototype.setDeviceAccessory = function setDeviceAccessory(id, 
   this.setDeviceStatus(id, name, state);
 
   setTimeout(() => {
-    callback(null, state);
+    callback(null);
   }, that.setDeviceTimeout * 1000);
 };
 
