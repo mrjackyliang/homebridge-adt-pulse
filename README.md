@@ -83,7 +83,7 @@ Because of the force arming procedure (above), __please make sure no devices are
 ## Manually Override Sensors
 Due to ADT Pulse portal limitations, sensors may be inaccurately detected. Use this setting to manually override default detection features. _Optional._
 
-The default is `[]`. Configure `overrideSensors` with the values below:
+The default is `[]`. Configure `overrideSensors[]` with the values below:
 * Set `name` to the name that is displayed in the ADT Pulse portal
 * Set `type` to `sensor,doorWindow`, `sensor,glass`, `sensor,motion`, `sensor,co`, or `sensor,fire`
 
