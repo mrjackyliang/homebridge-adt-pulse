@@ -845,7 +845,7 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
       .login()
       .then((response) => {
         const version = _.get(response, 'info.version');
-        const supportedVersion = ['20.0.0-244', '21.0.0-344'];
+        const supportedVersion = ['21.0.0-344', '21.0.0-353'];
 
         if (version !== undefined && !supportedVersion.includes(version) && version !== this.sessionVersion) {
           this.logMessage(`Web Portal version ${version} detected. Test plugin to ensure system compatibility...`, 20);
