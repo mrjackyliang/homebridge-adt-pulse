@@ -17,10 +17,10 @@
         "sourceType": "script"
     },
     "rules": {
-        "no-console": [
+        "max-len": [
             "off"
         ],
-        "max-len": [
+        "no-console": [
             "off"
         ]
     },
