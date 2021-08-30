@@ -7,8 +7,7 @@
     "private": false,
     "scripts": {
         "start": "homebridge --plugin-path $(pwd)",
-        "start:debug": "homebridge --debug --plugin-path $(pwd)",
-        "test": ""
+        "start:debug": "homebridge --debug --plugin-path $(pwd)"
     },
     "repository": {
         "type": "git",

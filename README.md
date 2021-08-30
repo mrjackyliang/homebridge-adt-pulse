@@ -64,6 +64,8 @@ If you have a sensor that is unsupported by this plugin, please [submit an issue
 
 Due to ADT Pulse limitations, accessories that are connected to the Z-Wave Platform cannot be supported. Consider using other Homebridge plugins.
 
+Recently, ADT has added a multi-factor authentication requirement. If you have already opted-in, please consider creating an [alternative account for use](https://portal.adtpulse.com/myhome/system/admin.jsp).
+
 ## Force Arming (Arm Away/Stay/Night)
 Due to the nature of how HomeKit and ADT Pulse processes `setDeviceStatus` commands, this plugin will force arm when it detects active motion or open sensors.
 
