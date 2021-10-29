@@ -49,6 +49,7 @@ let lastKnownSiteId = '';
 function Pulse(options) {
   this.username = _.get(options, 'username', '');
   this.password = _.get(options, 'password', '');
+  this.fingerprint = _.get(options, 'fingerprint', '');
   this.overrideSensors = _.get(options, 'overrideSensors', []);
   this.country = _.get(options, 'country', '');
   this.debug = _.get(options, 'debug', false);
@@ -135,6 +136,7 @@ Pulse.prototype.login = function login() {
                 form: {
                   usernameForm: that.username,
                   passwordForm: that.password,
+                  fingerprint: that.fingerprint,
                 },
               }),
               (postError, postResponse, postBody) => {
