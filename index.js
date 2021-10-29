@@ -48,6 +48,7 @@ function ADTPulsePlatform(log, config, api) {
   // These variables could be undefined.
   this.username = _.get(this.config, 'username');
   this.password = _.get(this.config, 'password');
+  this.fingerprint = _.get(this.config, 'fingerprint');
   this.overrideSensors = _.get(this.config, 'overrideSensors');
   this.country = _.get(this.config, 'country');
   this.logLevel = _.get(this.config, 'logLevel');
@@ -121,6 +122,7 @@ function ADTPulsePlatform(log, config, api) {
   this.pulse = new Pulse({
     username: this.username,
     password: this.password,
+    fingerprint: this.fingerprint,
     overrideSensors: this.overrideSensors,
     country: this.country,
     debug: (this.logLevel >= 40),

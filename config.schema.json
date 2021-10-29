@@ -199,6 +199,9 @@
             ]
         },
         {
+            "key": "fingerprint"
+        }
+        {
             "key": "overrideSensors",
             "buttonText": "Add Sensor",
             "items": [
