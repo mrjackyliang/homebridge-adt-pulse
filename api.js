@@ -774,9 +774,9 @@ Pulse.prototype.generateRequestOptions = function generateRequestOptions(additio
   const options = {
     jar,
     headers: {
-      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
       Host: `${countrySubDomain}.adtpulse.com`,
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36',
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Safari/605.1.15',
     },
     ciphers: [
       'ECDHE-RSA-AES256-GCM-SHA384',

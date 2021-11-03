@@ -1,58 +1,57 @@
 {
-    "name": "homebridge-adt-pulse",
-    "displayName": "Homebridge ADT Pulse",
-    "version": "2.0.4",
-    "description": "Homebridge security system platform for ADT Pulse",
-    "main": "index.js",
-    "private": false,
-    "scripts": {
-        "start": "homebridge --plugin-path $(pwd)",
-        "start:debug": "homebridge --debug --plugin-path $(pwd)"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/mrjackyliang/homebridge-adt-pulse.git"
-    },
-    "funding": {
-        "type": "github",
-        "url": "https://github.com/sponsors/mrjackyliang"
-    },
-    "keywords": [
-        "homebridge",
-        "homebridge-plugin",
-        "homekit",
-        "adt",
-        "adt-pulse",
-        "icontrol",
-        "security",
-        "security-system"
-    ],
-    "author": "Jacky Liang",
-    "license": "ISC",
-    "bugs": {
-        "url": "https://github.com/mrjackyliang/homebridge-adt-pulse/issues"
-    },
-    "files": [
-        "*.js",
-        "*.schema.json"
-    ],
-    "homepage": "https://github.com/mrjackyliang/homebridge-adt-pulse#readme",
-    "engines": {
-        "node": ">=10.0.0",
-        "homebridge": ">=0.4.50"
-    },
-    "dependencies": {
-        "cheerio": "1.0.0-rc.5",
-        "internet-available": "^1.0.0",
-        "lodash": "^4.17.20",
-        "q": "^1.5.1",
-        "request": "^2.88.2"
-    },
-    "devDependencies": {
-        "eslint": "^6.8.0",
-        "eslint-config-airbnb-base": "^14.2.1",
-        "eslint-plugin-import": "^2.22.1",
-        "homebridge": "^0.4.53",
-        "typescript": "^3.9.7"
-    }
+  "name": "homebridge-adt-pulse",
+  "displayName": "Homebridge ADT Pulse",
+  "version": "2.1.0",
+  "description": "Homebridge security system platform for ADT Pulse",
+  "main": "index.js",
+  "private": false,
+  "scripts": {
+    "start": "homebridge --plugin-path $(pwd)",
+    "start:debug": "homebridge --debug --plugin-path $(pwd)"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mrjackyliang/homebridge-adt-pulse.git"
+  },
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/mrjackyliang"
+  },
+  "keywords": [
+    "homebridge",
+    "homebridge-plugin",
+    "homekit",
+    "adt",
+    "adt-pulse",
+    "icontrol",
+    "security",
+    "security-system"
+  ],
+  "author": "Jacky Liang",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mrjackyliang/homebridge-adt-pulse/issues"
+  },
+  "files": [
+    "*.js",
+    "*.schema.json"
+  ],
+  "homepage": "https://github.com/mrjackyliang/homebridge-adt-pulse#readme",
+  "engines": {
+    "homebridge": ">=0.4.50",
+    "node": "16"
+  },
+  "dependencies": {
+    "cheerio": "1.0.0-rc.5",
+    "internet-available": "^1.0.0",
+    "lodash": "^4.17.20",
+    "q": "^1.5.1",
+    "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1",
+    "typescript": "^3.9.7"
+  }
 }

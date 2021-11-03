@@ -19,33 +19,34 @@ You can also search `adt-pulse` using [HOOBS](https://github.com/mkellsy/homebri
 When configuring this plugin, simply add the platform to your existing `config.json` file. Mind that the `platform` name must always be `ADTPulse`.
 ```json
 {
-    "platforms": [
+  "platforms": [
+    {
+      "platform": "ADTPulse",
+      "name": "ADT Pulse",
+      "username": "email@email.com",
+      "password": "1234567890",
+      "fingerprint": "abcdef1234567890=",
+      "overrideSensors": [
         {
-            "platform": "ADTPulse",
-            "name": "ADT Pulse",
-            "username": "email@email.com",
-            "password": "1234567890",
-            "overrideSensors": [
-                {
-                    "name": "Sample Sensor 1",
-                    "type": "sensor,doorWindow"
-                },
-                {
-                    "name": "...",
-                    "type": "..."
-                }
-            ],
-            "country": "us",
-            "logLevel": 30,
-            "logActivity": true,
-            "removeObsoleteZones": true,
-            "resetAll": false
+          "name": "Sample Sensor 1",
+          "type": "sensor,doorWindow"
         },
         {
-            "platform": "...",
-            "name": "..."
+          "name": "...",
+          "type": "..."
         }
-    ]
+      ],
+      "country": "us",
+      "logLevel": 30,
+      "logActivity": true,
+      "removeObsoleteZones": true,
+      "resetAll": false
+    },
+    {
+      "platform": "...",
+      "name": "..."
+    }
+  ]
 }
 ```
 
@@ -64,7 +65,17 @@ If you have a sensor that is unsupported by this plugin, please [submit an issue
 
 Due to ADT Pulse limitations, accessories that are connected to the Z-Wave Platform cannot be supported. Consider using other Homebridge plugins.
 
-Recently, ADT has added a multi-factor authentication requirement. If you have already opted-in, please consider creating an [alternative account for use](https://portal.adtpulse.com/myhome/system/admin.jsp).
+## Configure 2-Factor Authentication
+With the recent updates, ADT Pulse now requires 2-factor authentication for your account. In the near future, this fingerprint will be required.
+
+1. Open a Chrome browser tab
+2. Open Developer Tools (using **View** ➜ **Developer** ➜ **Developer Tools** menu)
+3. Click on the **Network** tab (make sure **Preserve log** checkbox is checked)
+4. In the filter box, enter **signin.jsp**
+5. Go to `https://portal.adtpulse.com` or `https://portal-ca.adtpulse.com` and login to your account
+6. Click on the network call (beginning with `signin.jsp`) appearing in the DevTools window
+7. In the **Headers** tab, under **Form Data**, copy the entire **fingerprint** (ending in `=`)
+8. Paste the copied text into the `fingerprint` field into your `config.json`
 
 ## Force Arming (Arm Away/Stay/Night)
 Due to the nature of how HomeKit and ADT Pulse processes `setDeviceStatus` commands, this plugin will force arm when it detects active motion or open sensors.
@@ -150,4 +161,4 @@ The script provides an active connection to the ADT Pulse portal. Here is a list
 ## Credits and Appreciation
 If you would like to show your appreciation for its continued development, you can optionally become my supporter on [GitHub Sponsors](https://github.com/sponsors/mrjackyliang)!
 
-Also, thank you to [@kevinmkickey](https://github.com/kevinmhickey) for providing the [ADT Pulse script](https://github.com/kevinmhickey/adt-pulse).
+Also, thank you to [@kevinmkickey](https://github.com/kevinmhickey) for providing the [ADT Pulse script](https://github.com/kevinmhickey/adt-pulse) and [@Danimal4326](https://github.com/Danimal4326) for finding the solution for ADT Pulse's 2-factor authentication.
