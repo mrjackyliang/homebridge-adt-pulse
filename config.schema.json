@@ -33,6 +33,15 @@
                 "maxLength": 50,
                 "description": "Password used for ADT Pulse login"
             },
+            "fingerprint": {
+                "title": "MFA fingerprint",
+                "type": "string",
+                "default": "",
+                "required": false,
+                "minLength": 2400,
+                "maxLength": 3000,
+                "description": "MFA fingerprint from browser registered with ADT"
+            },
             "overrideSensors": {
                 "title": "Override Sensors",
                 "type": "array",
@@ -188,6 +197,9 @@
                     "flex": "1 0 0px"
                 }
             ]
+        },
+        {
+            "key": "fingerprint"
         },
         {
             "key": "overrideSensors",
