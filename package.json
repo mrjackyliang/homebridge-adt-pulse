@@ -1,7 +1,7 @@
 {
   "name": "homebridge-adt-pulse",
   "displayName": "Homebridge ADT Pulse",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Homebridge security system platform for ADT Pulse",
   "main": "index.js",
   "private": false,
@@ -39,7 +39,7 @@
   "homepage": "https://github.com/mrjackyliang/homebridge-adt-pulse#readme",
   "engines": {
     "homebridge": ">=0.4.50",
-    "node": "16"
+    "node": ">=14.16.0"
   },
   "dependencies": {
     "cheerio": "1.0.0-rc.5",

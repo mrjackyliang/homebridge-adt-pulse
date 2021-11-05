@@ -74,7 +74,7 @@ With the recent updates, ADT Pulse now requires 2-factor authentication for your
 4. In the filter box, enter **signin.jsp**
 5. Go to `https://portal.adtpulse.com` or `https://portal-ca.adtpulse.com` and login to your account
 6. Click on the network call (beginning with `signin.jsp`) appearing in the DevTools window
-7. In the **Headers** tab, under **Form Data**, copy the entire **fingerprint** (ending in `=`)
+7. In the **Headers** tab, under **Form Data**, copy the entire **fingerprint** (after `fingerprint:`, do not include spaces)
 8. Paste the copied text into the `fingerprint` field into your `config.json`
 
 ## Force Arming (Arm Away/Stay/Night)
