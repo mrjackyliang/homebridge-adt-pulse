@@ -5,7 +5,7 @@
  */
 const _ = require('lodash');
 
-const packageJson = require('./package');
+const packageJson = require('./package.json');
 const Pulse = require('./api');
 
 let Accessory;

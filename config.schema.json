@@ -37,7 +37,7 @@
                 "title": "MFA Fingerprint",
                 "type": "string",
                 "default": "",
-                "required": false,
+                "required": true,
                 "description": "MFA Fingerprint from browser registered with ADT Pulse"
             },
             "overrideSensors": {

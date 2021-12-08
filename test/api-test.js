@@ -6,6 +6,7 @@
  * Arguments:
  *     --username           email@email.com
  *     --password           1234567890
+ *     --fingerprint        2-factor authentication token
  *     --country            "us" or "ca"
  *     --action             "device-information", "device-status", "zone-status", "sync", "disarm", "arm-away", "arm-stay", or "arm-night"
  *     --overrideSensorName Sensor name as shown in ADT Pulse
@@ -39,6 +40,9 @@ const usernameValue = (username > -1) ? process.argv[username + 1] : '';
 const password = process.argv.indexOf('--password');
 const passwordValue = (password > -1) ? process.argv[password + 1] : '';
 
+const fingerprint = process.argv.indexOf('--fingerprint');
+const fingerprintValue = (fingerprint > -1) ? process.argv[fingerprint + 1] : '';
+
 const country = process.argv.indexOf('--country');
 const countryValue = (country > -1) ? process.argv[country + 1] : '';
 
@@ -56,13 +60,17 @@ const overrideSensorTypeValue = (overrideSensorType > -1) ? process.argv[overrid
  *
  * @since 1.0.0
  */
-if (!usernameValue || !passwordValue || !countryValue || !actionValue) {
+if (!usernameValue || !passwordValue || !fingerprintValue || !countryValue || !actionValue) {
   if (!usernameValue) {
     console.error('ADT Pulse Test: Username is empty.');
   }
 
   if (!passwordValue) {
     console.error('ADT Pulse Test: Password is empty.');
+  }
+
+  if (!fingerprintValue) {
+    console.error('ADT Pulse Test: Fingerprint is empty.');
   }
 
   if (!countryValue) {
@@ -73,7 +81,7 @@ if (!usernameValue || !passwordValue || !countryValue || !actionValue) {
     console.error('ADT Pulse Test: Action is empty.');
   }
 
-  return;
+  process.exit(1);
 }
 
 /**
@@ -86,6 +94,7 @@ if (!usernameValue || !passwordValue || !countryValue || !actionValue) {
 const pulse = new Pulse({
   username: usernameValue,
   password: passwordValue,
+  fingerprint: fingerprintValue,
   overrideSensors: (overrideSensorNameValue && overrideSensorTypeValue) ? [{
     name: overrideSensorNameValue,
     type: overrideSensorTypeValue,
