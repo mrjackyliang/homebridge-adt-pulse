@@ -66,16 +66,22 @@ If you have a sensor that is unsupported by this plugin, please [submit an issue
 Due to ADT Pulse limitations, accessories that are connected to the Z-Wave Platform cannot be supported. Consider using other Homebridge plugins.
 
 ## Configure 2-Factor Authentication
-With the recent updates, ADT Pulse now requires 2-factor authentication for your account. In the near future, this fingerprint will be required.
+With the recent updates, ADT Pulse now requires 2-factor authentication for your account. In the near future, this fingerprint will be required. Before you begin, make sure 2-Factor Authentication is already setup.
 
-1. Open a Chrome browser tab
+1. Open a Chrome browser tab (under Incognito mode)
 2. Open Developer Tools (using **View** ➜ **Developer** ➜ **Developer Tools** menu)
 3. Click on the **Network** tab (make sure **Preserve log** checkbox is checked)
-4. In the filter box, enter **signin.jsp**
+4. In the filter box, enter `signin.jsp?networkid=`
 5. Go to `https://portal.adtpulse.com` or `https://portal-ca.adtpulse.com` and login to your account
-6. Click on the network call (beginning with `signin.jsp`) appearing in the DevTools window
-7. In the **Headers** tab, under **Form Data**, copy the entire **fingerprint** (after `fingerprint:`, do not include spaces)
-8. Paste the copied text into the `fingerprint` field into your `config.json`
+6. Click **Request Code**, type in the requested code, and then click **Submit Code**
+7. Click **Trust this device** and name the device `Homebridge`
+8. Click **Save and Continue**
+9. Click **Sign Out** in the top right corner of the webpage
+10. Login to your account (once again)
+11. Click on the network call (beginning with `signin.jsp?networkid=`) appearing in the DevTools window. Select the last one.
+12. In the **Payload** tab, under **Form Data**, copy the entire **fingerprint** (after `fingerprint:`, do not include spaces)
+13. Paste the copied text into the `fingerprint` field into your `config.json`
+14. Close the Chrome window (DO NOT sign out)
 
 ## Force Arming (Arm Away/Stay/Night)
 Due to the nature of how HomeKit and ADT Pulse processes `setDeviceStatus` commands, this plugin will force arm when it detects active motion or open sensors.
