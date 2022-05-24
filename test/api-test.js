@@ -13,11 +13,12 @@
  *     --overrideSensorType "sensor,glass", "sensor,motion", "sensor,co", "sensor,fire", or "sensor,doorWindow"
  *
  * Usage:
- *     node api-test --username ! --password % --country # --action @ --overrideSensorName $ --overrideSensorType ~
+ *     node api-test --username ! --password % --fingerprint ^ --country # --action @ --overrideSensorName $ --overrideSensorType ~
  *
  * Replace:
  *     ! - Account username
  *     % - Account password
+ *     ^ - Fingerprint
  *     # - Country
  *     @ - Action type
  *     $ - Override sensor name (optional)

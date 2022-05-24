@@ -419,19 +419,20 @@ Pulse.prototype.getDeviceStatus = function getDeviceStatus() {
  * - When Arming Night, armState will be set to "night+stay". It will be set to "night" after re-login.
  * - If alarm occurred, you must Clear Alarm before setting to Armed Away/Stay/Night.
  * - For ADT Pulse Canada, you must replace the "portal" sub-domain to "portal-ca" sub-domain.
+ * - "sat" code is now required for all set actions.
  *
  * Disarmed:
- * - Arm Away (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=away).
- * - Arm Stay (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=stay).
- * - Arm Night (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=night).
- * - Disarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=off).
- * - Clear Alarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed+with+alarm&arm=off).
+ * - Arm Away (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=away&sat=).
+ * - Arm Stay (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=stay&sat=).
+ * - Arm Night (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=night&sat=).
+ * - Disarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed&arm=off&sat=).
+ * - Clear Alarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=disarmed+with+alarm&arm=off&sat=).
  * Armed Away:
- * - Disarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=away&arm=off).
+ * - Disarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=away&arm=off&sat=).
  * Armed Stay:
- * - Disarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=stay&arm=off).
+ * - Disarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=stay&arm=off&sat=).
  * Armed Night:
- * - Disarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=night&arm=off).
+ * - Disarm (https://portal.adtpulse.com/myhome/quickcontrol/armDisarm.jsp?href=rest/adt/ui/client/security/setArmState&armstate=night&arm=off&sat=).
  *
  * @param {string} armState - Can be "disarmed", "disarmed+with+alarm", "away", "stay", or "night".
  * @param {string} arm      - Can be "off", "away", "stay", or "night".
@@ -444,26 +445,21 @@ Pulse.prototype.setDeviceStatus = function setDeviceStatus(armState, arm) {
   const deferred = Q.defer();
 
   this.hasInternetWrapper(deferred, () => {
-    const url = `https://${countrySubDomain}.adtpulse.com/myhome/${lastKnownVersion}/quickcontrol/armDisarm.jsp`;
-    const arg = `?href=rest/adt/ui/client/security/setArmState&armstate=${armState}&arm=${arm}`;
+    const url1 = `https://${countrySubDomain}.adtpulse.com/myhome/${lastKnownVersion}/summary/summary.jsp`;
 
     this.consoleLogger('ADT Pulse: Setting device status...', 'log');
 
     request.get(
-      url + arg,
-      this.generateRequestOptions({
-        headers: {
-          Referer: `https://${countrySubDomain}.adtpulse.com/myhome/${lastKnownVersion}/summary/summary.jsp`,
-        },
-      }),
-      (error, response, body) => {
-        const regex = new RegExp(/(\/myhome\/)([0-9.-]+)(\/quickcontrol\/armDisarm\.jsp)(.*)/);
-        const responsePath = _.get(response, 'request.uri.path');
+      url1,
+      this.generateRequestOptions(),
+      (error1, response1, body1) => {
+        const regex1 = new RegExp(/(\/myhome\/)([0-9.-]+)(\/summary\/summary\.jsp)(.*)/);
+        const responsePath1 = _.get(response1, 'request.uri.path');
 
-        this.consoleLogger(`ADT Pulse: Response path -> ${responsePath}`, 'log');
-        this.consoleLogger(`ADT Pulse: Response path matches -> ${regex.test(responsePath)}`, 'log');
+        this.consoleLogger(`ADT Pulse: Response path -> ${responsePath1}`, 'log');
+        this.consoleLogger(`ADT Pulse: Response path matches -> ${regex1.test(responsePath1)}`, 'log');
 
-        if (error || !regex.test(responsePath)) {
+        if (error1 || !regex1.test(responsePath1)) {
           authenticated = false;
 
           this.consoleLogger(`ADT Pulse: Set device status to ${arm} failed.`, 'error');
@@ -472,50 +468,99 @@ Pulse.prototype.setDeviceStatus = function setDeviceStatus(armState, arm) {
             action: 'SET_DEVICE_STATUS',
             success: false,
             info: {
-              error,
-              message: this.getErrorMessage(body),
+              error: error1,
+              message: this.getErrorMessage(body1),
             },
           });
         } else {
-          const $ = cheerio.load(body);
-          const onClick = $('input[id^="arm_button_"][value="Arm Anyway"]').attr('onclick');
-          const satCode = (onClick !== undefined) ? onClick.replace(/(.*)(\?sat=)([0-9a-z-]*)(&href=)(.*)/g, '$3') : undefined;
+          const $2 = cheerio.load(body1);
+          const onClick2 = $2('input[id^="security_button_"]').attr('onclick');
+          const satCode2 = (onClick2 !== undefined) ? onClick2.replace(/(.*)(&sat=)([0-9a-z-]*)('\))/g, '$3') : undefined;
+          const url2 = `https://${countrySubDomain}.adtpulse.com/myhome/${lastKnownVersion}/quickcontrol/armDisarm.jsp`;
+          const arg2 = `?href=rest/adt/ui/client/security/setArmState&armstate=${armState}&arm=${arm}&sat=${satCode2}`;
 
-          const forceUrl = `https://${countrySubDomain}.adtpulse.com/myhome/${lastKnownVersion}/quickcontrol/serv/RunRRACommand`;
-          const forceArg = `?sat=${satCode}&href=rest/adt/ui/client/security/setForceArm&armstate=forcearm&arm=${arm}`;
+          request.get(
+            url2 + arg2,
+            this.generateRequestOptions({
+              headers: {
+                Referer: `https://${countrySubDomain}.adtpulse.com/myhome/${lastKnownVersion}/summary/summary.jsp`,
+              },
+            }),
+            (error2, response2, body2) => {
+              const regex2 = new RegExp(/(\/myhome\/)([0-9.-]+)(\/quickcontrol\/armDisarm\.jsp)(.*)/);
+              const responsePath2 = _.get(response2, 'request.uri.path');
 
-          // Check if system requires force arming.
-          if (['away', 'stay', 'night'].includes(arm) && onClick !== undefined && satCode !== undefined) {
-            this.consoleLogger('ADT Pulse: Some sensors are open or reporting motion. Arming Anyway...', 'warn');
+              this.consoleLogger(`ADT Pulse: Response path -> ${responsePath2}`, 'log');
+              this.consoleLogger(`ADT Pulse: Response path matches -> ${regex2.test(responsePath2)}`, 'log');
 
-            request.get(
-              forceUrl + forceArg,
-              this.generateRequestOptions({
-                headers: {
-                  Accept: '*/*',
-                  Referer: `https://${countrySubDomain}.adtpulse.com/myhome/${lastKnownVersion}/quickcontrol/armDisarm.jsp`,
-                },
-              }),
-              (forceError, forceResponse, forceBody) => {
-                const forceRegex = new RegExp(/(\/myhome\/)([0-9.-]+)(\/quickcontrol\/serv\/RunRRACommand)(.*)/);
-                const forceResponsePath = _.get(forceResponse, 'request.uri.path');
+              if (error2 || !regex2.test(responsePath2)) {
+                authenticated = false;
 
-                this.consoleLogger(`ADT Pulse: Response path -> ${forceResponsePath}`, 'log');
-                this.consoleLogger(`ADT Pulse: Response path matches -> ${forceRegex.test(forceResponsePath)}`, 'log');
+                this.consoleLogger(`ADT Pulse: Set device status to ${arm} failed.`, 'error');
 
-                if (forceError || !forceRegex.test(forceResponsePath)) {
-                  authenticated = false;
+                deferred.reject({
+                  action: 'SET_DEVICE_STATUS',
+                  success: false,
+                  info: {
+                    error: error2,
+                    message: this.getErrorMessage(body2),
+                  },
+                });
+              } else {
+                const $3 = cheerio.load(body2);
+                const onClick3 = $3('input[id^="arm_button_"][value="Arm Anyway"]').attr('onclick');
+                const satCode3 = (onClick3 !== undefined) ? onClick3.replace(/(.*)(\?sat=)([0-9a-z-]*)(&href=)(.*)/g, '$3') : undefined;
 
-                  this.consoleLogger(`ADT Pulse: Set device status to ${arm} failed.`, 'error');
+                const url3 = `https://${countrySubDomain}.adtpulse.com/myhome/${lastKnownVersion}/quickcontrol/serv/RunRRACommand`;
+                const arg3 = `?sat=${satCode3}&href=rest/adt/ui/client/security/setForceArm&armstate=forcearm&arm=${arm}`;
 
-                  deferred.reject({
-                    action: 'SET_DEVICE_STATUS',
-                    success: false,
-                    info: {
-                      error: forceError,
-                      message: this.getErrorMessage(forceBody),
+                // Check if system requires force arming.
+                if (['away', 'stay', 'night'].includes(arm) && onClick3 !== undefined && satCode3 !== undefined) {
+                  this.consoleLogger('ADT Pulse: Some sensors are open or reporting motion. Arming Anyway...', 'warn');
+
+                  request.get(
+                    url3 + arg3,
+                    this.generateRequestOptions({
+                      headers: {
+                        Accept: '*/*',
+                        Referer: `https://${countrySubDomain}.adtpulse.com/myhome/${lastKnownVersion}/quickcontrol/armDisarm.jsp`,
+                      },
+                    }),
+                    (forceError, forceResponse, forceBody) => {
+                      const forceRegex = new RegExp(/(\/myhome\/)([0-9.-]+)(\/quickcontrol\/serv\/RunRRACommand)(.*)/);
+                      const forceResponsePath = _.get(forceResponse, 'request.uri.path');
+
+                      this.consoleLogger(`ADT Pulse: Response path -> ${forceResponsePath}`, 'log');
+                      this.consoleLogger(`ADT Pulse: Response path matches -> ${forceRegex.test(forceResponsePath)}`, 'log');
+
+                      if (forceError || !forceRegex.test(forceResponsePath)) {
+                        authenticated = false;
+
+                        this.consoleLogger(`ADT Pulse: Set device status to ${arm} failed.`, 'error');
+
+                        deferred.reject({
+                          action: 'SET_DEVICE_STATUS',
+                          success: false,
+                          info: {
+                            error: forceError,
+                            message: this.getErrorMessage(forceBody),
+                          },
+                        });
+                      } else {
+                        this.consoleLogger(`ADT Pulse: Set device status to ${arm} success.`, 'log');
+
+                        deferred.resolve({
+                          action: 'SET_DEVICE_STATUS',
+                          success: true,
+                          info: {
+                            forceArm: true,
+                            previousArm: armState,
+                            afterArm: arm,
+                          },
+                        });
+                      }
                     },
-                  });
+                  );
                 } else {
                   this.consoleLogger(`ADT Pulse: Set device status to ${arm} success.`, 'log');
 
@@ -523,27 +568,15 @@ Pulse.prototype.setDeviceStatus = function setDeviceStatus(armState, arm) {
                     action: 'SET_DEVICE_STATUS',
                     success: true,
                     info: {
-                      forceArm: true,
+                      forceArm: false,
                       previousArm: armState,
                       afterArm: arm,
                     },
                   });
                 }
-              },
-            );
-          } else {
-            this.consoleLogger(`ADT Pulse: Set device status to ${arm} success.`, 'log');
-
-            deferred.resolve({
-              action: 'SET_DEVICE_STATUS',
-              success: true,
-              info: {
-                forceArm: false,
-                previousArm: armState,
-                afterArm: arm,
-              },
-            });
-          }
+              }
+            },
+          );
         }
       },
     );
