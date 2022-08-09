@@ -28,7 +28,7 @@
  *
  * @since 1.0.0
  */
-const Pulse = require('../api');
+const Pulse = require('./api');
 
 /**
  * Script arguments.

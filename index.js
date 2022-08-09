@@ -61,6 +61,9 @@ function ADTPulsePlatform(log, config, api) {
   this.syncIntervalDelay = 600; // 10 minutes.
   this.setDeviceTimeout = 6; // 6 seconds.
 
+  // Tested builds.
+  this.testedBuilds = ['22.0.0-233', '23.0.0-99'];
+
   // Setup logging function.
   if (typeof this.logLevel !== 'number' || ![10, 20, 30, 40, 50].includes(this.logLevel)) {
     if (this.logLevel !== undefined) {
@@ -847,9 +850,9 @@ ADTPulsePlatform.prototype.portalSync = function portalSync() {
       .login()
       .then((response) => {
         const version = _.get(response, 'info.version');
-        const supportedVersion = ['22.0.0-233', '23.0.0-99'];
+        const supportedVersions = that.testedBuilds;
 
-        if (version !== undefined && !supportedVersion.includes(version) && version !== this.sessionVersion) {
+        if (version !== undefined && !supportedVersions.includes(version) && version !== this.sessionVersion) {
           this.logMessage(`Web Portal version ${version} detected. Test plugin to ensure system compatibility...`, 20);
         }
 
