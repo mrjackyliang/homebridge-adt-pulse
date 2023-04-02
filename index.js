@@ -62,7 +62,7 @@ function ADTPulsePlatform(log, config, api) {
   this.setDeviceTimeout = 6; // 6 seconds.
 
   // Tested builds.
-  this.testedBuilds = ['23.0.0-99', '24.0.0-117'];
+  this.testedBuilds = ['24.0.0-117', '25.0.0.21'];
 
   // Setup logging function.
   if (typeof this.logLevel !== 'number' || ![10, 20, 30, 40, 50].includes(this.logLevel)) {
