@@ -169,6 +169,12 @@
                 "default": true,
                 "required": false
             },
+            "pausePlugin": {
+                "title": "Pause Plugin",
+                "type": "boolean",
+                "default": false,
+                "required": false
+            },
             "resetAll": {
                 "title": "Reset Plugin \uD83D\uDED1",
                 "type": "boolean",
@@ -218,6 +224,9 @@
         },
         {
             "key": "removeObsoleteZones"
+        },
+        {
+            "key": "pausePlugin"
         },
         {
             "key": "resetAll"

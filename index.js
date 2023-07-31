@@ -54,6 +54,7 @@ function ADTPulsePlatform(log, config, api) {
   this.logLevel = _.get(this.config, 'logLevel');
   this.logActivity = _.get(this.config, 'logActivity');
   this.removeObsoleteZones = _.get(this.config, 'removeObsoleteZones');
+  this.pausePlugin = _.get(this.config, 'pausePlugin');
   this.resetAll = _.get(this.config, 'resetAll');
 
   // Timers.
@@ -62,7 +63,7 @@ function ADTPulsePlatform(log, config, api) {
   this.setDeviceTimeout = 6; // 6 seconds.
 
   // Tested builds.
-  this.testedBuilds = ['24.0.0-117', '25.0.0-21'];
+  this.testedBuilds = ['25.0.0-21', '26.0.0-32'];
 
   // Setup logging function.
   if (typeof this.logLevel !== 'number' || ![10, 20, 30, 40, 50].includes(this.logLevel)) {
@@ -113,6 +114,14 @@ function ADTPulsePlatform(log, config, api) {
     this.removeObsoleteZones = true;
   }
 
+  // Prevent accidental pausing.
+  if (typeof this.pausePlugin !== 'boolean') {
+    if (this.pausePlugin !== undefined) {
+      this.logMessage('"pausePlugin" setting should be true or false. Defaulting to false.', 20);
+    }
+    this.pausePlugin = false;
+  }
+
   // Prevent accidental reset.
   if (typeof this.resetAll !== 'boolean') {
     if (this.resetAll !== undefined) {
@@ -144,7 +153,9 @@ function ADTPulsePlatform(log, config, api) {
         homebridgeVer: _.get(api, 'serverVersion'),
       });
 
-      if (this.resetAll) {
+      if (this.pausePlugin) {
+        this.logMessage('ADT Pulse plugin is now paused...', 20);
+      } else if (this.resetAll) {
         this.logMessage('Removing all ADT Pulse accessories from Homebridge...', 20);
 
         _.forEachRight(this.accessories, (accessory) => {

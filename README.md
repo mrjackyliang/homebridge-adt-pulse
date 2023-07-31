@@ -40,6 +40,7 @@ When configuring this plugin, simply add the platform to your existing `config.j
       "logLevel": 30,
       "logActivity": true,
       "removeObsoleteZones": true,
+      "pausePlugin": false,
       "resetAll": false
     },
     {
@@ -149,6 +150,15 @@ The default is `true`. Configure `removeObsoleteZones` with the values below:
 
 __NOTE:__ If recently, you had sensors removed from ADT Pulse, the plugin will not remove these sensors unless `removeObsoleteZones` is set to `true`.
 
+## Pausing the Plugin
+The plugin may continuously ping the ADT Pulse servers, even when authentication fails, which will cause your IP to be temporarily banned. This will pause the plugin without you breaking other plugins. _Optional._
+
+The default is `false`. Configure `pausePlugin` with the values below:
+* Set `pausePlugin` to `true` for reset mode
+* Set `pausePlugin` to `false` for normal mode
+
+__NOTE:__ Once you are ready to resume the plugin, remember to set the `pausePlugin` setting back to `false` or else the plugin will continue to stay paused.
+
 ## Resetting the Plugin
 Managing many accessories in a Homebridge environment is already a seemingly hard task, and sometimes you might want to step back and do a reset. _Optional._
 
@@ -162,7 +172,7 @@ __NOTE:__ Once reset is complete, remember to set the `resetAll` setting back to
 The script provides an active connection to the ADT Pulse portal. Here is a list of must-knows, just in case you might want to debug (or improve) the plugin:
 
 1. Device and zone statuses will be fetched every __3 seconds__. If logins have failed more than 2 times, portal sync will pause for 10 minutes.
-2. Supported versions are `20.0.0-221` and `20.0.0-244`. If this plugin does not support either version, a warning will appear in the logs. Please [submit an issue](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new/choose) to let me know!
+2. Supported versions are `25.0.0-21` and `26.0.0-32`. If this plugin does not support either version, a warning will appear in the logs. Please [submit an issue](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new/choose) to let me know!
 
 ## Credits and Appreciation
 If you would like to show your appreciation for its continued development, you can optionally become my supporter on [GitHub Sponsors](https://github.com/sponsors/mrjackyliang)!
