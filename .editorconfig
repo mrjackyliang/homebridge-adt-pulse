@@ -45,5 +45,9 @@ ij_html_do_not_indent_children_of_tags = none
 ij_html_space_inside_empty_tag = true
 ij_html_text_wrap = off
 
+[*.php]
+indent_size = 4
+indent_style = tab
+
 [{*.markdown,*.md}]
 ij_markdown_max_lines_around_block_elements = 0

@@ -1,4 +1,6 @@
-### macOS ###
+###############
+#### macOS ####
+###############
 .DS_Store
 .AppleDouble
 .LSOverride
@@ -15,29 +17,62 @@
 Network Trash Folder
 Temporary Items
 .apdisk
+Icon
 
-### Linux ###
+###############
+#### Linux ####
+###############
 *~
 .fuse_hidden*
 .directory
 .Trash-*
 .nfs*
 
-### Windows ###
+#################
+#### Windows ####
+#################
 Thumbs.db
+Thumbs.db:encryptable
 ehthumbs.db
 ehthumbs_vista.db
-Desktop.ini
+*.stackdump
+[Dd]esktop.ini
 $RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
 *.lnk
 
-### Node Stack ###
+################
+#### NodeJS ####
+################
 node_modules/
+build/
 package-lock.json
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
 
-### WebStorm+all Patch ###
+#################
+#### Next.js ####
+#################
+.next/
+
+##################
+#### Firebase ####
+##################
+**/.firebase
+**/.firebaserc
+
+###################
+#### JetBrains ####
+###################
 .idea/
-*.iml
-modules.xml
-.idea/misc.xml
-*.ipr
+
+##########################
+#### Project Excludes ####
+##########################
