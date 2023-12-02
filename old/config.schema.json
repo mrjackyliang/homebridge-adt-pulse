@@ -1,0 +1,237 @@
+{
+    "pluginAlias": "ADTPulse",
+    "pluginType": "platform",
+    "singular": true,
+    "headerDisplay": "An account to link your [ADT Pulse](https://portal.adtpulse.com/) system to Homebridge is required. This will be used to control your security panel and read sensor status.",
+    "footerDisplay": "If you need assistance, you may read the [plugin instructions](https://github.com/mrjackyliang/homebridge-adt-pulse#readme) or feel free to [submit an issue](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new/choose).",
+    "schema": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "title": "Name",
+                "type": "string",
+                "default": "ADT Pulse",
+                "required": true,
+                "description": "Plugin name as displayed in the Homebridge log"
+            },
+            "username": {
+                "title": "Username",
+                "type": "string",
+                "default": "",
+                "required": true,
+                "format": "email",
+                "minLength": 6,
+                "maxLength": 50,
+                "description": "Email address used for ADT Pulse login"
+            },
+            "password": {
+                "title": "Password",
+                "type": "string",
+                "default": "",
+                "required": true,
+                "minLength": 8,
+                "maxLength": 50,
+                "description": "Password used for ADT Pulse login"
+            },
+            "fingerprint": {
+                "title": "MFA Fingerprint",
+                "type": "string",
+                "default": "",
+                "required": true,
+                "description": "MFA Fingerprint from browser registered with ADT Pulse"
+            },
+            "overrideSensors": {
+                "title": "Override Sensors",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "title": "Name",
+                            "type": "string",
+                            "default": "",
+                            "required": true,
+                            "description": "The sensor name for the sensor you would like to override"
+                        },
+                        "type": {
+                            "title": "Type",
+                            "type": "string",
+                            "default": "",
+                            "oneOf": [
+                                {
+                                    "title": "Door/Window Sensor",
+                                    "enum": [
+                                        "sensor,doorWindow"
+                                    ]
+                                },
+                                {
+                                    "title": "Glass Break Detector",
+                                    "enum": [
+                                        "sensor,glass"
+                                    ]
+                                },
+                                {
+                                    "title": "Motion Sensor",
+                                    "enum": [
+                                        "sensor,motion"
+                                    ]
+                                },
+                                {
+                                    "title": "Carbon Monoxide Detector",
+                                    "enum": [
+                                        "sensor,co"
+                                    ]
+                                },
+                                {
+                                    "title": "Fire (Smoke/Heat) Detector",
+                                    "enum": [
+                                        "sensor,fire"
+                                    ]
+                                }
+                            ],
+                            "required": true,
+                            "description": "The sensor type for the sensor you would like to override"
+                        }
+                    }
+                },
+                "description": "When a sensor cannot be detected accurately, you can manually set the sensor here to override the default detection features"
+            },
+            "country": {
+                "title": "Country",
+                "type": "string",
+                "default": "us",
+                "oneOf": [
+                    {
+                        "title": "United States",
+                        "enum": [
+                            "us"
+                        ]
+                    },
+                    {
+                        "title": "Canada",
+                        "enum": [
+                            "ca"
+                        ]
+                    }
+                ],
+                "required": false,
+                "description": "Select a country where ADT Pulse will connect to"
+            },
+            "logLevel": {
+                "title": "Log Level",
+                "type": "integer",
+                "default": 30,
+                "oneOf": [
+                    {
+                        "title": "Errors (Level 10)",
+                        "enum": [
+                            10
+                        ]
+                    },
+                    {
+                        "title": "Warnings (Level 20)",
+                        "enum": [
+                            20
+                        ]
+                    },
+                    {
+                        "title": "Info (Level 30)",
+                        "enum": [
+                            30
+                        ]
+                    },
+                    {
+                        "title": "Debug (Level 40)",
+                        "enum": [
+                            40
+                        ]
+                    },
+                    {
+                        "title": "Verbose (Level 50)",
+                        "enum": [
+                            50
+                        ]
+                    }
+                ],
+                "required": false,
+                "pattern": "^([1-5])([0])$",
+                "description": "Higher levels mean more logs will show. Turn on Homebridge Debug Mode for levels 40 and 50. Recommended setting is \"Info (Level 30)\""
+            },
+            "logActivity": {
+                "title": "Log Activity",
+                "type": "boolean",
+                "default": true,
+                "required": false
+            },
+            "removeObsoleteZones": {
+                "title": "Remove Obsolete Zones",
+                "type": "boolean",
+                "default": true,
+                "required": false
+            },
+            "pausePlugin": {
+                "title": "Pause Plugin",
+                "type": "boolean",
+                "default": false,
+                "required": false
+            },
+            "resetAll": {
+                "title": "Reset Plugin \uD83D\uDED1",
+                "type": "boolean",
+                "default": false,
+                "required": false
+            }
+        }
+    },
+    "layout": [
+        {
+            "key": "name"
+        },
+        {
+            "display": "flex",
+            "flex-flow": "row nowrap",
+            "justify-content": "space-between",
+            "items": [
+                {
+                    "key": "username",
+                    "flex": "1 0 0px"
+                },
+                {
+                    "key": "password",
+                    "flex": "1 0 0px"
+                }
+            ]
+        },
+        {
+            "key": "fingerprint"
+        },
+        {
+            "key": "overrideSensors",
+            "buttonText": "Add Sensor",
+            "items": [
+                "overrideSensors[].name",
+                "overrideSensors[].type"
+            ]
+        },
+        {
+            "key": "country"
+        },
+        {
+            "key": "logLevel"
+        },
+        {
+            "key": "logActivity"
+        },
+        {
+            "key": "removeObsoleteZones"
+        },
+        {
+            "key": "pausePlugin"
+        },
+        {
+            "key": "resetAll"
+        }
+    ],
+    "form": null,
+    "display": null
+}
