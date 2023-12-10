@@ -1,139 +1,146 @@
 /**
- * Arm disarm response path.
+ * Character backslash forward slash.
  *
  * @since 1.0.0
  */
-export const armDisarmResponsePath = /^(\/myhome\/)([0-9.-]+)(\/quickcontrol\/armDisarm\.jsp)$/;
+export const characterBackslashForwardSlash = /\\\//g;
 
 /**
- * Backslash forward slash.
+ * Character html line break.
  *
  * @since 1.0.0
  */
-export const backslashForwardSlash = /\\\//g;
+export const characterHtmlLineBreak = /<br( ?\/)?>/;
 
 /**
- * Do submit function.
+ * Character whitespace.
  *
  * @since 1.0.0
  */
-export const doSubmitFunction = /doSubmit\(\s*'([^']+)\?sat=([^']+)&href=([^&]+)(&armstate=([^&]+)&arm=([^']+))?'\s*\)/;
+export const characterWhitespace = /\s+/g;
 
 /**
- * Network id param.
+ * Function do submit.
  *
  * @since 1.0.0
  */
-export const networkIdParam = /[?&]networkid=([^&#']*)/;
+export const functionDoSubmit = /doSubmit\(\s*'([^']+)\?sat=([^']+)&href=([^&]+)(&armstate=([^&]+)&arm=([^']+))?'\s*\)/;
 
 /**
- * Gateway response path.
+ * Function set arm state.
  *
  * @since 1.0.0
  */
-export const gatewayResponsePath = /^(\/myhome\/)([0-9.-]+)(\/system\/gateway\.jsp)$/;
+export const functionSetArmState = /setArmState\(\s*'([^']+)',\s*'([^']+)',\s*'([^']+)',\s*'([^']+)',\s*'([^']+)',\s*'href=([^']+)&armstate=([^&]+)&arm=([^&]+)&sat=([^']+?)'\s*\)/;
 
 /**
- * Homepage response path.
+ * Param network id.
  *
  * @since 1.0.0
  */
-export const homepageResponsePath = /^(\/myhome\/)([0-9.-]+)(\/access\/signin\.jsp)$/;
+export const paramNetworkId = /[?&]networkid=([^&#']*)/;
 
 /**
- * Html line break character.
+ * Param sat.
  *
  * @since 1.0.0
  */
-export const htmlLineBreakCharacter = /<br( ?\/)?>/;
+export const paramSat = /sat=([^&']*)/;
 
 /**
- * Keep alive response path.
+ * Request path access sign in.
  *
  * @since 1.0.0
  */
-export const keepAliveResponsePath = /^(\/myhome\/)([0-9.-]+)(\/KeepAlive)$/;
+export const requestPathAccessSignIn = /^(\/myhome\/)([0-9.-]+)(\/access\/signin\.jsp)$/;
 
 /**
- * Orb text summary.
+ * Request path access sign in e ns partner adt.
  *
  * @since 1.0.0
  */
-export const orbTextSummary = /^([A-Za-z0-9 ]+)\. ?([A-Za-z0-9 ]*)\.?$/;
+export const requestPathAccessSignInENsPartnerAdt = /^(\/myhome\/)([0-9.-]+)(\/access\/signin\.jsp\?e=ns&partner=adt)$/;
 
 /**
- * Panel information emergency keys.
+ * Request path access sign in network id xx partner adt.
  *
  * @since 1.0.0
  */
-export const panelInformationEmergencyKeys = /([A-Za-z0-9]+: [A-Za-z0-9 ]+? \(Zone \d+\))/g;
+export const requestPathAccessSignInNetworkIdXxPartnerAdt = /^(\/myhome\/)([0-9.-]+)(\/access\/signin\.jsp)(\?networkid=[a-z0-9]+)(&partner=adt)$/;
 
 /**
- * Panel response path.
+ * Request path ajax sync check serv t xx.
  *
  * @since 1.0.0
  */
-export const panelResponsePath = /^(\/myhome\/)([0-9.-]+)(\/system\/device\.jsp\?id=1)$/;
+export const requestPathAjaxSyncCheckServTXx = /^(\/myhome\/)([0-9.-]+)(\/Ajax\/SyncCheckServ\?t=\d+)$/;
 
 /**
- * Run RRA command response path.
+ * Request path keep alive.
  *
  * @since 1.0.0
  */
-export const runRRACommandResponsePath = /^(\/myhome\/)([0-9.-]+)(\/quickcontrol\/serv\/RunRRACommand)$/;
+export const requestPathKeepAlive = /^(\/myhome\/)([0-9.-]+)(\/KeepAlive)$/;
 
 /**
- * Sat code param.
+ * Request path mfa mfa sign in workflow challenge.
  *
  * @since 1.0.0
  */
-export const satCodeParam = /sat=([^&']*)/;
+export const requestPathMfaMfaSignInWorkflowChallenge = /^(\/myhome\/)([0-9.-]+)(\/mfa\/mfaSignIn\.jsp\?workflow=challenge)$/;
 
 /**
- * Set arm state function.
+ * Request path quick control arm disarm.
  *
  * @since 1.0.0
  */
-export const setArmStateFunction = /setArmState\(\s*'([^']+)',\s*'([^']+)',\s*'([^']+)',\s*'([^']+)',\s*'([^']+)',\s*'href=([^']+)&armstate=([^&]+)&arm=([^&]+)&sat=([^']+?)'\s*\)/;
+export const requestPathQuickControlArmDisarm = /^(\/myhome\/)([0-9.-]+)(\/quickcontrol\/armDisarm\.jsp)$/;
 
 /**
- * Sign in mfa response path.
+ * Request path quick control serv run rra command.
  *
  * @since 1.0.0
  */
-export const signInMfaResponsePath = /^(\/myhome\/)([0-9.-]+)(\/mfa\/mfaSignIn\.jsp\?workflow=challenge)$/;
+export const requestPathQuickControlServRunRraCommand = /^(\/myhome\/)([0-9.-]+)(\/quickcontrol\/serv\/RunRRACommand)$/;
 
 /**
- * Sign in summary response path.
+ * Request path summary summary.
  *
  * @since 1.0.0
  */
-export const signInSummaryResponsePath = /^(\/myhome\/)([0-9.-]+)(\/summary\/summary\.jsp)$/;
+export const requestPathSummarySummary = /^(\/myhome\/)([0-9.-]+)(\/summary\/summary\.jsp)$/;
 
 /**
- * Sign out response path.
+ * Request path system device id 1.
  *
  * @since 1.0.0
  */
-export const signOutResponsePath = /^(\/myhome\/)([0-9.-]+)(\/access\/signin\.jsp)(\?networkid=[a-z0-9]+)(&partner=adt)$/;
+export const requestPathSystemDeviceId1 = /^(\/myhome\/)([0-9.-]+)(\/system\/device\.jsp\?id=1)$/;
 
 /**
- * Summary refresh response path.
+ * Request path system gateway.
  *
  * @since 1.0.0
  */
-export const summaryRefreshResponsePath = /^(\/myhome\/)([0-9.-]+)(\/summary\/summary\.jsp)$/;
+export const requestPathSystemGateway = /^(\/myhome\/)([0-9.-]+)(\/system\/gateway\.jsp)$/;
 
 /**
- * Sync check serv response path.
+ * Request path system system.
  *
  * @since 1.0.0
  */
-export const syncCheckServResponsePath = /^(\/myhome\/)([0-9.-]+)(\/Ajax\/SyncCheckServ\?t=\d+)$/;
+export const requestPathSystemSystem = /^(\/myhome\/)([0-9.-]+)(\/system\/system\.jsp)$/;
 
 /**
- * Whitespace characters.
+ * Text orb text summary.
  *
  * @since 1.0.0
  */
-export const whitespaceCharacters = /\s+/g;
+export const textOrbTextSummary = /^([A-Za-z0-9 ]+)\. ?([A-Za-z0-9 ]*)\.?$/;
+
+/**
+ * Text security panel emergency keys.
+ *
+ * @since 1.0.0
+ */
+export const textSecurityPanelEmergencyKeys = /([A-Za-z0-9]+: [A-Za-z0-9 ]+? \(Zone \d+\))/g;

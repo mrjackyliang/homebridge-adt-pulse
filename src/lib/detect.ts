@@ -1,25 +1,35 @@
 import axios from 'axios';
 import _ from 'lodash';
+import { env } from 'node:process';
+import { serializeError } from 'serialize-error';
 
+import { debugLog, stackTracer } from '@/lib/utility.js';
 import type {
+  DetectedNewPanelStatusLogger,
   DetectedNewPanelStatusReturns,
   DetectedNewPanelStatusSummary,
+  DetectedNewPortalVersionLogger,
   DetectedNewPortalVersionReturns,
   DetectedNewPortalVersionVersion,
+  DetectedNewSensorInformationLogger,
+  DetectedNewSensorInformationReturns,
+  DetectedNewSensorInformationSensors,
+  DetectedNewSensorStatusLogger,
   DetectedNewSensorStatusReturns,
   DetectedNewSensorStatusSensors,
-} from '@/types';
+} from '@/types/index.d.ts';
 
 /**
  * Detected new panel status.
  *
  * @param {DetectedNewPanelStatusSummary} summary - Summary.
+ * @param {DetectedNewPanelStatusLogger}  logger  - Logger.
  *
  * @returns {DetectedNewPanelStatusReturns}
  *
  * @since 1.0.0
  */
-export async function detectedNewPanelStatus(summary: DetectedNewPanelStatusSummary): DetectedNewPanelStatusReturns {
+export async function detectedNewPanelStatus(summary: DetectedNewPanelStatusSummary, logger: DetectedNewPanelStatusLogger): DetectedNewPanelStatusReturns {
   const knownStates = [
     'Disarmed',
     'Armed Away',
@@ -30,7 +40,7 @@ export async function detectedNewPanelStatus(summary: DetectedNewPanelStatusSumm
   const knownStatuses = [
     'All Quiet',
     '1 Sensor Open',
-    ..._.range(99).map((value, index) => `${index + 1} Sensors Open`),
+    ..._.range(99).map((_value, index) => `${index + 1} Sensors Open`),
     'Sensor Bypassed',
     'Sensors Bypassed',
     'Sensor Tripped',
@@ -55,13 +65,16 @@ export async function detectedNewPanelStatus(summary: DetectedNewPanelStatusSumm
           content: JSON.stringify(summary, null, 2),
         }),
         {
+          family: 4,
           headers: {
             'Content-Type': 'application/json',
+            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version}`,
           },
         },
       );
-    } catch {
-      /* empty */
+    } catch (error) {
+      debugLog(logger, 'detect.ts / detectedNewPanelStatus()', 'error', 'Failed to notify plugin author about undocumented panel status');
+      stackTracer('serialize-error', serializeError(error));
     }
 
     return true;
@@ -74,12 +87,13 @@ export async function detectedNewPanelStatus(summary: DetectedNewPanelStatusSumm
  * Detected new portal version.
  *
  * @param {DetectedNewPortalVersionVersion} version - Version.
+ * @param {DetectedNewPortalVersionLogger}  logger - Logger.
  *
  * @returns {DetectedNewPortalVersionReturns}
  *
  * @since 1.0.0
  */
-export async function detectedNewPortalVersion(version: DetectedNewPortalVersionVersion): DetectedNewPortalVersionReturns {
+export async function detectedNewPortalVersion(version: DetectedNewPortalVersionVersion, logger: DetectedNewPortalVersionLogger): DetectedNewPortalVersionReturns {
   const knownVersions = [
     '16.0.0-131',
     '17.0.0-69',
@@ -111,16 +125,74 @@ export async function detectedNewPortalVersion(version: DetectedNewPortalVersion
           }, null, 2),
         }),
         {
+          family: 4,
           headers: {
             'Content-Type': 'application/json',
+            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version}`,
           },
         },
       );
 
       return true;
-    } catch {
-      /* empty */
+    } catch (error) {
+      debugLog(logger, 'detect.ts / detectedNewPortalVersion()', 'error', 'Failed to notify plugin author about new portal version');
+      stackTracer('serialize-error', serializeError(error));
     }
+  }
+
+  return false;
+}
+
+/**
+ * Detected new sensor information.
+ *
+ * @param {DetectedNewSensorInformationSensors} sensors - Sensors.
+ * @param {DetectedNewSensorInformationLogger}  logger  - Logger.
+ *
+ * @returns {DetectedNewSensorInformationReturns}
+ *
+ * @since 1.0.0
+ */
+export async function detectedNewSensorInformation(sensors: DetectedNewSensorInformationSensors, logger: DetectedNewSensorInformationLogger): DetectedNewSensorInformationReturns {
+  const knownStatus = [
+    'Online',
+    'Status Unknown',
+  ];
+  const knownDeviceTypes = [
+    'Door Sensor',
+    'Door/Window Sensor',
+    'Carbon Monoxide Detector',
+    'Fire (Smoke/Heat) Detector',
+    'Glass Break Detector',
+    'Motion Sensor',
+    'Motion Sensor (Notable Events Only)',
+    'Window Sensor',
+  ];
+  const detectedNewInformation = sensors.filter((sensor) => (!knownStatus.includes(sensor.status) || !knownDeviceTypes.includes(sensor.deviceType)));
+
+  if (detectedNewInformation.length > 0) {
+    try {
+      await axios.post(
+        'https://9wv5o73w.ntfy.mrjackyliang.com',
+        JSON.stringify({
+          title: 'Detected new sensor information',
+          description: 'New sensor information detected. Please upgrade the plugin as soon as possible.',
+          content: JSON.stringify(detectedNewInformation, null, 2),
+        }),
+        {
+          family: 4,
+          headers: {
+            'Content-Type': 'application/json',
+            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version}`,
+          },
+        },
+      );
+    } catch (error) {
+      debugLog(logger, 'detect.ts / detectedNewSensorInformation()', 'error', 'Failed to notify plugin author about undocumented sensor information');
+      stackTracer('serialize-error', serializeError(error));
+    }
+
+    return true;
   }
 
   return false;
@@ -130,12 +202,13 @@ export async function detectedNewPortalVersion(version: DetectedNewPortalVersion
  * Detected new sensor status.
  *
  * @param {DetectedNewSensorStatusSensors} sensors - Sensors.
+ * @param {DetectedNewSensorStatusLogger}  logger  - Logger.
  *
  * @returns {DetectedNewSensorStatusReturns}
  *
  * @since 1.0.0
  */
-export async function detectedNewSensorStatus(sensors: DetectedNewSensorStatusSensors): DetectedNewSensorStatusReturns {
+export async function detectedNewSensorStatus(sensors: DetectedNewSensorStatusSensors, logger: DetectedNewSensorStatusLogger): DetectedNewSensorStatusReturns {
   const knownIcons = [
     'devStatOK',
     'devStatOpen',
@@ -143,8 +216,6 @@ export async function detectedNewSensorStatus(sensors: DetectedNewSensorStatusSe
     'devStatTamper',
     'devStatAlarm',
     'devStatLowBatt',
-    'devStatInstalling',
-    'devStatOffline',
     'devStatUnknown',
   ];
   const knownStatuses = [
@@ -154,6 +225,7 @@ export async function detectedNewSensorStatus(sensors: DetectedNewSensorStatusSe
     'Motion',
     'No Motion',
     'Tripped',
+    'Unknown',
   ];
   const detectedNewStatuses = sensors.filter((sensor) => (!knownIcons.includes(sensor.icon) || !knownStatuses.includes(sensor.status)));
 
@@ -167,13 +239,16 @@ export async function detectedNewSensorStatus(sensors: DetectedNewSensorStatusSe
           content: JSON.stringify(detectedNewStatuses, null, 2),
         }),
         {
+          family: 4,
           headers: {
             'Content-Type': 'application/json',
+            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version}`,
           },
         },
       );
-    } catch {
-      /* empty */
+    } catch (error) {
+      debugLog(logger, 'detect.ts / detectedNewSensorStatus()', 'error', 'Failed to notify plugin author about undocumented sensor statuses');
+      stackTracer('serialize-error', serializeError(error));
     }
 
     return true;

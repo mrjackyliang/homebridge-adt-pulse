@@ -1,5 +1,5 @@
-import { ADTPulsePlatform } from '@/platform';
-import type { InitializeApi, InitializeReturns } from '@/types';
+import { ADTPulsePlatform } from '@/lib/platform.js';
+import type { InitializeApi, InitializeReturns } from '@/types/index.d.ts';
 
 /**
  * Initialize.

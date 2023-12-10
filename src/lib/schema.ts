@@ -28,6 +28,6 @@ export const platformConfig = z.object({
     ]),
     adtZone: z.number().finite(),
   })).min(1),
-  debug: z.boolean().optional(),
+  pause: z.boolean().optional(),
   reset: z.boolean().optional(),
 });

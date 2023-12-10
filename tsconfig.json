@@ -12,6 +12,9 @@
     "noUnusedLocals": true,
     "outDir": "./build",
     "paths": {
+      "#/*": [
+        "./*"
+      ],
       "@/*": [
         "./src/*"
       ]

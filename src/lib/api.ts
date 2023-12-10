@@ -6,25 +6,26 @@ import { serializeError } from 'serialize-error';
 import { CookieJar } from 'tough-cookie';
 
 import {
-  armDisarmResponsePath,
-  gatewayResponsePath,
-  homepageResponsePath,
-  keepAliveResponsePath,
-  networkIdParam,
-  panelInformationEmergencyKeys,
-  panelResponsePath,
-  runRRACommandResponsePath,
-  satCodeParam,
-  signInMfaResponsePath,
-  signInSummaryResponsePath,
-  signOutResponsePath,
-  summaryRefreshResponsePath,
-  syncCheckServResponsePath,
-} from '@/lib/regex';
+  paramNetworkId,
+  paramSat,
+  requestPathAccessSignIn,
+  requestPathAccessSignInENsPartnerAdt,
+  requestPathAccessSignInNetworkIdXxPartnerAdt,
+  requestPathAjaxSyncCheckServTXx,
+  requestPathKeepAlive,
+  requestPathMfaMfaSignInWorkflowChallenge,
+  requestPathQuickControlArmDisarm,
+  requestPathQuickControlServRunRraCommand,
+  requestPathSummarySummary,
+  requestPathSystemDeviceId1,
+  requestPathSystemGateway,
+  requestPathSystemSystem,
+  textSecurityPanelEmergencyKeys,
+} from '@/lib/regex.js';
 import {
-  clearHtmlLineBreak,
-  clearWhitespace,
   debugLog,
+  fetchErrorMessage,
+  fetchMissingSatCode,
   fetchTableCells,
   findNullKeys,
   generateDynatracePCHeaderValue,
@@ -33,9 +34,10 @@ import {
   parseOrbSecurityButtons,
   parseOrbSensors,
   parseOrbTextSummary,
+  parseSensorsTable,
   sleep,
-  stackTraceLog,
-} from '@/lib/utility';
+  stackTracer,
+} from '@/lib/utility.js';
 import type {
   ADTPulseArmDisarmHandlerArm,
   ADTPulseArmDisarmHandlerArmState,
@@ -48,9 +50,6 @@ import type {
   ADTPulseConstructorConfig,
   ADTPulseConstructorInternalConfig,
   ADTPulseCredentials,
-  ADTPulseFetchErrorMessageResponse,
-  ADTPulseFetchErrorMessageReturns,
-  ADTPulseFetchErrorMessageSessions,
   ADTPulseForceArmHandlerRelativeUrl,
   ADTPulseForceArmHandlerResponse,
   ADTPulseForceArmHandlerReturns,
@@ -65,15 +64,20 @@ import type {
   ADTPulseGetRequestConfigDefaultConfig,
   ADTPulseGetRequestConfigExtraConfig,
   ADTPulseGetRequestConfigReturns,
-  ADTPulseGetSensorStatusesReturns,
-  ADTPulseGetSensorStatusesSessions,
+  ADTPulseGetSensorsInformationReturns,
+  ADTPulseGetSensorsInformationSessions,
+  ADTPulseGetSensorsStatusReturns,
+  ADTPulseGetSensorsStatusSessions,
+  ADTPulseHandleLoginFailureRequestPath,
+  ADTPulseHandleLoginFailureReturns,
+  ADTPulseHandleLoginFailureSession,
   ADTPulseInternal,
+  ADTPulseIsAuthenticatedReturns,
   ADTPulseIsPortalAccessibleReturns,
   ADTPulseLoginReturns,
   ADTPulseLoginSessions,
   ADTPulseLogoutReturns,
   ADTPulseLogoutSessions,
-  ADTPulseOptions,
   ADTPulsePerformKeepAliveReturns,
   ADTPulsePerformKeepAliveSessions,
   ADTPulsePerformSyncCheckReturns,
@@ -84,7 +88,7 @@ import type {
   ADTPulseSetPanelStatusReadyButton,
   ADTPulseSetPanelStatusReturns,
   ADTPulseSetPanelStatusSessions,
-} from '@/types';
+} from '@/types/index.d.ts';
 
 /**
  * ADT Pulse.
@@ -100,15 +104,6 @@ export class ADTPulse {
    * @since 1.0.0
    */
   #credentials: ADTPulseCredentials;
-
-  /**
-   * ADT Pulse - Options.
-   *
-   * @private
-   *
-   * @since 1.0.0
-   */
-  #options: ADTPulseOptions;
 
   /**
    * ADT Pulse - Internal.
@@ -131,12 +126,12 @@ export class ADTPulse {
   /**
    * ADT Pulse - Constructor.
    *
-   * @param {ADTPulseConstructorConfig}         config           - Config.
-   * @param {ADTPulseConstructorInternalConfig} [internalConfig] - Internal config.
+   * @param {ADTPulseConstructorConfig}         config         - Config.
+   * @param {ADTPulseConstructorInternalConfig} internalConfig - Internal config.
    *
    * @since 1.0.0
    */
-  constructor(config: ADTPulseConstructorConfig, internalConfig?: ADTPulseConstructorInternalConfig) {
+  constructor(config: ADTPulseConstructorConfig, internalConfig: ADTPulseConstructorInternalConfig) {
     // Set config options.
     this.#credentials = {
       fingerprint: config.fingerprint,
@@ -144,29 +139,17 @@ export class ADTPulse {
       subdomain: config.subdomain,
       username: config.username,
     };
-    this.#options = {
-      debug: config.debug ?? false,
-      sensors: config.sensors,
-    };
 
     // Set internal config options.
-    if (internalConfig !== undefined) {
-      this.#internal = {
-        baseUrl: internalConfig.baseUrl,
-        testMode: {
-          enabled: internalConfig.testMode.enabled,
-          isDisarmChecked: internalConfig.testMode.isDisarmChecked,
-        },
-      };
-    } else {
-      this.#internal = {
-        baseUrl: `https://${this.#credentials.subdomain}.adtpulse.com`,
-        testMode: {
-          enabled: false,
-          isDisarmChecked: false,
-        },
-      };
-    }
+    this.#internal = {
+      baseUrl: internalConfig.baseUrl ?? `https://${this.#credentials.subdomain}.adtpulse.com`,
+      debug: internalConfig.debug ?? false,
+      logger: internalConfig.logger ?? null,
+      testMode: {
+        enabled: internalConfig.testMode?.enabled ?? false,
+        isDisarmChecked: internalConfig.testMode?.isDisarmChecked ?? false,
+      },
+    };
 
     // Set session information to defaults.
     this.#session = {
@@ -191,8 +174,8 @@ export class ADTPulse {
   async login(): ADTPulseLoginReturns {
     let errorObject;
 
-    if (this.#options.debug) {
-      debugLog('api.ts / ADTPulse.login()', 'info', `Attempting to login to "${this.#internal.baseUrl}"`);
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'info', `Attempting to login to "${this.#internal.baseUrl}"`);
     }
 
     try {
@@ -211,14 +194,10 @@ export class ADTPulse {
       }
 
       // Check if "this instance" has already authenticated.
-      if (
-        this.#session.isAuthenticated
-        && this.#session.backupSatCode !== null
-        && this.#session.networkId !== null
-        && this.#session.portalVersion !== null
-      ) {
-        if (this.#options.debug) {
+      if (this.isAuthenticated()) {
+        if (this.#internal.debug) {
           debugLog(
+            this.#internal.logger,
             'api.ts / ADTPulse.login()',
             'info',
             [
@@ -247,25 +226,28 @@ export class ADTPulse {
         };
       }
 
-      // sessions.axios[0]: Load the portal homepage.
+      // sessions.axios[0]: Load the homepage.
       sessions.axios[0] = await this.#session.httpClient.get(
         `${this.#internal.baseUrl}/`,
         this.getRequestConfig(),
       );
 
       const axios0RequestPath = sessions.axios[0].request.path;
-      const axios0RequestPathValid = homepageResponsePath.test(axios0RequestPath);
+      const axios0RequestPathValid = requestPathAccessSignIn.test(axios0RequestPath);
 
-      if (this.#options.debug) {
-        debugLog('api.ts / ADTPulse.login()', 'info', `Request path ➜ ${axios0RequestPath}`);
-        debugLog('api.ts / ADTPulse.login()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'info', `Request path ➜ ${axios0RequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
       }
 
       // If the final URL of sessions.axios[0] is not the sign-in page.
       if (!axios0RequestPathValid) {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.login()', 'error', `"${axios0RequestPath} is not the sign-in page`);
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'error', `"${axios0RequestPath} is not the sign-in page`);
         }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axios0RequestPath, sessions.axios[0]);
 
         return {
           action: 'LOGIN',
@@ -285,7 +267,7 @@ export class ADTPulse {
       loginForm.append('fingerprint', this.#credentials.fingerprint);
 
       // Get and set the portal version based on the request path.
-      this.#session.portalVersion = axios0RequestPath.replace(homepageResponsePath, '$2');
+      this.#session.portalVersion = axios0RequestPath.replace(requestPathAccessSignIn, '$2');
 
       // sessions.axios[1]: Emulate a sign-in request.
       sessions.axios[1] = await this.#session.httpClient.post(
@@ -303,31 +285,21 @@ export class ADTPulse {
       );
 
       const axios1RequestPath = sessions.axios[1].request.path;
-      const axios1RequestPathValid = signInSummaryResponsePath.test(axios1RequestPath);
+      const axios1RequestPathValid = requestPathSummarySummary.test(axios1RequestPath);
 
-      if (this.#options.debug) {
-        debugLog('api.ts / ADTPulse.login()', 'info', `Request path ➜ ${axios1RequestPath}`);
-        debugLog('api.ts / ADTPulse.login()', 'info', `Request path valid ➜ ${axios1RequestPathValid}`);
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'info', `Request path ➜ ${axios1RequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'info', `Request path valid ➜ ${axios1RequestPathValid}`);
       }
 
       // If the final URL of sessions.axios[1] is not the summary page.
       if (!axios1RequestPathValid) {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.login()', 'error', `"${axios1RequestPath}" is not the summary page`);
-
-          // Determine if "this instance" was redirected to the MFA challenge page.
-          if (signInMfaResponsePath.test(axios1RequestPath)) {
-            debugLog('api.ts / ADTPulse.login()', 'error', 'Fingerprint is invalid or "Trust this device" was not selected after completing MFA challenge');
-          } else {
-            const errorMessage = ADTPulse.fetchErrorMessage(sessions.axios[1]);
-
-            if (errorMessage !== null) {
-              debugLog('api.ts / ADTPulse.login()', 'error', `Portal Message: "${errorMessage}"`);
-            } else {
-              debugLog('api.ts / ADTPulse.login()', 'error', 'Unknown error');
-            }
-          }
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'error', `"${axios1RequestPath}" is not the summary page`);
         }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axios1RequestPath, sessions.axios[1]);
 
         return {
           action: 'LOGIN',
@@ -340,8 +312,8 @@ export class ADTPulse {
 
       // Make sure we are able to use the "String.prototype.match()" method on the response data.
       if (typeof sessions.axios[1].data !== 'string') {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.login()', 'error', 'The response body of the summary page is not of type "string"');
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'error', 'The response body of the summary page is not of type "string"');
         }
 
         return {
@@ -365,7 +337,7 @@ export class ADTPulse {
        *
        * @since 1.0.0
        */
-      const matchNetworkId = sessions.axios[1].data.match(networkIdParam);
+      const matchNetworkId = sessions.axios[1].data.match(paramNetworkId);
       this.#session.networkId = (matchNetworkId !== null && matchNetworkId.length >= 2) ? matchNetworkId[1] : null;
 
       /**
@@ -378,16 +350,26 @@ export class ADTPulse {
        * It is loosely matched for more to take unexpected changes into
        * account. Used in case sat code is not found.
        *
+       * If during login, the system status was unavailable, this value
+       * will be null, and things like creating a fake Disarm button would not
+       * work. Will try to recover on "summary/summary.jsp" page loads.
+       *
        * @since 1.0.0
        */
-      const matchSatCode = sessions.axios[1].data.match(satCodeParam);
+      const matchSatCode = sessions.axios[1].data.match(paramSat);
       this.#session.backupSatCode = (matchSatCode !== null && matchSatCode.length >= 2) ? matchSatCode[1] : null;
+
+      // WORKAROUND FOR ARM NIGHT BUTTON BUG: Send warning to logs mentioning that sat code failed to retrieve.
+      if (this.#session.backupSatCode === null && this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'warn', 'Unable to retrieve backup sat code, will try to recover');
+      }
 
       // Mark the session for "this instance" as authenticated.
       this.#session.isAuthenticated = true;
 
-      if (this.#options.debug) {
+      if (this.#internal.debug) {
         debugLog(
+          this.#internal.logger,
           'api.ts / ADTPulse.login()',
           'success',
           [
@@ -418,9 +400,9 @@ export class ADTPulse {
       errorObject = serializeError(error);
     }
 
-    if (this.#options.debug) {
-      debugLog('api.ts / ADTPulse.login()', 'error', 'Method encountered an error during execution');
-      stackTraceLog(errorObject);
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'error', 'Method encountered an error during execution');
+      stackTracer('serialize-error', errorObject);
     }
 
     return {
@@ -442,8 +424,8 @@ export class ADTPulse {
   async logout(): ADTPulseLogoutReturns {
     let errorObject;
 
-    if (this.#options.debug) {
-      debugLog('api.ts / ADTPulse.logout()', 'info', `Attempting to logout of "${this.#internal.baseUrl}"`);
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.logout()', 'info', `Attempting to logout of "${this.#internal.baseUrl}"`);
     }
 
     try {
@@ -462,14 +444,10 @@ export class ADTPulse {
       }
 
       // Check if "this instance" has already de-authenticated.
-      if (
-        !this.#session.isAuthenticated
-        && this.#session.backupSatCode === null
-        && this.#session.networkId === null
-        && this.#session.portalVersion === null
-      ) {
-        if (this.#options.debug) {
+      if (!this.isAuthenticated()) {
+        if (this.#internal.debug) {
           debugLog(
+            this.#internal.logger,
             'api.ts / ADTPulse.logout()',
             'info',
             [
@@ -510,18 +488,21 @@ export class ADTPulse {
       );
 
       const axios0RequestPath = sessions.axios[0].request.path;
-      const axios0RequestPathValid = signOutResponsePath.test(axios0RequestPath);
+      const axios0RequestPathValid = requestPathAccessSignInNetworkIdXxPartnerAdt.test(axios0RequestPath);
 
-      if (this.#options.debug) {
-        debugLog('api.ts / ADTPulse.logout()', 'info', `Request path ➜ ${axios0RequestPath}`);
-        debugLog('api.ts / ADTPulse.logout()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.logout()', 'info', `Request path ➜ ${axios0RequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.logout()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
       }
 
       // If the final URL of sessions.axios[0] is not the sign-in page with "networkid" and "partner=adt" parameters.
       if (!axios0RequestPathValid) {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.logout()', 'error', `"${axios0RequestPath}" is not the sign-in page with "networkid" and "partner=adt" parameters`);
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.logout()', 'error', `"${axios0RequestPath}" is not the sign-in page with "networkid" and "partner=adt" parameters`);
         }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axios0RequestPath, sessions.axios[0]);
 
         return {
           action: 'LOGOUT',
@@ -535,8 +516,9 @@ export class ADTPulse {
       // Reset the session state for "this instance".
       this.resetSession();
 
-      if (this.#options.debug) {
+      if (this.#internal.debug) {
         debugLog(
+          this.#internal.logger,
           'api.ts / ADTPulse.logout()',
           'success',
           [
@@ -567,9 +549,9 @@ export class ADTPulse {
       errorObject = serializeError(error);
     }
 
-    if (this.#options.debug) {
-      debugLog('api.ts / ADTPulse.logout()', 'error', 'Method encountered an error during execution');
-      stackTraceLog(errorObject);
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.logout()', 'error', 'Method encountered an error during execution');
+      stackTracer('serialize-error', errorObject);
     }
 
     return {
@@ -591,8 +573,8 @@ export class ADTPulse {
   async getGatewayInformation(): ADTPulseGetGatewayInformationReturns {
     let errorObject;
 
-    if (this.#options.debug) {
-      debugLog('api.ts / ADTPulse.getGatewayInformation()', 'info', `Attempting to retrieve gateway information from "${this.#internal.baseUrl}"`);
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.getGatewayInformation()', 'info', `Attempting to retrieve gateway information from "${this.#internal.baseUrl}"`);
     }
 
     try {
@@ -624,18 +606,21 @@ export class ADTPulse {
       );
 
       const axios0RequestPath = sessions.axios[0].request.path;
-      const axios0RequestPathValid = gatewayResponsePath.test(axios0RequestPath);
+      const axios0RequestPathValid = requestPathSystemGateway.test(axios0RequestPath);
 
-      if (this.#options.debug) {
-        debugLog('api.ts / ADTPulse.getGatewayInformation()', 'info', `Request path ➜ ${axios0RequestPath}`);
-        debugLog('api.ts / ADTPulse.getGatewayInformation()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getGatewayInformation()', 'info', `Request path ➜ ${axios0RequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getGatewayInformation()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
       }
 
       // If the final URL of sessions.axios[0] is not the system gateway page.
       if (!axios0RequestPathValid) {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.getGatewayInformation()', 'error', `"${axios0RequestPath}" is not the system gateway page`);
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getGatewayInformation()', 'error', `"${axios0RequestPath}" is not the system gateway page`);
         }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axios0RequestPath, sessions.axios[0]);
 
         return {
           action: 'GET_GATEWAY_INFORMATION',
@@ -648,8 +633,8 @@ export class ADTPulse {
 
       // Make sure we are able to use JSDOM on the response data.
       if (typeof sessions.axios[0].data !== 'string') {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.getGatewayInformation()', 'error', 'The response body of the system gateway page is not of type "string"');
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getGatewayInformation()', 'error', 'The response body of the system gateway page is not of type "string"');
         }
 
         return {
@@ -693,8 +678,8 @@ export class ADTPulse {
         1,
       );
 
-      if (this.#options.debug) {
-        debugLog('api.ts / ADTPulse.getGatewayInformation()', 'success', `Successfully retrieved gateway information from "${this.#internal.baseUrl}"`);
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getGatewayInformation()', 'success', `Successfully retrieved gateway information from "${this.#internal.baseUrl}"`);
       }
 
       return {
@@ -729,9 +714,9 @@ export class ADTPulse {
       errorObject = serializeError(error);
     }
 
-    if (this.#options.debug) {
-      debugLog('api.ts / ADTPulse.getGatewayInformation()', 'error', 'Method encountered an error during execution');
-      stackTraceLog(errorObject);
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.getGatewayInformation()', 'error', 'Method encountered an error during execution');
+      stackTracer('serialize-error', errorObject);
     }
 
     return {
@@ -753,8 +738,8 @@ export class ADTPulse {
   async getPanelInformation(): ADTPulseGetPanelInformationReturns {
     let errorObject;
 
-    if (this.#options.debug) {
-      debugLog('api.ts / ADTPulse.getPanelInformation()', 'info', `Attempting to retrieve panel information from "${this.#internal.baseUrl}"`);
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelInformation()', 'info', `Attempting to retrieve panel information from "${this.#internal.baseUrl}"`);
     }
 
     try {
@@ -773,7 +758,7 @@ export class ADTPulse {
         };
       }
 
-      // sessions.axios[0]: Load the system device page.
+      // sessions.axios[0]: Load the device id 1 page.
       sessions.axios[0] = await this.#session.httpClient.get(
         `${this.#internal.baseUrl}/myhome/${this.#session.portalVersion}/system/device.jsp?id=1`,
         this.getRequestConfig({
@@ -785,44 +770,47 @@ export class ADTPulse {
       );
 
       const axios0RequestPath = sessions.axios[0].request.path;
-      const axios0RequestPathValid = panelResponsePath.test(axios0RequestPath);
+      const axios0RequestPathValid = requestPathSystemDeviceId1.test(axios0RequestPath);
 
-      if (this.#options.debug) {
-        debugLog('api.ts / ADTPulse.getPanelInformation()', 'info', `Request path ➜ ${axios0RequestPath}`);
-        debugLog('api.ts / ADTPulse.getPanelInformation()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelInformation()', 'info', `Request path ➜ ${axios0RequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelInformation()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
       }
 
-      // If the final URL of sessions.axios[0] is not the system device page.
+      // If the final URL of sessions.axios[0] is not the device id 1 page.
       if (!axios0RequestPathValid) {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.getPanelInformation()', 'error', `"${axios0RequestPath}" is not the system device page`);
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelInformation()', 'error', `"${axios0RequestPath}" is not the device id 1 page`);
         }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axios0RequestPath, sessions.axios[0]);
 
         return {
           action: 'GET_PANEL_INFORMATION',
           success: false,
           info: {
-            message: `"${axios0RequestPath}" is not the system device page`,
+            message: `"${axios0RequestPath}" is not the device id 1 page`,
           },
         };
       }
 
       // Make sure we are able to use JSDOM on the response data.
       if (typeof sessions.axios[0].data !== 'string') {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.getPanelInformation()', 'error', 'The response body of the system device page is not of type "string"');
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelInformation()', 'error', 'The response body of the device id 1 page is not of type "string"');
         }
 
         return {
           action: 'GET_PANEL_INFORMATION',
           success: false,
           info: {
-            message: 'The response body of the system device page is not of type "string"',
+            message: 'The response body of the device id 1 page is not of type "string"',
           },
         };
       }
 
-      // sessions.jsdom[0]: Parse the system device page.
+      // sessions.jsdom[0]: Parse the device id 1 page.
       sessions.jsdom[0] = new JSDOM(
         sessions.axios[0].data,
         {
@@ -846,10 +834,10 @@ export class ADTPulse {
         1,
       );
       const emergencyKeys = _.get(fetchedTableCells, ['Emergency Keys:', 0], null);
-      const newEmergencyKeys = (typeof emergencyKeys === 'string') ? emergencyKeys.match(panelInformationEmergencyKeys) : null;
+      const newEmergencyKeys = (typeof emergencyKeys === 'string') ? emergencyKeys.match(textSecurityPanelEmergencyKeys) : null;
 
-      if (this.#options.debug) {
-        debugLog('api.ts / ADTPulse.getPanelInformation()', 'success', `Successfully retrieved panel information from "${this.#internal.baseUrl}"`);
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelInformation()', 'success', `Successfully retrieved panel information from "${this.#internal.baseUrl}"`);
       }
 
       return {
@@ -866,9 +854,9 @@ export class ADTPulse {
       errorObject = serializeError(error);
     }
 
-    if (this.#options.debug) {
-      debugLog('api.ts / ADTPulse.getPanelInformation()', 'error', 'Method encountered an error during execution');
-      stackTraceLog(errorObject);
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelInformation()', 'error', 'Method encountered an error during execution');
+      stackTracer('serialize-error', errorObject);
     }
 
     return {
@@ -890,8 +878,8 @@ export class ADTPulse {
   async getPanelStatus(): ADTPulseGetPanelStatusReturns {
     let errorObject;
 
-    if (this.#options.debug) {
-      debugLog('api.ts / ADTPulse.getPanelStatus()', 'info', `Attempting to retrieve panel status from "${this.#internal.baseUrl}"`);
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelStatus()', 'info', `Attempting to retrieve panel status from "${this.#internal.baseUrl}"`);
     }
 
     try {
@@ -922,18 +910,21 @@ export class ADTPulse {
       );
 
       const axios0RequestPath = sessions.axios[0].request.path;
-      const axios0RequestPathValid = summaryRefreshResponsePath.test(axios0RequestPath);
+      const axios0RequestPathValid = requestPathSummarySummary.test(axios0RequestPath);
 
-      if (this.#options.debug) {
-        debugLog('api.ts / ADTPulse.getPanelStatus()', 'info', `Request path ➜ ${axios0RequestPath}`);
-        debugLog('api.ts / ADTPulse.getPanelStatus()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelStatus()', 'info', `Request path ➜ ${axios0RequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelStatus()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
       }
 
       // If the final URL of sessions.axios[0] is not the summary page.
       if (!axios0RequestPathValid) {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.getPanelStatus()', 'error', `"${axios0RequestPath}" is not the summary page`);
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelStatus()', 'error', `"${axios0RequestPath}" is not the summary page`);
         }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axios0RequestPath, sessions.axios[0]);
 
         return {
           action: 'GET_PANEL_STATUS',
@@ -946,8 +937,8 @@ export class ADTPulse {
 
       // Make sure we are able to use JSDOM on the response data.
       if (typeof sessions.axios[0].data !== 'string') {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.getPanelStatus()', 'error', 'The response body of the summary page is not of type "string"');
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelStatus()', 'error', 'The response body of the summary page is not of type "string"');
         }
 
         return {
@@ -957,6 +948,19 @@ export class ADTPulse {
             message: 'The response body of the summary page is not of type "string"',
           },
         };
+      }
+
+      // Recover sat code if it was missing during login.
+      if (this.#session.backupSatCode === null) {
+        const missingSatCode = fetchMissingSatCode(sessions.axios[0]);
+
+        if (missingSatCode !== null) {
+          if (this.#internal.debug) {
+            debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelStatus()', 'success', 'Backup sat code was successfully recovered from previous failed retrieval');
+          }
+
+          this.#session.backupSatCode = missingSatCode;
+        }
       }
 
       // sessions.jsdom[0]: Parse the summary page.
@@ -990,8 +994,8 @@ export class ADTPulse {
       const jsdom0OrbTextSummary = sessions.jsdom[0].window.document.querySelector('#divOrbTextSummary');
       const parsedOrbTextSummary = parseOrbTextSummary(jsdom0OrbTextSummary);
 
-      if (this.#options.debug) {
-        debugLog('api.ts / ADTPulse.getPanelStatus()', 'success', `Successfully retrieved panel status from "${this.#internal.baseUrl}"`);
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelStatus()', 'success', `Successfully retrieved panel status from "${this.#internal.baseUrl}"`);
       }
 
       return {
@@ -1032,9 +1036,9 @@ export class ADTPulse {
       errorObject = serializeError(error);
     }
 
-    if (this.#options.debug) {
-      debugLog('api.ts / ADTPulse.getPanelStatus()', 'error', 'Method encountered an error during execution');
-      stackTraceLog(errorObject);
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelStatus()', 'error', 'Method encountered an error during execution');
+      stackTracer('serialize-error', errorObject);
     }
 
     return {
@@ -1058,8 +1062,23 @@ export class ADTPulse {
   async setPanelStatus(armTo: ADTPulseSetPanelStatusArmTo): ADTPulseSetPanelStatusReturns {
     let errorObject;
 
-    if (this.#options.debug) {
-      debugLog('api.ts / ADTPulse.setPanelStatus()', 'info', `Attempting to update panel status to "${armTo}" at "${this.#internal.baseUrl}"`);
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'info', `Attempting to update panel status to "${armTo}" at "${this.#internal.baseUrl}"`);
+    }
+
+    if (
+      armTo !== 'away'
+      && armTo !== 'night'
+      && armTo !== 'off'
+      && armTo !== 'stay'
+    ) {
+      return {
+        action: 'SET_PANEL_STATUS',
+        success: false,
+        info: {
+          message: `"${armTo}" is an invalid arm to state`,
+        },
+      };
     }
 
     try {
@@ -1090,18 +1109,21 @@ export class ADTPulse {
       );
 
       const axios0RequestPath = sessions.axios[0].request.path;
-      const axios0RequestPathValid = summaryRefreshResponsePath.test(axios0RequestPath);
+      const axios0RequestPathValid = requestPathSummarySummary.test(axios0RequestPath);
 
-      if (this.#options.debug) {
-        debugLog('api.ts / ADTPulse.setPanelStatus()', 'info', `Request path ➜ ${axios0RequestPath}`);
-        debugLog('api.ts / ADTPulse.setPanelStatus()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'info', `Request path ➜ ${axios0RequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
       }
 
       // If the final URL of sessions.axios[0] is not the summary page.
       if (!axios0RequestPathValid) {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.setPanelStatus()', 'error', `"${axios0RequestPath}" is not the summary page`);
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'error', `"${axios0RequestPath}" is not the summary page`);
         }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axios0RequestPath, sessions.axios[0]);
 
         return {
           action: 'SET_PANEL_STATUS',
@@ -1114,8 +1136,8 @@ export class ADTPulse {
 
       // Make sure we are able to use JSDOM on the response data.
       if (typeof sessions.axios[0].data !== 'string') {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.setPanelStatus()', 'error', 'The response body of the summary page is not of type "string"');
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'error', 'The response body of the summary page is not of type "string"');
         }
 
         return {
@@ -1125,6 +1147,19 @@ export class ADTPulse {
             message: 'The response body of the summary page is not of type "string"',
           },
         };
+      }
+
+      // Recover sat code if it was missing during login.
+      if (this.#session.backupSatCode === null) {
+        const missingSatCode = fetchMissingSatCode(sessions.axios[0]);
+
+        if (missingSatCode !== null) {
+          if (this.#internal.debug) {
+            debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'success', 'Backup sat code was successfully recovered from previous failed retrieval');
+          }
+
+          this.#session.backupSatCode = missingSatCode;
+        }
       }
 
       // sessions.jsdom[0]: Parse the summary page.
@@ -1192,8 +1227,8 @@ export class ADTPulse {
         this.#session.backupSatCode !== null // Backup sat code must be available.
         && armingNightButtonIndex >= 0 // Make sure that the pending "Arming Night" button is there.
       ) {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.setPanelStatus()', 'warn', 'Replacing the stuck "Arming Night" button with a fake "Disarm" button');
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'warn', 'Replacing the stuck "Arming Night" button with a fake "Disarm" button');
         }
 
         parsedOrbSecurityButtons[armingNightButtonIndex] = {
@@ -1218,9 +1253,9 @@ export class ADTPulse {
       let readyButtons = parsedOrbSecurityButtons.filter((parsedOrbSecurityButton): parsedOrbSecurityButton is ADTPulseSetPanelStatusReadyButton => !parsedOrbSecurityButton.buttonDisabled);
 
       // Make sure there is at least 1 security button available.
-      if (parsedOrbSecurityButtons.length < 1) {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.setPanelStatus()', 'error', 'Security buttons are not found on the summary page');
+      if (readyButtons.length < 1) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'error', 'Security buttons are not found on the summary page');
         }
 
         return {
@@ -1239,8 +1274,8 @@ export class ADTPulse {
       ) {
         // If system is not disarmed, end the test.
         if (!['off', 'disarmed'].includes(readyButtons[0].urlParams.armState)) {
-          if (this.#options.debug) {
-            debugLog('api.ts / ADTPulse.setPanelStatus()', 'error', 'Test mode is active and system is not disarmed');
+          if (this.#internal.debug) {
+            debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'error', 'Test mode is active and system is not disarmed');
           }
 
           return {
@@ -1268,8 +1303,8 @@ export class ADTPulse {
         );
 
         if (!armDisarmResponse.success) {
-          if (this.#options.debug) {
-            debugLog('api.ts / ADTPulse.setPanelStatus()', 'error', 'An error occurred in the arm disarm handler (while disarming)');
+          if (this.#internal.debug) {
+            debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'error', 'An error occurred in the arm disarm handler (while disarming)');
           }
 
           return {
@@ -1281,8 +1316,8 @@ export class ADTPulse {
 
         // Make sure there is at least 1 security button available.
         if (armDisarmResponse.info.newReadyButtons.length < 1) {
-          if (this.#options.debug) {
-            debugLog('api.ts / ADTPulse.setPanelStatus()', 'error', 'Arm disarm handler failed to find new security buttons');
+          if (this.#internal.debug) {
+            debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'error', 'Arm disarm handler failed to find new security buttons');
           }
 
           return {
@@ -1298,7 +1333,7 @@ export class ADTPulse {
         readyButtons = armDisarmResponse.info.newReadyButtons;
       }
 
-      // Set the arm state based on "armTo" if user is not disarming (because system already disarmed).
+      // Set the arm state based on "armTo" if system is not being disarmed.
       if (armTo !== 'off') {
         // Accessing index 0 is guaranteed, because of the check above.
         const armDisarmResponse = await this.armDisarmHandler(
@@ -1310,8 +1345,8 @@ export class ADTPulse {
         );
 
         if (!armDisarmResponse.success) {
-          if (this.#options.debug) {
-            debugLog('api.ts / ADTPulse.setPanelStatus()', 'error', 'An error occurred in the arm disarm handler (while arming)');
+          if (this.#internal.debug) {
+            debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'error', 'An error occurred in the arm disarm handler (while arming)');
           }
 
           return {
@@ -1322,8 +1357,8 @@ export class ADTPulse {
         }
       }
 
-      if (this.#options.debug) {
-        debugLog('api.ts / ADTPulse.setPanelStatus()', 'success', `Successfully updated panel status to "${armTo}" at "${this.#internal.baseUrl}"`);
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'success', `Successfully updated panel status to "${armTo}" at "${this.#internal.baseUrl}"`);
       }
 
       return {
@@ -1335,9 +1370,9 @@ export class ADTPulse {
       errorObject = serializeError(error);
     }
 
-    if (this.#options.debug) {
-      debugLog('api.ts / ADTPulse.setPanelStatus()', 'error', 'Method encountered an error during execution');
-      stackTraceLog(errorObject);
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'error', 'Method encountered an error during execution');
+      stackTracer('serialize-error', errorObject);
     }
 
     return {
@@ -1350,22 +1385,22 @@ export class ADTPulse {
   }
 
   /**
-   * ADT Pulse - Get sensor statuses.
+   * ADT Pulse - Get sensors information.
    *
-   * @returns {ADTPulseGetSensorStatusesReturns}
+   * @returns {ADTPulseGetSensorsInformationReturns}
    *
    * @since 1.0.0
    */
-  async getSensorStatuses(): ADTPulseGetSensorStatusesReturns {
+  async getSensorsInformation(): ADTPulseGetSensorsInformationReturns {
     let errorObject;
 
-    if (this.#options.debug) {
-      debugLog('api.ts / ADTPulse.getSensorStatuses()', 'info', `Attempting to retrieve sensor statuses from "${this.#internal.baseUrl}"`);
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsInformation()', 'info', `Attempting to retrieve sensors information from "${this.#internal.baseUrl}"`);
     }
 
     try {
       const internet = await this.isPortalAccessible();
-      const sessions: ADTPulseGetSensorStatusesSessions = {
+      const sessions: ADTPulseGetSensorsInformationSessions = {
         axios: [],
         jsdom: [],
       };
@@ -1373,7 +1408,156 @@ export class ADTPulse {
       // Check if portal is accessible.
       if (!internet.success) {
         return {
-          action: 'GET_SENSOR_STATUSES',
+          action: 'GET_SENSORS_INFORMATION',
+          success: false,
+          info: internet.info,
+        };
+      }
+
+      // sessions.axios[0]: Load the system page.
+      sessions.axios[0] = await this.#session.httpClient.get(
+        `${this.#internal.baseUrl}/myhome/${this.#session.portalVersion}/system/system.jsp`,
+        this.getRequestConfig({
+          headers: {
+            Referer: `${this.#internal.baseUrl}/myhome/${this.#session.portalVersion}/summary/summary.jsp`,
+            'Sec-Fetch-Site': 'same-origin',
+          },
+        }),
+      );
+
+      const axios0RequestPath = sessions.axios[0].request.path;
+      const axios0RequestPathValid = requestPathSystemSystem.test(axios0RequestPath);
+
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsInformation()', 'info', `Request path ➜ ${axios0RequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsInformation()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
+      }
+
+      // If the final URL of sessions.axios[0] is not the system page.
+      if (!axios0RequestPathValid) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsInformation()', 'error', `"${axios0RequestPath}" is not the system page`);
+        }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axios0RequestPath, sessions.axios[0]);
+
+        return {
+          action: 'GET_SENSORS_INFORMATION',
+          success: false,
+          info: {
+            message: `"${axios0RequestPath}" is not the system page`,
+          },
+        };
+      }
+
+      // Make sure we are able to use JSDOM on the response data.
+      if (typeof sessions.axios[0].data !== 'string') {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsInformation()', 'error', 'The response body of the system page is not of type "string"');
+        }
+
+        return {
+          action: 'GET_SENSORS_INFORMATION',
+          success: false,
+          info: {
+            message: 'The response body of the system page is not of type "string"',
+          },
+        };
+      }
+
+      // sessions.jsdom[0]: Parse the system page.
+      sessions.jsdom[0] = new JSDOM(
+        sessions.axios[0].data,
+        {
+          url: sessions.axios[0].config.url,
+          referrer: sessions.axios[0].config.headers.Referer,
+          contentType: 'text/html',
+          pretendToBeVisual: true,
+        },
+      );
+
+      const jsdom0SensorsTable = sessions.jsdom[0].window.document.querySelectorAll('#systemContentList tr[onclick^="goToUrl(\'device.jsp?id="]');
+      const parsedSensorsTable = parseSensorsTable(jsdom0SensorsTable);
+
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsInformation()', 'success', `Successfully retrieved sensors information from "${this.#internal.baseUrl}"`);
+      }
+
+      return {
+        action: 'GET_SENSORS_INFORMATION',
+        success: true,
+        info: {
+          /**
+           * A breakdown of the responses when sensors table is parsed.
+           *
+           * NOTE: Responses may be inaccurate or missing.
+           * LINK: https://patents.google.com/patent/US20170070361A1/en
+           *
+           * deviceType: 'Door Sensor'
+           *             'Door/Window Sensor'
+           *             'Carbon Monoxide Detector'
+           *             'Fire (Smoke/Heat) Detector'
+           *             'Glass Break Detector'
+           *             'Motion Sensor'
+           *             'Motion Sensor (Notable Events Only)'
+           *             'Window Sensor'
+           *
+           * name: 'Sensor 1'
+           *
+           * status: 'Online'
+           *         'Status Unknown'
+           *
+           * zone: 1
+           *
+           * @since 1.0.0
+           */
+          sensors: parsedSensorsTable,
+        },
+      };
+    } catch (error) {
+      errorObject = serializeError(error);
+    }
+
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsInformation()', 'error', 'Method encountered an error during execution');
+      stackTracer('serialize-error', errorObject);
+    }
+
+    return {
+      action: 'GET_SENSORS_INFORMATION',
+      success: false,
+      info: {
+        error: errorObject,
+      },
+    };
+  }
+
+  /**
+   * ADT Pulse - Get sensors status.
+   *
+   * @returns {ADTPulseGetSensorsStatusReturns}
+   *
+   * @since 1.0.0
+   */
+  async getSensorsStatus(): ADTPulseGetSensorsStatusReturns {
+    let errorObject;
+
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsStatus()', 'info', `Attempting to retrieve sensors status from "${this.#internal.baseUrl}"`);
+    }
+
+    try {
+      const internet = await this.isPortalAccessible();
+      const sessions: ADTPulseGetSensorsStatusSessions = {
+        axios: [],
+        jsdom: [],
+      };
+
+      // Check if portal is accessible.
+      if (!internet.success) {
+        return {
+          action: 'GET_SENSORS_STATUS',
           success: false,
           info: internet.info,
         };
@@ -1391,21 +1575,24 @@ export class ADTPulse {
       );
 
       const axios0RequestPath = sessions.axios[0].request.path;
-      const axios0RequestPathValid = summaryRefreshResponsePath.test(axios0RequestPath);
+      const axios0RequestPathValid = requestPathSummarySummary.test(axios0RequestPath);
 
-      if (this.#options.debug) {
-        debugLog('api.ts / ADTPulse.getSensorStatuses()', 'info', `Request path ➜ ${axios0RequestPath}`);
-        debugLog('api.ts / ADTPulse.getSensorStatuses()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsStatus()', 'info', `Request path ➜ ${axios0RequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsStatus()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
       }
 
       // If the final URL of sessions.axios[0] is not the summary page.
       if (!axios0RequestPathValid) {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.getSensorStatuses()', 'error', `"${axios0RequestPath}" is not the summary page`);
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsStatus()', 'error', `"${axios0RequestPath}" is not the summary page`);
         }
 
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axios0RequestPath, sessions.axios[0]);
+
         return {
-          action: 'GET_SENSOR_STATUSES',
+          action: 'GET_SENSORS_STATUS',
           success: false,
           info: {
             message: `"${axios0RequestPath}" is not the summary page`,
@@ -1415,17 +1602,30 @@ export class ADTPulse {
 
       // Make sure we are able to use JSDOM on the response data.
       if (typeof sessions.axios[0].data !== 'string') {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.getSensorStatuses()', 'error', 'The response body of the summary page is not of type "string"');
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsStatus()', 'error', 'The response body of the summary page is not of type "string"');
         }
 
         return {
-          action: 'GET_SENSOR_STATUSES',
+          action: 'GET_SENSORS_STATUS',
           success: false,
           info: {
             message: 'The response body of the summary page is not of type "string"',
           },
         };
+      }
+
+      // Recover sat code if it was missing during login.
+      if (this.#session.backupSatCode === null) {
+        const missingSatCode = fetchMissingSatCode(sessions.axios[0]);
+
+        if (missingSatCode !== null) {
+          if (this.#internal.debug) {
+            debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsStatus()', 'success', 'Backup sat code was successfully recovered from previous failed retrieval');
+          }
+
+          this.#session.backupSatCode = missingSatCode;
+        }
       }
 
       // sessions.jsdom[0]: Parse the summary page.
@@ -1442,12 +1642,12 @@ export class ADTPulse {
       const jsdom0OrbSensors = sessions.jsdom[0].window.document.querySelectorAll('#orbSensorsList tr.p_listRow');
       const parsedOrbSensors = parseOrbSensors(jsdom0OrbSensors);
 
-      if (this.#options.debug) {
-        debugLog('api.ts / ADTPulse.getSensorStatuses()', 'success', `Successfully retrieved sensor statuses from "${this.#internal.baseUrl}"`);
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsStatus()', 'success', `Successfully retrieved sensors status from "${this.#internal.baseUrl}"`);
       }
 
       return {
-        action: 'GET_SENSOR_STATUSES',
+        action: 'GET_SENSORS_STATUS',
         success: true,
         info: {
           /**
@@ -1462,8 +1662,6 @@ export class ADTPulse {
            *       'devStatTamper'
            *       'devStatAlarm'
            *       'devStatLowBatt'
-           *       'devStatInstalling'
-           *       'devStatOffline'
            *       'devStatUnknown'
            *
            * name: 'Sensor 1'
@@ -1474,6 +1672,7 @@ export class ADTPulse {
            *         'Motion'
            *         'No Motion'
            *         'Tripped'
+           *         'Unknown'
            *
            * zone: 1
            *
@@ -1486,13 +1685,13 @@ export class ADTPulse {
       errorObject = serializeError(error);
     }
 
-    if (this.#options.debug) {
-      debugLog('api.ts / ADTPulse.getSensorStatuses()', 'error', 'Method encountered an error during execution');
-      stackTraceLog(errorObject);
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsStatus()', 'error', 'Method encountered an error during execution');
+      stackTracer('serialize-error', errorObject);
     }
 
     return {
-      action: 'GET_SENSOR_STATUSES',
+      action: 'GET_SENSORS_STATUS',
       success: false,
       info: {
         error: errorObject,
@@ -1510,8 +1709,8 @@ export class ADTPulse {
   async performSyncCheck(): ADTPulsePerformSyncCheckReturns {
     let errorObject;
 
-    if (this.#options.debug) {
-      debugLog('api.ts / ADTPulse.performSyncCheck()', 'info', `Attempting to perform a sync check from "${this.#internal.baseUrl}"`);
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.performSyncCheck()', 'info', `Attempting to perform a sync check from "${this.#internal.baseUrl}"`);
     }
 
     try {
@@ -1546,18 +1745,21 @@ export class ADTPulse {
       );
 
       const axios0RequestPath = sessions.axios[0].request.path;
-      const axios0RequestPathValid = syncCheckServResponsePath.test(axios0RequestPath);
+      const axios0RequestPathValid = requestPathAjaxSyncCheckServTXx.test(axios0RequestPath);
 
-      if (this.#options.debug) {
-        debugLog('api.ts / ADTPulse.performSyncCheck()', 'info', `Request path ➜ ${axios0RequestPath}`);
-        debugLog('api.ts / ADTPulse.performSyncCheck()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.performSyncCheck()', 'info', `Request path ➜ ${axios0RequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.performSyncCheck()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
       }
 
       // If the final URL of sessions.axios[0] is not the sync check page.
       if (!axios0RequestPathValid) {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.performSyncCheck()', 'error', `"${axios0RequestPath}" is not the sync check page`);
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.performSyncCheck()', 'error', `"${axios0RequestPath}" is not the sync check page`);
         }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axios0RequestPath, sessions.axios[0]);
 
         return {
           action: 'PERFORM_SYNC_CHECK',
@@ -1570,8 +1772,8 @@ export class ADTPulse {
 
       // Make sure we are able to pass on the response data.
       if (typeof sessions.axios[0].data !== 'string') {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.performSyncCheck()', 'error', 'The response body of the sync check page is not of type "string"');
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.performSyncCheck()', 'error', 'The response body of the sync check page is not of type "string"');
         }
 
         return {
@@ -1583,8 +1785,8 @@ export class ADTPulse {
         };
       }
 
-      if (this.#options.debug) {
-        debugLog('api.ts / ADTPulse.performSyncCheck()', 'success', `Successfully performed a sync check from "${this.#internal.baseUrl}"`);
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.performSyncCheck()', 'success', `Successfully performed a sync check from "${this.#internal.baseUrl}"`);
       }
 
       return {
@@ -1608,9 +1810,9 @@ export class ADTPulse {
       errorObject = serializeError(error);
     }
 
-    if (this.#options.debug) {
-      debugLog('api.ts / ADTPulse.performSyncCheck()', 'error', 'Method encountered an error during execution');
-      stackTraceLog(errorObject);
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.performSyncCheck()', 'error', 'Method encountered an error during execution');
+      stackTracer('serialize-error', errorObject);
     }
 
     return {
@@ -1632,8 +1834,8 @@ export class ADTPulse {
   async performKeepAlive(): ADTPulsePerformKeepAliveReturns {
     let errorObject;
 
-    if (this.#options.debug) {
-      debugLog('api.ts / ADTPulse.performKeepAlive()', 'info', `Attempting to perform a keep alive from "${this.#internal.baseUrl}"`);
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.performKeepAlive()', 'info', `Attempting to perform a keep alive from "${this.#internal.baseUrl}"`);
     }
 
     try {
@@ -1672,18 +1874,21 @@ export class ADTPulse {
       );
 
       const axios0RequestPath = sessions.axios[0].request.path;
-      const axios0RequestPathValid = keepAliveResponsePath.test(axios0RequestPath);
+      const axios0RequestPathValid = requestPathKeepAlive.test(axios0RequestPath);
 
-      if (this.#options.debug) {
-        debugLog('api.ts / ADTPulse.performKeepAlive()', 'info', `Request path ➜ ${axios0RequestPath}`);
-        debugLog('api.ts / ADTPulse.performKeepAlive()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.performKeepAlive()', 'info', `Request path ➜ ${axios0RequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.performKeepAlive()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
       }
 
-      // If the final URL of sessions.axios[0] is not the sync check page.
+      // If the final URL of sessions.axios[0] is not the keep alive page.
       if (!axios0RequestPathValid) {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.performKeepAlive()', 'error', `"${axios0RequestPath}" is not the keep alive page`);
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.performKeepAlive()', 'error', `"${axios0RequestPath}" is not the keep alive page`);
         }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axios0RequestPath, sessions.axios[0]);
 
         return {
           action: 'PERFORM_KEEP_ALIVE',
@@ -1694,8 +1899,8 @@ export class ADTPulse {
         };
       }
 
-      if (this.#options.debug) {
-        debugLog('api.ts / ADTPulse.performKeepAlive()', 'success', `Successfully performed a keep alive from "${this.#internal.baseUrl}"`);
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.performKeepAlive()', 'success', `Successfully performed a keep alive from "${this.#internal.baseUrl}"`);
       }
 
       return {
@@ -1707,9 +1912,9 @@ export class ADTPulse {
       errorObject = serializeError(error);
     }
 
-    if (this.#options.debug) {
-      debugLog('api.ts / ADTPulse.performKeepAlive()', 'error', 'Method encountered an error during execution');
-      stackTraceLog(errorObject);
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.performKeepAlive()', 'error', 'Method encountered an error during execution');
+      stackTracer('serialize-error', errorObject);
     }
 
     return {
@@ -1719,6 +1924,17 @@ export class ADTPulse {
         error: errorObject,
       },
     };
+  }
+
+  /**
+   * ADT Pulse - Is authenticated.
+   *
+   * @returns {ADTPulseIsAuthenticatedReturns}
+   *
+   * @since 1.0.0
+   */
+  isAuthenticated(): ADTPulseIsAuthenticatedReturns {
+    return this.#session.isAuthenticated;
   }
 
   /**
@@ -1739,11 +1955,11 @@ export class ADTPulse {
   private async armDisarmHandler(relativeUrl: ADTPulseArmDisarmHandlerRelativeUrl, href: ADTPulseArmDisarmHandlerHref, armState: ADTPulseArmDisarmHandlerArmState, arm: ADTPulseArmDisarmHandlerArm, sat: ADTPulseArmDisarmHandlerSat): ADTPulseArmDisarmHandlerReturns {
     let errorObject;
 
-    if (this.#options.debug) {
-      debugLog('api.ts / ADTPulse.armDisarmHandler()', 'info', `Attempting to update arm state from "${armState}" to "${arm}" on "${this.#internal.baseUrl}"`);
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'info', `Attempting to update arm state from "${armState}" to "${arm}" on "${this.#internal.baseUrl}"`);
     }
 
-    // If user changing to the current arm state (e.g. disarmed to disarmed).
+    // If system is being set to the current arm state (e.g. disarmed to off).
     if (
       armState === arm
       || (
@@ -1751,8 +1967,8 @@ export class ADTPulse {
         && arm === 'off'
       )
     ) {
-      if (this.#options.debug) {
-        debugLog('api.ts / ADTPulse.armDisarmHandler()', 'info', `No need to change arm state from "${armState}" to "${arm}" due to its equivalence`);
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'info', `No need to change arm state from "${armState}" to "${arm}" due to its equivalence`);
       }
 
       return {
@@ -1856,18 +2072,21 @@ export class ADTPulse {
       );
 
       const axios0RequestPath = sessions.axios[0].request.path;
-      const axios0RequestPathValid = armDisarmResponsePath.test(axios0RequestPath);
+      const axios0RequestPathValid = requestPathQuickControlArmDisarm.test(axios0RequestPath);
 
-      if (this.#options.debug) {
-        debugLog('api.ts / ADTPulse.armDisarmHandler()', 'info', `Request path ➜ ${axios0RequestPath}`);
-        debugLog('api.ts / ADTPulse.armDisarmHandler()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'info', `Request path ➜ ${axios0RequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
       }
 
       // If the final URL of sessions.axios[0] is not the arm disarm page.
       if (!axios0RequestPathValid) {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.armDisarmHandler()', 'error', `"${axios0RequestPath}" is not the arm disarm page`);
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'error', `"${axios0RequestPath}" is not the arm disarm page`);
         }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axios0RequestPath, sessions.axios[0]);
 
         return {
           action: 'ARM_DISARM_HANDLER',
@@ -1878,14 +2097,14 @@ export class ADTPulse {
         };
       }
 
-      // No need to force arm if system is not being armed.
+      // No need to force arm if system is not being set to arm.
       if (arm !== 'off') {
         // Passing the force arming task to the handler.
         const forceArmResponse = await this.forceArmHandler(sessions.axios[0], relativeUrl);
 
         if (!forceArmResponse.success) {
-          if (this.#options.debug) {
-            debugLog('api.ts / ADTPulse.armDisarmHandler()', 'error', 'An error occurred in the force arm handler');
+          if (this.#internal.debug) {
+            debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'error', 'An error occurred in the force arm handler');
           }
 
           return {
@@ -1899,11 +2118,11 @@ export class ADTPulse {
       // After changing any arm state, the "armState" may be different from when you logged into the portal.
       this.#session.isCleanState = false;
 
-      // Allow the security orb buttons to refresh (usually takes around 5 seconds).
-      await sleep(5000);
+      // Allow the security orb buttons to refresh (usually takes around 6 seconds).
+      await sleep(6000);
 
-      // sessions.axios[2]: Load the summary page.
-      sessions.axios[2] = await this.#session.httpClient.get(
+      // sessions.axios[1]: Load the summary page.
+      sessions.axios[1] = await this.#session.httpClient.get(
         `${this.#internal.baseUrl}/myhome/${this.#session.portalVersion}/summary/summary.jsp`,
         this.getRequestConfig({
           headers: {
@@ -1913,33 +2132,36 @@ export class ADTPulse {
         }),
       );
 
-      const axios2RequestPath = sessions.axios[2].request.path;
-      const axios2RequestPathValid = summaryRefreshResponsePath.test(axios2RequestPath);
+      const axios1RequestPath = sessions.axios[1].request.path;
+      const axios1RequestPathValid = requestPathSummarySummary.test(axios1RequestPath);
 
-      if (this.#options.debug) {
-        debugLog('api.ts / ADTPulse.armDisarmHandler()', 'info', `Request path ➜ ${axios2RequestPath}`);
-        debugLog('api.ts / ADTPulse.armDisarmHandler()', 'info', `Request path valid ➜ ${axios2RequestPathValid}`);
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'info', `Request path ➜ ${axios1RequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'info', `Request path valid ➜ ${axios1RequestPathValid}`);
       }
 
-      // If the final URL of sessions.axios[2] is not the summary page.
-      if (!axios2RequestPathValid) {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.armDisarmHandler()', 'error', `"${axios2RequestPath}" is not the summary page`);
+      // If the final URL of sessions.axios[1] is not the summary page.
+      if (!axios1RequestPathValid) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'error', `"${axios1RequestPath}" is not the summary page`);
         }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axios1RequestPath, sessions.axios[1]);
 
         return {
           action: 'ARM_DISARM_HANDLER',
           success: false,
           info: {
-            message: `"${axios2RequestPath}" is not the summary page`,
+            message: `"${axios1RequestPath}" is not the summary page`,
           },
         };
       }
 
       // Make sure we are able to use JSDOM on the response data.
-      if (typeof sessions.axios[2].data !== 'string') {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.armDisarmHandler()', 'error', 'The response body of the summary page is not of type "string"');
+      if (typeof sessions.axios[1].data !== 'string') {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'error', 'The response body of the summary page is not of type "string"');
         }
 
         return {
@@ -1951,12 +2173,25 @@ export class ADTPulse {
         };
       }
 
+      // Recover sat code if it was missing during login.
+      if (this.#session.backupSatCode === null) {
+        const missingSatCode = fetchMissingSatCode(sessions.axios[1]);
+
+        if (missingSatCode !== null) {
+          if (this.#internal.debug) {
+            debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'success', 'Backup sat code was successfully recovered from previous failed retrieval');
+          }
+
+          this.#session.backupSatCode = missingSatCode;
+        }
+      }
+
       // sessions.jsdom[1]: Parse the summary page.
       sessions.jsdom[1] = new JSDOM(
-        sessions.axios[2].data,
+        sessions.axios[1].data,
         {
-          url: sessions.axios[2].config.url,
-          referrer: sessions.axios[2].config.headers.Referer,
+          url: sessions.axios[1].config.url,
+          referrer: sessions.axios[1].config.headers.Referer,
           contentType: 'text/html',
           pretendToBeVisual: true,
         },
@@ -1970,7 +2205,7 @@ export class ADTPulse {
       // WORKAROUND FOR ARM NIGHT BUTTON BUG: Generate a fake "parsedOrbSecurityButtons" response after system has been set to "night" mode if "Arming Night" is stuck.
       if (
         ['disarmed', 'off'].includes(armState) // Checks if state was "disarmed" (dirty) or "off" (clean).
-        && ['night'].includes(arm) // Checks if user was trying to change to "night" mode.
+        && ['night'].includes(arm) // Checks if system was trying to change to "night" mode.
         && readyButtons.length === 0 // Check if there are no ready (enabled) buttons.
       ) {
         readyButtons = [
@@ -1993,8 +2228,8 @@ export class ADTPulse {
         ];
       }
 
-      if (this.#options.debug) {
-        debugLog('api.ts / ADTPulse.armDisarmHandler()', 'success', `Successfully updated arm state from "${armState}" to "${arm}" on "${this.#internal.baseUrl}"`);
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'success', `Successfully updated arm state from "${armState}" to "${arm}" on "${this.#internal.baseUrl}"`);
       }
 
       return {
@@ -2008,9 +2243,9 @@ export class ADTPulse {
       errorObject = serializeError(error);
     }
 
-    if (this.#options.debug) {
-      debugLog('api.ts / ADTPulse.armDisarmHandler()', 'error', 'Method encountered an error during execution');
-      stackTraceLog(errorObject);
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'error', 'Method encountered an error during execution');
+      stackTracer('serialize-error', errorObject);
     }
 
     return {
@@ -2037,8 +2272,8 @@ export class ADTPulse {
   private async forceArmHandler(response: ADTPulseForceArmHandlerResponse, relativeUrl: ADTPulseForceArmHandlerRelativeUrl): ADTPulseForceArmHandlerReturns {
     let errorObject;
 
-    if (this.#options.debug) {
-      debugLog('api.ts / ADTPulse.forceArmHandler()', 'info', `Attempting to force arm on "${this.#internal.baseUrl}"`);
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.forceArmHandler()', 'info', `Attempting to force arm on "${this.#internal.baseUrl}"`);
     }
 
     try {
@@ -2059,8 +2294,8 @@ export class ADTPulse {
 
       // Make sure we are able to use JSDOM on the response data.
       if (typeof response.data !== 'string') {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.forceArmHandler()', 'error', 'The response body of the arm disarm page is not of type "string"');
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.forceArmHandler()', 'error', 'The response body of the arm disarm page is not of type "string"');
         }
 
         return {
@@ -2125,8 +2360,8 @@ export class ADTPulse {
       ) {
         // In test mode, system must detect at least 1 door or window open.
         if (this.#internal.testMode.enabled) {
-          if (this.#options.debug) {
-            debugLog('api.ts / ADTPulse.forceArmHandler()', 'error', 'Test mode is active but no doors or windows were open');
+          if (this.#internal.debug) {
+            debugLog(this.#internal.logger, 'api.ts / ADTPulse.forceArmHandler()', 'error', 'Test mode is active but no doors or windows were open');
           }
 
           return {
@@ -2138,8 +2373,8 @@ export class ADTPulse {
           };
         }
 
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.forceArmHandler()', 'info', 'Force arming not required');
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.forceArmHandler()', 'info', 'Force arming not required');
         }
 
         return {
@@ -2153,10 +2388,11 @@ export class ADTPulse {
       const tracker: ADTPulseForceArmHandlerTracker = {
         complete: false,
         errorMessage: null,
+        requestUrl: null,
       };
 
-      if (this.#options.debug) {
-        debugLog('api.ts / ADTPulse.forceArmHandler()', 'info', `Portal Message: "${parsedArmDisarmMessage}"`);
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.forceArmHandler()', 'warn', `Portal message ➜ "${parsedArmDisarmMessage}"`);
       }
 
       // Purpose of this loop is to determine the correct button position for force arming.
@@ -2223,23 +2459,25 @@ export class ADTPulse {
         );
 
         const axios0RequestPath = sessions.axios[0].request.path;
-        const axios0RequestPathValid = runRRACommandResponsePath.test(axios0RequestPath);
+        const axios0RequestPathValid = requestPathQuickControlServRunRraCommand.test(axios0RequestPath);
 
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.forceArmHandler()', 'info', `Request path ➜ ${axios0RequestPath}`);
-          debugLog('api.ts / ADTPulse.forceArmHandler()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.forceArmHandler()', 'info', `Request path ➜ ${axios0RequestPath}`);
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.forceArmHandler()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
         }
 
-        // If the final URL of sessions.axios[0] is not the arm disarm page.
+        // If the final URL of sessions.axios[0] is not the run rra command page.
         if (!axios0RequestPathValid) {
-          tracker.errorMessage = `"${axios0RequestPath}" is not the force arm disarm page`;
+          tracker.errorMessage = `"${axios0RequestPath}" is not the run rra command page`;
+          tracker.requestUrl = axios0RequestPath;
 
           continue;
         }
 
         // Make sure we are able to use the "String.prototype.includes()" method on the response data.
         if (typeof sessions.axios[0].data !== 'string') {
-          tracker.errorMessage = 'The response body of the force arm disarm page is not of type "string"';
+          tracker.errorMessage = 'The response body of the run rra command page is not of type "string"';
+          tracker.requestUrl = axios0RequestPath;
 
           continue;
         }
@@ -2250,15 +2488,16 @@ export class ADTPulse {
            * A breakdown of the responses when force arming.
            *
            * "Could not process the request!</br></br>Error: 1.0-OKAY"
-           * - Got this when force arming is successful.
+           * - When force arming is successful.
            *
            * "Could not process the request!</br></br>Error: Method not allowed.  Allowed methods GET, HEAD"
-           * - The method not allowed is an incorrect error message. They do accept POST requests.
-           * - Got this when "parseDoSubmitHandlers().href" has escaped forward slashes (e.g. dirA\/dirB\/dirC).
+           * - Method not allowed is an incorrect error message. They do accept POST requests.
+           * - Error appeared when "parseDoSubmitHandlers().href" has escaped forward slashes (e.g. dirA\/dirB\/dirC).
            *
            * @since 1.0.0
            */
-          tracker.errorMessage = 'The response body of the force arm disarm page does not include "1.0-OKAY"';
+          tracker.errorMessage = 'The response body of the run rra command page does not include "1.0-OKAY"';
+          tracker.requestUrl = axios0RequestPath;
 
           continue;
         }
@@ -2266,13 +2505,17 @@ export class ADTPulse {
         // Mark the force arm as complete.
         tracker.complete = true;
         tracker.errorMessage = null;
+        tracker.requestUrl = null;
       }
 
       // If "tracker.errorMessage" has a pending error message to display.
       if (tracker.errorMessage !== null) {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.forceArmHandler()', 'error', tracker.errorMessage);
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.forceArmHandler()', 'error', tracker.errorMessage);
         }
+
+        // If "this instance" was not signed in at this time.
+        this.handleLoginFailure(tracker.requestUrl, sessions.axios[0]);
 
         return {
           action: 'FORCE_ARM_HANDLER',
@@ -2285,8 +2528,8 @@ export class ADTPulse {
 
       // If force arming failed because the "Arm Anyway" button was not found.
       if (!tracker.complete) {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.forceArmHandler()', 'error', 'Force arming failed because the "Arm Anyway" button was not found');
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.forceArmHandler()', 'error', 'Force arming failed because the "Arm Anyway" button was not found');
         }
 
         return {
@@ -2298,8 +2541,8 @@ export class ADTPulse {
         };
       }
 
-      if (this.#options.debug) {
-        debugLog('api.ts / ADTPulse.forceArmHandler()', 'success', `Successfully forced arm on "${this.#internal.baseUrl}"`);
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.forceArmHandler()', 'success', `Successfully forced arm on "${this.#internal.baseUrl}"`);
       }
 
       return {
@@ -2311,9 +2554,9 @@ export class ADTPulse {
       errorObject = serializeError(error);
     }
 
-    if (this.#options.debug) {
-      debugLog('api.ts / ADTPulse.forceArmHandler()', 'error', 'Method encountered an error during execution');
-      stackTraceLog(errorObject);
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.forceArmHandler()', 'error', 'Method encountered an error during execution');
+      stackTracer('serialize-error', errorObject);
     }
 
     return {
@@ -2337,8 +2580,8 @@ export class ADTPulse {
   private async isPortalAccessible(): ADTPulseIsPortalAccessibleReturns {
     let errorObject;
 
-    if (this.#options.debug) {
-      debugLog('api.ts / ADTPulse.isPortalAccessible()', 'info', `Attempting to check if "${this.#internal.baseUrl}" is accessible`);
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.isPortalAccessible()', 'info', `Attempting to check if "${this.#internal.baseUrl}" is accessible`);
     }
 
     try {
@@ -2349,8 +2592,8 @@ export class ADTPulse {
       );
 
       if (response.status !== 200 || response.statusText !== 'OK') {
-        if (this.#options.debug) {
-          debugLog('api.ts / ADTPulse.isPortalAccessible()', 'info', `The portal at "${this.#internal.baseUrl}" is not accessible`);
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.isPortalAccessible()', 'error', `The portal at "${this.#internal.baseUrl}" is not accessible`);
         }
 
         return {
@@ -2362,8 +2605,8 @@ export class ADTPulse {
         };
       }
 
-      if (this.#options.debug) {
-        debugLog('api.ts / ADTPulse.isPortalAccessible()', 'success', `Successfully checked if "${this.#internal.baseUrl}" is accessible`);
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.isPortalAccessible()', 'success', `Successfully checked if "${this.#internal.baseUrl}" is accessible`);
       }
 
       return {
@@ -2375,13 +2618,10 @@ export class ADTPulse {
       errorObject = serializeError(error);
     }
 
-    if (this.#options.debug) {
-      debugLog('api.ts / ADTPulse.isPortalAccessible()', 'error', 'Method encountered an error during execution');
-      stackTraceLog(errorObject);
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.isPortalAccessible()', 'error', 'Method encountered an error during execution');
+      stackTracer('serialize-error', errorObject);
     }
-
-    // We don't know how long internet maybe out, so it's best to start the session state fresh.
-    this.resetSession();
 
     return {
       action: 'IS_PORTAL_ACCESSIBLE',
@@ -2393,43 +2633,49 @@ export class ADTPulse {
   }
 
   /**
-   * ADT Pulse - Fetch error message.
+   * ADT Pulse - Handle login failure.
    *
-   * @param {ADTPulseFetchErrorMessageResponse} response - Response.
+   * @param {ADTPulseHandleLoginFailureRequestPath} requestPath - Request path.
+   * @param {ADTPulseHandleLoginFailureSession}     session     - Session.
    *
    * @private
    *
-   * @returns {ADTPulseFetchErrorMessageReturns}
+   * @returns {ADTPulseHandleLoginFailureReturns}
    *
    * @since 1.0.0
    */
-  private static fetchErrorMessage(response: ADTPulseFetchErrorMessageResponse): ADTPulseFetchErrorMessageReturns {
-    if (typeof response.data !== 'string') {
-      return null;
+  private handleLoginFailure(requestPath: ADTPulseHandleLoginFailureRequestPath, session: ADTPulseHandleLoginFailureSession): ADTPulseHandleLoginFailureReturns {
+    if (requestPath === null) {
+      return;
     }
 
-    const sessions: ADTPulseFetchErrorMessageSessions = {
-      jsdom: [],
-    };
+    if (
+      requestPathAccessSignIn.test(requestPath)
+      || requestPathAccessSignInENsPartnerAdt.test(requestPath)
+      || requestPathMfaMfaSignInWorkflowChallenge.test(requestPath)
+    ) {
+      if (this.#internal.debug) {
+        const errorMessage = fetchErrorMessage(session);
 
-    // sessions.jsdom[0]: Parse the sign-in page.
-    sessions.jsdom[0] = new JSDOM(
-      response.data,
-      {
-        url: response.config.url,
-        referrer: response.config.headers.Referer,
-        contentType: 'text/html',
-        pretendToBeVisual: true,
-      },
-    );
+        // Determine if "this instance" was redirected to the sign-in page.
+        if (requestPathAccessSignIn.test(requestPath) || requestPathAccessSignInENsPartnerAdt.test(requestPath)) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.handleLoginFailure()', 'error', 'Either the username or password is invalid or was signed out due to inactivity');
+        }
 
-    const jsdom0WarnMessage = sessions.jsdom[0].window.document.querySelector('#warnMsgContents');
+        // Determine if "this instance" was redirected to the MFA challenge page.
+        if (requestPathMfaMfaSignInWorkflowChallenge.test(requestPath)) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.handleLoginFailure()', 'error', 'Fingerprint is invalid or "Trust this device" was not selected after completing MFA challenge');
+        }
 
-    if (jsdom0WarnMessage !== null) {
-      return clearWhitespace(clearHtmlLineBreak(jsdom0WarnMessage.innerHTML));
+        // Show the portal error message if it exists.
+        if (errorMessage !== null) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.handleLoginFailure()', 'warn', `Portal message ➜ "${errorMessage}"`);
+        }
+      }
+
+      // Reset the session state for "this instance".
+      this.resetSession();
     }
-
-    return null;
   }
 
   /**

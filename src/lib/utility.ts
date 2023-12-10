@@ -1,24 +1,33 @@
 import chalk from 'chalk';
+import { JSDOM } from 'jsdom';
 import _ from 'lodash';
-import util from 'util';
+import { createHash } from 'node:crypto';
+import os from 'node:os';
+import util from 'node:util';
 
 import {
-  backslashForwardSlash,
-  doSubmitFunction,
-  htmlLineBreakCharacter,
-  orbTextSummary,
-  setArmStateFunction,
-  whitespaceCharacters,
-} from '@/lib/regex';
+  characterBackslashForwardSlash,
+  characterHtmlLineBreak,
+  characterWhitespace,
+  functionDoSubmit,
+  functionSetArmState,
+  paramSat,
+  textOrbTextSummary,
+} from '@/lib/regex.js';
 import type {
   ClearHtmlLineBreakData,
   ClearHtmlLineBreakReturns,
   ClearWhitespaceData,
   ClearWhitespaceReturns,
   DebugLogCaller,
+  DebugLogLogger,
   DebugLogMessage,
   DebugLogReturns,
   DebugLogType,
+  FetchErrorMessageResponse,
+  FetchErrorMessageReturns,
+  FetchMissingSatCodeResponse,
+  FetchMissingSatCodeReturns,
   FetchTableCellsIncrementFrom,
   FetchTableCellsIncrementTo,
   FetchTableCellsMatched,
@@ -31,6 +40,13 @@ import type {
   FindNullKeysReturns,
   GenerateDynatracePCHeaderValueMode,
   GenerateDynatracePCHeaderValueReturns,
+  GenerateMd5HashData,
+  GenerateMd5HashReturns,
+  GetPluralFormCount,
+  GetPluralFormPlural,
+  GetPluralFormReturns,
+  GetPluralFormSingular,
+  IsForwardSlashOSReturns,
   ParseArmDisarmMessageElement,
   ParseArmDisarmMessageReturns,
   ParseDoSubmitHandlersElements,
@@ -44,13 +60,17 @@ import type {
   ParseOrbSensorsElements,
   ParseOrbSensorsReturns,
   ParseOrbSensorsSensors,
+  ParseOrbSensorsTableElements,
+  ParseOrbSensorsTableReturns,
+  ParseOrbSensorsTableSensors,
   ParseOrbTextSummaryElement,
   ParseOrbTextSummaryReturns,
   SleepMilliseconds,
   SleepReturns,
-  StackTraceLogError,
-  StackTraceLogReturns,
-} from '@/types';
+  StackTracerError,
+  StackTracerReturns,
+  StackTracerType,
+} from '@/types/index.d.ts';
 
 /**
  * Clear html line break.
@@ -62,7 +82,7 @@ import type {
  * @since 1.0.0
  */
 export function clearHtmlLineBreak(data: ClearHtmlLineBreakData): ClearHtmlLineBreakReturns {
-  return data.replace(htmlLineBreakCharacter, ' ').trim();
+  return data.replace(characterHtmlLineBreak, ' ').trim();
 }
 
 /**
@@ -75,12 +95,13 @@ export function clearHtmlLineBreak(data: ClearHtmlLineBreakData): ClearHtmlLineB
  * @since 1.0.0
  */
 export function clearWhitespace(data: ClearWhitespaceData): ClearWhitespaceReturns {
-  return data.replace(whitespaceCharacters, ' ').trim();
+  return data.replace(characterWhitespace, ' ').trim();
 }
 
 /**
  * Debug log.
  *
+ * @param {DebugLogLogger}  logger  - Logger.
  * @param {DebugLogCaller}  caller  - Caller.
  * @param {DebugLogType}    type    - Type.
  * @param {DebugLogMessage} message - Message.
@@ -89,23 +110,100 @@ export function clearWhitespace(data: ClearWhitespaceData): ClearWhitespaceRetur
  *
  * @since 1.0.0
  */
-export function debugLog(caller: DebugLogCaller, type: DebugLogType, message: DebugLogMessage): DebugLogReturns {
+export function debugLog(logger: DebugLogLogger, caller: DebugLogCaller, type: DebugLogType, message: DebugLogMessage): DebugLogReturns {
+  const logMessage = chalk.reset(chalk.underline(caller), '-', message, '...');
+
   switch (type) {
     case 'error':
-      console.error('[ADT Pulse]', chalk.redBright('ERROR:'), chalk.underline(caller), '-', message, '...');
+      if (logger !== null) {
+        logger.error(chalk.gray('DEBUG'), chalk.redBright('ERROR:'), logMessage);
+      } else {
+        console.error('[ADT Pulse]', chalk.redBright('ERROR:'), logMessage);
+      }
       break;
     case 'warn':
-      console.warn('[ADT Pulse]', chalk.yellowBright('WARN:'), chalk.underline(caller), '-', message, '...');
+      if (logger !== null) {
+        logger.warn(chalk.gray('DEBUG'), chalk.yellowBright('WARNING:'), logMessage);
+      } else {
+        console.warn('[ADT Pulse]', chalk.yellowBright('WARNING:'), logMessage);
+      }
       break;
     case 'success':
-      console.warn('[ADT Pulse]', chalk.greenBright('SUCCESS:'), chalk.underline(caller), '-', message, '...');
+      if (logger !== null) {
+        logger.info(chalk.gray('DEBUG'), chalk.greenBright('SUCCESS:'), logMessage);
+      } else {
+        console.info('[ADT Pulse]', chalk.greenBright('SUCCESS:'), logMessage);
+      }
       break;
     case 'info':
-      console.info('[ADT Pulse]', chalk.blueBright('INFO:'), chalk.underline(caller), '-', message, '...');
+      if (logger !== null) {
+        logger.info(chalk.gray('DEBUG'), chalk.blueBright('INFO:'), logMessage);
+      } else {
+        console.info('[ADT Pulse]', chalk.blueBright('INFO:'), logMessage);
+      }
       break;
     default:
       break;
   }
+}
+
+/**
+ * Fetch error message.
+ *
+ * @param {FetchErrorMessageResponse} response - Response.
+ *
+ * @returns {FetchErrorMessageReturns}
+ *
+ * @since 1.0.0
+ */
+export function fetchErrorMessage(response: FetchErrorMessageResponse): FetchErrorMessageReturns {
+  if (typeof response.data !== 'string') {
+    return null;
+  }
+
+  // Parse the response (normally it should be the sign-in page).
+  const jsdom = new JSDOM(
+    response.data,
+    {
+      url: response.config.url,
+      referrer: response.config.headers.Referer,
+      contentType: 'text/html',
+      pretendToBeVisual: true,
+    },
+  );
+
+  // Find the warn message contents.
+  const warnMessage = jsdom.window.document.querySelector('#warnMsgContents');
+
+  if (warnMessage !== null) {
+    return clearWhitespace(clearHtmlLineBreak(warnMessage.innerHTML));
+  }
+
+  return null;
+}
+
+/**
+ * Fetch missing sat code.
+ *
+ * @param {FetchMissingSatCodeResponse} response - Response.
+ *
+ * @returns {FetchMissingSatCodeReturns}
+ *
+ * @since 1.0.0
+ */
+export function fetchMissingSatCode(response: FetchMissingSatCodeResponse): FetchMissingSatCodeReturns {
+  if (typeof response.data !== 'string') {
+    return null;
+  }
+
+  // Find the sat code.
+  const satCode = response.data.match(paramSat);
+
+  if (satCode !== null && satCode.length >= 2) {
+    return satCode[1];
+  }
+
+  return null;
 }
 
 /**
@@ -256,6 +354,61 @@ export function generateDynatracePCHeaderValue(mode: GenerateDynatracePCHeaderVa
 }
 
 /**
+ * Generate md5 hash.
+ *
+ * @param {GenerateMd5HashData} data - Data.
+ *
+ * @returns {GenerateMd5HashReturns}
+ *
+ * @since 1.0.0
+ */
+export function generateMd5Hash(data: GenerateMd5HashData): GenerateMd5HashReturns {
+  return createHash('md5').update(JSON.stringify(data)).digest('hex');
+}
+
+/**
+ * Get plural form.
+ *
+ * @param {GetPluralFormCount} count
+ * @param {GetPluralFormSingular} singular
+ * @param {GetPluralFormPlural} plural
+ *
+ * @returns {GetPluralFormReturns}
+ *
+ * @since 1.0.0
+ */
+export function getPluralForm(count: GetPluralFormCount, singular: GetPluralFormSingular, plural: GetPluralFormPlural): GetPluralFormReturns {
+  if (count === 1) {
+    return singular;
+  }
+
+  return plural;
+}
+
+/**
+ * Is forward slash os.
+ *
+ * @returns {IsForwardSlashOSReturns}
+ *
+ * @since 1.0.0
+ */
+export function isForwardSlashOS(): IsForwardSlashOSReturns {
+  const currentOS = os.platform();
+
+  return [
+    'aix',
+    'android',
+    'darwin',
+    'freebsd',
+    'haiku',
+    'linux',
+    'openbsd',
+    'sunos',
+    'netbsd',
+  ].includes(currentOS);
+}
+
+/**
  * Parse arm disarm message.
  *
  * @param {ParseArmDisarmMessageElement} element - Element.
@@ -291,18 +444,18 @@ export function parseDoSubmitHandlers(elements: ParseDoSubmitHandlersElements): 
       return;
     }
 
-    const relativeUrl = onClick.replace(doSubmitFunction, '$1');
-    const urlParamsSat = onClick.replace(doSubmitFunction, '$2') as ParseDoSubmitHandlersUrlParamsSat;
-    const urlParamsHref = onClick.replace(doSubmitFunction, '$3');
-    const urlParamsArmState = onClick.replace(doSubmitFunction, '$5');
-    const urlParamsArm = onClick.replace(doSubmitFunction, '$6');
+    const relativeUrl = onClick.replace(functionDoSubmit, '$1');
+    const urlParamsSat = onClick.replace(functionDoSubmit, '$2') as ParseDoSubmitHandlersUrlParamsSat;
+    const urlParamsHref = onClick.replace(functionDoSubmit, '$3');
+    const urlParamsArmState = onClick.replace(functionDoSubmit, '$5');
+    const urlParamsArm = onClick.replace(functionDoSubmit, '$6');
 
     handlers.push({
       relativeUrl,
       urlParams: {
         arm: (urlParamsArm === 'away' || urlParamsArm === 'night' || urlParamsArm === 'stay') ? urlParamsArm : null,
         armState: (urlParamsArmState === 'forcearm') ? urlParamsArmState : null,
-        href: urlParamsHref.replace(backslashForwardSlash, '/'),
+        href: urlParamsHref.replace(characterBackslashForwardSlash, '/'),
         sat: urlParamsSat,
       },
     });
@@ -330,14 +483,14 @@ export function parseOrbSensors(elements: ParseOrbSensorsElements): ParseOrbSens
     const status = element.querySelector('td:nth-child(4)');
 
     if (icon !== null && name !== null && zone !== null && status !== null) {
-      const iconText = icon.getAttribute('icon');
+      const iconIcon = icon.getAttribute('icon');
       const nameText = name.textContent;
       const zoneText = zone.textContent;
       const statusText = status.textContent;
 
-      if (iconText !== null && nameText !== null && zoneText !== null && statusText !== null) {
+      if (iconIcon !== null && nameText !== null && zoneText !== null && statusText !== null) {
         sensors.push({
-          icon: clearWhitespace(iconText),
+          icon: clearWhitespace(iconIcon),
           name: clearWhitespace(nameText),
           status: clearWhitespace(statusText),
           zone: Number(clearWhitespace(zoneText).replace(/^(Zone )(.*)$/, '$2').toLowerCase()),
@@ -367,8 +520,8 @@ export function parseOrbTextSummary(element: ParseOrbTextSummaryElement): ParseO
   }
 
   const cleanedNode = clearWhitespace(element.textContent);
-  const currentState = cleanedNode.replace(orbTextSummary, '$1');
-  const currentStatus = cleanedNode.replace(orbTextSummary, '$2');
+  const currentState = cleanedNode.replace(textOrbTextSummary, '$1');
+  const currentStatus = cleanedNode.replace(textOrbTextSummary, '$2');
 
   return {
     state: currentState,
@@ -407,15 +560,15 @@ export function parseOrbSecurityButtons(elements: ParseOrbSecurityButtonsElement
 
     // There is a ready (enabled) button displayed.
     if (disabled === null && onClick !== null) {
-      const relativeUrl = onClick.replace(setArmStateFunction, '$1');
-      const loadingText = onClick.replace(setArmStateFunction, '$2');
-      const buttonIndex = onClick.replace(setArmStateFunction, '$3');
-      const totalButtons = onClick.replace(setArmStateFunction, '$4');
-      const changeAccessCode = onClick.replace(setArmStateFunction, '$5');
-      const urlParamsHref = onClick.replace(setArmStateFunction, '$6');
-      const urlParamsArmState = onClick.replace(setArmStateFunction, '$7');
-      const urlParamsArm = onClick.replace(setArmStateFunction, '$8');
-      const urlParamsSat = onClick.replace(setArmStateFunction, '$9') as ParseOrbSecurityButtonsUrlParamsSat;
+      const relativeUrl = onClick.replace(functionSetArmState, '$1');
+      const loadingText = onClick.replace(functionSetArmState, '$2');
+      const buttonIndex = onClick.replace(functionSetArmState, '$3');
+      const totalButtons = onClick.replace(functionSetArmState, '$4');
+      const changeAccessCode = onClick.replace(functionSetArmState, '$5');
+      const urlParamsHref = onClick.replace(functionSetArmState, '$6');
+      const urlParamsArmState = onClick.replace(functionSetArmState, '$7');
+      const urlParamsArm = onClick.replace(functionSetArmState, '$8');
+      const urlParamsSat = onClick.replace(functionSetArmState, '$9') as ParseOrbSecurityButtonsUrlParamsSat;
 
       if (
         (
@@ -461,6 +614,49 @@ export function parseOrbSecurityButtons(elements: ParseOrbSecurityButtonsElement
 }
 
 /**
+ * Parse sensors table.
+ *
+ * @param {ParseOrbSensorsTableElements} elements - Elements.
+ *
+ * @returns {ParseOrbSensorsTableReturns}
+ *
+ * @since 1.0.0
+ */
+export function parseSensorsTable(elements: ParseOrbSensorsTableElements): ParseOrbSensorsTableReturns {
+  const sensors: ParseOrbSensorsTableSensors = [];
+
+  elements.forEach((element) => {
+    const icon = element.querySelector('td:nth-child(1) canvas');
+    const name = element.querySelector('td:nth-child(2) a');
+    const zone = element.querySelector('td:nth-child(3)');
+    const deviceType = element.querySelector('td:nth-child(5)');
+
+    if (icon !== null && name !== null && zone !== null && deviceType !== null) {
+      const iconTitle = icon.getAttribute('title');
+      const nameText = name.textContent;
+      const zoneText = zone.textContent;
+      const deviceTypeText = deviceType.textContent;
+
+      if (iconTitle !== null && nameText !== null && zoneText !== null && deviceTypeText !== null) {
+        // If the row does not have a zone, it is not a sensor.
+        const isSensor = clearWhitespace(zoneText) !== '';
+
+        if (isSensor) {
+          sensors.push({
+            deviceType: clearWhitespace(deviceTypeText),
+            name: clearWhitespace(nameText),
+            status: clearWhitespace(iconTitle),
+            zone: Number(clearWhitespace(zoneText)),
+          });
+        }
+      }
+    }
+  });
+
+  return sensors.sort((a, b) => a.zone - b.zone);
+}
+
+/**
  * Sleep.
  *
  * @param {SleepMilliseconds} milliseconds - Milliseconds.
@@ -476,14 +672,29 @@ export async function sleep(milliseconds: SleepMilliseconds): SleepReturns {
 }
 
 /**
- * Stack trace log.
+ * Stack tracer.
  *
- * @param {StackTraceLogError} error - Error.
+ * @param {StackTracerType}  type  - Type.
+ * @param {StackTracerError} error - Error.
  *
- * @returns {StackTraceLogReturns}
+ * @returns {StackTracerReturns}
  *
  * @since 1.0.0
  */
-export function stackTraceLog(error: StackTraceLogError): StackTraceLogReturns {
-  console.error(chalk.yellowBright(util.inspect(error)));
+export function stackTracer(type: StackTracerType, error: StackTracerError<StackTracerType>): StackTracerReturns {
+  let stringError;
+
+  switch (type) {
+    case 'api-response':
+    case 'zod-error':
+      stringError = JSON.stringify(error, null, 2).replace(/\\"/g, '\'');
+      break;
+    case 'serialize-error':
+      stringError = util.inspect(error);
+      break;
+    default:
+      break;
+  }
+
+  console.error(chalk.yellowBright(stringError));
 }

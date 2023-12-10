@@ -1,13 +1,14 @@
 import chalk from 'chalk';
-import { readFileSync } from 'fs';
 import _ from 'lodash';
-import os from 'os';
-import readline from 'readline';
-import util from 'util';
+import { readFileSync } from 'node:fs';
+import os from 'node:os';
+import { exit, stdin, stdout } from 'node:process';
+import readline from 'node:readline';
+import util from 'node:util';
 
-import { ADTPulse } from '@/lib/api';
-import { platformConfig } from '@/lib/schema';
-import { debugLog } from '@/lib/utility';
+import { ADTPulse } from '@/lib/api.js';
+import { platformConfig } from '@/lib/schema.js';
+import { debugLog, isForwardSlashOS } from '@/lib/utility.js';
 import type {
   ADTPulseTestAskQuestionMode,
   ADTPulseTestAskQuestionReturns,
@@ -20,7 +21,7 @@ import type {
   ADTPulseTestSelectedConfigLocation,
   ADTPulseTestSelectedPlatform,
   ADTPulseTestStartTestReturns,
-} from '@/types';
+} from '@/types/index.d.ts';
 
 /**
  * ADT Pulse Test.
@@ -58,32 +59,29 @@ class ADTPulseTest {
       const userAcceptedDisclaimer = await ADTPulseTest.askQuestion('disclaimer');
 
       if (!userAcceptedDisclaimer) {
-        process.exit(0);
+        exit(0);
       }
 
-      // Used to pad the user input away from the next line.
-      console.log('\r');
+      // Used to pad the user input to the next line.
+      console.info('\r');
 
       const configFoundAndSet = this.findConfig();
 
       if (!configFoundAndSet || this.#selectedPlatform === undefined) {
         ADTPulseTest.printTestOutput(false);
 
-        process.exit(1);
+        exit(1);
       }
 
-      const instance = new ADTPulse(_.merge(
+      const instance = new ADTPulse(
         this.#selectedPlatform,
         {
           debug: true,
+          testMode: {
+            enabled: true,
+          },
         },
-      ), {
-        baseUrl: `https://${this.#selectedPlatform.subdomain}.adtpulse.com`,
-        testMode: {
-          enabled: true,
-          isDisarmChecked: false,
-        },
-      });
+      );
       const instanceFunctions = [
         instance.login.bind(instance),
         instance.getGatewayInformation.bind(instance),
@@ -93,7 +91,8 @@ class ADTPulseTest {
         instance.setPanelStatus.bind(instance, 'stay'),
         instance.setPanelStatus.bind(instance, 'night'),
         instance.setPanelStatus.bind(instance, 'off'),
-        instance.getSensorStatuses.bind(instance),
+        instance.getSensorsInformation.bind(instance),
+        instance.getSensorsStatus.bind(instance),
         instance.performSyncCheck.bind(instance),
         instance.performKeepAlive.bind(instance),
         instance.logout.bind(instance),
@@ -102,42 +101,50 @@ class ADTPulseTest {
       for (let i = 0; i < instanceFunctions.length; i += 1) {
         const response = await instanceFunctions[i]();
 
+        // If response is not successful, end the test.
         if (!response.success) {
           ADTPulseTest.printTestOutput(false);
 
-          process.exit(1);
+          exit(1);
         }
 
-        console.log(util.inspect(response, {
+        // Print success responses.
+        console.info(util.inspect(response, {
           showHidden: false,
-          depth: null,
+          depth: Infinity,
           colors: true,
         }));
       }
 
       ADTPulseTest.printTestOutput(true);
 
-      process.exit(0);
-    } catch (error) {
+      exit(0);
+    } catch {
       ADTPulseTest.printTestOutput(false);
 
-      process.exit(1);
+      exit(1);
     }
   }
 
   /**
    * ADT Pulse Test - Find config.
    *
+   * @private
+   *
    * @returns {ADTPulseTestFindConfigReturns}
    *
    * @since 1.0.0
    */
-  findConfig(): ADTPulseTestFindConfigReturns {
+  private findConfig(): ADTPulseTestFindConfigReturns {
     const possibleLocations: ADTPulseTestFindConfigPossibleLocations = [
-      '/homebridge/config.json', // "homebridge" Docker.
-      '/var/lib/homebridge/config.json', // Debian or Raspbian.
-      `${os.homedir()}/.homebridge/config.json`, // macOS.
-      `${os.homedir()}\\.homebridge\\config.json`, // Windows.
+      ...(isForwardSlashOS()) ? [
+        '/homebridge/config.json', // "homebridge" Docker.
+        '/var/lib/homebridge/config.json', // Debian or Raspbian.
+        `${os.homedir()}/.homebridge/config.json`, // macOS.
+      ] : [],
+      ...(!isForwardSlashOS()) ? [
+        `${os.homedir()}\\.homebridge\\config.json`, // Windows.
+      ] : [],
     ];
 
     for (let i = 0; i < possibleLocations.length; i += 1) {
@@ -146,7 +153,7 @@ class ADTPulseTest {
         break;
       }
 
-      debugLog('test-api.ts', 'info', `Attempt ${i + 1}: Finding the Homebridge config file in "${possibleLocations[i]}"`);
+      debugLog(null, 'test-api.ts', 'info', `Attempt ${i + 1}: Finding the Homebridge config file in "${possibleLocations[i]}"`);
 
       try {
         const rawFile: ADTPulseTestFindConfigRawFile = readFileSync(possibleLocations[i], 'utf-8');
@@ -169,12 +176,12 @@ class ADTPulseTest {
     }
 
     if (this.#selectedConfigLocation === undefined || this.#selectedPlatform === undefined) {
-      debugLog('test-api.ts', 'error', 'Unable to find a parsable Homebridge config file with a validated "ADTPulse" platform');
+      debugLog(null, 'test-api.ts', 'error', 'Unable to find a parsable Homebridge config file with a validated "ADTPulse" platform');
 
       return false;
     }
 
-    debugLog('test-api.ts', 'info', `Found valid Homebridge config in "${this.#selectedConfigLocation}"`);
+    debugLog(null, 'test-api.ts', 'success', `Found valid Homebridge config in "${this.#selectedConfigLocation}"`);
 
     return true;
   }
@@ -184,14 +191,16 @@ class ADTPulseTest {
    *
    * @param {ADTPulseTestAskQuestionMode} mode - Mode.
    *
+   * @private
+   *
    * @returns {ADTPulseTestAskQuestionReturns}
    *
    * @since 1.0.0
    */
-  static async askQuestion(mode: ADTPulseTestAskQuestionMode): ADTPulseTestAskQuestionReturns {
+  private static async askQuestion(mode: ADTPulseTestAskQuestionMode): ADTPulseTestAskQuestionReturns {
     const rlInterface = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
+      input: stdin,
+      output: stdout,
     });
     const questions = {
       disclaimer: [
@@ -234,13 +243,15 @@ class ADTPulseTest {
    *
    * @param {ADTPulseTestPrintTestOutputIsSuccess} isSuccess - Is success.
    *
+   * @private
+   *
    * @returns {ADTPulseTestPrintTestOutputReturns}
    *
    * @since 1.0.0
    */
-  static printTestOutput(isSuccess: ADTPulseTestPrintTestOutputIsSuccess): ADTPulseTestPrintTestOutputReturns {
+  private static printTestOutput(isSuccess: ADTPulseTestPrintTestOutputIsSuccess): ADTPulseTestPrintTestOutputReturns {
     if (!isSuccess) {
-      console.log([
+      console.info([
         '',
         chalk.redBright('########################################################################'),
         chalk.redBright('#####       Test has failed! Please check the error response       #####'),
@@ -251,7 +262,7 @@ class ADTPulseTest {
       return;
     }
 
-    console.log([
+    console.info([
       '',
       chalk.greenBright('########################################################################'),
       chalk.greenBright('#####       Test has completed! If you find my plugin useful       #####'),

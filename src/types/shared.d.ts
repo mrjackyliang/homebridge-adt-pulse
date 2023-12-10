@@ -1,4 +1,5 @@
 import type { AxiosResponse } from 'axios';
+import type { Logger } from 'homebridge';
 import type { JSDOM } from 'jsdom';
 import type { ErrorObject } from 'serialize-error';
 
@@ -7,7 +8,7 @@ import type { ErrorObject } from 'serialize-error';
  *
  * @since 1.0.0
  */
-export type ApiResponseAction = 'ARM_DISARM_HANDLER' | 'FORCE_ARM_HANDLER' | 'GET_GATEWAY_INFORMATION' | 'GET_PANEL_INFORMATION' | 'GET_PANEL_STATUS' | 'GET_SENSOR_STATUSES' | 'IS_PORTAL_ACCESSIBLE' | 'LOGIN' | 'LOGOUT' | 'PERFORM_KEEP_ALIVE' | 'PERFORM_SYNC_CHECK' | 'SET_PANEL_STATUS';
+export type ApiResponseAction = 'ARM_DISARM_HANDLER' | 'FORCE_ARM_HANDLER' | 'GET_GATEWAY_INFORMATION' | 'GET_PANEL_INFORMATION' | 'GET_PANEL_STATUS' | 'GET_SENSORS_INFORMATION' | 'GET_SENSORS_STATUS' | 'IS_PORTAL_ACCESSIBLE' | 'LOGIN' | 'LOGOUT' | 'PERFORM_KEEP_ALIVE' | 'PERFORM_SYNC_CHECK' | 'SET_PANEL_STATUS';
 
 export type ApiResponseSuccessSuccess = true;
 
@@ -73,7 +74,7 @@ export type ConfigSensorName = string;
 
 export type ConfigSensorAdtName = string;
 
-export type ConfigSensorAdtType = 'co' | 'door' | 'fire' | 'glass' | 'motion' | 'window';
+export type ConfigSensorAdtType = 'co' | 'door' | 'fire' | 'flood' | 'glass' | 'motion' | 'window';
 
 export type ConfigSensorAdtZone = number;
 
@@ -86,7 +87,7 @@ export type ConfigSensor = {
 
 export type ConfigSensors = ConfigSensor[];
 
-export type ConfigDebug = boolean;
+export type ConfigPause = boolean;
 
 export type ConfigReset = boolean;
 
@@ -98,7 +99,7 @@ export type Config = {
   password: ConfigPassword;
   fingerprint: ConfigFingerprint;
   sensors: ConfigSensors;
-  debug?: ConfigDebug;
+  pause?: ConfigPause;
   reset?: ConfigReset;
 };
 
@@ -139,24 +140,94 @@ export type DoSubmitHandlers = DoSubmitHandler[];
 export type ForceArmStates = 'forcearm';
 
 /**
+ * Gateway information.
+ *
+ * @since 1.0.0
+ */
+export type GatewayInformationManufacturer = string | null;
+
+export type GatewayInformationModel = string | null;
+
+export type GatewayInformationNetworkBroadbandIp = string | null;
+
+export type GatewayInformationNetworkBroadbandMac = string | null;
+
+export type GatewayInformationNetworkBroadband = {
+  ip: GatewayInformationNetworkBroadbandIp;
+  mac: GatewayInformationNetworkBroadbandMac;
+};
+
+export type GatewayInformationNetworkDeviceIp = string | null;
+
+export type GatewayInformationNetworkDeviceMac = string | null;
+
+export type GatewayInformationNetworkDevice = {
+  ip: GatewayInformationNetworkDeviceIp;
+  mac: GatewayInformationNetworkDeviceMac;
+};
+
+export type GatewayInformationNetwork = {
+  broadband: GatewayInformationNetworkBroadband;
+  device: GatewayInformationNetworkDevice;
+};
+
+export type GatewayInformationSerialNumber = string | null;
+
+export type GatewayInformationStatus = string | null;
+
+export type GatewayInformationUpdateLast = string | null;
+
+export type GatewayInformationUpdateNext = string | null;
+
+export type GatewayInformationUpdate = {
+  last: GatewayInformationUpdateLast;
+  next: GatewayInformationUpdateNext;
+};
+
+export type GatewayInformationVersionsFirmware = string | null;
+
+export type GatewayInformationVersionsHardware = string | null;
+
+export type GatewayInformationVersions = {
+  firmware: GatewayInformationVersionsFirmware;
+  hardware: GatewayInformationVersionsHardware;
+};
+
+export type GatewayInformation = {
+  manufacturer: GatewayInformationManufacturer;
+  model: GatewayInformationModel;
+  network: GatewayInformationNetwork;
+  serialNumber: GatewayInformationSerialNumber;
+  status: GatewayInformationStatus;
+  update: GatewayInformationUpdate;
+  versions: GatewayInformationVersions;
+};
+
+/**
  * Internal config.
  *
  * @since 1.0.0
  */
 export type InternalConfigBaseUrl = `https://${string}`;
 
+export type InternalConfigDebug = boolean;
+
+export type InternalConfigLogger = Logger | null;
+
 export type InternalConfigTestModeEnabled = boolean;
 
 export type InternalConfigTestModeIsDisarmChecked = boolean;
 
 export type InternalConfigTestMode = {
-  enabled: InternalConfigTestModeEnabled;
-  isDisarmChecked: InternalConfigTestModeIsDisarmChecked;
+  enabled?: InternalConfigTestModeEnabled;
+  isDisarmChecked?: InternalConfigTestModeIsDisarmChecked;
 };
 
 export type InternalConfig = {
-  baseUrl: InternalConfigBaseUrl;
-  testMode: InternalConfigTestMode;
+  baseUrl?: InternalConfigBaseUrl;
+  debug?: InternalConfigDebug;
+  logger?: InternalConfigLogger;
+  testMode?: InternalConfigTestMode;
 };
 
 /**
@@ -245,26 +316,68 @@ export type OrbTextSummary = {
 };
 
 /**
- * Sensors.
+ * Panel information.
  *
  * @since 1.0.0
  */
-export type SensorIcon = string;
+export type PanelInformationEmergencyKeys = RegExpMatchArray | null;
 
-export type SensorName = string;
+export type PanelInformationManufacturerProvider = string | null;
 
-export type SensorStatus = string;
+export type PanelInformationTypeModel = string | null;
 
-export type SensorZone = number;
+export type PanelInformationStatus = string | null;
 
-export type Sensor = {
-  icon: SensorIcon;
-  name: SensorName;
-  status: SensorStatus;
-  zone: SensorZone;
+export type PanelInformation = {
+  emergencyKeys: PanelInformationEmergencyKeys;
+  manufacturerProvider: PanelInformationManufacturerProvider;
+  typeModel: PanelInformationTypeModel;
+  status: PanelInformationStatus;
 };
 
-export type Sensors = Sensor[];
+/**
+ * Sensors information.
+ *
+ * @since 1.0.0
+ */
+export type SensorInformationDeviceType = string;
+
+export type SensorInformationName = string;
+
+export type SensorInformationStatus = string;
+
+export type SensorInformationZone = number;
+
+export type SensorInformation = {
+  deviceType: SensorInformationDeviceType;
+  name: SensorInformationName;
+  status: SensorInformationStatus;
+  zone: SensorInformationZone;
+};
+
+export type SensorsInformation = SensorInformation[];
+
+/**
+ * Sensors status.
+ *
+ * @since 1.0.0
+ */
+export type SensorStatusIcon = string;
+
+export type SensorStatusName = string;
+
+export type SensorStatusStatus = string;
+
+export type SensorStatusZone = number;
+
+export type SensorStatus = {
+  icon: SensorStatusIcon;
+  name: SensorStatusName;
+  status: SensorStatusStatus;
+  zone: SensorStatusZone;
+};
+
+export type SensorsStatus = SensorStatus[];
 
 /**
  * Sessions.
@@ -282,8 +395,6 @@ export type SessionsJsdomJsdom = JSDOM[];
 export type SessionsJsdom = {
   jsdom: SessionsJsdomJsdom;
 };
-
-export type SessionsAxiosJsdom = SessionsAxios & SessionsJsdom;
 
 export type Sessions<IncludeAxios extends boolean, IncludeJsdom extends boolean> = (IncludeAxios extends true ? SessionsAxios : object) & (IncludeJsdom extends true ? SessionsJsdom : object);
 

@@ -8,31 +8,36 @@ import type {
   PlatformConfig,
   Service,
 } from 'homebridge';
+import type repl from 'node:repl';
 import type { ErrorObject } from 'serialize-error';
+import type { ZodIssue } from 'zod';
 
+import type { ADTPulse } from '@/lib/api.js';
 import type {
   ApiResponse,
+  ApiResponseFail,
   ArmActions,
   ArmStates,
   Config,
-  ConfigDebug,
   ConfigFingerprint,
   ConfigPassword,
-  ConfigSensors,
   ConfigSubdomain,
   ConfigUsername,
   DoSubmitHandlers,
+  GatewayInformation,
   InternalConfig,
   NullKeysLocations,
   OrbSecurityButtonReady,
   OrbSecurityButtons,
   OrbTextSummary,
-  Sensors,
+  PanelInformation,
+  SensorsInformation,
+  SensorsStatus,
   Sessions,
   SyncCode,
   TableCellsWithSurroundingData,
   UUID,
-} from './shared';
+} from '@/types/shared.d.ts';
 
 /**
  * ADT Pulse - Arm disarm handler.
@@ -91,17 +96,6 @@ export type ADTPulseCredentials = {
 };
 
 /**
- * ADT Pulse - Fetch error message.
- *
- * @since 1.0.0
- */
-export type ADTPulseFetchErrorMessageResponse = AxiosResponse;
-
-export type ADTPulseFetchErrorMessageReturns = string | null;
-
-export type ADTPulseFetchErrorMessageSessions = Sessions<false, true>;
-
-/**
  * ADT Pulse - Force arm handler.
  *
  * @since 1.0.0
@@ -120,9 +114,12 @@ export type ADTPulseForceArmHandlerTrackerComplete = boolean;
 
 export type ADTPulseForceArmHandlerTrackerErrorMessage = string | null;
 
+export type ADTPulseForceArmHandlerTrackerRequestUrl = string | null;
+
 export type ADTPulseForceArmHandlerTracker = {
   complete: ADTPulseForceArmHandlerTrackerComplete;
   errorMessage: ADTPulseForceArmHandlerTrackerErrorMessage;
+  requestUrl: ADTPulseForceArmHandlerTrackerRequestUrl;
 };
 
 /**
@@ -130,64 +127,7 @@ export type ADTPulseForceArmHandlerTracker = {
  *
  * @since 1.0.0
  */
-export type ADTPulseGetGatewayInformationReturnsInfoManufacturer = string | null;
-
-export type ADTPulseGetGatewayInformationReturnsInfoModel = string | null;
-
-export type ADTPulseGetGatewayInformationReturnsInfoNetworkBroadbandIp = string | null;
-
-export type ADTPulseGetGatewayInformationReturnsInfoNetworkBroadbandMac = string | null;
-
-export type ADTPulseGetGatewayInformationReturnsInfoNetworkBroadband = {
-  ip: ADTPulseGetGatewayInformationReturnsInfoNetworkBroadbandIp;
-  mac: ADTPulseGetGatewayInformationReturnsInfoNetworkBroadbandMac;
-};
-
-export type ADTPulseGetGatewayInformationReturnsInfoNetworkDeviceIp = string | null;
-
-export type ADTPulseGetGatewayInformationReturnsInfoNetworkDeviceMac = string | null;
-
-export type ADTPulseGetGatewayInformationReturnsInfoNetworkDevice = {
-  ip: ADTPulseGetGatewayInformationReturnsInfoNetworkDeviceIp;
-  mac: ADTPulseGetGatewayInformationReturnsInfoNetworkDeviceMac;
-};
-
-export type ADTPulseGetGatewayInformationReturnsInfoNetwork = {
-  broadband: ADTPulseGetGatewayInformationReturnsInfoNetworkBroadband;
-  device: ADTPulseGetGatewayInformationReturnsInfoNetworkDevice;
-};
-
-export type ADTPulseGetGatewayInformationReturnsInfoSerialNumber = string | null;
-
-export type ADTPulseGetGatewayInformationReturnsInfoStatus = string | null;
-
-export type ADTPulseGetGatewayInformationReturnsInfoUpdateLast = string | null;
-
-export type ADTPulseGetGatewayInformationReturnsInfoUpdateNext = string | null;
-
-export type ADTPulseGetGatewayInformationReturnsInfoUpdate = {
-  last: ADTPulseGetGatewayInformationReturnsInfoUpdateLast;
-  next: ADTPulseGetGatewayInformationReturnsInfoUpdateNext;
-};
-
-export type ADTPulseGetGatewayInformationReturnsInfoVersionsFirmware = string | null;
-
-export type ADTPulseGetGatewayInformationReturnsInfoVersionsHardware = string | null;
-
-export type ADTPulseGetGatewayInformationReturnsInfoVersions = {
-  firmware: ADTPulseGetGatewayInformationReturnsInfoVersionsFirmware;
-  hardware: ADTPulseGetGatewayInformationReturnsInfoVersionsHardware;
-};
-
-export type ADTPulseGetGatewayInformationReturnsInfo = {
-  manufacturer: ADTPulseGetGatewayInformationReturnsInfoManufacturer;
-  model: ADTPulseGetGatewayInformationReturnsInfoModel;
-  network: ADTPulseGetGatewayInformationReturnsInfoNetwork;
-  serialNumber: ADTPulseGetGatewayInformationReturnsInfoSerialNumber;
-  status: ADTPulseGetGatewayInformationReturnsInfoStatus;
-  update: ADTPulseGetGatewayInformationReturnsInfoUpdate;
-  versions: ADTPulseGetGatewayInformationReturnsInfoVersions;
-};
+export type ADTPulseGetGatewayInformationReturnsInfo = GatewayInformation;
 
 export type ADTPulseGetGatewayInformationReturns = Promise<ApiResponse<'GET_GATEWAY_INFORMATION', ADTPulseGetGatewayInformationReturnsInfo>>;
 
@@ -198,20 +138,7 @@ export type ADTPulseGetGatewayInformationSessions = Sessions<true, true>;
  *
  * @since 1.0.0
  */
-export type ADTPulseGetPanelInformationReturnsInfoEmergencyKeys = RegExpMatchArray | null;
-
-export type ADTPulseGetPanelInformationReturnsInfoManufacturerProvider = string | null;
-
-export type ADTPulseGetPanelInformationReturnsInfoTypeModel = string | null;
-
-export type ADTPulseGetPanelInformationReturnsInfoStatus = string | null;
-
-export type ADTPulseGetPanelInformationReturnsInfo = {
-  emergencyKeys: ADTPulseGetPanelInformationReturnsInfoEmergencyKeys;
-  manufacturerProvider: ADTPulseGetPanelInformationReturnsInfoManufacturerProvider;
-  typeModel: ADTPulseGetPanelInformationReturnsInfoTypeModel;
-  status: ADTPulseGetPanelInformationReturnsInfoStatus;
-};
+export type ADTPulseGetPanelInformationReturnsInfo = PanelInformation;
 
 export type ADTPulseGetPanelInformationReturns = Promise<ApiResponse<'GET_PANEL_INFORMATION', ADTPulseGetPanelInformationReturnsInfo>>;
 
@@ -240,26 +167,79 @@ export type ADTPulseGetRequestConfigReturns = AxiosRequestConfig;
 export type ADTPulseGetRequestConfigDefaultConfig = AxiosRequestConfig;
 
 /**
- * ADT Pulse - Get sensor statuses.
+ * ADT Pulse - Get sensors information.
  *
  * @since 1.0.0
  */
-export type ADTPulseGetSensorStatusesReturnsInfoSensors = Sensors;
+export type ADTPulseGetSensorsInformationReturnsInfoSensors = SensorsInformation;
 
-export type ADTPulseGetSensorStatusesReturnsInfo = {
-  sensors: ADTPulseGetSensorStatusesReturnsInfoSensors;
+export type ADTPulseGetSensorsInformationReturnsInfo = {
+  sensors: ADTPulseGetSensorsInformationReturnsInfoSensors;
 };
 
-export type ADTPulseGetSensorStatusesReturns = Promise<ApiResponse<'GET_SENSOR_STATUSES', ADTPulseGetSensorStatusesReturnsInfo>>;
+export type ADTPulseGetSensorsInformationReturns = Promise<ApiResponse<'GET_SENSORS_INFORMATION', ADTPulseGetSensorsInformationReturnsInfo>>;
 
-export type ADTPulseGetSensorStatusesSessions = Sessions<true, true>;
+export type ADTPulseGetSensorsInformationSessions = Sessions<true, true>;
+
+/**
+ * ADT Pulse - Get sensors status.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseGetSensorsStatusReturnsInfoSensors = SensorsStatus;
+
+export type ADTPulseGetSensorsStatusReturnsInfo = {
+  sensors: ADTPulseGetSensorsStatusReturnsInfoSensors;
+};
+
+export type ADTPulseGetSensorsStatusReturns = Promise<ApiResponse<'GET_SENSORS_STATUS', ADTPulseGetSensorsStatusReturnsInfo>>;
+
+export type ADTPulseGetSensorsStatusSessions = Sessions<true, true>;
+
+/**
+ * ADT Pulse - Handle login failure.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseHandleLoginFailureRequestPath = string | null;
+
+export type ADTPulseHandleLoginFailureSession = AxiosResponse;
+
+export type ADTPulseHandleLoginFailureReturns = void;
 
 /**
  * ADT Pulse - Internal.
  *
  * @since 1.0.0
  */
-export type ADTPulseInternal = InternalConfig;
+export type ADTPulseInternalBaseUrl = `https://${string}`;
+
+export type ADTPulseInternalDebug = boolean;
+
+export type ADTPulseInternalLogger = Logger | null;
+
+export type ADTPulseInternalTestModeEnabled = boolean;
+
+export type ADTPulseInternalTestModeIsDisarmChecked = boolean;
+
+export type ADTPulseInternalTestMode = {
+  enabled: ADTPulseInternalTestModeEnabled;
+  isDisarmChecked: ADTPulseInternalTestModeIsDisarmChecked;
+};
+
+export type ADTPulseInternal = {
+  baseUrl: ADTPulseInternalBaseUrl;
+  debug: ADTPulseInternalDebug;
+  logger: ADTPulseInternalLogger;
+  testMode: ADTPulseInternalTestMode;
+};
+
+/**
+ * ADT Pulse - Is authenticated.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseIsAuthenticatedReturns = boolean;
 
 /**
  * ADT Pulse - Is portal accessible.
@@ -311,20 +291,6 @@ export type ADTPulseLogoutReturnsInfo = {
 export type ADTPulseLogoutReturns = Promise<ApiResponse<'LOGOUT', ADTPulseLogoutReturnsInfo>>;
 
 export type ADTPulseLogoutSessions = Sessions<true, false>;
-
-/**
- * ADT Pulse - Options.
- *
- * @since 1.0.0
- */
-export type ADTPulseOptionsDebug = ConfigDebug;
-
-export type ADTPulseOptionsSensors = ConfigSensors;
-
-export type ADTPulseOptions = {
-  debug: ADTPulseOptionsDebug;
-  sensors: ADTPulseOptionsSensors;
-};
 
 /**
  * ADT Pulse - Perform keep alive.
@@ -415,6 +381,13 @@ export type ADTPulsePlatformPlugin = DynamicPlatformPlugin;
 export type ADTPulsePlatformAccessories = PlatformAccessory[];
 
 /**
+ * ADT Pulse Platform - Add accessory.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulsePlatformAddAccessoryReturns = void;
+
+/**
  * ADT Pulse Platform - Api.
  *
  * @since 1.0.0
@@ -436,6 +409,42 @@ export type ADTPulsePlatformCharacteristic = typeof Characteristic;
 export type ADTPulsePlatformConfig = PlatformConfig;
 
 /**
+ * ADT Pulse Platform - Configure accessory.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulsePlatformConfigureAccessoryAccessory = PlatformAccessory;
+
+export type ADTPulsePlatformConfigureAccessoryReturns = void;
+
+/**
+ * ADT Pulse Platform - Constants.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulsePlatformConstantsTimestampsAdtKeepAlive = number;
+
+export type ADTPulsePlatformConstantsTimestampsAdtSyncCheck = number;
+
+export type ADTPulsePlatformConstantsTimestampsSuspendSyncing = number;
+
+export type ADTPulsePlatformConstantsTimestampsSynchronize = number;
+
+export type ADTPulsePlatformConstantsTimestamps = {
+  adtKeepAlive: ADTPulsePlatformConstantsTimestampsAdtKeepAlive;
+  adtSyncCheck: ADTPulsePlatformConstantsTimestampsAdtSyncCheck;
+  suspendSyncing: ADTPulsePlatformConstantsTimestampsSuspendSyncing;
+  synchronize: ADTPulsePlatformConstantsTimestampsSynchronize;
+};
+
+export type ADTPulsePlatformConstantsMaxLoginRetries = number;
+
+export type ADTPulsePlatformConstants = {
+  intervalTimestamps: ADTPulsePlatformConstantsTimestamps;
+  maxLoginRetries: ADTPulsePlatformConstantsMaxLoginRetries;
+};
+
+/**
  * ADT Pulse Platform - Constructor.
  *
  * @since 1.0.0
@@ -447,11 +456,41 @@ export type ADTPulsePlatformConstructorConfig = PlatformConfig;
 export type ADTPulsePlatformConstructorApi = API;
 
 /**
+ * ADT Pulse Platform - Fetch updated information.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulsePlatformFetchUpdatedInformationReturns = Promise<void>;
+
+/**
+ * ADT Pulse Platform - Instance.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulsePlatformInstance = ADTPulse | null;
+
+/**
  * ADT Pulse Platform - Log.
  *
  * @since 1.0.0
  */
 export type ADTPulsePlatformLog = Logger;
+
+/**
+ * ADT Pulse Platform - Print system information.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulsePlatformPrintSystemInformationReturns = void;
+
+/**
+ * ADT Pulse Platform - Remove accessory.
+ *
+ * @since 1.0.0
+ */
+// export type ADTPulsePlatformRemoveAccessoryAccessory = PlatformAccessory; todo
+
+export type ADTPulsePlatformRemoveAccessoryReturns = void;
 
 /**
  * ADT Pulse Platform - Service.
@@ -465,48 +504,166 @@ export type ADTPulsePlatformService = typeof Service;
  *
  * @since 1.0.0
  */
+export type ADTPulsePlatformStateActivityIsAdtKeepingAlive = boolean;
+
+export type ADTPulsePlatformStateActivityIsAdtSyncChecking = boolean;
+
+export type ADTPulsePlatformStateActivityIsLoggingIn = boolean;
+
 export type ADTPulsePlatformStateActivityIsSyncing = boolean;
 
 export type ADTPulsePlatformStateActivity = {
+  isAdtKeepingAlive: ADTPulsePlatformStateActivityIsAdtKeepingAlive;
+  isAdtSyncChecking: ADTPulsePlatformStateActivityIsAdtSyncChecking;
+  isLoggingIn: ADTPulsePlatformStateActivityIsLoggingIn,
   isSyncing: ADTPulsePlatformStateActivityIsSyncing;
 };
 
-export type ADTPulsePlatformStateDataPanel = unknown; // todo
+export type ADTPulsePlatformStateDataGatewayInfo = GatewayInformation | null;
 
-export type ADTPulsePlatformStateDataSensors = unknown; // todo
+export type ADTPulsePlatformStateDataPanelInfo = PanelInformation | null;
 
-export type ADTPulsePlatformStateDataSyncCode = unknown; // todo
+export type ADTPulsePlatformStateDataPanelStatus = OrbTextSummary | null;
+
+export type ADTPulsePlatformStateDataSensorsInfo = SensorsInformation;
+
+export type ADTPulsePlatformStateDataSensorsStatus = SensorsStatus;
+
+export type ADTPulsePlatformStateDataSyncCode = SyncCode;
 
 export type ADTPulsePlatformStateData = {
-  panel: ADTPulsePlatformStateDataPanel;
-  sensors: ADTPulsePlatformStateDataSensors;
+  gatewayInfo: ADTPulsePlatformStateDataGatewayInfo;
+  panelInfo: ADTPulsePlatformStateDataPanelInfo;
+  panelStatus: ADTPulsePlatformStateDataPanelStatus;
+  sensorsInfo: ADTPulsePlatformStateDataSensorsInfo;
+  sensorsStatus: ADTPulsePlatformStateDataSensorsStatus;
   syncCode: ADTPulsePlatformStateDataSyncCode;
 };
 
 export type ADTPulsePlatformStateEventCountersFailedLogins = number;
 
-export type ADTPulsePlatformStateEventCountersSyncStalled = number;
-
 export type ADTPulsePlatformStateEventCounters = {
   failedLogins: ADTPulsePlatformStateEventCountersFailedLogins;
-  syncStalled: ADTPulsePlatformStateEventCountersSyncStalled;
 };
 
-export type ADTPulsePlatformStateTimersKeepAlive = number;
+export type ADTPulsePlatformStateIntervalsSynchronize = NodeJS.Timeout | undefined;
 
-export type ADTPulsePlatformStateTimersSyncCheck = number;
-
-export type ADTPulsePlatformStateTimers = {
-  keepAlive: ADTPulsePlatformStateTimersKeepAlive;
-  syncCheck: ADTPulsePlatformStateTimersSyncCheck;
+export type ADTPulsePlatformStateIntervals = {
+  synchronize: ADTPulsePlatformStateIntervalsSynchronize;
 };
+
+export type ADTPulsePlatformStateLastRunOnAdtKeepAlive = number;
+
+export type ADTPulsePlatformStateLastRunOnAdtSyncCheck = number;
+
+export type ADTPulsePlatformStateLastRunOn = {
+  adtKeepAlive: ADTPulsePlatformStateLastRunOnAdtKeepAlive;
+  adtSyncCheck: ADTPulsePlatformStateLastRunOnAdtSyncCheck;
+};
+
+export type ADTPulsePlatformStateReportedHash = string;
+
+export type ADTPulsePlatformStateReportedHashes = ADTPulsePlatformStateReportedHash[];
 
 export type ADTPulsePlatformState = {
   activity: ADTPulsePlatformStateActivity;
   data: ADTPulsePlatformStateData;
   eventCounters: ADTPulsePlatformStateEventCounters;
-  timers: ADTPulsePlatformStateTimers;
+  intervals: ADTPulsePlatformStateIntervals;
+  lastRunOn: ADTPulsePlatformStateLastRunOn;
+  reportedHashes: ADTPulsePlatformStateReportedHashes;
 };
+
+/**
+ * ADT Pulse Platform - Synchronize.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulsePlatformSynchronizeReturns = void;
+
+/**
+ * ADT Pulse Platform - Synchronize keep alive.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulsePlatformSynchronizeKeepAliveReturns = void;
+
+/**
+ * ADT Pulse Platform - Synchronize sync check.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulsePlatformSynchronizeSyncCheckReturns = void;
+
+/**
+ * ADT Pulse Repl - Api.
+ *
+ * @private
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseReplApi = ADTPulse | undefined;
+
+/**
+ * ADT Pulse Repl - Color log.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseReplColorLogType = 'info' | 'error';
+
+export type ADTPulseReplColorLogMessage = string;
+
+export type ADTPulseReplColorLogReturns = void;
+
+/**
+ * ADT Pulse Repl - Display help menu.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseDisplayHelpMenuReturns = void;
+
+/**
+ * ADT Pulse Repl - Display help header.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseDisplayHelpHeaderReturns = void;
+
+/**
+ * ADT Pulse Repl - Display startup notice.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseDisplayStartupNoticeReturns = void;
+
+/**
+ * ADT Pulse Repl - Repl server.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseReplReplServer = repl.REPLServer | undefined;
+
+/**
+ * ADT Pulse Repl - Set instance.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseReplSetInstanceSubdomain = unknown;
+
+export type ADTPulseReplSetInstanceUsername = unknown;
+
+export type ADTPulseReplSetInstancePassword = unknown;
+
+export type ADTPulseReplSetInstanceFingerprint = unknown;
+
+export type ADTPulseReplSetInstanceReturns = void;
+
+/**
+ * ADT Pulse Repl - Start repl.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseReplStartReplReturns = Promise<void>;
 
 /**
  * ADT Pulse Test - Ask question.
@@ -585,6 +742,8 @@ export type ClearWhitespaceReturns = string;
  *
  * @since 1.0.0
  */
+export type DebugLogLogger = Logger | null;
+
 export type DebugLogCaller = string;
 
 export type DebugLogType = 'error' | 'warn' | 'success' | 'info';
@@ -600,6 +759,8 @@ export type DebugLogReturns = void;
  */
 export type DetectedNewPanelStatusSummary = OrbTextSummary;
 
+export type DetectedNewPanelStatusLogger = Logger;
+
 export type DetectedNewPanelStatusReturns = Promise<boolean>;
 
 /**
@@ -609,16 +770,49 @@ export type DetectedNewPanelStatusReturns = Promise<boolean>;
  */
 export type DetectedNewPortalVersionVersion = string;
 
+export type DetectedNewPortalVersionLogger = Logger;
+
 export type DetectedNewPortalVersionReturns = Promise<boolean>;
+
+/**
+ * Detected new sensor information.
+ *
+ * @since 1.0.0
+ */
+export type DetectedNewSensorInformationSensors = SensorsInformation;
+
+export type DetectedNewSensorInformationLogger = Logger;
+
+export type DetectedNewSensorInformationReturns = Promise<boolean>;
 
 /**
  * Detected new sensor status.
  *
  * @since 1.0.0
  */
-export type DetectedNewSensorStatusSensors = Sensors;
+export type DetectedNewSensorStatusSensors = SensorsStatus;
+
+export type DetectedNewSensorStatusLogger = Logger;
 
 export type DetectedNewSensorStatusReturns = Promise<boolean>;
+
+/**
+ * Fetch error message.
+ *
+ * @since 1.0.0
+ */
+export type FetchErrorMessageResponse = AxiosResponse;
+
+export type FetchErrorMessageReturns = string | null;
+
+/**
+ * Fetch missing sat code.
+ *
+ * @since 1.0.0
+ */
+export type FetchMissingSatCodeResponse = AxiosResponse;
+
+export type FetchMissingSatCodeReturns = string | null;
 
 /**
  * Fetch table cells.
@@ -662,6 +856,28 @@ export type GenerateDynatracePCHeaderValueMode = 'keep-alive' | 'force-arm';
 export type GenerateDynatracePCHeaderValueReturns = string;
 
 /**
+ * Generate md5 hash.
+ *
+ * @since 1.0.0
+ */
+export type GenerateMd5HashData = unknown;
+
+export type GenerateMd5HashReturns = string;
+
+/**
+ * Get plural form.
+ *
+ * @since 1.0.0
+ */
+export type GetPluralFormCount = number;
+
+export type GetPluralFormSingular = string;
+
+export type GetPluralFormPlural = string;
+
+export type GetPluralFormReturns = string;
+
+/**
  * Initialize.
  *
  * @since 1.0.0
@@ -669,6 +885,13 @@ export type GenerateDynatracePCHeaderValueReturns = string;
 export type InitializeApi = API;
 
 export type InitializeReturns = void;
+
+/**
+ * Is forward slash os.
+ *
+ * @since 1.0.0
+ */
+export type IsForwardSlashOSReturns = boolean;
 
 /**
  * Parse arm disarm message.
@@ -699,9 +922,9 @@ export type ParseDoSubmitHandlersUrlParamsSat = UUID;
  */
 export type ParseOrbSensorsElements = NodeListOf<Element>;
 
-export type ParseOrbSensorsReturns = Sensors;
+export type ParseOrbSensorsReturns = SensorsStatus;
 
-export type ParseOrbSensorsSensors = Sensors;
+export type ParseOrbSensorsSensors = SensorsStatus;
 
 /**
  * Parse orb text summary.
@@ -726,6 +949,21 @@ export type ParseOrbSecurityButtonsButtons = OrbSecurityButtons;
 export type ParseOrbSecurityButtonsUrlParamsSat = UUID;
 
 /**
+ * Parse sensors table.
+ *
+ * @param {ParseOrbSensorsTableElements} elements - Elements.
+ *
+ * @returns {ParseOrbSensorsTableReturns}
+ *
+ * @since 1.0.0
+ */
+export type ParseOrbSensorsTableElements = NodeListOf<Element>;
+
+export type ParseOrbSensorsTableReturns = SensorsInformation;
+
+export type ParseOrbSensorsTableSensors = SensorsInformation;
+
+/**
  * Sleep.
  *
  * @since 1.0.0
@@ -735,10 +973,12 @@ export type SleepMilliseconds = number;
 export type SleepReturns = Promise<void>;
 
 /**
- * Stack trace log.
+ * Stack tracer.
  *
  * @since 1.0.0
  */
-export type StackTraceLogError = ErrorObject;
+export type StackTracerType = 'api-response' | 'serialize-error' | 'zod-error';
 
-export type StackTraceLogReturns = void;
+export type StackTracerError<Type extends StackTracerType> = Type extends 'api-response' ? ApiResponseFail<any> : Type extends 'serialize-error' ? ErrorObject : Type extends 'zod-error' ? ZodIssue[] : never;
+
+export type StackTracerReturns = void;
