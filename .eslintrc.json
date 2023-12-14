@@ -36,6 +36,14 @@
     "max-len": [
       "off"
     ],
+    "new-cap": [
+      "error",
+      {
+        "newIsCapExceptions": [
+          "platformAccessory"
+        ]
+      }
+    ],
     "no-await-in-loop": [
       "off"
     ],

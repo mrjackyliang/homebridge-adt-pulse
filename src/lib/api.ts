@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { wrapper as cookieJarWrapper } from 'axios-cookiejar-support';
+import { wrapper } from 'axios-cookiejar-support';
 import { JSDOM } from 'jsdom';
 import _ from 'lodash';
 import { serializeError } from 'serialize-error';
@@ -20,7 +20,7 @@ import {
   requestPathSystemDeviceId1,
   requestPathSystemGateway,
   requestPathSystemSystem,
-  textSecurityPanelEmergencyKeys,
+  textPanelEmergencyKeys,
 } from '@/lib/regex.js';
 import {
   debugLog,
@@ -29,6 +29,7 @@ import {
   fetchTableCells,
   findNullKeys,
   generateDynatracePCHeaderValue,
+  isPortalSyncCode,
   parseArmDisarmMessage,
   parseDoSubmitHandlers,
   parseOrbSecurityButtons,
@@ -56,8 +57,10 @@ import type {
   ADTPulseForceArmHandlerSessions,
   ADTPulseForceArmHandlerTracker,
   ADTPulseGetGatewayInformationReturns,
+  ADTPulseGetGatewayInformationReturnsStatus,
   ADTPulseGetGatewayInformationSessions,
   ADTPulseGetPanelInformationReturns,
+  ADTPulseGetPanelInformationReturnsStatus,
   ADTPulseGetPanelInformationSessions,
   ADTPulseGetPanelStatusReturns,
   ADTPulseGetPanelStatusSessions,
@@ -74,6 +77,7 @@ import type {
   ADTPulseInternal,
   ADTPulseIsAuthenticatedReturns,
   ADTPulseIsPortalAccessibleReturns,
+  ADTPulseLoginPortalVersion,
   ADTPulseLoginReturns,
   ADTPulseLoginSessions,
   ADTPulseLogoutReturns,
@@ -154,7 +158,7 @@ export class ADTPulse {
     // Set session information to defaults.
     this.#session = {
       backupSatCode: null,
-      httpClient: cookieJarWrapper(axios.create({
+      httpClient: wrapper(axios.create({
         jar: new CookieJar(),
       })),
       isAuthenticated: false,
@@ -180,9 +184,7 @@ export class ADTPulse {
 
     try {
       const internet = await this.isPortalAccessible();
-      const sessions: ADTPulseLoginSessions = {
-        axios: [],
-      };
+      const sessions: ADTPulseLoginSessions = {};
 
       // Check if portal is accessible.
       if (!internet.success) {
@@ -226,34 +228,49 @@ export class ADTPulse {
         };
       }
 
-      // sessions.axios[0]: Load the homepage.
-      sessions.axios[0] = await this.#session.httpClient.get(
+      // sessions.axiosIndex: Load the homepage.
+      sessions.axiosIndex = await this.#session.httpClient.get<unknown>(
         `${this.#internal.baseUrl}/`,
         this.getRequestConfig(),
       );
 
-      const axios0RequestPath = sessions.axios[0].request.path;
-      const axios0RequestPathValid = requestPathAccessSignIn.test(axios0RequestPath);
-
-      if (this.#internal.debug) {
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'info', `Request path ➜ ${axios0RequestPath}`);
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
-      }
-
-      // If the final URL of sessions.axios[0] is not the sign-in page.
-      if (!axios0RequestPathValid) {
+      // If the "ClientRequest" object does not exist in the Axios response.
+      if (typeof sessions.axiosIndex?.request === 'undefined') {
         if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'error', `"${axios0RequestPath} is not the sign-in page`);
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'error', 'The HTTP client responded without the "request" object');
         }
-
-        // Check if "this instance" was not signed in during this time.
-        this.handleLoginFailure(axios0RequestPath, sessions.axios[0]);
 
         return {
           action: 'LOGIN',
           success: false,
           info: {
-            message: `"${axios0RequestPath} is not the sign-in page`,
+            message: 'The HTTP client responded without the "request" object',
+          },
+        };
+      }
+
+      const axiosIndexRequestPath = sessions.axiosIndex.request.path;
+      const axiosIndexRequestPathValid = requestPathAccessSignIn.test(axiosIndexRequestPath);
+
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'info', `Request path ➜ ${axiosIndexRequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'info', `Request path valid ➜ ${axiosIndexRequestPathValid}`);
+      }
+
+      // If the final URL of sessions.axiosIndex is not the sign-in page.
+      if (!axiosIndexRequestPathValid) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'error', `"${axiosIndexRequestPath} is not the sign-in page`);
+        }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axiosIndexRequestPath, sessions.axiosIndex);
+
+        return {
+          action: 'LOGIN',
+          success: false,
+          info: {
+            message: `"${axiosIndexRequestPath} is not the sign-in page`,
           },
         };
       }
@@ -267,10 +284,10 @@ export class ADTPulse {
       loginForm.append('fingerprint', this.#credentials.fingerprint);
 
       // Get and set the portal version based on the request path.
-      this.#session.portalVersion = axios0RequestPath.replace(requestPathAccessSignIn, '$2');
+      this.#session.portalVersion = axiosIndexRequestPath.replace(requestPathAccessSignIn, '$2') as ADTPulseLoginPortalVersion;
 
-      // sessions.axios[1]: Emulate a sign-in request.
-      sessions.axios[1] = await this.#session.httpClient.post(
+      // sessions.axiosSignin: Emulate a sign-in request.
+      sessions.axiosSignin = await this.#session.httpClient.post<unknown>(
         `${this.#internal.baseUrl}/myhome/${this.#session.portalVersion}/access/signin.jsp?e=ns&partner=adt`,
         loginForm,
         this.getRequestConfig({
@@ -284,34 +301,49 @@ export class ADTPulse {
         }),
       );
 
-      const axios1RequestPath = sessions.axios[1].request.path;
-      const axios1RequestPathValid = requestPathSummarySummary.test(axios1RequestPath);
-
-      if (this.#internal.debug) {
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'info', `Request path ➜ ${axios1RequestPath}`);
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'info', `Request path valid ➜ ${axios1RequestPathValid}`);
-      }
-
-      // If the final URL of sessions.axios[1] is not the summary page.
-      if (!axios1RequestPathValid) {
+      // If the "ClientRequest" object does not exist in the Axios response.
+      if (typeof sessions.axiosSignin?.request === 'undefined') {
         if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'error', `"${axios1RequestPath}" is not the summary page`);
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'error', 'The HTTP client responded without the "request" object');
         }
-
-        // Check if "this instance" was not signed in during this time.
-        this.handleLoginFailure(axios1RequestPath, sessions.axios[1]);
 
         return {
           action: 'LOGIN',
           success: false,
           info: {
-            message: `"${axios1RequestPath}" is not the summary page`,
+            message: 'The HTTP client responded without the "request" object',
+          },
+        };
+      }
+
+      const axiosSigninRequestPath = sessions.axiosSignin.request.path;
+      const axiosSigninRequestPathValid = requestPathSummarySummary.test(axiosSigninRequestPath);
+
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'info', `Request path ➜ ${axiosSigninRequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'info', `Request path valid ➜ ${axiosSigninRequestPathValid}`);
+      }
+
+      // If the final URL of sessions.axiosSignin is not the summary page.
+      if (!axiosSigninRequestPathValid) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'error', `"${axiosSigninRequestPath}" is not the summary page`);
+        }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axiosSigninRequestPath, sessions.axiosSignin);
+
+        return {
+          action: 'LOGIN',
+          success: false,
+          info: {
+            message: `"${axiosSigninRequestPath}" is not the summary page`,
           },
         };
       }
 
       // Make sure we are able to use the "String.prototype.match()" method on the response data.
-      if (typeof sessions.axios[1].data !== 'string') {
+      if (typeof sessions.axiosSignin.data !== 'string') {
         if (this.#internal.debug) {
           debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'error', 'The response body of the summary page is not of type "string"');
         }
@@ -337,7 +369,7 @@ export class ADTPulse {
        *
        * @since 1.0.0
        */
-      const matchNetworkId = sessions.axios[1].data.match(paramNetworkId);
+      const matchNetworkId = sessions.axiosSignin.data.match(paramNetworkId);
       this.#session.networkId = (matchNetworkId !== null && matchNetworkId.length >= 2) ? matchNetworkId[1] : null;
 
       /**
@@ -356,12 +388,12 @@ export class ADTPulse {
        *
        * @since 1.0.0
        */
-      const matchSatCode = sessions.axios[1].data.match(paramSat);
+      const matchSatCode = sessions.axiosSignin.data.match(paramSat);
       this.#session.backupSatCode = (matchSatCode !== null && matchSatCode.length >= 2) ? matchSatCode[1] : null;
 
-      // WORKAROUND FOR ARM NIGHT BUTTON BUG: Send warning to logs mentioning that sat code failed to retrieve.
+      // If backup sat code was unavailable at this time.
       if (this.#session.backupSatCode === null && this.#internal.debug) {
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'warn', 'Unable to retrieve backup sat code, will try to recover');
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'warn', 'Unable to backup sat code, will try again when system becomes available');
       }
 
       // Mark the session for "this instance" as authenticated.
@@ -430,9 +462,7 @@ export class ADTPulse {
 
     try {
       const internet = await this.isPortalAccessible();
-      const sessions: ADTPulseLogoutSessions = {
-        axios: [],
-      };
+      const sessions: ADTPulseLogoutSessions = {};
 
       // Check if portal is accessible.
       if (!internet.success) {
@@ -476,8 +506,8 @@ export class ADTPulse {
         };
       }
 
-      // sessions.axios[0]: Emulate a sign out request.
-      sessions.axios[0] = await this.#session.httpClient.get(
+      // sessions.axiosSignout: Emulate a sign-out request.
+      sessions.axiosSignout = await this.#session.httpClient.get<unknown>(
         `${this.#internal.baseUrl}/myhome/${this.#session.portalVersion}/access/signout.jsp?networkid=${this.#session.networkId}&partner=adt`,
         this.getRequestConfig({
           headers: {
@@ -487,28 +517,43 @@ export class ADTPulse {
         }),
       );
 
-      const axios0RequestPath = sessions.axios[0].request.path;
-      const axios0RequestPathValid = requestPathAccessSignInNetworkIdXxPartnerAdt.test(axios0RequestPath);
-
-      if (this.#internal.debug) {
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.logout()', 'info', `Request path ➜ ${axios0RequestPath}`);
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.logout()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
-      }
-
-      // If the final URL of sessions.axios[0] is not the sign-in page with "networkid" and "partner=adt" parameters.
-      if (!axios0RequestPathValid) {
+      // If the "ClientRequest" object does not exist in the Axios response.
+      if (typeof sessions.axiosSignout?.request === 'undefined') {
         if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.logout()', 'error', `"${axios0RequestPath}" is not the sign-in page with "networkid" and "partner=adt" parameters`);
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.logout()', 'error', 'The HTTP client responded without the "request" object');
         }
-
-        // Check if "this instance" was not signed in during this time.
-        this.handleLoginFailure(axios0RequestPath, sessions.axios[0]);
 
         return {
           action: 'LOGOUT',
           success: false,
           info: {
-            message: `"${axios0RequestPath}" is not the sign-in page with "networkid" and "partner=adt" parameters`,
+            message: 'The HTTP client responded without the "request" object',
+          },
+        };
+      }
+
+      const axiosSignoutRequestPath = sessions.axiosSignout.request.path;
+      const axiosSignoutRequestPathValid = requestPathAccessSignInNetworkIdXxPartnerAdt.test(axiosSignoutRequestPath);
+
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.logout()', 'info', `Request path ➜ ${axiosSignoutRequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.logout()', 'info', `Request path valid ➜ ${axiosSignoutRequestPathValid}`);
+      }
+
+      // If the final URL of sessions.axiosSignout is not the sign-in page with "networkid" and "partner=adt" parameters.
+      if (!axiosSignoutRequestPathValid) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.logout()', 'error', `"${axiosSignoutRequestPath}" is not the sign-in page with "networkid" and "partner=adt" parameters`);
+        }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axiosSignoutRequestPath, sessions.axiosSignout);
+
+        return {
+          action: 'LOGOUT',
+          success: false,
+          info: {
+            message: `"${axiosSignoutRequestPath}" is not the sign-in page with "networkid" and "partner=adt" parameters`,
           },
         };
       }
@@ -579,10 +624,7 @@ export class ADTPulse {
 
     try {
       const internet = await this.isPortalAccessible();
-      const sessions: ADTPulseGetGatewayInformationSessions = {
-        axios: [],
-        jsdom: [],
-      };
+      const sessions: ADTPulseGetGatewayInformationSessions = {};
 
       // Check if portal is accessible.
       if (!internet.success) {
@@ -593,8 +635,8 @@ export class ADTPulse {
         };
       }
 
-      // sessions.axios[0]: Load the system gateway page.
-      sessions.axios[0] = await this.#session.httpClient.get(
+      // sessions.axiosSystemGateway: Load the system gateway page.
+      sessions.axiosSystemGateway = await this.#session.httpClient.get<unknown>(
         `${this.#internal.baseUrl}/myhome/${this.#session.portalVersion}/system/gateway.jsp`,
         this.getRequestConfig({
           headers: {
@@ -605,34 +647,49 @@ export class ADTPulse {
         }),
       );
 
-      const axios0RequestPath = sessions.axios[0].request.path;
-      const axios0RequestPathValid = requestPathSystemGateway.test(axios0RequestPath);
-
-      if (this.#internal.debug) {
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getGatewayInformation()', 'info', `Request path ➜ ${axios0RequestPath}`);
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getGatewayInformation()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
-      }
-
-      // If the final URL of sessions.axios[0] is not the system gateway page.
-      if (!axios0RequestPathValid) {
+      // If the "ClientRequest" object does not exist in the Axios response.
+      if (typeof sessions.axiosSystemGateway?.request === 'undefined') {
         if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getGatewayInformation()', 'error', `"${axios0RequestPath}" is not the system gateway page`);
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getGatewayInformation()', 'error', 'The HTTP client responded without the "request" object');
         }
-
-        // Check if "this instance" was not signed in during this time.
-        this.handleLoginFailure(axios0RequestPath, sessions.axios[0]);
 
         return {
           action: 'GET_GATEWAY_INFORMATION',
           success: false,
           info: {
-            message: `"${axios0RequestPath}" is not the system gateway page`,
+            message: 'The HTTP client responded without the "request" object',
+          },
+        };
+      }
+
+      const axiosSystemGatewayRequestPath = sessions.axiosSystemGateway.request.path;
+      const axiosSystemGatewayRequestPathValid = requestPathSystemGateway.test(axiosSystemGatewayRequestPath);
+
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getGatewayInformation()', 'info', `Request path ➜ ${axiosSystemGatewayRequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getGatewayInformation()', 'info', `Request path valid ➜ ${axiosSystemGatewayRequestPathValid}`);
+      }
+
+      // If the final URL of sessions.axiosSystemGateway is not the system gateway page.
+      if (!axiosSystemGatewayRequestPathValid) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getGatewayInformation()', 'error', `"${axiosSystemGatewayRequestPath}" is not the system gateway page`);
+        }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axiosSystemGatewayRequestPath, sessions.axiosSystemGateway);
+
+        return {
+          action: 'GET_GATEWAY_INFORMATION',
+          success: false,
+          info: {
+            message: `"${axiosSystemGatewayRequestPath}" is not the system gateway page`,
           },
         };
       }
 
       // Make sure we are able to use JSDOM on the response data.
-      if (typeof sessions.axios[0].data !== 'string') {
+      if (typeof sessions.axiosSystemGateway.data !== 'string') {
         if (this.#internal.debug) {
           debugLog(this.#internal.logger, 'api.ts / ADTPulse.getGatewayInformation()', 'error', 'The response body of the system gateway page is not of type "string"');
         }
@@ -646,20 +703,20 @@ export class ADTPulse {
         };
       }
 
-      // sessions.jsdom[0]: Parse the system gateway page.
-      sessions.jsdom[0] = new JSDOM(
-        sessions.axios[0].data,
+      // sessions.jsdomSystemGateway: Parse the system gateway page.
+      sessions.jsdomSystemGateway = new JSDOM(
+        sessions.axiosSystemGateway.data,
         {
-          url: sessions.axios[0].config.url,
-          referrer: sessions.axios[0].config.headers.Referer,
+          url: sessions.axiosSystemGateway.config.url,
+          referrer: sessions.axiosSystemGateway.config.headers.Referer,
           contentType: 'text/html',
           pretendToBeVisual: true,
         },
       );
 
-      const jsdom0TableCells = sessions.jsdom[0].window.document.querySelectorAll('td');
+      const jsdomSystemGatewayTableCells = sessions.jsdomSystemGateway.window.document.querySelectorAll('td');
       const fetchedTableCells = fetchTableCells(
-        jsdom0TableCells,
+        jsdomSystemGatewayTableCells,
         [
           'Broadband LAN IP Address:',
           'Broadband LAN MAC:',
@@ -699,7 +756,7 @@ export class ADTPulse {
             },
           },
           serialNumber: _.get(fetchedTableCells, ['Serial Number:', 0], null),
-          status: _.get(fetchedTableCells, ['Status:', 0], null),
+          status: _.get(fetchedTableCells, ['Status:', 0], null) as ADTPulseGetGatewayInformationReturnsStatus,
           update: {
             last: _.get(fetchedTableCells, ['Last Update:', 0], null),
             next: _.get(fetchedTableCells, ['Next Update:', 0], null),
@@ -744,10 +801,7 @@ export class ADTPulse {
 
     try {
       const internet = await this.isPortalAccessible();
-      const sessions: ADTPulseGetPanelInformationSessions = {
-        axios: [],
-        jsdom: [],
-      };
+      const sessions: ADTPulseGetPanelInformationSessions = {};
 
       // Check if portal is accessible.
       if (!internet.success) {
@@ -758,8 +812,8 @@ export class ADTPulse {
         };
       }
 
-      // sessions.axios[0]: Load the device id 1 page.
-      sessions.axios[0] = await this.#session.httpClient.get(
+      // sessions.axiosSystemDeviceId1: Load the system device id 1 page.
+      sessions.axiosSystemDeviceId1 = await this.#session.httpClient.get<unknown>(
         `${this.#internal.baseUrl}/myhome/${this.#session.portalVersion}/system/device.jsp?id=1`,
         this.getRequestConfig({
           headers: {
@@ -769,61 +823,76 @@ export class ADTPulse {
         }),
       );
 
-      const axios0RequestPath = sessions.axios[0].request.path;
-      const axios0RequestPathValid = requestPathSystemDeviceId1.test(axios0RequestPath);
-
-      if (this.#internal.debug) {
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelInformation()', 'info', `Request path ➜ ${axios0RequestPath}`);
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelInformation()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
-      }
-
-      // If the final URL of sessions.axios[0] is not the device id 1 page.
-      if (!axios0RequestPathValid) {
+      // If the "ClientRequest" object does not exist in the Axios response.
+      if (typeof sessions.axiosSystemDeviceId1?.request === 'undefined') {
         if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelInformation()', 'error', `"${axios0RequestPath}" is not the device id 1 page`);
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelInformation()', 'error', 'The HTTP client responded without the "request" object');
         }
-
-        // Check if "this instance" was not signed in during this time.
-        this.handleLoginFailure(axios0RequestPath, sessions.axios[0]);
 
         return {
           action: 'GET_PANEL_INFORMATION',
           success: false,
           info: {
-            message: `"${axios0RequestPath}" is not the device id 1 page`,
+            message: 'The HTTP client responded without the "request" object',
+          },
+        };
+      }
+
+      const axiosSystemDeviceId1RequestPath = sessions.axiosSystemDeviceId1.request.path;
+      const axiosSystemDeviceId1RequestPathValid = requestPathSystemDeviceId1.test(axiosSystemDeviceId1RequestPath);
+
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelInformation()', 'info', `Request path ➜ ${axiosSystemDeviceId1RequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelInformation()', 'info', `Request path valid ➜ ${axiosSystemDeviceId1RequestPathValid}`);
+      }
+
+      // If the final URL of sessions.axiosSystemDeviceId1 is not the system device id 1 page.
+      if (!axiosSystemDeviceId1RequestPathValid) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelInformation()', 'error', `"${axiosSystemDeviceId1RequestPath}" is not the system device id 1 page`);
+        }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axiosSystemDeviceId1RequestPath, sessions.axiosSystemDeviceId1);
+
+        return {
+          action: 'GET_PANEL_INFORMATION',
+          success: false,
+          info: {
+            message: `"${axiosSystemDeviceId1RequestPath}" is not the system device id 1 page`,
           },
         };
       }
 
       // Make sure we are able to use JSDOM on the response data.
-      if (typeof sessions.axios[0].data !== 'string') {
+      if (typeof sessions.axiosSystemDeviceId1.data !== 'string') {
         if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelInformation()', 'error', 'The response body of the device id 1 page is not of type "string"');
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelInformation()', 'error', 'The response body of the system device id 1 page is not of type "string"');
         }
 
         return {
           action: 'GET_PANEL_INFORMATION',
           success: false,
           info: {
-            message: 'The response body of the device id 1 page is not of type "string"',
+            message: 'The response body of the system device id 1 page is not of type "string"',
           },
         };
       }
 
-      // sessions.jsdom[0]: Parse the device id 1 page.
-      sessions.jsdom[0] = new JSDOM(
-        sessions.axios[0].data,
+      // sessions.jsdomSystemDeviceId1: Parse the system device id 1 page.
+      sessions.jsdomSystemDeviceId1 = new JSDOM(
+        sessions.axiosSystemDeviceId1.data,
         {
-          url: sessions.axios[0].config.url,
-          referrer: sessions.axios[0].config.headers.Referer,
+          url: sessions.axiosSystemDeviceId1.config.url,
+          referrer: sessions.axiosSystemDeviceId1.config.headers.Referer,
           contentType: 'text/html',
           pretendToBeVisual: true,
         },
       );
 
-      const jsdom0TableCells = sessions.jsdom[0].window.document.querySelectorAll('td');
+      const jsdomSystemDeviceId1TableCells = sessions.jsdomSystemDeviceId1.window.document.querySelectorAll('td');
       const fetchedTableCells = fetchTableCells(
-        jsdom0TableCells,
+        jsdomSystemDeviceId1TableCells,
         [
           'Manufacturer/Provider:',
           'Type/Model:',
@@ -834,7 +903,7 @@ export class ADTPulse {
         1,
       );
       const emergencyKeys = _.get(fetchedTableCells, ['Emergency Keys:', 0], null);
-      const newEmergencyKeys = (typeof emergencyKeys === 'string') ? emergencyKeys.match(textSecurityPanelEmergencyKeys) : null;
+      const newEmergencyKeys = (typeof emergencyKeys === 'string') ? emergencyKeys.match(textPanelEmergencyKeys) : null;
 
       if (this.#internal.debug) {
         debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelInformation()', 'success', `Successfully retrieved panel information from "${this.#internal.baseUrl}"`);
@@ -847,7 +916,7 @@ export class ADTPulse {
           emergencyKeys: newEmergencyKeys,
           manufacturerProvider: _.get(fetchedTableCells, ['Manufacturer/Provider:', 0], null),
           typeModel: _.get(fetchedTableCells, ['Type/Model:', 0], null),
-          status: _.get(fetchedTableCells, ['Status:', 0], null),
+          status: _.get(fetchedTableCells, ['Status:', 0], null) as ADTPulseGetPanelInformationReturnsStatus,
         },
       };
     } catch (error) {
@@ -884,10 +953,7 @@ export class ADTPulse {
 
     try {
       const internet = await this.isPortalAccessible();
-      const sessions: ADTPulseGetPanelStatusSessions = {
-        axios: [],
-        jsdom: [],
-      };
+      const sessions: ADTPulseGetPanelStatusSessions = {};
 
       // Check if portal is accessible.
       if (!internet.success) {
@@ -898,8 +964,8 @@ export class ADTPulse {
         };
       }
 
-      // sessions.axios[0]: Load the summary page.
-      sessions.axios[0] = await this.#session.httpClient.get(
+      // sessions.axiosSummary: Load the summary page.
+      sessions.axiosSummary = await this.#session.httpClient.get<unknown>(
         `${this.#internal.baseUrl}/myhome/${this.#session.portalVersion}/summary/summary.jsp`,
         this.getRequestConfig({
           headers: {
@@ -909,34 +975,49 @@ export class ADTPulse {
         }),
       );
 
-      const axios0RequestPath = sessions.axios[0].request.path;
-      const axios0RequestPathValid = requestPathSummarySummary.test(axios0RequestPath);
-
-      if (this.#internal.debug) {
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelStatus()', 'info', `Request path ➜ ${axios0RequestPath}`);
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelStatus()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
-      }
-
-      // If the final URL of sessions.axios[0] is not the summary page.
-      if (!axios0RequestPathValid) {
+      // If the "ClientRequest" object does not exist in the Axios response.
+      if (typeof sessions.axiosSummary?.request === 'undefined') {
         if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelStatus()', 'error', `"${axios0RequestPath}" is not the summary page`);
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelStatus()', 'error', 'The HTTP client responded without the "request" object');
         }
-
-        // Check if "this instance" was not signed in during this time.
-        this.handleLoginFailure(axios0RequestPath, sessions.axios[0]);
 
         return {
           action: 'GET_PANEL_STATUS',
           success: false,
           info: {
-            message: `"${axios0RequestPath}" is not the summary page`,
+            message: 'The HTTP client responded without the "request" object',
+          },
+        };
+      }
+
+      const axiosSummaryRequestPath = sessions.axiosSummary.request.path;
+      const axiosSummaryRequestPathValid = requestPathSummarySummary.test(axiosSummaryRequestPath);
+
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelStatus()', 'info', `Request path ➜ ${axiosSummaryRequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelStatus()', 'info', `Request path valid ➜ ${axiosSummaryRequestPathValid}`);
+      }
+
+      // If the final URL of sessions.axiosSummary is not the summary page.
+      if (!axiosSummaryRequestPathValid) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelStatus()', 'error', `"${axiosSummaryRequestPath}" is not the summary page`);
+        }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axiosSummaryRequestPath, sessions.axiosSummary);
+
+        return {
+          action: 'GET_PANEL_STATUS',
+          success: false,
+          info: {
+            message: `"${axiosSummaryRequestPath}" is not the summary page`,
           },
         };
       }
 
       // Make sure we are able to use JSDOM on the response data.
-      if (typeof sessions.axios[0].data !== 'string') {
+      if (typeof sessions.axiosSummary.data !== 'string') {
         if (this.#internal.debug) {
           debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelStatus()', 'error', 'The response body of the summary page is not of type "string"');
         }
@@ -952,7 +1033,7 @@ export class ADTPulse {
 
       // Recover sat code if it was missing during login.
       if (this.#session.backupSatCode === null) {
-        const missingSatCode = fetchMissingSatCode(sessions.axios[0]);
+        const missingSatCode = fetchMissingSatCode(sessions.axiosSummary);
 
         if (missingSatCode !== null) {
           if (this.#internal.debug) {
@@ -963,12 +1044,12 @@ export class ADTPulse {
         }
       }
 
-      // sessions.jsdom[0]: Parse the summary page.
-      sessions.jsdom[0] = new JSDOM(
-        sessions.axios[0].data,
+      // sessions.jsdomSummary: Parse the summary page.
+      sessions.jsdomSummary = new JSDOM(
+        sessions.axiosSummary.data,
         {
-          url: sessions.axios[0].config.url,
-          referrer: sessions.axios[0].config.headers.Referer,
+          url: sessions.axiosSummary.config.url,
+          referrer: sessions.axiosSummary.config.headers.Referer,
           contentType: 'text/html',
           pretendToBeVisual: true,
         },
@@ -976,6 +1057,9 @@ export class ADTPulse {
 
       /**
        * A breakdown of the orb text summary shown in the portal.
+       *
+       * NOTE: Responses may be inaccurate or missing.
+       * LINK: https://patents.google.com/patent/US20170070361A1/en
        *
        * Original strings are displayed like this:
        * - "Disarmed. All Quiet."
@@ -991,8 +1075,8 @@ export class ADTPulse {
        *
        * @since 1.0.0
        */
-      const jsdom0OrbTextSummary = sessions.jsdom[0].window.document.querySelector('#divOrbTextSummary');
-      const parsedOrbTextSummary = parseOrbTextSummary(jsdom0OrbTextSummary);
+      const jsdomSummaryOrbTextSummary = sessions.jsdomSummary.window.document.querySelector('#divOrbTextSummary');
+      const parsedOrbTextSummary = parseOrbTextSummary(jsdomSummaryOrbTextSummary);
 
       if (this.#internal.debug) {
         debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelStatus()', 'success', `Successfully retrieved panel status from "${this.#internal.baseUrl}"`);
@@ -1002,30 +1086,31 @@ export class ADTPulse {
         action: 'GET_PANEL_STATUS',
         success: true,
         /**
-         * A breakdown of the responses when panel statuses are parsed.
+         * A breakdown of the responses when parsing the orb text summary.
          *
          * NOTE: Responses may be inaccurate or missing.
          * LINK: https://patents.google.com/patent/US20170070361A1/en
          *
-         * state: 'Disarmed'
-         *        'Armed Away'
-         *        'Armed Stay'
+         * state: 'Armed Away'
          *        'Armed Night'
+         *        'Armed Stay'
+         *        'Disarmed'
          *        'Status Unavailable'
+         *        null
          *
-         * status: 'All Quiet'
-         *         '1 Sensor Open'
+         * status: '1 Sensor Open'
          *         '[# of sensors open] Sensors Open'
-         *         'Sensor Bypassed'
-         *         'Sensors Bypassed'
-         *         'Sensor Tripped'
-         *         'Sensors Tripped'
-         *         'Motion'
-         *         'Uncleared Alarm'
+         *         'All Quiet'
+         *         'BURGLARY ALARM'
          *         'Carbon Monoxide Alarm'
          *         'FIRE ALARM'
-         *         'BURGLARY ALARM'
+         *         'Motion'
+         *         'Sensor Bypassed'
          *         'Sensor Problem'
+         *         'Sensors Bypassed'
+         *         'Sensors Tripped'
+         *         'Sensor Tripped'
+         *         'Uncleared Alarm'
          *         null
          *
          * @since 1.0.0
@@ -1083,10 +1168,7 @@ export class ADTPulse {
 
     try {
       const internet = await this.isPortalAccessible();
-      const sessions: ADTPulseSetPanelStatusSessions = {
-        axios: [],
-        jsdom: [],
-      };
+      const sessions: ADTPulseSetPanelStatusSessions = {};
 
       // Check if portal is accessible.
       if (!internet.success) {
@@ -1097,8 +1179,8 @@ export class ADTPulse {
         };
       }
 
-      // sessions.axios[0]: Load the summary page.
-      sessions.axios[0] = await this.#session.httpClient.get(
+      // sessions.axiosSummary: Load the summary page.
+      sessions.axiosSummary = await this.#session.httpClient.get<unknown>(
         `${this.#internal.baseUrl}/myhome/${this.#session.portalVersion}/summary/summary.jsp`,
         this.getRequestConfig({
           headers: {
@@ -1108,34 +1190,49 @@ export class ADTPulse {
         }),
       );
 
-      const axios0RequestPath = sessions.axios[0].request.path;
-      const axios0RequestPathValid = requestPathSummarySummary.test(axios0RequestPath);
-
-      if (this.#internal.debug) {
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'info', `Request path ➜ ${axios0RequestPath}`);
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
-      }
-
-      // If the final URL of sessions.axios[0] is not the summary page.
-      if (!axios0RequestPathValid) {
+      // If the "ClientRequest" object does not exist in the Axios response.
+      if (typeof sessions.axiosSummary?.request === 'undefined') {
         if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'error', `"${axios0RequestPath}" is not the summary page`);
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'error', 'The HTTP client responded without the "request" object');
         }
-
-        // Check if "this instance" was not signed in during this time.
-        this.handleLoginFailure(axios0RequestPath, sessions.axios[0]);
 
         return {
           action: 'SET_PANEL_STATUS',
           success: false,
           info: {
-            message: `"${axios0RequestPath}" is not the summary page`,
+            message: 'The HTTP client responded without the "request" object',
+          },
+        };
+      }
+
+      const axiosSummaryRequestPath = sessions.axiosSummary.request.path;
+      const axiosSummaryRequestPathValid = requestPathSummarySummary.test(axiosSummaryRequestPath);
+
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'info', `Request path ➜ ${axiosSummaryRequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'info', `Request path valid ➜ ${axiosSummaryRequestPathValid}`);
+      }
+
+      // If the final URL of sessions.axiosSummary is not the summary page.
+      if (!axiosSummaryRequestPathValid) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'error', `"${axiosSummaryRequestPath}" is not the summary page`);
+        }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axiosSummaryRequestPath, sessions.axiosSummary);
+
+        return {
+          action: 'SET_PANEL_STATUS',
+          success: false,
+          info: {
+            message: `"${axiosSummaryRequestPath}" is not the summary page`,
           },
         };
       }
 
       // Make sure we are able to use JSDOM on the response data.
-      if (typeof sessions.axios[0].data !== 'string') {
+      if (typeof sessions.axiosSummary.data !== 'string') {
         if (this.#internal.debug) {
           debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'error', 'The response body of the summary page is not of type "string"');
         }
@@ -1151,7 +1248,7 @@ export class ADTPulse {
 
       // Recover sat code if it was missing during login.
       if (this.#session.backupSatCode === null) {
-        const missingSatCode = fetchMissingSatCode(sessions.axios[0]);
+        const missingSatCode = fetchMissingSatCode(sessions.axiosSummary);
 
         if (missingSatCode !== null) {
           if (this.#internal.debug) {
@@ -1162,12 +1259,12 @@ export class ADTPulse {
         }
       }
 
-      // sessions.jsdom[0]: Parse the summary page.
-      sessions.jsdom[0] = new JSDOM(
-        sessions.axios[0].data,
+      // sessions.jsdomSummary: Parse the summary page.
+      sessions.jsdomSummary = new JSDOM(
+        sessions.axiosSummary.data,
         {
-          url: sessions.axios[0].config.url,
-          referrer: sessions.axios[0].config.headers.Referer,
+          url: sessions.axiosSummary.config.url,
+          referrer: sessions.axiosSummary.config.headers.Referer,
           contentType: 'text/html',
           pretendToBeVisual: true,
         },
@@ -1176,14 +1273,17 @@ export class ADTPulse {
       /**
        * A breakdown of the "setArmState" function used in the portal.
        *
+       * NOTE: Responses may be inaccurate or missing.
+       * LINK: https://patents.google.com/patent/US20170070361A1/en
+       *
        * The original function call is displayed like this:
-       * - setArmState('quickcontrol/armDisarm.jsp','Arming Stay','1','2','false','href=rest/adt/ui/client/security/setArmState&armstate=off&arm=stay&sat=21580428-e539-4075-8237-5c58b6c6fec8')
+       * - "setArmState('quickcontrol/armDisarm.jsp','Arming Stay','1','2','false','href=rest/adt/ui/client/security/setArmState&armstate=off&arm=stay&sat=21580428-e539-4075-8237-5c58b6c6fec8')"
        *
        * After processing by the "parseOrbSecurityButtons()" function (ready buttons):
        * - buttonDisabled: false
        * - buttonId: 'security_button_1'
        * - buttonIndex: 1
-       * - buttonTitle: 'Arm Stay'
+       * - buttonText: 'Arm Stay'
        * - changeAccessCode: false
        * - loadingText: 'Arming Stay'
        * - relativeUrl: 'quickcontrol/armDisarm.jsp'
@@ -1197,7 +1297,7 @@ export class ADTPulse {
        * After processing by the "parseOrbSecurityButtons()" function (pending buttons):
        * - buttonDisabled: true
        * - buttonId: 'security_button_1'
-       * - buttonTitle: 'Arming Stay'
+       * - buttonText: 'Arming Stay'
        *
        * Notes I've gathered during the process:
        * - After disarming, "armState" will be set to "disarmed". It will be set to "off" after re-login.¹
@@ -1206,20 +1306,21 @@ export class ADTPulse {
        * - The "sat" code is required for all arm/disarm actions (UUID, generated on every login).
        * - If "armState" is not "off" or "disarmed", you must disarm first before setting to other modes.
        *
+       * Footnotes:
        * ¹ States are synced across an entire site (per home). If one account arms, every user signed in during that phase becomes "dirty"
        * ² Turning off siren means system is in "Uncleared Alarm" mode, not truly "Disarmed" mode.
        *
        * @since 1.0.0
        */
-      const jsdom0OrbSecurityButtons = sessions.jsdom[0].window.document.querySelectorAll('#divOrbSecurityButtons input');
-      const parsedOrbSecurityButtons = parseOrbSecurityButtons(jsdom0OrbSecurityButtons);
+      const jsdomSummaryOrbSecurityButtons = sessions.jsdomSummary.window.document.querySelectorAll('#divOrbSecurityButtons input');
+      const parsedOrbSecurityButtons = parseOrbSecurityButtons(jsdomSummaryOrbSecurityButtons);
 
       // WORKAROUND FOR ARM NIGHT BUTTON BUG: Find the "Arming Night" button location.
       const armingNightButtonIndex = parsedOrbSecurityButtons.findIndex((parsedOrbSecurityButton) => {
         const parsedOrbSecurityButtonButtonDisabled = parsedOrbSecurityButton.buttonDisabled;
-        const parsedOrbSecurityButtonButtonTitle = parsedOrbSecurityButton.buttonTitle;
+        const parsedOrbSecurityButtonButtonText = parsedOrbSecurityButton.buttonText;
 
-        return (parsedOrbSecurityButtonButtonDisabled && parsedOrbSecurityButtonButtonTitle === 'Arming Night');
+        return (parsedOrbSecurityButtonButtonDisabled && parsedOrbSecurityButtonButtonText === 'Arming Night');
       });
 
       // WORKAROUND FOR ARM NIGHT BUTTON BUG: Replace the "Arming Night" button with a fake "Disarm" button.
@@ -1235,7 +1336,7 @@ export class ADTPulse {
           buttonDisabled: false,
           buttonId: 'security_button_0',
           buttonIndex: 0,
-          buttonTitle: 'Disarm',
+          buttonText: 'Disarm',
           changeAccessCode: false,
           loadingText: 'Disarming',
           relativeUrl: 'quickcontrol/armDisarm.jsp',
@@ -1315,7 +1416,7 @@ export class ADTPulse {
         }
 
         // Make sure there is at least 1 security button available.
-        if (armDisarmResponse.info.newReadyButtons.length < 1) {
+        if (armDisarmResponse.info.readyButtons.length < 1) {
           if (this.#internal.debug) {
             debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'error', 'Arm disarm handler failed to find new security buttons');
           }
@@ -1330,8 +1431,11 @@ export class ADTPulse {
         }
 
         // Update the ready buttons to the latest known state.
-        readyButtons = armDisarmResponse.info.newReadyButtons;
+        readyButtons = armDisarmResponse.info.readyButtons;
       }
+
+      // Track if force arming was required.
+      let forceArmRequired = false;
 
       // Set the arm state based on "armTo" if system is not being disarmed.
       if (armTo !== 'off') {
@@ -1355,6 +1459,8 @@ export class ADTPulse {
             info: armDisarmResponse.info,
           };
         }
+
+        forceArmRequired = armDisarmResponse.info.forceArmRequired;
       }
 
       if (this.#internal.debug) {
@@ -1364,7 +1470,9 @@ export class ADTPulse {
       return {
         action: 'SET_PANEL_STATUS',
         success: true,
-        info: null,
+        info: {
+          forceArmRequired,
+        },
       };
     } catch (error) {
       errorObject = serializeError(error);
@@ -1400,10 +1508,7 @@ export class ADTPulse {
 
     try {
       const internet = await this.isPortalAccessible();
-      const sessions: ADTPulseGetSensorsInformationSessions = {
-        axios: [],
-        jsdom: [],
-      };
+      const sessions: ADTPulseGetSensorsInformationSessions = {};
 
       // Check if portal is accessible.
       if (!internet.success) {
@@ -1414,8 +1519,8 @@ export class ADTPulse {
         };
       }
 
-      // sessions.axios[0]: Load the system page.
-      sessions.axios[0] = await this.#session.httpClient.get(
+      // sessions.axiosSystem: Load the system page.
+      sessions.axiosSystem = await this.#session.httpClient.get<unknown>(
         `${this.#internal.baseUrl}/myhome/${this.#session.portalVersion}/system/system.jsp`,
         this.getRequestConfig({
           headers: {
@@ -1425,34 +1530,49 @@ export class ADTPulse {
         }),
       );
 
-      const axios0RequestPath = sessions.axios[0].request.path;
-      const axios0RequestPathValid = requestPathSystemSystem.test(axios0RequestPath);
-
-      if (this.#internal.debug) {
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsInformation()', 'info', `Request path ➜ ${axios0RequestPath}`);
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsInformation()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
-      }
-
-      // If the final URL of sessions.axios[0] is not the system page.
-      if (!axios0RequestPathValid) {
+      // If the "ClientRequest" object does not exist in the Axios response.
+      if (typeof sessions.axiosSystem?.request === 'undefined') {
         if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsInformation()', 'error', `"${axios0RequestPath}" is not the system page`);
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsInformation()', 'error', 'The HTTP client responded without the "request" object');
         }
-
-        // Check if "this instance" was not signed in during this time.
-        this.handleLoginFailure(axios0RequestPath, sessions.axios[0]);
 
         return {
           action: 'GET_SENSORS_INFORMATION',
           success: false,
           info: {
-            message: `"${axios0RequestPath}" is not the system page`,
+            message: 'The HTTP client responded without the "request" object',
+          },
+        };
+      }
+
+      const axiosSystemRequestPath = sessions.axiosSystem.request.path;
+      const axiosSystemRequestPathValid = requestPathSystemSystem.test(axiosSystemRequestPath);
+
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsInformation()', 'info', `Request path ➜ ${axiosSystemRequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsInformation()', 'info', `Request path valid ➜ ${axiosSystemRequestPathValid}`);
+      }
+
+      // If the final URL of sessions.axiosSystem is not the system page.
+      if (!axiosSystemRequestPathValid) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsInformation()', 'error', `"${axiosSystemRequestPath}" is not the system page`);
+        }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axiosSystemRequestPath, sessions.axiosSystem);
+
+        return {
+          action: 'GET_SENSORS_INFORMATION',
+          success: false,
+          info: {
+            message: `"${axiosSystemRequestPath}" is not the system page`,
           },
         };
       }
 
       // Make sure we are able to use JSDOM on the response data.
-      if (typeof sessions.axios[0].data !== 'string') {
+      if (typeof sessions.axiosSystem.data !== 'string') {
         if (this.#internal.debug) {
           debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsInformation()', 'error', 'The response body of the system page is not of type "string"');
         }
@@ -1466,19 +1586,47 @@ export class ADTPulse {
         };
       }
 
-      // sessions.jsdom[0]: Parse the system page.
-      sessions.jsdom[0] = new JSDOM(
-        sessions.axios[0].data,
+      // sessions.jsdomSystem: Parse the system page.
+      sessions.jsdomSystem = new JSDOM(
+        sessions.axiosSystem.data,
         {
-          url: sessions.axios[0].config.url,
-          referrer: sessions.axios[0].config.headers.Referer,
+          url: sessions.axiosSystem.config.url,
+          referrer: sessions.axiosSystem.config.headers.Referer,
           contentType: 'text/html',
           pretendToBeVisual: true,
         },
       );
 
-      const jsdom0SensorsTable = sessions.jsdom[0].window.document.querySelectorAll('#systemContentList tr[onclick^="goToUrl(\'device.jsp?id="]');
-      const parsedSensorsTable = parseSensorsTable(jsdom0SensorsTable);
+      /**
+       * A breakdown of the sensors table shown in the portal.
+       *
+       * NOTE: Responses may be inaccurate or missing.
+       * LINK: https://patents.google.com/patent/US20170070361A1/en
+       *
+       * Original HTML code (filtered for clarity) is displayed like this:
+       * - <tr onclick="goToUrl('device.jsp?id=2');">
+       *     <td>
+       *       <canvas title="Online"></canvas>
+       *     </td>
+       *     <td>
+       *       <a>Front Door</a>
+       *     </td>
+       *     <td> 4</td>
+       *     <td>&nbsp;</td>
+       *     <td>Door/Window Sensor</td>
+       *   </tr>
+       *
+       * After processing by the "parseSensorsTable()" function:
+       * - deviceId: 2
+       * - deviceType: 'Door/Window Sensor'
+       * - name: 'Sensor 1'
+       * - status: 'Online'
+       * - zone: 1
+       *
+       * @since 1.0.0
+       */
+      const jsdomSystemSensorsTable = sessions.jsdomSystem.window.document.querySelectorAll('#systemContentList tr[onclick^="goToUrl(\'device.jsp?id="]');
+      const parsedSensorsTable = parseSensorsTable(jsdomSystemSensorsTable);
 
       if (this.#internal.debug) {
         debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsInformation()', 'success', `Successfully retrieved sensors information from "${this.#internal.baseUrl}"`);
@@ -1489,10 +1637,12 @@ export class ADTPulse {
         success: true,
         info: {
           /**
-           * A breakdown of the responses when sensors table is parsed.
+           * A breakdown of the responses when parsing the sensors table.
            *
            * NOTE: Responses may be inaccurate or missing.
            * LINK: https://patents.google.com/patent/US20170070361A1/en
+           *
+           * deviceId: 2
            *
            * deviceType: 'Door Sensor'
            *             'Door/Window Sensor'
@@ -1501,6 +1651,8 @@ export class ADTPulse {
            *             'Glass Break Detector'
            *             'Motion Sensor'
            *             'Motion Sensor (Notable Events Only)'
+           *             'Temperature Sensor'
+           *             'Water/Flood Sensor'
            *             'Window Sensor'
            *
            * name: 'Sensor 1'
@@ -1549,10 +1701,7 @@ export class ADTPulse {
 
     try {
       const internet = await this.isPortalAccessible();
-      const sessions: ADTPulseGetSensorsStatusSessions = {
-        axios: [],
-        jsdom: [],
-      };
+      const sessions: ADTPulseGetSensorsStatusSessions = {};
 
       // Check if portal is accessible.
       if (!internet.success) {
@@ -1563,8 +1712,8 @@ export class ADTPulse {
         };
       }
 
-      // sessions.axios[0]: Load the summary page.
-      sessions.axios[0] = await this.#session.httpClient.get(
+      // sessions.axiosSummary: Load the summary page.
+      sessions.axiosSummary = await this.#session.httpClient.get<unknown>(
         `${this.#internal.baseUrl}/myhome/${this.#session.portalVersion}/summary/summary.jsp`,
         this.getRequestConfig({
           headers: {
@@ -1574,34 +1723,49 @@ export class ADTPulse {
         }),
       );
 
-      const axios0RequestPath = sessions.axios[0].request.path;
-      const axios0RequestPathValid = requestPathSummarySummary.test(axios0RequestPath);
-
-      if (this.#internal.debug) {
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsStatus()', 'info', `Request path ➜ ${axios0RequestPath}`);
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsStatus()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
-      }
-
-      // If the final URL of sessions.axios[0] is not the summary page.
-      if (!axios0RequestPathValid) {
+      // If the "ClientRequest" object does not exist in the Axios response.
+      if (typeof sessions.axiosSummary?.request === 'undefined') {
         if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsStatus()', 'error', `"${axios0RequestPath}" is not the summary page`);
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsStatus()', 'error', 'The HTTP client responded without the "request" object');
         }
-
-        // Check if "this instance" was not signed in during this time.
-        this.handleLoginFailure(axios0RequestPath, sessions.axios[0]);
 
         return {
           action: 'GET_SENSORS_STATUS',
           success: false,
           info: {
-            message: `"${axios0RequestPath}" is not the summary page`,
+            message: 'The HTTP client responded without the "request" object',
+          },
+        };
+      }
+
+      const axiosSummaryRequestPath = sessions.axiosSummary.request.path;
+      const axiosSummaryRequestPathValid = requestPathSummarySummary.test(axiosSummaryRequestPath);
+
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsStatus()', 'info', `Request path ➜ ${axiosSummaryRequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsStatus()', 'info', `Request path valid ➜ ${axiosSummaryRequestPathValid}`);
+      }
+
+      // If the final URL of sessions.axiosSummary is not the summary page.
+      if (!axiosSummaryRequestPathValid) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsStatus()', 'error', `"${axiosSummaryRequestPath}" is not the summary page`);
+        }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axiosSummaryRequestPath, sessions.axiosSummary);
+
+        return {
+          action: 'GET_SENSORS_STATUS',
+          success: false,
+          info: {
+            message: `"${axiosSummaryRequestPath}" is not the summary page`,
           },
         };
       }
 
       // Make sure we are able to use JSDOM on the response data.
-      if (typeof sessions.axios[0].data !== 'string') {
+      if (typeof sessions.axiosSummary.data !== 'string') {
         if (this.#internal.debug) {
           debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsStatus()', 'error', 'The response body of the summary page is not of type "string"');
         }
@@ -1617,7 +1781,7 @@ export class ADTPulse {
 
       // Recover sat code if it was missing during login.
       if (this.#session.backupSatCode === null) {
-        const missingSatCode = fetchMissingSatCode(sessions.axios[0]);
+        const missingSatCode = fetchMissingSatCode(sessions.axiosSummary);
 
         if (missingSatCode !== null) {
           if (this.#internal.debug) {
@@ -1628,19 +1792,19 @@ export class ADTPulse {
         }
       }
 
-      // sessions.jsdom[0]: Parse the summary page.
-      sessions.jsdom[0] = new JSDOM(
-        sessions.axios[0].data,
+      // sessions.jsdomSummary: Parse the summary page.
+      sessions.jsdomSummary = new JSDOM(
+        sessions.axiosSummary.data,
         {
-          url: sessions.axios[0].config.url,
-          referrer: sessions.axios[0].config.headers.Referer,
+          url: sessions.axiosSummary.config.url,
+          referrer: sessions.axiosSummary.config.headers.Referer,
           contentType: 'text/html',
           pretendToBeVisual: true,
         },
       );
 
-      const jsdom0OrbSensors = sessions.jsdom[0].window.document.querySelectorAll('#orbSensorsList tr.p_listRow');
-      const parsedOrbSensors = parseOrbSensors(jsdom0OrbSensors);
+      const jsdomSummaryOrbSensors = sessions.jsdomSummary.window.document.querySelectorAll('#orbSensorsList tr.p_listRow');
+      const parsedOrbSensors = parseOrbSensors(jsdomSummaryOrbSensors);
 
       if (this.#internal.debug) {
         debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsStatus()', 'success', `Successfully retrieved sensors status from "${this.#internal.baseUrl}"`);
@@ -1651,26 +1815,26 @@ export class ADTPulse {
         success: true,
         info: {
           /**
-           * A breakdown of the responses when orb sensors are parsed.
+           * A breakdown of the responses when parsing the orb sensors.
            *
            * NOTE: Responses may be inaccurate or missing.
            * LINK: https://patents.google.com/patent/US20170070361A1/en
            *
-           * icon: 'devStatOK'
-           *       'devStatOpen'
-           *       'devStatMotion'
-           *       'devStatTamper'
-           *       'devStatAlarm'
+           * icon: 'devStatAlarm'
            *       'devStatLowBatt'
+           *       'devStatMotion'
+           *       'devStatOK'
+           *       'devStatOpen'
+           *       'devStatTamper'
            *       'devStatUnknown'
            *
            * name: 'Sensor 1'
            *
-           * status: 'Okay'
-           *         'Open'
-           *         'Closed'
+           * status: 'Closed'
            *         'Motion'
            *         'No Motion'
+           *         'Okay'
+           *         'Open'
            *         'Tripped'
            *         'Unknown'
            *
@@ -1715,9 +1879,7 @@ export class ADTPulse {
 
     try {
       const internet = await this.isPortalAccessible();
-      const sessions: ADTPulsePerformSyncCheckSessions = {
-        axios: [],
-      };
+      const sessions: ADTPulsePerformSyncCheckSessions = {};
 
       // Check if portal is accessible.
       if (!internet.success) {
@@ -1728,8 +1890,8 @@ export class ADTPulse {
         };
       }
 
-      // sessions.axios[0]: Load the sync check page.
-      sessions.axios[0] = await this.#session.httpClient.get(
+      // sessions.axiosSyncCheck: Load the sync check page.
+      sessions.axiosSyncCheck = await this.#session.httpClient.get<unknown>(
         `${this.#internal.baseUrl}/myhome/${this.#session.portalVersion}/Ajax/SyncCheckServ?t=${Date.now()}`,
         this.getRequestConfig({
           headers: {
@@ -1744,34 +1906,49 @@ export class ADTPulse {
         }),
       );
 
-      const axios0RequestPath = sessions.axios[0].request.path;
-      const axios0RequestPathValid = requestPathAjaxSyncCheckServTXx.test(axios0RequestPath);
-
-      if (this.#internal.debug) {
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.performSyncCheck()', 'info', `Request path ➜ ${axios0RequestPath}`);
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.performSyncCheck()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
-      }
-
-      // If the final URL of sessions.axios[0] is not the sync check page.
-      if (!axios0RequestPathValid) {
+      // If the "ClientRequest" object does not exist in the Axios response.
+      if (typeof sessions.axiosSyncCheck?.request === 'undefined') {
         if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.performSyncCheck()', 'error', `"${axios0RequestPath}" is not the sync check page`);
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.performSyncCheck()', 'error', 'The HTTP client responded without the "request" object');
         }
-
-        // Check if "this instance" was not signed in during this time.
-        this.handleLoginFailure(axios0RequestPath, sessions.axios[0]);
 
         return {
           action: 'PERFORM_SYNC_CHECK',
           success: false,
           info: {
-            message: `"${axios0RequestPath}" is not the sync check page`,
+            message: 'The HTTP client responded without the "request" object',
+          },
+        };
+      }
+
+      const syncCheckRequestPath = sessions.axiosSyncCheck.request.path;
+      const syncCheckRequestPathValid = requestPathAjaxSyncCheckServTXx.test(syncCheckRequestPath);
+
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.performSyncCheck()', 'info', `Request path ➜ ${syncCheckRequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.performSyncCheck()', 'info', `Request path valid ➜ ${syncCheckRequestPathValid}`);
+      }
+
+      // If the final URL of sessions.axios_syncCheck is not the sync check page.
+      if (!syncCheckRequestPathValid) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.performSyncCheck()', 'error', `"${syncCheckRequestPath}" is not the sync check page`);
+        }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(syncCheckRequestPath, sessions.axiosSyncCheck);
+
+        return {
+          action: 'PERFORM_SYNC_CHECK',
+          success: false,
+          info: {
+            message: `"${syncCheckRequestPath}" is not the sync check page`,
           },
         };
       }
 
       // Make sure we are able to pass on the response data.
-      if (typeof sessions.axios[0].data !== 'string') {
+      if (typeof sessions.axiosSyncCheck.data !== 'string') {
         if (this.#internal.debug) {
           debugLog(this.#internal.logger, 'api.ts / ADTPulse.performSyncCheck()', 'error', 'The response body of the sync check page is not of type "string"');
         }
@@ -1785,6 +1962,21 @@ export class ADTPulse {
         };
       }
 
+      // Make sure the sync code is valid.
+      if (!isPortalSyncCode(sessions.axiosSyncCheck.data)) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.performSyncCheck()', 'error', 'The sync code structure is invalid');
+        }
+
+        return {
+          action: 'PERFORM_SYNC_CHECK',
+          success: false,
+          info: {
+            message: 'The sync code structure is invalid',
+          },
+        };
+      }
+
       if (this.#internal.debug) {
         debugLog(this.#internal.logger, 'api.ts / ADTPulse.performSyncCheck()', 'success', `Successfully performed a sync check from "${this.#internal.baseUrl}"`);
       }
@@ -1794,7 +1986,10 @@ export class ADTPulse {
         success: true,
         info: {
           /**
-           * A breakdown of the responses when "syncCheckServ" is called.
+           * A breakdown of the responses when parsing the "syncCheckServ" response body.
+           *
+           * NOTE: Responses may be inaccurate or missing.
+           * LINK: https://patents.google.com/patent/US20170070361A1/en
            *
            * - 1-0-0
            * - 2-0-0
@@ -1803,7 +1998,7 @@ export class ADTPulse {
            *
            * @since 1.0.0
            */
-          syncCode: sessions.axios[0].data,
+          syncCode: sessions.axiosSyncCheck.data,
         },
       };
     } catch (error) {
@@ -1840,9 +2035,7 @@ export class ADTPulse {
 
     try {
       const internet = await this.isPortalAccessible();
-      const sessions: ADTPulsePerformKeepAliveSessions = {
-        axios: [],
-      };
+      const sessions: ADTPulsePerformKeepAliveSessions = {};
 
       // Check if portal is accessible.
       if (!internet.success) {
@@ -1853,8 +2046,8 @@ export class ADTPulse {
         };
       }
 
-      // sessions.axios[0]: Load the keep alive page.
-      sessions.axios[0] = await this.#session.httpClient.post(
+      // sessions.axiosKeepAlive: Load the keep alive page.
+      sessions.axiosKeepAlive = await this.#session.httpClient.post<unknown>(
         `${this.#internal.baseUrl}/myhome/${this.#session.portalVersion}/KeepAlive`,
         '',
         this.getRequestConfig({
@@ -1873,28 +2066,43 @@ export class ADTPulse {
         }),
       );
 
-      const axios0RequestPath = sessions.axios[0].request.path;
-      const axios0RequestPathValid = requestPathKeepAlive.test(axios0RequestPath);
-
-      if (this.#internal.debug) {
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.performKeepAlive()', 'info', `Request path ➜ ${axios0RequestPath}`);
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.performKeepAlive()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
-      }
-
-      // If the final URL of sessions.axios[0] is not the keep alive page.
-      if (!axios0RequestPathValid) {
+      // If the "ClientRequest" object does not exist in the Axios response.
+      if (typeof sessions.axiosKeepAlive?.request === 'undefined') {
         if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.performKeepAlive()', 'error', `"${axios0RequestPath}" is not the keep alive page`);
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.performKeepAlive()', 'error', 'The HTTP client responded without the "request" object');
         }
-
-        // Check if "this instance" was not signed in during this time.
-        this.handleLoginFailure(axios0RequestPath, sessions.axios[0]);
 
         return {
           action: 'PERFORM_KEEP_ALIVE',
           success: false,
           info: {
-            message: `"${axios0RequestPath}" is not the keep alive page`,
+            message: 'The HTTP client responded without the "request" object',
+          },
+        };
+      }
+
+      const axiosKeepAliveRequestPath = sessions.axiosKeepAlive.request.path;
+      const axiosKeepAliveRequestPathValid = requestPathKeepAlive.test(axiosKeepAliveRequestPath);
+
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.performKeepAlive()', 'info', `Request path ➜ ${axiosKeepAliveRequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.performKeepAlive()', 'info', `Request path valid ➜ ${axiosKeepAliveRequestPathValid}`);
+      }
+
+      // If the final URL of sessions.axiosKeepAlive is not the keep alive page.
+      if (!axiosKeepAliveRequestPathValid) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.performKeepAlive()', 'error', `"${axiosKeepAliveRequestPath}" is not the keep alive page`);
+        }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axiosKeepAliveRequestPath, sessions.axiosKeepAlive);
+
+        return {
+          action: 'PERFORM_KEEP_ALIVE',
+          success: false,
+          info: {
+            message: `"${axiosKeepAliveRequestPath}" is not the keep alive page`,
           },
         };
       }
@@ -1975,17 +2183,15 @@ export class ADTPulse {
         action: 'ARM_DISARM_HANDLER',
         success: true,
         info: {
-          newReadyButtons: [],
+          forceArmRequired: false,
+          readyButtons: [],
         },
       };
     }
 
     try {
       const internet = await this.isPortalAccessible();
-      const sessions: ADTPulseArmDisarmHandlerSessions = {
-        axios: [],
-        jsdom: [],
-      };
+      const sessions: ADTPulseArmDisarmHandlerSessions = {};
 
       // Check if portal is accessible.
       if (!internet.success) {
@@ -2003,55 +2209,59 @@ export class ADTPulse {
       armDisarmForm.append('arm', arm);
       armDisarmForm.append('sat', sat);
 
-      // sessions.axios[0]: Emulate an arm state update request.
-      sessions.axios[0] = await this.#session.httpClient.post(
+      // sessions.axiosSetArmMode: Emulate an arm state update request.
+      sessions.axiosSetArmMode = await this.#session.httpClient.post<unknown>(
         /**
-         * A breakdown of the links to set arm state.
+         * A breakdown of the links to set arm mode.
          *
-         * When arming and disarming in the portal, POST requests are made.
-         * However, GET requests still work from playing around.
+         * NOTE: Responses may be inaccurate or missing.
+         * LINK: https://patents.google.com/patent/US20170070361A1/en
          *
          * - When "Disarmed" mode:
          *   - Clicking the "Arm Away" button:
-         *     - Initial login state:    https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=off&arm=away&sat=<sat>
-         *     - After 1st state change: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=disarmed&arm=away&sat=<sat>
+         *     - Clean mode: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=off&arm=away&sat=<sat>
+         *     - Dirty mode: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=disarmed&arm=away&sat=<sat>
          *   - Clicking the "Arm Stay" button:
-         *     - Initial login state:    https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=off&arm=stay&sat=<sat>
-         *     - After 1st state change: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=disarmed&arm=stay&sat=<sat>
+         *     - Clean mode: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=off&arm=stay&sat=<sat>
+         *     - Dirty mode: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=disarmed&arm=stay&sat=<sat>
          *   - Clicking the "Arm Night" button:
-         *     - Initial login state:    https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=off&arm=night&sat=<sat>
-         *     - After 1st state change: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=disarmed&arm=night&sat=<sat>
+         *     - Clean mode: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=off&arm=night&sat=<sat>
+         *     - Dirty mode: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=disarmed&arm=night&sat=<sat>
          *
          * - When "Armed Away" mode:
          *   - Clicking the "Disarm" button:
-         *     - Initial login state:    https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=away&arm=off&sat=<sat>
-         *     - After 1st state change: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=away&arm=off&sat=<sat>
+         *     - Clean mode: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=away&arm=off&sat=<sat>
+         *     - Dirty mode: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=away&arm=off&sat=<sat>
          *
          * - When "Armed Stay" mode:
          *   - Clicking the "Disarm" button:
-         *     - Initial login state:    https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=stay&arm=off&sat=<sat>
-         *     - After 1st state change: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=stay&arm=off&sat=<sat>
+         *     - Clean mode: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=stay&arm=off&sat=<sat>
+         *     - Dirty mode: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=stay&arm=off&sat=<sat>
          *
          * - When "Armed Night" mode:
          *   - Clicking the "Disarm" button:
-         *     - Initial login state:    https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=night&arm=off&sat=<sat>
-         *     - After 1st state change: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=night+stay&arm=off&sat=<sat>
+         *     - Clean mode: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=night&arm=off&sat=<sat>
+         *     - Dirty mode: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=night+stay&arm=off&sat=<sat>
          *
          * - When alarm is triggered (when siren is SCREAMING REALLY LOUD):
          *   - Clicking the "Disarm" button when "Armed Away":
-         *     - Initial login state:    https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=away&arm=off&sat=<sat>
-         *     - After 1st state change: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=away&arm=off&sat=<sat>
+         *     - Clean mode: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=away&arm=off&sat=<sat>
+         *     - Dirty mode: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=away&arm=off&sat=<sat>
          *   - Clicking the "Disarm" button when "Armed Stay":
-         *     - Initial login state:    https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=stay&arm=off&sat=<sat>
-         *     - After 1st state change: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=stay&arm=off&sat=<sat>
+         *     - Clean mode: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=stay&arm=off&sat=<sat>
+         *     - Dirty mode: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=stay&arm=off&sat=<sat>
          *   - Clicking the "Disarm" button when "Armed Night":
-         *     - Initial login state:    https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=night&arm=off&sat=<sat>
-         *     - After 1st state change: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=night+stay&arm=off&sat=<sat>
+         *     - Clean mode: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=night&arm=off&sat=<sat>
+         *     - Dirty mode: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=night+stay&arm=off&sat=<sat>
          *
          * - When alarm is triggered (when siren is done screaming at you):
          *   - Clicking the "Clear Alarm" button:
-         *     - Initial login state:    https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=disarmed_with_alarm&arm=off&sat=<sat>
-         *     - After 1st state change: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=disarmed+with+alarm&arm=off&sat=<sat>
+         *     - Clean mode: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=disarmed_with_alarm&arm=off&sat=<sat>
+         *     - Dirty mode: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=disarmed+with+alarm&arm=off&sat=<sat>
+         *
+         * Notes I've gathered during the process:
+         * - States are synced across an entire site (per home). If one account arms, every user signed in during that phase becomes "dirty"
+         * - When arming and disarming in the portal, POST requests are made. However, GET requests still work when URL is pasted in.
          *
          * @since 1.0.0
          */
@@ -2071,36 +2281,54 @@ export class ADTPulse {
         }),
       );
 
-      const axios0RequestPath = sessions.axios[0].request.path;
-      const axios0RequestPathValid = requestPathQuickControlArmDisarm.test(axios0RequestPath);
-
-      if (this.#internal.debug) {
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'info', `Request path ➜ ${axios0RequestPath}`);
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
-      }
-
-      // If the final URL of sessions.axios[0] is not the arm disarm page.
-      if (!axios0RequestPathValid) {
+      // If the "ClientRequest" object does not exist in the Axios response.
+      if (typeof sessions.axiosSetArmMode?.request === 'undefined') {
         if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'error', `"${axios0RequestPath}" is not the arm disarm page`);
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'error', 'The HTTP client responded without the "request" object');
         }
-
-        // Check if "this instance" was not signed in during this time.
-        this.handleLoginFailure(axios0RequestPath, sessions.axios[0]);
 
         return {
           action: 'ARM_DISARM_HANDLER',
           success: false,
           info: {
-            message: `"${axios0RequestPath}" is not the arm disarm page`,
+            message: 'The HTTP client responded without the "request" object',
           },
         };
       }
 
+      const axiosSetArmModeRequestPath = sessions.axiosSetArmMode.request.path;
+      const axiosSetArmModeRequestPathValid = requestPathQuickControlArmDisarm.test(axiosSetArmModeRequestPath);
+
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'info', `Request path ➜ ${axiosSetArmModeRequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'info', `Request path valid ➜ ${axiosSetArmModeRequestPathValid}`);
+      }
+
+      // If the final URL of sessions.axiosSetArmMode is not the arm disarm page.
+      if (!axiosSetArmModeRequestPathValid) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'error', `"${axiosSetArmModeRequestPath}" is not the arm disarm page`);
+        }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axiosSetArmModeRequestPath, sessions.axiosSetArmMode);
+
+        return {
+          action: 'ARM_DISARM_HANDLER',
+          success: false,
+          info: {
+            message: `"${axiosSetArmModeRequestPath}" is not the arm disarm page`,
+          },
+        };
+      }
+
+      // Track if force arming was required.
+      let forceArmRequired = false;
+
       // No need to force arm if system is not being set to arm.
       if (arm !== 'off') {
         // Passing the force arming task to the handler.
-        const forceArmResponse = await this.forceArmHandler(sessions.axios[0], relativeUrl);
+        const forceArmResponse = await this.forceArmHandler(sessions.axiosSetArmMode, relativeUrl);
 
         if (!forceArmResponse.success) {
           if (this.#internal.debug) {
@@ -2113,6 +2341,8 @@ export class ADTPulse {
             info: forceArmResponse.info,
           };
         }
+
+        forceArmRequired = forceArmResponse.info.forceArmRequired;
       }
 
       // After changing any arm state, the "armState" may be different from when you logged into the portal.
@@ -2121,8 +2351,8 @@ export class ADTPulse {
       // Allow the security orb buttons to refresh (usually takes around 6 seconds).
       await sleep(6000);
 
-      // sessions.axios[1]: Load the summary page.
-      sessions.axios[1] = await this.#session.httpClient.get(
+      // sessions.axiosSummary: Load the summary page.
+      sessions.axiosSummary = await this.#session.httpClient.get<unknown>(
         `${this.#internal.baseUrl}/myhome/${this.#session.portalVersion}/summary/summary.jsp`,
         this.getRequestConfig({
           headers: {
@@ -2132,34 +2362,49 @@ export class ADTPulse {
         }),
       );
 
-      const axios1RequestPath = sessions.axios[1].request.path;
-      const axios1RequestPathValid = requestPathSummarySummary.test(axios1RequestPath);
-
-      if (this.#internal.debug) {
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'info', `Request path ➜ ${axios1RequestPath}`);
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'info', `Request path valid ➜ ${axios1RequestPathValid}`);
-      }
-
-      // If the final URL of sessions.axios[1] is not the summary page.
-      if (!axios1RequestPathValid) {
+      // If the "ClientRequest" object does not exist in the Axios response.
+      if (typeof sessions.axiosSummary?.request === 'undefined') {
         if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'error', `"${axios1RequestPath}" is not the summary page`);
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'error', 'The HTTP client responded without the "request" object');
         }
-
-        // Check if "this instance" was not signed in during this time.
-        this.handleLoginFailure(axios1RequestPath, sessions.axios[1]);
 
         return {
           action: 'ARM_DISARM_HANDLER',
           success: false,
           info: {
-            message: `"${axios1RequestPath}" is not the summary page`,
+            message: 'The HTTP client responded without the "request" object',
+          },
+        };
+      }
+
+      const axiosSummaryRequestPath = sessions.axiosSummary.request.path;
+      const axiosSummaryRequestPathValid = requestPathSummarySummary.test(axiosSummaryRequestPath);
+
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'info', `Request path ➜ ${axiosSummaryRequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'info', `Request path valid ➜ ${axiosSummaryRequestPathValid}`);
+      }
+
+      // If the final URL of sessions.axios[1] is not the summary page.
+      if (!axiosSummaryRequestPathValid) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'error', `"${axiosSummaryRequestPath}" is not the summary page`);
+        }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axiosSummaryRequestPath, sessions.axiosSummary);
+
+        return {
+          action: 'ARM_DISARM_HANDLER',
+          success: false,
+          info: {
+            message: `"${axiosSummaryRequestPath}" is not the summary page`,
           },
         };
       }
 
       // Make sure we are able to use JSDOM on the response data.
-      if (typeof sessions.axios[1].data !== 'string') {
+      if (typeof sessions.axiosSummary.data !== 'string') {
         if (this.#internal.debug) {
           debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'error', 'The response body of the summary page is not of type "string"');
         }
@@ -2175,7 +2420,7 @@ export class ADTPulse {
 
       // Recover sat code if it was missing during login.
       if (this.#session.backupSatCode === null) {
-        const missingSatCode = fetchMissingSatCode(sessions.axios[1]);
+        const missingSatCode = fetchMissingSatCode(sessions.axiosSummary);
 
         if (missingSatCode !== null) {
           if (this.#internal.debug) {
@@ -2186,19 +2431,19 @@ export class ADTPulse {
         }
       }
 
-      // sessions.jsdom[1]: Parse the summary page.
-      sessions.jsdom[1] = new JSDOM(
-        sessions.axios[1].data,
+      // sessions.jsdomSummary: Parse the summary page.
+      sessions.jsdomSummary = new JSDOM(
+        sessions.axiosSummary.data,
         {
-          url: sessions.axios[1].config.url,
-          referrer: sessions.axios[1].config.headers.Referer,
+          url: sessions.axiosSummary.config.url,
+          referrer: sessions.axiosSummary.config.headers.Referer,
           contentType: 'text/html',
           pretendToBeVisual: true,
         },
       );
 
-      const jsdom1OrbSecurityButtons = sessions.jsdom[1].window.document.querySelectorAll('#divOrbSecurityButtons input');
-      const parsedOrbSecurityButtons = parseOrbSecurityButtons(jsdom1OrbSecurityButtons);
+      const jsdomSummaryOrbSecurityButtons = sessions.jsdomSummary.window.document.querySelectorAll('#divOrbSecurityButtons input');
+      const parsedOrbSecurityButtons = parseOrbSecurityButtons(jsdomSummaryOrbSecurityButtons);
 
       let readyButtons = parsedOrbSecurityButtons.filter((parsedOrbSecurityButton): parsedOrbSecurityButton is ADTPulseArmDisarmHandlerReadyButton => !parsedOrbSecurityButton.buttonDisabled);
 
@@ -2213,7 +2458,7 @@ export class ADTPulse {
             buttonDisabled: false,
             buttonId: 'security_button_0',
             buttonIndex: 0,
-            buttonTitle: 'Disarm',
+            buttonText: 'Disarm',
             changeAccessCode: false,
             loadingText: 'Disarming',
             relativeUrl,
@@ -2236,7 +2481,8 @@ export class ADTPulse {
         action: 'ARM_DISARM_HANDLER',
         success: true,
         info: {
-          newReadyButtons: readyButtons,
+          forceArmRequired,
+          readyButtons,
         },
       };
     } catch (error) {
@@ -2278,10 +2524,7 @@ export class ADTPulse {
 
     try {
       const internet = await this.isPortalAccessible();
-      const sessions: ADTPulseForceArmHandlerSessions = {
-        axios: [],
-        jsdom: [],
-      };
+      const sessions: ADTPulseForceArmHandlerSessions = {};
 
       // Check if portal is accessible.
       if (!internet.success) {
@@ -2307,8 +2550,8 @@ export class ADTPulse {
         };
       }
 
-      // sessions.jsdom[0]: Parse the arm disarm page.
-      sessions.jsdom[0] = new JSDOM(
+      // sessions.jsdomArmDisarm: Parse the arm disarm page.
+      sessions.jsdomArmDisarm = new JSDOM(
         response.data,
         {
           url: response.config.url,
@@ -2321,37 +2564,39 @@ export class ADTPulse {
       /**
        * A breakdown of the "doSubmit" function used in the portal.
        *
-       * The original function call is displayed like this:
-       * - doSubmit( '/myhome/<portalVersion>/quickcontrol/serv/RunRRACommand?sat=f8e7c824-a88c-4fd2-ad4d-9b4b69039b09&href=rest\/adt\/ui\/client\/security\/setForceArm&armstate=forcearm&arm=stay' )
-       * - doSubmit( '/myhome/<portalVersion>/quickcontrol/serv/RunRRACommand?sat=f8e7c824-a88c-4fd2-ad4d-9b4b69039b09&href=rest\/adt\/ui\/client\/security\/setCancelProtest' )
+       * NOTE: Responses may be inaccurate or missing.
+       * LINK: https://patents.google.com/patent/US20170070361A1/en
        *
-       * After processing by the "parseDoSubmitHandlers()" function:
-       * - Index 0:
-       *   - relativeUrl: '/myhome/<portalVersion>/quickcontrol/serv/RunRRACommand'
-       *   - urlParams
-       *     - arm: 'stay'
-       *     - armState: 'forcearm'
-       *     - href: 'rest/adt/ui/client/security/setForceArm'
-       *     - sat: 'f8e7c824-a88c-4fd2-ad4d-9b4b69039b09'
-       * - Index 1:
-       *   - relativeUrl: '/myhome/<portalVersion>/quickcontrol/serv/RunRRACommand'
-       *   - urlParams
-       *     - arm: null
-       *     - armState: null
-       *     - href: 'rest/adt/ui/client/security/setCancelProtest'
-       *     - sat: 'f8e7c824-a88c-4fd2-ad4d-9b4b69039b09'
+       * The original function call is displayed like this:
+       * - "doSubmit( '/myhome/<portalVersion>/quickcontrol/serv/RunRRACommand?sat=f8e7c824-a88c-4fd2-ad4d-9b4b69039b09&href=rest\/adt\/ui\/client\/security\/setForceArm&armstate=forcearm&arm=stay' )"
+       * - "doSubmit( '/myhome/<portalVersion>/quickcontrol/serv/RunRRACommand?sat=f8e7c824-a88c-4fd2-ad4d-9b4b69039b09&href=rest\/adt\/ui\/client\/security\/setCancelProtest' )"
+       *
+       * After processing by the "parseDoSubmitHandlers()" function (the "Arm Anyway" button):
+       * - relativeUrl: '/myhome/<portalVersion>/quickcontrol/serv/RunRRACommand'
+       * - urlParams
+       *   - arm: 'stay'
+       *   - armState: 'forcearm'
+       *   - href: 'rest/adt/ui/client/security/setForceArm'
+       *   - sat: 'f8e7c824-a88c-4fd2-ad4d-9b4b69039b09'
+       *
+       * After processing by the "parseDoSubmitHandlers()" function (the "Cancel" button):
+       * - relativeUrl: '/myhome/<portalVersion>/quickcontrol/serv/RunRRACommand'
+       * - urlParams
+       *   - arm: null
+       *   - armState: null
+       *   - href: 'rest/adt/ui/client/security/setCancelProtest'
+       *   - sat: 'f8e7c824-a88c-4fd2-ad4d-9b4b69039b09'
        *
        * Notes I've gathered during the process:
-       * - Index 0 of the "parseDoSubmitHandlers()" response is the "Arm Anyway" button.
-       * - Index 1 of the "parseDoSubmitHandlers()" response is the "Cancel" button.
+       * - Below the code there is a loop that is baked in just in case the order of the buttons are randomized.
        * - The "sat" code is required for all force arm actions (UUID, generated on every login).
        *
        * @since 1.0.0
        */
-      const jsdom0DoSubmitHandlers = sessions.jsdom[0].window.document.querySelectorAll('.p_armDisarmWrapper input');
-      const jsdom0ArmDisarmMessage = sessions.jsdom[0].window.document.querySelector('.p_armDisarmWrapper div:first-child');
-      const parsedDoSubmitHandlers = parseDoSubmitHandlers(jsdom0DoSubmitHandlers);
-      const parsedArmDisarmMessage = parseArmDisarmMessage(jsdom0ArmDisarmMessage);
+      const jsdomArmDisarmDoSubmitHandlers = sessions.jsdomArmDisarm.window.document.querySelectorAll('.p_armDisarmWrapper input');
+      const jsdomArmDisarmArmDisarmMessage = sessions.jsdomArmDisarm.window.document.querySelector('.p_armDisarmWrapper div:first-child');
+      const parsedDoSubmitHandlers = parseDoSubmitHandlers(jsdomArmDisarmDoSubmitHandlers);
+      const parsedArmDisarmMessage = parseArmDisarmMessage(jsdomArmDisarmArmDisarmMessage);
 
       // Check if there are no force arm buttons available.
       if (
@@ -2380,7 +2625,9 @@ export class ADTPulse {
         return {
           action: 'FORCE_ARM_HANDLER',
           success: true,
-          info: null,
+          info: {
+            forceArmRequired: false,
+          },
         };
       }
 
@@ -2421,13 +2668,13 @@ export class ADTPulse {
         forceArmForm.append('armstate', forceArmArmState);
         forceArmForm.append('arm', forceArmArm);
 
-        // sessions.axios[0]: Emulate a force arm state update request.
-        sessions.axios[0] = await this.#session.httpClient.post(
+        // sessions.axiosForceArm: Emulate a force arm state update request.
+        sessions.axiosForceArm = await this.#session.httpClient.post<unknown>(
           /**
-           * A breakdown of the links to force set arm state.
+           * A breakdown of the links to force set arm mode.
            *
-           * When arming and disarming in the portal, POST requests are made.
-           * However, GET requests still work from playing around.
+           * NOTE: Responses may be inaccurate or missing.
+           * LINK: https://patents.google.com/patent/US20170070361A1/en
            *
            * - When trying to "Arm Away":
            *   - "Arm Anyway" button link: https://<subdomain>.adtpulse.com<relativeUrl>?sat=<sat>&href=<href>&armstate=forcearm&arm=away
@@ -2438,6 +2685,9 @@ export class ADTPulse {
            * - When trying to "Arm Night":
            *   - "Arm Anyway" button link: https://<subdomain>.adtpulse.com<relativeUrl>?sat=<sat>&href=<href>&armstate=forcearm&arm=night
            *   - "Cancel" button link:     https://<subdomain>.adtpulse.com<relativeUrl>?sat=<sat>&href=<href>
+           *
+           * Notes I've gathered during the process:
+           * - When arming and disarming in the portal, POST requests are made. However, GET requests still work when URL is pasted in.
            *
            * @since 1.0.0
            */
@@ -2458,46 +2708,67 @@ export class ADTPulse {
           }),
         );
 
-        const axios0RequestPath = sessions.axios[0].request.path;
-        const axios0RequestPathValid = requestPathQuickControlServRunRraCommand.test(axios0RequestPath);
+        // If the "ClientRequest" object does not exist in the Axios response.
+        if (typeof sessions.axiosForceArm?.request === 'undefined') {
+          if (this.#internal.debug) {
+            debugLog(this.#internal.logger, 'api.ts / ADTPulse.forceArmHandler()', 'error', 'The HTTP client responded without the "request" object');
+          }
 
-        if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.forceArmHandler()', 'info', `Request path ➜ ${axios0RequestPath}`);
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.forceArmHandler()', 'info', `Request path valid ➜ ${axios0RequestPathValid}`);
+          return {
+            action: 'FORCE_ARM_HANDLER',
+            success: false,
+            info: {
+              message: 'The HTTP client responded without the "request" object',
+            },
+          };
         }
 
-        // If the final URL of sessions.axios[0] is not the run rra command page.
-        if (!axios0RequestPathValid) {
-          tracker.errorMessage = `"${axios0RequestPath}" is not the run rra command page`;
-          tracker.requestUrl = axios0RequestPath;
+        const axiosForceArmRequestPath = sessions.axiosForceArm.request.path;
+        const axiosForceArmRequestPathValid = requestPathQuickControlServRunRraCommand.test(axiosForceArmRequestPath);
+
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.forceArmHandler()', 'info', `Request path ➜ ${axiosForceArmRequestPath}`);
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.forceArmHandler()', 'info', `Request path valid ➜ ${axiosForceArmRequestPathValid}`);
+        }
+
+        // If the final URL of sessions.axiosForceArm is not the run rra command page.
+        if (!axiosForceArmRequestPathValid) {
+          tracker.errorMessage = `"${axiosForceArmRequestPath}" is not the run rra command page`;
+          tracker.requestUrl = axiosForceArmRequestPath;
 
           continue;
         }
 
         // Make sure we are able to use the "String.prototype.includes()" method on the response data.
-        if (typeof sessions.axios[0].data !== 'string') {
+        if (typeof sessions.axiosForceArm.data !== 'string') {
           tracker.errorMessage = 'The response body of the run rra command page is not of type "string"';
-          tracker.requestUrl = axios0RequestPath;
+          tracker.requestUrl = axiosForceArmRequestPath;
 
           continue;
         }
 
         // The server reported that the force arm failed.
-        if (!sessions.axios[0].data.includes('1.0-OKAY')) {
+        if (!sessions.axiosForceArm.data.includes('1.0-OKAY')) {
           /**
-           * A breakdown of the responses when force arming.
+           * A breakdown of the responses when parsing the "RunRRACommand" response body.
            *
-           * "Could not process the request!</br></br>Error: 1.0-OKAY"
-           * - When force arming is successful.
+           * NOTE: Responses may be inaccurate or missing.
+           * LINK: https://patents.google.com/patent/US20170070361A1/en
            *
-           * "Could not process the request!</br></br>Error: Method not allowed.  Allowed methods GET, HEAD"
-           * - Method not allowed is an incorrect error message. They do accept POST requests.
-           * - Error appeared when "parseDoSubmitHandlers().href" has escaped forward slashes (e.g. dirA\/dirB\/dirC).
+           * When force arming is successful:
+           * - "Could not process the request!</br></br>Error: 1.0-OKAY"
+           *
+           * When force arming is not successful:
+           * - "Could not process the request!</br></br>Error: Method not allowed.  Allowed methods GET, HEAD"
+           *
+           * Notes I've gathered during the process:
+           * - "Method not allowed" error appeared when "parseDoSubmitHandlers().href" has escaped forward slashes (e.g. rest\/adt\/ui\/client\/security\/setForceArm).
+           * - POST method is allowed. The error message steers in to the wrong direction. Probably for security reasons.
            *
            * @since 1.0.0
            */
           tracker.errorMessage = 'The response body of the run rra command page does not include "1.0-OKAY"';
-          tracker.requestUrl = axios0RequestPath;
+          tracker.requestUrl = axiosForceArmRequestPath;
 
           continue;
         }
@@ -2515,7 +2786,7 @@ export class ADTPulse {
         }
 
         // If "this instance" was not signed in at this time.
-        this.handleLoginFailure(tracker.requestUrl, sessions.axios[0]);
+        this.handleLoginFailure(tracker.requestUrl, sessions.axiosForceArm);
 
         return {
           action: 'FORCE_ARM_HANDLER',
@@ -2548,7 +2819,9 @@ export class ADTPulse {
       return {
         action: 'FORCE_ARM_HANDLER',
         success: true,
-        info: null,
+        info: {
+          forceArmRequired: true,
+        },
       };
     } catch (error) {
       errorObject = serializeError(error);
@@ -2703,8 +2976,8 @@ export class ADTPulse {
         'Sec-Fetch-Site': 'none',
         'Sec-Fetch-User': '?1',
         'Upgrade-Insecure-Requests': '1',
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
-        'sec-ch-ua': '"Google Chrome";v="119", "Chromium";v="119", "Not?A_Brand";v="24"',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
         'sec-ch-ua-mobile': '?0',
         'sec-ch-ua-platform': '"macOS"',
       },
@@ -2735,7 +3008,7 @@ export class ADTPulse {
   private resetSession(): ADTPulseResetSessionReturns {
     this.#session = {
       backupSatCode: null,
-      httpClient: cookieJarWrapper(axios.create({
+      httpClient: wrapper(axios.create({
         jar: new CookieJar(),
       })),
       isAuthenticated: false,

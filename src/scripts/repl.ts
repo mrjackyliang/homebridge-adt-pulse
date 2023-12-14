@@ -5,7 +5,7 @@ import { ADTPulse } from '@/lib/api.js';
 import type {
   ADTPulseDisplayHelpHeaderReturns,
   ADTPulseDisplayHelpMenuReturns,
-  ADTPulseDisplayStartupNoticeReturns,
+  ADTPulseDisplayStartupHeaderReturns,
   ADTPulseReplApi,
   ADTPulseReplColorLogMessage,
   ADTPulseReplColorLogReturns,
@@ -51,7 +51,7 @@ class ADTPulseRepl {
    * @since 1.0.0
    */
   async startRepl(): ADTPulseReplStartReplReturns {
-    ADTPulseRepl.displayStartupNotice();
+    ADTPulseRepl.displayStartupHeader();
     ADTPulseRepl.displayHelpMenu();
 
     // Start the REPL server.
@@ -158,7 +158,7 @@ class ADTPulseRepl {
 
     // If the values are valid, set a new instance.
     this.#api = new ADTPulse({
-      platform: '',
+      platform: 'ADTPulse',
       subdomain,
       username,
       password,
@@ -168,7 +168,7 @@ class ADTPulseRepl {
       debug: true,
     });
 
-    // Check if "this.#replServer" was previously set.
+    // Check if "this.#replServer" was properly set during startup.
     if (this.#replServer === undefined) {
       ADTPulseRepl.colorLog('error', 'Failed to set context because "this.#replServer" is undefined.');
 
@@ -179,7 +179,8 @@ class ADTPulseRepl {
     this.#replServer.context.api = this.#api;
 
     ADTPulseRepl.colorLog('info', 'Instance has been successfully set.');
-    ADTPulseRepl.colorLog('info', 'You may now use the available API methods to begin your journey!\n');
+    ADTPulseRepl.colorLog('info', 'You may now use the available API methods to test the system!');
+    ADTPulseRepl.colorLog('info', '\n');
   }
 
   /**
@@ -237,7 +238,7 @@ class ADTPulseRepl {
   private static displayHelpMenu(): ADTPulseDisplayHelpMenuReturns {
     console.info([
       '',
-      chalk.bold('Documentation for method parameters:'),
+      chalk.bold('Method parameter documentation:'),
       `    {'portal' | 'portal-ca'}           ${chalk.magentaBright('subdomain')}   - Set the domain for either USA or Canada subscribers`,
       `    {string}                           ${chalk.magentaBright('username')}    - The username for logging in to ADT Pulse portal`,
       `    {string}                           ${chalk.magentaBright('password')}    - The password for logging in to ADT Pulse portal`,
@@ -247,7 +248,7 @@ class ADTPulseRepl {
       chalk.bold('Before you use the API, set the instance using this command:'),
       `    ${chalk.yellowBright(`repl.setInstance(${chalk.magentaBright('subdomain')}, ${chalk.magentaBright('username')}, ${chalk.magentaBright('password')}, ${chalk.magentaBright('fingerprint')});`)}`,
       '',
-      chalk.bold('Once an instance is set, interact with the ADT Pulse portal using these methods:'),
+      chalk.bold('Once an instance is set, interact with the portal using these methods:'),
       `    ${chalk.yellowBright('await api.login();')}`,
       `    ${chalk.yellowBright('await api.logout();')}`,
       `    ${chalk.yellowBright('await api.getGatewayInformation();')}`,
@@ -260,7 +261,9 @@ class ADTPulseRepl {
       `    ${chalk.yellowBright('await api.performKeepAlive();')}`,
       `    ${chalk.yellowBright('      api.isAuthenticated();')}`,
       '',
-      chalk.bold('To interact with the REPL, use these commands:'),
+      chalk.bold('You may also wrap the above methods with this to see the entire response:'),
+      `    ${chalk.yellowBright(`console.log(util.inspect(${chalk.magentaBright('replace me without the ending semi-colon')}, false, null, true));`)}`,
+      chalk.bold('A small reference for REPL commands:'),
       `    ${chalk.yellowBright('.exit')}`,
       `    ${chalk.yellowBright('.help')}`,
       '',
@@ -268,13 +271,13 @@ class ADTPulseRepl {
   }
 
   /**
-   * ADT Pulse Repl - Display startup notice.
+   * ADT Pulse Repl - Display startup header.
    *
-   * @returns {ADTPulseDisplayStartupNoticeReturns}
+   * @returns {ADTPulseDisplayStartupHeaderReturns}
    *
    * @since 1.0.0
    */
-  private static displayStartupNotice(): ADTPulseDisplayStartupNoticeReturns {
+  private static displayStartupHeader(): ADTPulseDisplayStartupHeaderReturns {
     console.info([
       chalk.cyanBright('##############################################################'),
       chalk.cyanBright('####         ADT Pulse for Homebridge Plugin REPL         ####'),

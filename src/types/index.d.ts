@@ -1,4 +1,4 @@
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { AxiosInstance, AxiosRequestConfig } from 'axios';
 import type {
   API,
   Characteristic,
@@ -8,34 +8,78 @@ import type {
   PlatformConfig,
   Service,
 } from 'homebridge';
+import type { JSDOM } from 'jsdom';
+import type { BinaryLike } from 'node:crypto';
 import type repl from 'node:repl';
 import type { ErrorObject } from 'serialize-error';
-import type { ZodIssue } from 'zod';
+import type z from 'zod';
 
+import type { ADTPulseAccessory } from '@/lib/accessory.js';
 import type { ADTPulse } from '@/lib/api.js';
+import type { platformConfig } from '@/lib/schema.js';
+import type {
+  PluginDeviceCategory,
+  PluginDeviceId,
+  PluginDeviceType,
+  PluginLogLevel,
+  PortalDeviceStatus,
+  PortalPanelArmButtonHref,
+  PortalPanelArmButtonRelativeUrl,
+  PortalPanelArmStateClean,
+  PortalPanelArmStateDirty,
+  PortalPanelArmValue,
+  PortalPanelForceArmResponse,
+  PortalPanelState,
+  PortalPanelStatus,
+  PortalPanelStatusSensorsOpen,
+  PortalSensorDeviceType,
+  PortalSensorStatusIcon,
+  PortalSensorStatusText,
+  PortalSyncCode,
+  PortalVersion,
+} from '@/types/constant.d.ts';
 import type {
   ApiResponse,
   ApiResponseFail,
-  ArmActions,
-  ArmStates,
+  AxiosResponseWithRequest,
   Config,
   ConfigFingerprint,
   ConfigPassword,
   ConfigSubdomain,
   ConfigUsername,
+  Device,
+  DeviceBaseId,
+  Devices,
+  DoSubmitHandlerRelativeUrl,
   DoSubmitHandlers,
+  DoSubmitHandlerUrlParamsArm,
+  DoSubmitHandlerUrlParamsArmState,
+  DoSubmitHandlerUrlParamsHref,
   GatewayInformation,
   InternalConfig,
-  NullKeysLocations,
+  NetworkId,
+  OrbSecurityButtonBase,
+  OrbSecurityButtonBaseButtonId,
+  OrbSecurityButtonPendingButtonText,
   OrbSecurityButtonReady,
+  OrbSecurityButtonReadyButtonText,
+  OrbSecurityButtonReadyLoadingText,
+  OrbSecurityButtonReadyRelativeUrl,
+  OrbSecurityButtonReadyUrlParamsArm,
+  OrbSecurityButtonReadyUrlParamsArmState,
+  OrbSecurityButtonReadyUrlParamsHref,
   OrbSecurityButtons,
-  OrbTextSummary,
   PanelInformation,
+  PanelStatus,
+  PanelStatusState,
+  PanelStatusStatus,
+  SensorInformationDeviceType,
+  SensorInformationStatus,
   SensorsInformation,
   SensorsStatus,
+  SensorStatusIcon,
+  SensorStatusStatus,
   Sessions,
-  SyncCode,
-  TableCellsWithSurroundingData,
   UUID,
 } from '@/types/shared.d.ts';
 
@@ -44,27 +88,34 @@ import type {
  *
  * @since 1.0.0
  */
-export type ADTPulseArmDisarmHandlerRelativeUrl = string;
+export type ADTPulseArmDisarmHandlerRelativeUrl = PortalPanelArmButtonRelativeUrl;
 
-export type ADTPulseArmDisarmHandlerHref = string;
+export type ADTPulseArmDisarmHandlerHref = PortalPanelArmButtonHref;
 
-export type ADTPulseArmDisarmHandlerArmState = ArmStates;
+export type ADTPulseArmDisarmHandlerArmState = PortalPanelArmStateClean | PortalPanelArmStateDirty;
 
-export type ADTPulseArmDisarmHandlerArm = ArmActions;
+export type ADTPulseArmDisarmHandlerArm = PortalPanelArmValue;
 
 export type ADTPulseArmDisarmHandlerSat = UUID;
 
-export type ADTPulseArmDisarmHandlerReturnsInfoNewReadyButtons = OrbSecurityButtonReady[];
+export type ADTPulseArmDisarmHandlerReturnsInfoForceArmRequired = boolean;
+
+export type ADTPulseArmDisarmHandlerReturnsInfoReadyButtons = (OrbSecurityButtonBase & OrbSecurityButtonReady)[];
 
 export type ADTPulseArmDisarmHandlerReturnsInfo = {
-  newReadyButtons: ADTPulseArmDisarmHandlerReturnsInfoNewReadyButtons;
+  forceArmRequired: ADTPulseArmDisarmHandlerReturnsInfoForceArmRequired;
+  readyButtons: ADTPulseArmDisarmHandlerReturnsInfoReadyButtons;
 };
 
 export type ADTPulseArmDisarmHandlerReturns = Promise<ApiResponse<'ARM_DISARM_HANDLER', ADTPulseArmDisarmHandlerReturnsInfo>>;
 
-export type ADTPulseArmDisarmHandlerSessions = Sessions<true, true>;
+export type ADTPulseArmDisarmHandlerSessions = Sessions<{
+  axiosSetArmMode?: AxiosResponseWithRequest<unknown>;
+  axiosSummary?: AxiosResponseWithRequest<unknown>;
+  jsdomSummary?: JSDOM;
+}>;
 
-export type ADTPulseArmDisarmHandlerReadyButton = OrbSecurityButtonReady;
+export type ADTPulseArmDisarmHandlerReadyButton = OrbSecurityButtonBase & OrbSecurityButtonReady;
 
 /**
  * ADT Pulse - Constructor.
@@ -100,15 +151,24 @@ export type ADTPulseCredentials = {
  *
  * @since 1.0.0
  */
-export type ADTPulseForceArmHandlerResponse = AxiosResponse;
+export type ADTPulseForceArmHandlerResponse = AxiosResponseWithRequest<unknown>;
 
-export type ADTPulseForceArmHandlerRelativeUrl = string;
+export type ADTPulseForceArmHandlerRelativeUrl = PortalPanelArmButtonRelativeUrl;
 
-export type ADTPulseForceArmHandlerReturnsInfo = null;
+export type ADTPulseForceArmHandlerReturnsInfoForceArmRequired = boolean;
+
+export type ADTPulseForceArmHandlerReturnsInfo = {
+  forceArmRequired: ADTPulseForceArmHandlerReturnsInfoForceArmRequired;
+};
 
 export type ADTPulseForceArmHandlerReturns = Promise<ApiResponse<'FORCE_ARM_HANDLER', ADTPulseForceArmHandlerReturnsInfo>>;
 
-export type ADTPulseForceArmHandlerSessions = Sessions<true, true>;
+export type ADTPulseForceArmHandlerSessions = Sessions<{
+  axiosForceArm?: AxiosResponseWithRequest<unknown>;
+  jsdomArmDisarm?: JSDOM;
+}>;
+
+export type ADTPulseForceArmHandlerSessionsAxiosForceArm = PortalPanelForceArmResponse;
 
 export type ADTPulseForceArmHandlerTrackerComplete = boolean;
 
@@ -131,7 +191,12 @@ export type ADTPulseGetGatewayInformationReturnsInfo = GatewayInformation;
 
 export type ADTPulseGetGatewayInformationReturns = Promise<ApiResponse<'GET_GATEWAY_INFORMATION', ADTPulseGetGatewayInformationReturnsInfo>>;
 
-export type ADTPulseGetGatewayInformationSessions = Sessions<true, true>;
+export type ADTPulseGetGatewayInformationSessions = Sessions<{
+  axiosSystemGateway?: AxiosResponseWithRequest<unknown>;
+  jsdomSystemGateway?: JSDOM;
+}>;
+
+export type ADTPulseGetGatewayInformationReturnsStatus = PortalDeviceStatus | null;
 
 /**
  * ADT Pulse - Get panel information.
@@ -142,18 +207,26 @@ export type ADTPulseGetPanelInformationReturnsInfo = PanelInformation;
 
 export type ADTPulseGetPanelInformationReturns = Promise<ApiResponse<'GET_PANEL_INFORMATION', ADTPulseGetPanelInformationReturnsInfo>>;
 
-export type ADTPulseGetPanelInformationSessions = Sessions<true, true>;
+export type ADTPulseGetPanelInformationSessions = Sessions<{
+  axiosSystemDeviceId1?: AxiosResponseWithRequest<unknown>;
+  jsdomSystemDeviceId1?: JSDOM;
+}>;
+
+export type ADTPulseGetPanelInformationReturnsStatus = PortalDeviceStatus | null;
 
 /**
  * ADT Pulse - Get panel status.
  *
  * @since 1.0.0
  */
-export type ADTPulseGetPanelStatusReturnsInfo = OrbTextSummary;
+export type ADTPulseGetPanelStatusReturnsInfo = PanelStatus;
 
 export type ADTPulseGetPanelStatusReturns = Promise<ApiResponse<'GET_PANEL_STATUS', ADTPulseGetPanelStatusReturnsInfo>>;
 
-export type ADTPulseGetPanelStatusSessions = Sessions<true, true>;
+export type ADTPulseGetPanelStatusSessions = Sessions<{
+  axiosSummary?: AxiosResponseWithRequest<unknown>;
+  jsdomSummary?: JSDOM;
+}>;
 
 /**
  * ADT Pulse - Get request config.
@@ -179,7 +252,10 @@ export type ADTPulseGetSensorsInformationReturnsInfo = {
 
 export type ADTPulseGetSensorsInformationReturns = Promise<ApiResponse<'GET_SENSORS_INFORMATION', ADTPulseGetSensorsInformationReturnsInfo>>;
 
-export type ADTPulseGetSensorsInformationSessions = Sessions<true, true>;
+export type ADTPulseGetSensorsInformationSessions = Sessions<{
+  axiosSystem?: AxiosResponseWithRequest<unknown>;
+  jsdomSystem?: JSDOM;
+}>;
 
 /**
  * ADT Pulse - Get sensors status.
@@ -194,7 +270,10 @@ export type ADTPulseGetSensorsStatusReturnsInfo = {
 
 export type ADTPulseGetSensorsStatusReturns = Promise<ApiResponse<'GET_SENSORS_STATUS', ADTPulseGetSensorsStatusReturnsInfo>>;
 
-export type ADTPulseGetSensorsStatusSessions = Sessions<true, true>;
+export type ADTPulseGetSensorsStatusSessions = Sessions<{
+  axiosSummary?: AxiosResponseWithRequest<unknown>;
+  jsdomSummary?: JSDOM;
+}>;
 
 /**
  * ADT Pulse - Handle login failure.
@@ -203,7 +282,7 @@ export type ADTPulseGetSensorsStatusSessions = Sessions<true, true>;
  */
 export type ADTPulseHandleLoginFailureRequestPath = string | null;
 
-export type ADTPulseHandleLoginFailureSession = AxiosResponse;
+export type ADTPulseHandleLoginFailureSession = AxiosResponseWithRequest<unknown> | undefined;
 
 export type ADTPulseHandleLoginFailureReturns = void;
 
@@ -257,9 +336,9 @@ export type ADTPulseIsPortalAccessibleReturns = Promise<ApiResponse<'IS_PORTAL_A
  */
 export type ADTPulseLoginReturnsInfoBackupSatCode = UUID | null;
 
-export type ADTPulseLoginReturnsInfoNetworkId = string | null;
+export type ADTPulseLoginReturnsInfoNetworkId = NetworkId | null;
 
-export type ADTPulseLoginReturnsInfoPortalVersion = string | null;
+export type ADTPulseLoginReturnsInfoPortalVersion = PortalVersion | null;
 
 export type ADTPulseLoginReturnsInfo = {
   backupSatCode: ADTPulseLoginReturnsInfoBackupSatCode;
@@ -269,7 +348,12 @@ export type ADTPulseLoginReturnsInfo = {
 
 export type ADTPulseLoginReturns = Promise<ApiResponse<'LOGIN', ADTPulseLoginReturnsInfo>>;
 
-export type ADTPulseLoginSessions = Sessions<true, false>;
+export type ADTPulseLoginSessions = Sessions<{
+  axiosIndex?: AxiosResponseWithRequest<unknown>;
+  axiosSignin?: AxiosResponseWithRequest<unknown>;
+}>;
+
+export type ADTPulseLoginPortalVersion = PortalVersion;
 
 /**
  * ADT Pulse - Logout.
@@ -278,9 +362,9 @@ export type ADTPulseLoginSessions = Sessions<true, false>;
  */
 export type ADTPulseLogoutReturnsInfoBackupSatCode = UUID | null;
 
-export type ADTPulseLogoutReturnsInfoNetworkId = string | null;
+export type ADTPulseLogoutReturnsInfoNetworkId = NetworkId | null;
 
-export type ADTPulseLogoutReturnsInfoPortalVersion = string | null;
+export type ADTPulseLogoutReturnsInfoPortalVersion = PortalVersion | null;
 
 export type ADTPulseLogoutReturnsInfo = {
   backupSatCode: ADTPulseLogoutReturnsInfoBackupSatCode;
@@ -290,7 +374,9 @@ export type ADTPulseLogoutReturnsInfo = {
 
 export type ADTPulseLogoutReturns = Promise<ApiResponse<'LOGOUT', ADTPulseLogoutReturnsInfo>>;
 
-export type ADTPulseLogoutSessions = Sessions<true, false>;
+export type ADTPulseLogoutSessions = Sessions<{
+  axiosSignout?: AxiosResponseWithRequest<unknown>;
+}>;
 
 /**
  * ADT Pulse - Perform keep alive.
@@ -301,14 +387,16 @@ export type ADTPulsePerformKeepAliveReturnsInfo = null;
 
 export type ADTPulsePerformKeepAliveReturns = Promise<ApiResponse<'PERFORM_KEEP_ALIVE', ADTPulsePerformKeepAliveReturnsInfo>>;
 
-export type ADTPulsePerformKeepAliveSessions = Sessions<true, false>;
+export type ADTPulsePerformKeepAliveSessions = Sessions<{
+  axiosKeepAlive?: AxiosResponseWithRequest<unknown>;
+}>;
 
 /**
  * ADT Pulse - Perform sync check.
  *
  * @since 1.0.0
  */
-export type ADTPulsePerformSyncCheckReturnsInfoSyncCode = SyncCode;
+export type ADTPulsePerformSyncCheckReturnsInfoSyncCode = PortalSyncCode;
 
 export type ADTPulsePerformSyncCheckReturnsInfo = {
   syncCode: ADTPulsePerformSyncCheckReturnsInfoSyncCode;
@@ -316,7 +404,9 @@ export type ADTPulsePerformSyncCheckReturnsInfo = {
 
 export type ADTPulsePerformSyncCheckReturns = Promise<ApiResponse<'PERFORM_SYNC_CHECK', ADTPulsePerformSyncCheckReturnsInfo>>;
 
-export type ADTPulsePerformSyncCheckSessions = Sessions<true, false>;
+export type ADTPulsePerformSyncCheckSessions = Sessions<{
+  axiosSyncCheck?: AxiosResponseWithRequest<unknown>,
+}>;
 
 /**
  * ADT Pulse - Reset session.
@@ -338,9 +428,9 @@ export type ADTPulseSessionIsAuthenticated = boolean;
 
 export type ADTPulseSessionIsCleanState = boolean;
 
-export type ADTPulseSessionNetworkId = string | null;
+export type ADTPulseSessionNetworkId = NetworkId | null;
 
-export type ADTPulseSessionPortalVersion = string | null;
+export type ADTPulseSessionPortalVersion = PortalVersion | null;
 
 export type ADTPulseSession = {
   backupSatCode: ADTPulseSessionBackupSatCode,
@@ -356,15 +446,44 @@ export type ADTPulseSession = {
  *
  * @since 1.0.0
  */
-export type ADTPulseSetPanelStatusArmTo = ArmActions;
+export type ADTPulseSetPanelStatusArmTo = PortalPanelArmValue;
 
-export type ADTPulseSetPanelStatusReturnsInfo = null;
+export type ADTPulseSetPanelStatusReturnsInfoForceArmRequired = boolean;
+
+export type ADTPulseSetPanelStatusReturnsInfo = {
+  forceArmRequired: ADTPulseSetPanelStatusReturnsInfoForceArmRequired;
+};
 
 export type ADTPulseSetPanelStatusReturns = Promise<ApiResponse<'SET_PANEL_STATUS', ADTPulseSetPanelStatusReturnsInfo>>;
 
-export type ADTPulseSetPanelStatusSessions = Sessions<true, true>;
+export type ADTPulseSetPanelStatusSessions = Sessions<{
+  axiosSummary?: AxiosResponseWithRequest<unknown>;
+  jsdomSummary?: JSDOM;
+}>;
 
-export type ADTPulseSetPanelStatusReadyButton = OrbSecurityButtonReady;
+export type ADTPulseSetPanelStatusReadyButton = OrbSecurityButtonBase & OrbSecurityButtonReady;
+
+// todo finish this later
+/**
+ * ADT Pulse Accessory - Constructor.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseAccessoryConstructorAccessory = PlatformAccessory<Device>;
+
+export type ADTPulseAccessoryConstructorService = typeof Service;
+
+export type ADTPulseAccessoryConstructorCharacteristic = typeof Characteristic;
+
+export type ADTPulseAccessoryConstructorLog = Logger;
+
+/**
+ * ADT Pulse Accessory - Service.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseAccessoryService = Service;
+// todo finish this later
 
 /**
  * ADT Pulse Platform.
@@ -378,14 +497,20 @@ export type ADTPulsePlatformPlugin = DynamicPlatformPlugin;
  *
  * @since 1.0.0
  */
-export type ADTPulsePlatformAccessories = PlatformAccessory[];
+export type ADTPulsePlatformAccessory = PlatformAccessory<Device>;
+
+export type ADTPulsePlatformAccessories = ADTPulsePlatformAccessory[];
 
 /**
  * ADT Pulse Platform - Add accessory.
  *
  * @since 1.0.0
  */
+export type ADTPulsePlatformAddAccessoryDevice = Device;
+
 export type ADTPulsePlatformAddAccessoryReturns = void;
+
+export type ADTPulsePlatformAddAccessoryTypedNewAccessory = PlatformAccessory<Device>;
 
 /**
  * ADT Pulse Platform - Api.
@@ -406,14 +531,14 @@ export type ADTPulsePlatformCharacteristic = typeof Characteristic;
  *
  * @since 1.0.0
  */
-export type ADTPulsePlatformConfig = PlatformConfig;
+export type ADTPulsePlatformConfig = z.infer<typeof platformConfig> | null;
 
 /**
  * ADT Pulse Platform - Configure accessory.
  *
  * @since 1.0.0
  */
-export type ADTPulsePlatformConfigureAccessoryAccessory = PlatformAccessory;
+export type ADTPulsePlatformConfigureAccessoryAccessory = PlatformAccessory<Device>;
 
 export type ADTPulsePlatformConfigureAccessoryReturns = void;
 
@@ -456,11 +581,27 @@ export type ADTPulsePlatformConstructorConfig = PlatformConfig;
 export type ADTPulsePlatformConstructorApi = API;
 
 /**
+ * ADT Pulse Platform - Debug mode.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulsePlatformDebugMode = boolean | null;
+
+/**
  * ADT Pulse Platform - Fetch updated information.
  *
  * @since 1.0.0
  */
 export type ADTPulsePlatformFetchUpdatedInformationReturns = Promise<void>;
+
+/**
+ * ADT Pulse Platform - Handlers.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulsePlatformHandlers = {
+  [key: string]: ADTPulseAccessory;
+};
 
 /**
  * ADT Pulse Platform - Instance.
@@ -477,6 +618,15 @@ export type ADTPulsePlatformInstance = ADTPulse | null;
 export type ADTPulsePlatformLog = Logger;
 
 /**
+ * ADT Pulse Platform - Poll accessories.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulsePlatformPollAccessoriesDevices = Devices;
+
+export type ADTPulsePlatformPollAccessoriesReturns = Promise<void>;
+
+/**
  * ADT Pulse Platform - Print system information.
  *
  * @since 1.0.0
@@ -488,7 +638,7 @@ export type ADTPulsePlatformPrintSystemInformationReturns = void;
  *
  * @since 1.0.0
  */
-// export type ADTPulsePlatformRemoveAccessoryAccessory = PlatformAccessory; todo
+export type ADTPulsePlatformRemoveAccessoryAccessory = PlatformAccessory<Device>;
 
 export type ADTPulsePlatformRemoveAccessoryReturns = void;
 
@@ -523,13 +673,13 @@ export type ADTPulsePlatformStateDataGatewayInfo = GatewayInformation | null;
 
 export type ADTPulsePlatformStateDataPanelInfo = PanelInformation | null;
 
-export type ADTPulsePlatformStateDataPanelStatus = OrbTextSummary | null;
+export type ADTPulsePlatformStateDataPanelStatus = PanelStatus | null;
 
 export type ADTPulsePlatformStateDataSensorsInfo = SensorsInformation;
 
 export type ADTPulsePlatformStateDataSensorsStatus = SensorsStatus;
 
-export type ADTPulsePlatformStateDataSyncCode = SyncCode;
+export type ADTPulsePlatformStateDataSyncCode = PortalSyncCode;
 
 export type ADTPulsePlatformStateData = {
   gatewayInfo: ADTPulsePlatformStateDataGatewayInfo;
@@ -596,9 +746,27 @@ export type ADTPulsePlatformSynchronizeKeepAliveReturns = void;
 export type ADTPulsePlatformSynchronizeSyncCheckReturns = void;
 
 /**
- * ADT Pulse Repl - Api.
+ * ADT Pulse Platform - Unify devices.
  *
- * @private
+ * @since 1.0.0
+ */
+export type ADTPulsePlatformUnifyDevicesReturns = Promise<void>;
+
+export type ADTPulsePlatformUnifyDevicesDevices = Devices;
+
+export type ADTPulsePlatformUnifyDevicesId = DeviceBaseId;
+
+/**
+ * ADT Pulse Platform - Update accessory.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulsePlatformUpdateAccessoryDevice = Device;
+
+export type ADTPulsePlatformUpdateAccessoryReturns = void;
+
+/**
+ * ADT Pulse Repl - Api.
  *
  * @since 1.0.0
  */
@@ -609,7 +777,7 @@ export type ADTPulseReplApi = ADTPulse | undefined;
  *
  * @since 1.0.0
  */
-export type ADTPulseReplColorLogType = 'info' | 'error';
+export type ADTPulseReplColorLogType = Extract<PluginLogLevel, 'error' | 'info'>;
 
 export type ADTPulseReplColorLogMessage = string;
 
@@ -630,11 +798,11 @@ export type ADTPulseDisplayHelpMenuReturns = void;
 export type ADTPulseDisplayHelpHeaderReturns = void;
 
 /**
- * ADT Pulse Repl - Display startup notice.
+ * ADT Pulse Repl - Display startup header.
  *
  * @since 1.0.0
  */
-export type ADTPulseDisplayStartupNoticeReturns = void;
+export type ADTPulseDisplayStartupHeaderReturns = void;
 
 /**
  * ADT Pulse Repl - Repl server.
@@ -684,8 +852,6 @@ export type ADTPulseTestFindConfigReturns = boolean;
 export type ADTPulseTestFindConfigPossibleLocation = string;
 
 export type ADTPulseTestFindConfigPossibleLocations = ADTPulseTestFindConfigPossibleLocation[];
-
-export type ADTPulseTestFindConfigRawFile = string;
 
 export type ADTPulseTestFindConfigParsedFile = unknown;
 
@@ -738,6 +904,17 @@ export type ClearWhitespaceData = string;
 export type ClearWhitespaceReturns = string;
 
 /**
+ * Condense sensor type.
+ *
+ * @since 1.0.0
+ */
+export type CondenseSensorTypeSensorType = PortalSensorDeviceType;
+
+export type CondenseSensorTypeReturns = Exclude<PluginDeviceType, 'gateway' | 'panel'> | undefined;
+
+export type CondenseSensorTypeCondensed = Exclude<PluginDeviceType, 'gateway' | 'panel'> | undefined;
+
+/**
  * Debug log.
  *
  * @since 1.0.0
@@ -746,62 +923,116 @@ export type DebugLogLogger = Logger | null;
 
 export type DebugLogCaller = string;
 
-export type DebugLogType = 'error' | 'warn' | 'success' | 'info';
+export type DebugLogType = PluginLogLevel;
 
 export type DebugLogMessage = string;
 
 export type DebugLogReturns = void;
 
 /**
+ * Detected new gateway information.
+ *
+ * @since 1.0.0
+ */
+export type DetectedNewGatewayInformationDevice = GatewayInformation;
+
+export type DetectedNewGatewayInformationLogger = Logger;
+
+export type DetectedNewGatewayInformationDebugMode = boolean | null;
+
+export type DetectedNewGatewayInformationReturns = Promise<boolean>;
+
+export type DetectedNewGatewayInformationKnownStatuses = PortalDeviceStatus[];
+
+/**
+ * Detected new panel information.
+ *
+ * @since 1.0.0
+ */
+export type DetectedNewPanelInformationDevice = PanelInformation;
+
+export type DetectedNewPanelInformationLogger = Logger;
+
+export type DetectedNewPanelInformationDebugMode = boolean | null;
+
+export type DetectedNewPanelInformationReturns = Promise<boolean>;
+
+export type DetectedNewPanelInformationKnownStatuses = PortalDeviceStatus[];
+
+/**
  * Detected new panel status.
  *
  * @since 1.0.0
  */
-export type DetectedNewPanelStatusSummary = OrbTextSummary;
+export type DetectedNewPanelStatusSummary = PanelStatus;
 
 export type DetectedNewPanelStatusLogger = Logger;
 
+export type DetectedNewPanelStatusDebugMode = boolean | null;
+
 export type DetectedNewPanelStatusReturns = Promise<boolean>;
+
+export type DetectedNewPanelStatusKnownStates = PortalPanelState[];
+
+export type DetectedNewPanelStatusKnownStatuses = PortalPanelStatus[];
+
+export type DetectedNewPanelStatusKnownStatusesSensorsOpen = PortalPanelStatusSensorsOpen;
 
 /**
  * Detected new portal version.
  *
  * @since 1.0.0
  */
-export type DetectedNewPortalVersionVersion = string;
+export type DetectedNewPortalVersionVersion = PortalVersion | null;
 
 export type DetectedNewPortalVersionLogger = Logger;
 
+export type DetectedNewPortalVersionDebugMode = boolean | null;
+
 export type DetectedNewPortalVersionReturns = Promise<boolean>;
 
+export type DetectedNewPortalVersionKnownVersions = PortalVersion[];
+
 /**
- * Detected new sensor information.
+ * Detected new sensors' information.
  *
  * @since 1.0.0
  */
-export type DetectedNewSensorInformationSensors = SensorsInformation;
+export type DetectedNewSensorsInformationSensors = SensorsInformation;
 
-export type DetectedNewSensorInformationLogger = Logger;
+export type DetectedNewSensorsInformationLogger = Logger;
 
-export type DetectedNewSensorInformationReturns = Promise<boolean>;
+export type DetectedNewSensorsInformationDebugMode = boolean | null;
+
+export type DetectedNewSensorsInformationReturns = Promise<boolean>;
+
+export type DetectedNewSensorsInformationKnownDeviceTypes = PortalSensorDeviceType[];
+
+export type DetectedNewSensorsInformationKnownStatuses = PortalDeviceStatus[];
 
 /**
- * Detected new sensor status.
+ * Detected new sensors' status.
  *
  * @since 1.0.0
  */
-export type DetectedNewSensorStatusSensors = SensorsStatus;
+export type DetectedNewSensorsStatusSensors = SensorsStatus;
 
-export type DetectedNewSensorStatusLogger = Logger;
+export type DetectedNewSensorsStatusLogger = Logger;
 
-export type DetectedNewSensorStatusReturns = Promise<boolean>;
+export type DetectedNewSensorsStatusDebugMode = boolean | null;
+
+export type DetectedNewSensorsStatusReturns = Promise<boolean>;
+
+export type DetectedNewSensorsStatusKnownIcons = PortalSensorStatusIcon[];
+
+export type DetectedNewSensorsStatusKnownStatuses = PortalSensorStatusText[];
 
 /**
  * Fetch error message.
  *
  * @since 1.0.0
  */
-export type FetchErrorMessageResponse = AxiosResponse;
+export type FetchErrorMessageResponse = AxiosResponseWithRequest<unknown> | undefined;
 
 export type FetchErrorMessageReturns = string | null;
 
@@ -810,9 +1041,9 @@ export type FetchErrorMessageReturns = string | null;
  *
  * @since 1.0.0
  */
-export type FetchMissingSatCodeResponse = AxiosResponse;
+export type FetchMissingSatCodeResponse = AxiosResponseWithRequest<unknown>;
 
-export type FetchMissingSatCodeReturns = string | null;
+export type FetchMissingSatCodeReturns = UUID | null;
 
 /**
  * Fetch table cells.
@@ -827,11 +1058,33 @@ export type FetchTableCellsIncrementFrom = number;
 
 export type FetchTableCellsIncrementTo = number;
 
-export type FetchTableCellsReturns = TableCellsWithSurroundingData;
+export type FetchTableCellsReturns = {
+  [key: string]: string[];
+};
 
 export type FetchTableCellsCleaner = (text: string) => string;
 
-export type FetchTableCellsMatched = TableCellsWithSurroundingData;
+export type FetchTableCellsMatched = {
+  [key: string]: string[];
+};
+
+/**
+ * Find index with value.
+ *
+ * @since 1.0.0
+ */
+export type FindIndexWithValueArray<Value> = Value[];
+
+export type FindIndexWithValueCondition<Value> = (value: Value) => boolean;
+
+export type FindIndexWithValueReturnsIndex = number;
+
+export type FindIndexWithValueReturnsValue<Value> = Value | undefined;
+
+export type FindIndexWithValueReturns<Value> = {
+  index: FindIndexWithValueReturnsIndex;
+  value: FindIndexWithValueReturnsValue<Value>;
+};
 
 /**
  * Find null keys.
@@ -842,9 +1095,18 @@ export type FindNullKeysProperties = object;
 
 export type FindNullKeysParentKey = string;
 
-export type FindNullKeysReturns = NullKeysLocations;
+export type FindNullKeysReturns = string[];
 
-export type FindNullKeysFound = NullKeysLocations;
+export type FindNullKeysFound = string[];
+
+/**
+ * Generate device id.
+ *
+ * @since 1.0.0
+ */
+export type GenerateDeviceIdId = number;
+
+export type GenerateDeviceIdReturns = PluginDeviceId;
 
 /**
  * Generate dynatrace pc header value.
@@ -856,13 +1118,22 @@ export type GenerateDynatracePCHeaderValueMode = 'keep-alive' | 'force-arm';
 export type GenerateDynatracePCHeaderValueReturns = string;
 
 /**
- * Generate md5 hash.
+ * Generate hash.
  *
  * @since 1.0.0
  */
-export type GenerateMd5HashData = unknown;
+export type GenerateHashData = BinaryLike;
 
-export type GenerateMd5HashReturns = string;
+export type GenerateHashReturns = string;
+
+/**
+ * Get accessory category.
+ *
+ * @since 1.0.0
+ */
+export type GetAccessoryCategoryDeviceCategory = PluginDeviceCategory;
+
+export type GetAccessoryCategoryReturns = number;
 
 /**
  * Get plural form.
@@ -894,6 +1165,15 @@ export type InitializeReturns = void;
 export type IsForwardSlashOSReturns = boolean;
 
 /**
+ * Is portal sync code.
+ *
+ * @since 1.0.0
+ */
+export type IsPortalSyncCodeSyncCode = string;
+
+export type IsPortalSyncCodeVerifiedSyncCode = PortalSyncCode;
+
+/**
  * Parse arm disarm message.
  *
  * @since 1.0.0
@@ -913,7 +1193,13 @@ export type ParseDoSubmitHandlersReturns = DoSubmitHandlers;
 
 export type ParseDoSubmitHandlersHandlers = DoSubmitHandlers;
 
-export type ParseDoSubmitHandlersUrlParamsSat = UUID;
+export type ParseDoSubmitHandlersRelativeUrl = DoSubmitHandlerRelativeUrl;
+
+export type ParseDoSubmitHandlersUrlParamsHref = DoSubmitHandlerUrlParamsHref;
+
+export type ParseDoSubmitHandlersUrlParamsArmState = Exclude<DoSubmitHandlerUrlParamsArmState, null> | '';
+
+export type ParseDoSubmitHandlersUrlParamsArm = Exclude<DoSubmitHandlerUrlParamsArm, null> | '';
 
 /**
  * Parse orb sensors.
@@ -926,6 +1212,10 @@ export type ParseOrbSensorsReturns = SensorsStatus;
 
 export type ParseOrbSensorsSensors = SensorsStatus;
 
+export type ParseOrbSensorsCleanedIcon = SensorStatusIcon;
+
+export type ParseOrbSensorsCleanedStatus = SensorStatusStatus;
+
 /**
  * Parse orb text summary.
  *
@@ -933,7 +1223,11 @@ export type ParseOrbSensorsSensors = SensorsStatus;
  */
 export type ParseOrbTextSummaryElement = Element | null;
 
-export type ParseOrbTextSummaryReturns = OrbTextSummary;
+export type ParseOrbTextSummaryReturns = PanelStatus;
+
+export type ParseOrbTextSummaryCurrentState = Exclude<PanelStatusState, null>;
+
+export type ParseOrbTextSummaryCurrentStatus = Exclude<PanelStatusStatus, null> | '';
 
 /**
  * Parse orb security buttons.
@@ -946,14 +1240,24 @@ export type ParseOrbSecurityButtonsReturns = OrbSecurityButtons;
 
 export type ParseOrbSecurityButtonsButtons = OrbSecurityButtons;
 
-export type ParseOrbSecurityButtonsUrlParamsSat = UUID;
+export type ParseOrbSecurityButtonsButtonId = OrbSecurityButtonBaseButtonId;
+
+export type ParseOrbSecurityButtonsPendingButtonText = OrbSecurityButtonPendingButtonText;
+
+export type ParseOrbSecurityButtonsReadyButtonText = OrbSecurityButtonReadyButtonText;
+
+export type ParseOrbSecurityButtonsRelativeUrl = OrbSecurityButtonReadyRelativeUrl;
+
+export type ParseOrbSecurityButtonsLoadingText = OrbSecurityButtonReadyLoadingText;
+
+export type ParseOrbSecurityButtonsHref = OrbSecurityButtonReadyUrlParamsHref;
+
+export type ParseOrbSecurityButtonsArmState = OrbSecurityButtonReadyUrlParamsArmState;
+
+export type ParseOrbSecurityButtonsArm = OrbSecurityButtonReadyUrlParamsArm;
 
 /**
  * Parse sensors table.
- *
- * @param {ParseOrbSensorsTableElements} elements - Elements.
- *
- * @returns {ParseOrbSensorsTableReturns}
  *
  * @since 1.0.0
  */
@@ -962,6 +1266,10 @@ export type ParseOrbSensorsTableElements = NodeListOf<Element>;
 export type ParseOrbSensorsTableReturns = SensorsInformation;
 
 export type ParseOrbSensorsTableSensors = SensorsInformation;
+
+export type ParseOrbSensorsTableDeviceType = SensorInformationDeviceType;
+
+export type ParseOrbSensorsTableStatus = SensorInformationStatus;
 
 /**
  * Sleep.
@@ -977,8 +1285,13 @@ export type SleepReturns = Promise<void>;
  *
  * @since 1.0.0
  */
-export type StackTracerType = 'api-response' | 'serialize-error' | 'zod-error';
+export type StackTracerType = 'api-response' | 'detect-content' | 'serialize-error' | 'zod-error';
 
-export type StackTracerError<Type extends StackTracerType> = Type extends 'api-response' ? ApiResponseFail<any> : Type extends 'serialize-error' ? ErrorObject : Type extends 'zod-error' ? ZodIssue[] : never;
+export type StackTracerError<Type extends StackTracerType> =
+  Type extends 'api-response' ? ApiResponseFail<any>
+    : Type extends 'detect-content' ? object
+      : Type extends 'serialize-error' ? ErrorObject
+        : Type extends 'zod-error' ? z.ZodIssue[]
+          : never;
 
 export type StackTracerReturns = void;

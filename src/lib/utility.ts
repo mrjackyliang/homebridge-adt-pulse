@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import { Categories } from 'homebridge';
 import { JSDOM } from 'jsdom';
 import _ from 'lodash';
 import { createHash } from 'node:crypto';
@@ -10,15 +11,21 @@ import {
   characterHtmlLineBreak,
   characterWhitespace,
   functionDoSubmit,
+  functionGoToUrl,
   functionSetArmState,
   paramSat,
+  textOrbSensorZone,
   textOrbTextSummary,
+  textSyncCode,
 } from '@/lib/regex.js';
 import type {
   ClearHtmlLineBreakData,
   ClearHtmlLineBreakReturns,
   ClearWhitespaceData,
   ClearWhitespaceReturns,
+  CondenseSensorTypeCondensed,
+  CondenseSensorTypeReturns,
+  CondenseSensorTypeSensorType,
   DebugLogCaller,
   DebugLogLogger,
   DebugLogMessage,
@@ -34,35 +41,60 @@ import type {
   FetchTableCellsMatchList,
   FetchTableCellsNodeElements,
   FetchTableCellsReturns,
+  FindIndexWithValueArray,
+  FindIndexWithValueCondition,
+  FindIndexWithValueReturns,
   FindNullKeysFound,
   FindNullKeysParentKey,
   FindNullKeysProperties,
   FindNullKeysReturns,
+  GenerateDeviceIdId,
+  GenerateDeviceIdReturns,
   GenerateDynatracePCHeaderValueMode,
   GenerateDynatracePCHeaderValueReturns,
-  GenerateMd5HashData,
-  GenerateMd5HashReturns,
+  GenerateHashData,
+  GenerateHashReturns,
+  GetAccessoryCategoryDeviceCategory,
+  GetAccessoryCategoryReturns,
   GetPluralFormCount,
   GetPluralFormPlural,
   GetPluralFormReturns,
   GetPluralFormSingular,
   IsForwardSlashOSReturns,
+  IsPortalSyncCodeSyncCode,
+  IsPortalSyncCodeVerifiedSyncCode,
   ParseArmDisarmMessageElement,
   ParseArmDisarmMessageReturns,
   ParseDoSubmitHandlersElements,
   ParseDoSubmitHandlersHandlers,
+  ParseDoSubmitHandlersRelativeUrl,
   ParseDoSubmitHandlersReturns,
-  ParseDoSubmitHandlersUrlParamsSat,
+  ParseDoSubmitHandlersUrlParamsArm,
+  ParseDoSubmitHandlersUrlParamsArmState,
+  ParseDoSubmitHandlersUrlParamsHref,
+  ParseOrbSecurityButtonsArm,
+  ParseOrbSecurityButtonsArmState,
+  ParseOrbSecurityButtonsButtonId,
   ParseOrbSecurityButtonsButtons,
   ParseOrbSecurityButtonsElements,
+  ParseOrbSecurityButtonsHref,
+  ParseOrbSecurityButtonsLoadingText,
+  ParseOrbSecurityButtonsPendingButtonText,
+  ParseOrbSecurityButtonsReadyButtonText,
+  ParseOrbSecurityButtonsRelativeUrl,
   ParseOrbSecurityButtonsReturns,
-  ParseOrbSecurityButtonsUrlParamsSat,
+  ParseOrbSensorsCleanedIcon,
+  ParseOrbSensorsCleanedStatus,
   ParseOrbSensorsElements,
   ParseOrbSensorsReturns,
   ParseOrbSensorsSensors,
+  ParseOrbSensorsTableDeviceType,
   ParseOrbSensorsTableElements,
   ParseOrbSensorsTableReturns,
   ParseOrbSensorsTableSensors,
+  ParseOrbSensorsTableStatus,
+  ParseOrbTextSummaryCurrentState,
+  ParseOrbTextSummaryCurrentStatus,
   ParseOrbTextSummaryElement,
   ParseOrbTextSummaryReturns,
   SleepMilliseconds,
@@ -96,6 +128,50 @@ export function clearHtmlLineBreak(data: ClearHtmlLineBreakData): ClearHtmlLineB
  */
 export function clearWhitespace(data: ClearWhitespaceData): ClearWhitespaceReturns {
   return data.replace(characterWhitespace, ' ').trim();
+}
+
+/**
+ * Condense sensor type.
+ *
+ * @param {CondenseSensorTypeSensorType} sensorType - Sensor type.
+ *
+ * @returns {CondenseSensorTypeReturns}
+ *
+ * @since 1.0.0
+ */
+export function condenseSensorType(sensorType: CondenseSensorTypeSensorType): CondenseSensorTypeReturns {
+  let condensed: CondenseSensorTypeCondensed;
+
+  switch (sensorType) {
+    case 'Door Sensor':
+    case 'Window Sensor':
+    case 'Door/Window Sensor':
+      condensed = 'doorWindow';
+      break;
+    case 'Motion Sensor':
+    case 'Motion Sensor (Notable Events Only)':
+      condensed = 'motion';
+      break;
+    case 'Glass Break Detector':
+      condensed = 'glass';
+      break;
+    case 'Fire (Smoke/Heat) Detector':
+      condensed = 'fire';
+      break;
+    case 'Carbon Monoxide Detector':
+      condensed = 'co';
+      break;
+    case 'Water/Flood Sensor':
+      condensed = 'flood';
+      break;
+    case 'Temperature Sensor':
+      condensed = 'temperature';
+      break;
+    default:
+      break;
+  }
+
+  return condensed;
 }
 
 /**
@@ -157,7 +233,7 @@ export function debugLog(logger: DebugLogLogger, caller: DebugLogCaller, type: D
  * @since 1.0.0
  */
 export function fetchErrorMessage(response: FetchErrorMessageResponse): FetchErrorMessageReturns {
-  if (typeof response.data !== 'string') {
+  if (response === undefined || typeof response.data !== 'string') {
     return null;
   }
 
@@ -199,6 +275,18 @@ export function fetchMissingSatCode(response: FetchMissingSatCodeResponse): Fetc
   // Find the sat code.
   const satCode = response.data.match(paramSat);
 
+  /**
+   * Original matches for the sat code.
+   *
+   * - "sat=3b59d412-0dcb-41fb-b925-3fcfe3144633"
+   * - "3b59d412-0dcb-41fb-b925-3fcfe3144633"
+   *
+   * Only need to store the sat code, and should be two elements.
+   * It is loosely matched for more to take unexpected changes into
+   * account. Used in case sat code is not found.
+   *
+   * @since 1.0.0
+   */
   if (satCode !== null && satCode.length >= 2) {
     return satCode[1];
   }
@@ -285,6 +373,36 @@ export function fetchTableCells(nodeElements: FetchTableCellsNodeElements, match
 }
 
 /**
+ * Find index with value.
+ *
+ * @param {FindIndexWithValueArray}     array     - Array.
+ * @param {FindIndexWithValueCondition} condition - Condition.
+ *
+ * @returns {FindIndexWithValueReturns}
+ *
+ * @since 1.0.0
+ */
+export function findIndexWithValue<Value>(array: FindIndexWithValueArray<Value>, condition: FindIndexWithValueCondition<Value>): FindIndexWithValueReturns<Value> {
+  let index = -1;
+  let value;
+
+  for (let i = 0; i < array.length; i += 1) {
+    // If the current iteration matches the condition given, return that.
+    if (condition(array[i])) {
+      index = i;
+      value = array[i];
+
+      break;
+    }
+  }
+
+  return {
+    index,
+    value,
+  };
+}
+
+/**
  * Find null keys.
  *
  * @param {FindNullKeysProperties} properties - Properties.
@@ -308,6 +426,19 @@ export function findNullKeys(properties: FindNullKeysProperties, parentKey: Find
   });
 
   return found;
+}
+
+/**
+ * Generate device id.
+ *
+ * @param {GenerateDeviceIdId} id - Id.
+ *
+ * @returns {GenerateDeviceIdReturns}
+ *
+ * @since 1.0.0
+ */
+export function generateDeviceId(id: GenerateDeviceIdId): GenerateDeviceIdReturns {
+  return `adt-device-${id}`;
 }
 
 /**
@@ -354,24 +485,50 @@ export function generateDynatracePCHeaderValue(mode: GenerateDynatracePCHeaderVa
 }
 
 /**
- * Generate md5 hash.
+ * Generate hash.
  *
- * @param {GenerateMd5HashData} data - Data.
+ * @param {GenerateHashData} data - Data.
  *
- * @returns {GenerateMd5HashReturns}
+ * @returns {GenerateHashReturns}
  *
  * @since 1.0.0
  */
-export function generateMd5Hash(data: GenerateMd5HashData): GenerateMd5HashReturns {
-  return createHash('md5').update(JSON.stringify(data)).digest('hex');
+export function generateHash(data: GenerateHashData): GenerateHashReturns {
+  return createHash('sha512').update(data).digest('hex');
+}
+
+/**
+ * Get accessory category.
+ *
+ * @param {GetAccessoryCategoryDeviceCategory} deviceCategory - Device category.
+ *
+ * @returns {GetAccessoryCategoryReturns}
+ *
+ * @since 1.0.0
+ */
+export function getAccessoryCategory(deviceCategory: GetAccessoryCategoryDeviceCategory): GetAccessoryCategoryReturns {
+  switch (deviceCategory) {
+    case 'ALARM_SYSTEM':
+      return Categories.ALARM_SYSTEM;
+    case 'BRIDGE':
+      return Categories.BRIDGE;
+    case 'OTHER':
+      return Categories.OTHER;
+    case 'SECURITY_SYSTEM':
+      return Categories.SECURITY_SYSTEM;
+    case 'SENSOR':
+      return Categories.SENSOR;
+    default:
+      return Categories.OTHER;
+  }
 }
 
 /**
  * Get plural form.
  *
- * @param {GetPluralFormCount} count
- * @param {GetPluralFormSingular} singular
- * @param {GetPluralFormPlural} plural
+ * @param {GetPluralFormCount}    count    - Count.
+ * @param {GetPluralFormSingular} singular - Singular.
+ * @param {GetPluralFormPlural}   plural   - Plural.
  *
  * @returns {GetPluralFormReturns}
  *
@@ -409,6 +566,19 @@ export function isForwardSlashOS(): IsForwardSlashOSReturns {
 }
 
 /**
+ * Is portal sync code.
+ *
+ * @param {IsPortalSyncCodeSyncCode} syncCode - Sync code.
+ *
+ * @returns {boolean}
+ *
+ * @since 1.0.0
+ */
+export function isPortalSyncCode(syncCode: IsPortalSyncCodeSyncCode): syncCode is IsPortalSyncCodeVerifiedSyncCode {
+  return textSyncCode.test(syncCode);
+}
+
+/**
  * Parse arm disarm message.
  *
  * @param {ParseArmDisarmMessageElement} element - Element.
@@ -440,22 +610,23 @@ export function parseDoSubmitHandlers(elements: ParseDoSubmitHandlersElements): 
   elements.forEach((element) => {
     const onClick = element.getAttribute('onclick');
 
+    // None of the force arm buttons are disabled, so if "onClick" is null, this button is useless.
     if (onClick === null) {
       return;
     }
 
-    const relativeUrl = onClick.replace(functionDoSubmit, '$1');
-    const urlParamsSat = onClick.replace(functionDoSubmit, '$2') as ParseDoSubmitHandlersUrlParamsSat;
-    const urlParamsHref = onClick.replace(functionDoSubmit, '$3');
-    const urlParamsArmState = onClick.replace(functionDoSubmit, '$5');
-    const urlParamsArm = onClick.replace(functionDoSubmit, '$6');
+    const relativeUrl = onClick.replace(functionDoSubmit, '$1') as ParseDoSubmitHandlersRelativeUrl;
+    const urlParamsSat = onClick.replace(functionDoSubmit, '$2');
+    const urlParamsHref = onClick.replace(functionDoSubmit, '$3').replace(characterBackslashForwardSlash, '/') as ParseDoSubmitHandlersUrlParamsHref;
+    const urlParamsArmState = onClick.replace(functionDoSubmit, '$5') as ParseDoSubmitHandlersUrlParamsArmState;
+    const urlParamsArm = onClick.replace(functionDoSubmit, '$6') as ParseDoSubmitHandlersUrlParamsArm;
 
     handlers.push({
       relativeUrl,
       urlParams: {
-        arm: (urlParamsArm === 'away' || urlParamsArm === 'night' || urlParamsArm === 'stay') ? urlParamsArm : null,
-        armState: (urlParamsArmState === 'forcearm') ? urlParamsArmState : null,
-        href: urlParamsHref.replace(characterBackslashForwardSlash, '/'),
+        arm: (urlParamsArm !== '') ? urlParamsArm : null,
+        armState: (urlParamsArmState !== '') ? urlParamsArmState : null,
+        href: urlParamsHref,
         sat: urlParamsSat,
       },
     });
@@ -477,23 +648,28 @@ export function parseOrbSensors(elements: ParseOrbSensorsElements): ParseOrbSens
   const sensors: ParseOrbSensorsSensors = [];
 
   elements.forEach((element) => {
-    const icon = element.querySelector('td:nth-child(1) canvas');
+    const canvas = element.querySelector('td:nth-child(1) canvas');
     const name = element.querySelector('td:nth-child(3) a.p_deviceNameText');
     const zone = element.querySelector('td:nth-child(3) span.p_grayNormalText, td:nth-child(3) div.p_grayNormalText');
     const status = element.querySelector('td:nth-child(4)');
 
-    if (icon !== null && name !== null && zone !== null && status !== null) {
-      const iconIcon = icon.getAttribute('icon');
+    if (canvas !== null && name !== null && zone !== null && status !== null) {
+      const canvasIcon = canvas.getAttribute('icon');
       const nameText = name.textContent;
       const zoneText = zone.textContent;
       const statusText = status.textContent;
 
-      if (iconIcon !== null && nameText !== null && zoneText !== null && statusText !== null) {
+      if (canvasIcon !== null && nameText !== null && zoneText !== null && statusText !== null) {
+        const cleanedIcon = clearWhitespace(canvasIcon) as ParseOrbSensorsCleanedIcon;
+        const cleanedName = clearWhitespace(nameText);
+        const cleanedZone = Number(clearWhitespace(zoneText).replace(textOrbSensorZone, '$2'));
+        const cleanedStatus = clearWhitespace(statusText) as ParseOrbSensorsCleanedStatus;
+
         sensors.push({
-          icon: clearWhitespace(iconIcon),
-          name: clearWhitespace(nameText),
-          status: clearWhitespace(statusText),
-          zone: Number(clearWhitespace(zoneText).replace(/^(Zone )(.*)$/, '$2').toLowerCase()),
+          icon: cleanedIcon,
+          name: cleanedName,
+          status: cleanedStatus,
+          zone: cleanedZone,
         });
       }
     }
@@ -520,8 +696,8 @@ export function parseOrbTextSummary(element: ParseOrbTextSummaryElement): ParseO
   }
 
   const cleanedNode = clearWhitespace(element.textContent);
-  const currentState = cleanedNode.replace(textOrbTextSummary, '$1');
-  const currentStatus = cleanedNode.replace(textOrbTextSummary, '$2');
+  const currentState = cleanedNode.replace(textOrbTextSummary, '$1') as ParseOrbTextSummaryCurrentState;
+  const currentStatus = cleanedNode.replace(textOrbTextSummary, '$2') as ParseOrbTextSummaryCurrentStatus;
 
   return {
     state: currentState,
@@ -547,12 +723,17 @@ export function parseOrbSecurityButtons(elements: ParseOrbSecurityButtonsElement
     const value = element.getAttribute('value');
     const onClick = element.getAttribute('onclick');
 
+    // Type asserted variables for both pending (disabled) and ready (enabled) buttons.
+    const buttonId = id as ParseOrbSecurityButtonsButtonId;
+
     // There is a pending (disabled) button displayed.
     if (disabled !== null && onClick === null) {
+      const pendingButtonText = value as ParseOrbSecurityButtonsPendingButtonText;
+
       buttons.push({
         buttonDisabled: true,
-        buttonId: id,
-        buttonTitle: value,
+        buttonId,
+        buttonText: pendingButtonText,
       });
 
       return;
@@ -560,46 +741,27 @@ export function parseOrbSecurityButtons(elements: ParseOrbSecurityButtonsElement
 
     // There is a ready (enabled) button displayed.
     if (disabled === null && onClick !== null) {
-      const relativeUrl = onClick.replace(functionSetArmState, '$1');
-      const loadingText = onClick.replace(functionSetArmState, '$2');
-      const buttonIndex = onClick.replace(functionSetArmState, '$3');
-      const totalButtons = onClick.replace(functionSetArmState, '$4');
-      const changeAccessCode = onClick.replace(functionSetArmState, '$5');
-      const urlParamsHref = onClick.replace(functionSetArmState, '$6');
-      const urlParamsArmState = onClick.replace(functionSetArmState, '$7');
-      const urlParamsArm = onClick.replace(functionSetArmState, '$8');
-      const urlParamsSat = onClick.replace(functionSetArmState, '$9') as ParseOrbSecurityButtonsUrlParamsSat;
+      const readyButtonText = value as ParseOrbSecurityButtonsReadyButtonText;
 
-      if (
-        (
-          urlParamsArm !== 'away'
-          && urlParamsArm !== 'night'
-          && urlParamsArm !== 'off'
-          && urlParamsArm !== 'stay'
-        )
-        || (
-          urlParamsArmState !== 'away'
-          && urlParamsArmState !== 'disarmed'
-          && urlParamsArmState !== 'disarmed+with+alarm'
-          && urlParamsArmState !== 'disarmed_with_alarm'
-          && urlParamsArmState !== 'night'
-          && urlParamsArmState !== 'night+stay'
-          && urlParamsArmState !== 'off'
-          && urlParamsArmState !== 'stay'
-        )
-      ) {
-        return;
-      }
+      const relativeUrl = onClick.replace(functionSetArmState, '$1') as ParseOrbSecurityButtonsRelativeUrl;
+      const loadingText = onClick.replace(functionSetArmState, '$2') as ParseOrbSecurityButtonsLoadingText;
+      const buttonIndex = Number(onClick.replace(functionSetArmState, '$3'));
+      const totalButtons = Number(onClick.replace(functionSetArmState, '$4'));
+      const changeAccessCode = Boolean(onClick.replace(functionSetArmState, '$5'));
+      const urlParamsHref = onClick.replace(functionSetArmState, '$6') as ParseOrbSecurityButtonsHref;
+      const urlParamsArmState = onClick.replace(functionSetArmState, '$7') as ParseOrbSecurityButtonsArmState;
+      const urlParamsArm = onClick.replace(functionSetArmState, '$8') as ParseOrbSecurityButtonsArm;
+      const urlParamsSat = onClick.replace(functionSetArmState, '$9');
 
       buttons.push({
         buttonDisabled: false,
-        buttonId: id,
-        buttonIndex: Number(buttonIndex),
-        buttonTitle: value,
-        changeAccessCode: (changeAccessCode === 'true'),
+        buttonId,
+        buttonIndex,
+        buttonText: readyButtonText,
+        changeAccessCode,
         loadingText,
         relativeUrl,
-        totalButtons: Number(totalButtons),
+        totalButtons,
         urlParams: {
           arm: urlParamsArm,
           armState: urlParamsArmState,
@@ -626,27 +788,36 @@ export function parseSensorsTable(elements: ParseOrbSensorsTableElements): Parse
   const sensors: ParseOrbSensorsTableSensors = [];
 
   elements.forEach((element) => {
+    const onclick = element.getAttribute('onclick');
     const icon = element.querySelector('td:nth-child(1) canvas');
     const name = element.querySelector('td:nth-child(2) a');
     const zone = element.querySelector('td:nth-child(3)');
     const deviceType = element.querySelector('td:nth-child(5)');
 
-    if (icon !== null && name !== null && zone !== null && deviceType !== null) {
+    if (onclick !== null && icon !== null && name !== null && zone !== null && deviceType !== null) {
+      const deviceId = onclick.replace(functionGoToUrl, '$1');
       const iconTitle = icon.getAttribute('title');
       const nameText = name.textContent;
       const zoneText = zone.textContent;
       const deviceTypeText = deviceType.textContent;
 
       if (iconTitle !== null && nameText !== null && zoneText !== null && deviceTypeText !== null) {
-        // If the row does not have a zone, it is not a sensor.
+        // If the row does not have a zone, it is NOT a sensor.
         const isSensor = clearWhitespace(zoneText) !== '';
 
         if (isSensor) {
+          const cleanedDeviceId = Number(clearWhitespace(deviceId));
+          const cleanedDeviceType = clearWhitespace(deviceTypeText) as ParseOrbSensorsTableDeviceType;
+          const cleanedName = clearWhitespace(nameText);
+          const cleanedStatus = clearWhitespace(iconTitle) as ParseOrbSensorsTableStatus;
+          const cleanedZone = Number(clearWhitespace(zoneText));
+
           sensors.push({
-            deviceType: clearWhitespace(deviceTypeText),
-            name: clearWhitespace(nameText),
-            status: clearWhitespace(iconTitle),
-            zone: Number(clearWhitespace(zoneText)),
+            deviceId: cleanedDeviceId,
+            deviceType: cleanedDeviceType,
+            name: cleanedName,
+            status: cleanedStatus,
+            zone: cleanedZone,
           });
         }
       }
@@ -686,11 +857,16 @@ export function stackTracer(type: StackTracerType, error: StackTracerError<Stack
 
   switch (type) {
     case 'api-response':
+    case 'detect-content':
+    case 'serialize-error':
+      stringError = util.inspect(error, {
+        showHidden: false,
+        depth: Infinity,
+        colors: false,
+      });
+      break;
     case 'zod-error':
       stringError = JSON.stringify(error, null, 2).replace(/\\"/g, '\'');
-      break;
-    case 'serialize-error':
-      stringError = util.inspect(error);
       break;
     default:
       break;

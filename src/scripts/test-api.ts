@@ -14,7 +14,6 @@ import type {
   ADTPulseTestAskQuestionReturns,
   ADTPulseTestFindConfigParsedFile,
   ADTPulseTestFindConfigPossibleLocations,
-  ADTPulseTestFindConfigRawFile,
   ADTPulseTestFindConfigReturns,
   ADTPulseTestPrintTestOutputIsSuccess,
   ADTPulseTestPrintTestOutputReturns,
@@ -156,7 +155,7 @@ class ADTPulseTest {
       debugLog(null, 'test-api.ts', 'info', `Attempt ${i + 1}: Finding the Homebridge config file in "${possibleLocations[i]}"`);
 
       try {
-        const rawFile: ADTPulseTestFindConfigRawFile = readFileSync(possibleLocations[i], 'utf-8');
+        const rawFile = readFileSync(possibleLocations[i], 'utf-8');
         const parsedFile: ADTPulseTestFindConfigParsedFile = JSON.parse(rawFile);
         const platforms = _.get(parsedFile, ['platforms']);
         const adtPlatform = _.find(platforms, (platform) => _.get(platform, ['platform']) === 'ADTPulse');
@@ -221,8 +220,8 @@ class ADTPulseTest {
         'test mode, please DO NOT PROCEED. The author is NOT RESPONSIBLE if the test causes',
         'an accidental trigger or if ADT agents/local authorities become involved.',
         '',
-        chalk.yellowBright('Type "I Agree" (without quotes) to acknowledge that you have read through,'),
-        chalk.yellowBright('understood, and agree to the disclaimer and instructions above ...'),
+        chalk.yellowBright('Type "I Agree" (without quotes) to fully acknowledge that you have read through'),
+        chalk.yellowBright('and understood the instructions, and agree to the disclaimer above ...'),
         '➜ ',
       ].join('\n'),
     };

@@ -27,6 +27,13 @@ export const characterWhitespace = /\s+/g;
 export const functionDoSubmit = /doSubmit\(\s*'([^']+)\?sat=([^']+)&href=([^&]+)(&armstate=([^&]+)&arm=([^']+))?'\s*\)/;
 
 /**
+ * Function go to url.
+ *
+ * @since 1.0.0
+ */
+export const functionGoToUrl = /^goToUrl\('device\.jsp\?id=([0-9]+)'\);$/;
+
+/**
  * Function set arm state.
  *
  * @since 1.0.0
@@ -132,6 +139,13 @@ export const requestPathSystemGateway = /^(\/myhome\/)([0-9.-]+)(\/system\/gatew
 export const requestPathSystemSystem = /^(\/myhome\/)([0-9.-]+)(\/system\/system\.jsp)$/;
 
 /**
+ * Text orb sensor zone.
+ *
+ * @since 1.0.0
+ */
+export const textOrbSensorZone = /^(Zone )(.*)$/;
+
+/**
  * Text orb text summary.
  *
  * @since 1.0.0
@@ -139,8 +153,15 @@ export const requestPathSystemSystem = /^(\/myhome\/)([0-9.-]+)(\/system\/system
 export const textOrbTextSummary = /^([A-Za-z0-9 ]+)\. ?([A-Za-z0-9 ]*)\.?$/;
 
 /**
- * Text security panel emergency keys.
+ * Text panel emergency keys.
  *
  * @since 1.0.0
  */
-export const textSecurityPanelEmergencyKeys = /([A-Za-z0-9]+: [A-Za-z0-9 ]+? \(Zone \d+\))/g;
+export const textPanelEmergencyKeys = /([A-Za-z0-9]+: [A-Za-z0-9 ]+? \(Zone \d+\))/g;
+
+/**
+ * Text sync code.
+ *
+ * @since 1.0.0
+ */
+export const textSyncCode = /^[0-9]+-[0-9]+-[0-9]+$/;

@@ -1,14 +1,53 @@
 import type { AxiosResponse } from 'axios';
 import type { Logger } from 'homebridge';
+import type http from 'http';
 import type { JSDOM } from 'jsdom';
 import type { ErrorObject } from 'serialize-error';
+
+import type {
+  PluginConfigPlatform,
+  PluginDeviceCategory,
+  PluginDeviceId,
+  PluginDeviceType,
+  PortalDeviceStatus,
+  PortalPanelArmButtonHref,
+  PortalPanelArmButtonId,
+  PortalPanelArmButtonLoadingText,
+  PortalPanelArmButtonRelativeUrl,
+  PortalPanelArmButtonText,
+  PortalPanelArmStateClean,
+  PortalPanelArmStateDirty,
+  PortalPanelArmStateForce,
+  PortalPanelArmValue,
+  PortalPanelForceArmButtonHref,
+  PortalPanelForceArmButtonRelativeUrl,
+  PortalPanelState,
+  PortalPanelStatus,
+  PortalSensorDeviceType,
+  PortalSensorStatusIcon,
+  PortalSensorStatusText,
+  PortalSubdomain,
+} from '@/types/constant.d.ts';
 
 /**
  * Api response.
  *
  * @since 1.0.0
  */
-export type ApiResponseAction = 'ARM_DISARM_HANDLER' | 'FORCE_ARM_HANDLER' | 'GET_GATEWAY_INFORMATION' | 'GET_PANEL_INFORMATION' | 'GET_PANEL_STATUS' | 'GET_SENSORS_INFORMATION' | 'GET_SENSORS_STATUS' | 'IS_PORTAL_ACCESSIBLE' | 'LOGIN' | 'LOGOUT' | 'PERFORM_KEEP_ALIVE' | 'PERFORM_SYNC_CHECK' | 'SET_PANEL_STATUS';
+export type ApiResponseAction =
+  'ARM_DISARM_HANDLER'
+  | 'FORCE_ARM_HANDLER'
+  | 'GET_GATEWAY_INFORMATION'
+  | 'GET_PANEL_INFORMATION'
+  | 'GET_PANEL_STATUS'
+  | 'GET_SENSORS_INFORMATION'
+  | 'GET_SENSORS_STATUS'
+  | 'IS_PORTAL_ACCESSIBLE'
+  | 'LOGIN'
+  | 'LOGOUT'
+  | 'PERFORM_KEEP_ALIVE'
+  | 'PERFORM_SYNC_CHECK'
+  | 'SET_PANEL_STATUS';
 
 export type ApiResponseSuccessSuccess = true;
 
@@ -37,32 +76,29 @@ export type ApiResponseFail<Action extends ApiResponseAction> = {
   info: ApiResponseErrorInfo,
 };
 
-export type ApiResponse<Action extends ApiResponseAction, Info extends ApiResponseSuccessInfo> = ApiResponseSuccess<Action, Info> | ApiResponseFail<Action>;
+export type ApiResponse<Action extends ApiResponseAction, Info extends ApiResponseSuccessInfo> =
+  ApiResponseSuccess<Action, Info>
+  | ApiResponseFail<Action>;
 
 /**
- * Arm actions.
+ * Axios response with request.
  *
  * @since 1.0.0
  */
-export type ArmActions = 'away' | 'night' | 'off' | 'stay';
-
-/**
- * Arm states.
- *
- * @since 1.0.0
- */
-export type ArmStates = 'away' | 'disarmed' | 'disarmed+with+alarm' | 'disarmed_with_alarm' | 'night' | 'night+stay' | 'off' | 'stay';
+export interface AxiosResponseWithRequest<T = any, D = any> extends AxiosResponse<T, D> {
+  request?: http.ClientRequest;
+}
 
 /**
  * Config.
  *
  * @since 1.0.0
  */
-export type ConfigPlatform = string;
+export type ConfigPlatform = PluginConfigPlatform;
 
 export type ConfigName = string;
 
-export type ConfigSubdomain = 'portal' | 'portal-ca';
+export type ConfigSubdomain = PortalSubdomain;
 
 export type ConfigUsername = string;
 
@@ -74,7 +110,7 @@ export type ConfigSensorName = string;
 
 export type ConfigSensorAdtName = string;
 
-export type ConfigSensorAdtType = 'co' | 'door' | 'fire' | 'flood' | 'glass' | 'motion' | 'window';
+export type ConfigSensorAdtType = Exclude<PluginDeviceType, 'gateway' | 'panel'>;
 
 export type ConfigSensorAdtZone = number;
 
@@ -104,17 +140,78 @@ export type Config = {
 };
 
 /**
+ * Devices.
+ *
+ * @since 1.0.0
+ */
+export type DeviceBaseId = PluginDeviceId;
+
+export type DeviceBaseName = string;
+
+export type DeviceBaseHapCategory = PluginDeviceCategory;
+
+export type DeviceBaseHapUuid = string;
+
+export type DeviceBaseHap = {
+  category: DeviceBaseHapCategory;
+  uuid: DeviceBaseHapUuid;
+};
+
+export type DeviceBaseManufacturer = string | null;
+
+export type DeviceBaseModel = string | null;
+
+export type DeviceBase = {
+  id: DeviceBaseId;
+  name: DeviceBaseName;
+  hap: DeviceBaseHap;
+  manufacturer: DeviceBaseManufacturer;
+  model: DeviceBaseModel;
+};
+
+export type DeviceGatewayType = Extract<PluginDeviceType, 'gateway'>;
+
+export type DeviceGatewaySerialNumber = string | null;
+
+export type DeviceGateway = {
+  type: DeviceGatewayType;
+  serial: DeviceGatewaySerialNumber;
+};
+
+export type DevicePanelType = Extract<PluginDeviceType, 'panel'>;
+
+export type DevicePanel = {
+  type: DevicePanelType;
+};
+
+export type DeviceSensorType = Exclude<PluginDeviceType, 'gateway' | 'panel'>;
+
+export type DeviceSensorZone = number;
+
+export type DeviceSensor = {
+  type: DeviceSensorType;
+  zone: DeviceSensorZone;
+};
+
+export type Device =
+  (DeviceBase & DeviceGateway)
+  | (DeviceBase & DevicePanel)
+  | (DeviceBase & DeviceSensor);
+
+export type Devices = Device[];
+
+/**
  * Do submit handlers.
  *
  * @since 1.0.0
  */
-export type DoSubmitHandlerRelativeUrl = string;
+export type DoSubmitHandlerRelativeUrl = PortalPanelForceArmButtonRelativeUrl;
 
-export type DoSubmitHandlerUrlParamsArm = Exclude<ArmActions, 'off'> | null;
+export type DoSubmitHandlerUrlParamsArm = Exclude<PortalPanelArmValue, 'off'> | null;
 
-export type DoSubmitHandlerUrlParamsArmState = ForceArmStates | null;
+export type DoSubmitHandlerUrlParamsArmState = PortalPanelArmStateForce | null;
 
-export type DoSubmitHandlerUrlParamsHref = string;
+export type DoSubmitHandlerUrlParamsHref = PortalPanelForceArmButtonHref;
 
 export type DoSubmitHandlerUrlParamsSat = UUID;
 
@@ -131,13 +228,6 @@ export type DoSubmitHandler = {
 };
 
 export type DoSubmitHandlers = DoSubmitHandler[];
-
-/**
- * Force arm states.
- *
- * @since 1.0.0
- */
-export type ForceArmStates = 'forcearm';
 
 /**
  * Gateway information.
@@ -173,7 +263,7 @@ export type GatewayInformationNetwork = {
 
 export type GatewayInformationSerialNumber = string | null;
 
-export type GatewayInformationStatus = string | null;
+export type GatewayInformationStatus = PortalDeviceStatus | null;
 
 export type GatewayInformationUpdateLast = string | null;
 
@@ -231,38 +321,42 @@ export type InternalConfig = {
 };
 
 /**
- * Null keys locations.
+ * Network id.
  *
  * @since 1.0.0
  */
-export type NullKeysLocations = string[];
+export type NetworkId = string;
 
 /**
  * Orb security buttons.
  *
  * @since 1.0.0
  */
-export type OrbSecurityButtonReadyButtonDisabled = false;
+export type OrbSecurityButtonBaseButtonId = PortalPanelArmButtonId | null;
 
-export type OrbSecurityButtonReadyButtonId = string | null;
+export type OrbSecurityButtonBase = {
+  buttonId: OrbSecurityButtonBaseButtonId;
+};
+
+export type OrbSecurityButtonReadyButtonDisabled = false;
 
 export type OrbSecurityButtonReadyButtonIndex = number;
 
-export type OrbSecurityButtonReadyButtonTitle = string | null;
+export type OrbSecurityButtonReadyButtonText = PortalPanelArmButtonText | null;
 
 export type OrbSecurityButtonReadyChangeAccessCode = boolean;
 
-export type OrbSecurityButtonReadyLoadingText = string;
+export type OrbSecurityButtonReadyLoadingText = PortalPanelArmButtonLoadingText;
 
-export type OrbSecurityButtonReadyRelativeUrl = string;
+export type OrbSecurityButtonReadyRelativeUrl = PortalPanelArmButtonRelativeUrl;
 
 export type OrbSecurityButtonReadyTotalButtons = number;
 
-export type OrbSecurityButtonReadyUrlParamsArm = ArmActions;
+export type OrbSecurityButtonReadyUrlParamsArm = PortalPanelArmValue;
 
-export type OrbSecurityButtonReadyUrlParamsArmState = ArmStates;
+export type OrbSecurityButtonReadyUrlParamsArmState = PortalPanelArmStateClean | PortalPanelArmStateDirty;
 
-export type OrbSecurityButtonReadyUrlParamsHref = string;
+export type OrbSecurityButtonReadyUrlParamsHref = PortalPanelArmButtonHref;
 
 export type OrbSecurityButtonReadyUrlParamsSat = UUID;
 
@@ -275,9 +369,8 @@ export type OrbSecurityButtonReadyUrlParams = {
 
 export type OrbSecurityButtonReady = {
   buttonDisabled: OrbSecurityButtonReadyButtonDisabled,
-  buttonId: OrbSecurityButtonReadyButtonId;
   buttonIndex: OrbSecurityButtonReadyButtonIndex;
-  buttonTitle: OrbSecurityButtonReadyButtonTitle;
+  buttonText: OrbSecurityButtonReadyButtonText;
   changeAccessCode: OrbSecurityButtonReadyChangeAccessCode;
   loadingText: OrbSecurityButtonReadyLoadingText;
   relativeUrl: OrbSecurityButtonReadyRelativeUrl;
@@ -287,33 +380,16 @@ export type OrbSecurityButtonReady = {
 
 export type OrbSecurityButtonPendingButtonDisabled = true;
 
-export type OrbSecurityButtonPendingButtonId = string | null;
-
-export type OrbSecurityButtonPendingButtonTitle = string | null;
+export type OrbSecurityButtonPendingButtonText = PortalPanelArmButtonLoadingText | null;
 
 export type OrbSecurityButtonPending = {
   buttonDisabled: OrbSecurityButtonPendingButtonDisabled,
-  buttonId: OrbSecurityButtonPendingButtonId;
-  buttonTitle: OrbSecurityButtonPendingButtonTitle;
+  buttonText: OrbSecurityButtonPendingButtonText;
 };
 
-export type OrbSecurityButton = OrbSecurityButtonReady | OrbSecurityButtonPending;
+export type OrbSecurityButton = (OrbSecurityButtonBase & OrbSecurityButtonReady) | (OrbSecurityButtonBase & OrbSecurityButtonPending);
 
 export type OrbSecurityButtons = OrbSecurityButton[];
-
-/**
- * Orb text summary.
- *
- * @since 1.0.0
- */
-export type OrbTextSummaryState = string | null;
-
-export type OrbTextSummaryStatus = string | null;
-
-export type OrbTextSummary = {
-  state: OrbTextSummaryState;
-  status: OrbTextSummaryStatus;
-};
 
 /**
  * Panel information.
@@ -326,7 +402,7 @@ export type PanelInformationManufacturerProvider = string | null;
 
 export type PanelInformationTypeModel = string | null;
 
-export type PanelInformationStatus = string | null;
+export type PanelInformationStatus = PortalDeviceStatus | null;
 
 export type PanelInformation = {
   emergencyKeys: PanelInformationEmergencyKeys;
@@ -336,19 +412,36 @@ export type PanelInformation = {
 };
 
 /**
+ * Panel status.
+ *
+ * @since 1.0.0
+ */
+export type PanelStatusState = PortalPanelState | null;
+
+export type PanelStatusStatus = Exclude<PortalPanelStatus, ''> | null;
+
+export type PanelStatus = {
+  state: PanelStatusState;
+  status: PanelStatusStatus;
+};
+
+/**
  * Sensors information.
  *
  * @since 1.0.0
  */
-export type SensorInformationDeviceType = string;
+export type SensorInformationDeviceId = number;
+
+export type SensorInformationDeviceType = PortalSensorDeviceType;
 
 export type SensorInformationName = string;
 
-export type SensorInformationStatus = string;
+export type SensorInformationStatus = PortalDeviceStatus;
 
 export type SensorInformationZone = number;
 
 export type SensorInformation = {
+  deviceId: SensorInformationDeviceId;
   deviceType: SensorInformationDeviceType;
   name: SensorInformationName;
   status: SensorInformationStatus;
@@ -362,11 +455,11 @@ export type SensorsInformation = SensorInformation[];
  *
  * @since 1.0.0
  */
-export type SensorStatusIcon = string;
+export type SensorStatusIcon = PortalSensorStatusIcon;
 
 export type SensorStatusName = string;
 
-export type SensorStatusStatus = string;
+export type SensorStatusStatus = PortalSensorStatusText;
 
 export type SensorStatusZone = number;
 
@@ -384,35 +477,7 @@ export type SensorsStatus = SensorStatus[];
  *
  * @since 1.0.0
  */
-export type SessionsAxiosAxios = AxiosResponse[];
-
-export type SessionsAxios = {
-  axios: SessionsAxiosAxios;
-};
-
-export type SessionsJsdomJsdom = JSDOM[];
-
-export type SessionsJsdom = {
-  jsdom: SessionsJsdomJsdom;
-};
-
-export type Sessions<IncludeAxios extends boolean, IncludeJsdom extends boolean> = (IncludeAxios extends true ? SessionsAxios : object) & (IncludeJsdom extends true ? SessionsJsdom : object);
-
-/**
- * Sync code.
- *
- * @since 1.0.0
- */
-export type SyncCode = string;
-
-/**
- * Table cells with surrounding data.
- *
- * @since 1.0.0
- */
-export type TableCellsWithSurroundingData = {
-  [key: string]: string[];
-};
+export type Sessions<Shape extends Record<string, AxiosResponseWithRequest<unknown, unknown> | JSDOM>> = Shape;
 
 /**
  * UUID.
