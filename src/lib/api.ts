@@ -1111,6 +1111,7 @@ export class ADTPulse {
          *         'Sensors Tripped'
          *         'Sensor Tripped'
          *         'Uncleared Alarm'
+         *         'WATER ALARM'
          *         null
          *
          * @since 1.0.0
@@ -1830,7 +1831,8 @@ export class ADTPulse {
            *
            * name: 'Sensor 1'
            *
-           * status: 'Closed'
+           * status: 'ALARM, Okay'
+           *         'Closed'
            *         'Motion'
            *         'No Motion'
            *         'Okay'
@@ -2932,12 +2934,12 @@ export class ADTPulse {
 
         // Determine if "this instance" was redirected to the sign-in page.
         if (requestPathAccessSignIn.test(requestPath) || requestPathAccessSignInENsPartnerAdt.test(requestPath)) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.handleLoginFailure()', 'error', 'Either the username or password is invalid or was signed out due to inactivity');
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.handleLoginFailure()', 'error', 'Either the username or password is incorrect, fingerprint format is invalid, or was signed out due to inactivity');
         }
 
         // Determine if "this instance" was redirected to the MFA challenge page.
         if (requestPathMfaMfaSignInWorkflowChallenge.test(requestPath)) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.handleLoginFailure()', 'error', 'Fingerprint is invalid or "Trust this device" was not selected after completing MFA challenge');
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.handleLoginFailure()', 'error', 'Either the fingerprint expired or "Trust this device" was not selected after completing MFA challenge');
         }
 
         // Show the portal error message if it exists.

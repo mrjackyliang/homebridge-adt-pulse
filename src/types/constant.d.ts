@@ -209,6 +209,7 @@ export type PortalPanelStatus =
   | 'Sensors Tripped'
   | 'Sensor Tripped'
   | 'Uncleared Alarm'
+  | 'WATER ALARM'
   | '';
 
 /**
@@ -256,7 +257,8 @@ export type PortalSensorStatusIcon =
  * @since 1.0.0
  */
 export type PortalSensorStatusText =
-  'Closed'
+  'ALARM, Okay'
+  | 'Closed'
   | 'Motion'
   | 'No Motion'
   | 'Okay'

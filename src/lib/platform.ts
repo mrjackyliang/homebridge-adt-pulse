@@ -168,7 +168,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
    *
    * @since 1.0.0
    */
-  #state: ADTPulsePlatformState;
+  readonly #state: ADTPulsePlatformState;
 
   /**
    * ADT Pulse Platform - Constructor.
@@ -292,7 +292,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
    * @since 1.0.0
    */
   configureAccessory(accessory: ADTPulsePlatformConfigureAccessoryAccessory): ADTPulsePlatformConfigureAccessoryReturns {
-    this.#log.info(`Configuring cached accessory for ${accessory.context.name} (id: ${accessory.context.id}, uuid: ${accessory.context.hap.uuid}) ...`);
+    this.#log.info(`Configuring cached accessory for ${accessory.context.name} (id: ${accessory.context.id}, uuid: ${accessory.context.uuid}) ...`);
 
     // Add the restored accessory to the accessories cache.
     this.#accessories.push(accessory);
@@ -308,10 +308,10 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
    * @since 1.0.0
    */
   addAccessory(device: ADTPulsePlatformAddAccessoryDevice): ADTPulsePlatformAddAccessoryReturns {
-    const accessoryIndex = this.#accessories.findIndex((accessory) => device.hap.uuid === accessory.context.hap.uuid);
+    const accessoryIndex = this.#accessories.findIndex((accessory) => device.uuid === accessory.context.uuid);
 
     if (accessoryIndex >= 0) {
-      this.#log.error(`Cannot add ${device.name} (id: ${device.id}, uuid: ${device.hap.uuid}) accessory that already exists ...`);
+      this.#log.error(`Cannot add ${device.name} (id: ${device.id}, uuid: ${device.uuid}) accessory that already exists ...`);
 
       return;
     }
@@ -319,8 +319,8 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     // Create the new accessory without context.
     const newAccessory = new this.#api.platformAccessory(
       device.name,
-      device.hap.uuid,
-      getAccessoryCategory(device.hap.category),
+      device.uuid,
+      getAccessoryCategory(device.category),
     );
 
     // Set the context into the new accessory.
@@ -329,12 +329,12 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     // Let TypeScript know that the context now exists. This creates additional runtime.
     const typedAccessory = newAccessory as ADTPulsePlatformAddAccessoryTypedNewAccessory;
 
-    this.#log.info(`Adding ${typedAccessory.context.name} (id: ${typedAccessory.context.id}, uuid: ${typedAccessory.context.hap.uuid}) accessory ...`);
+    this.#log.info(`Adding ${typedAccessory.context.name} (id: ${typedAccessory.context.id}, uuid: ${typedAccessory.context.uuid}) accessory ...`);
 
     // Create the handler for the new accessory if it does not exist.
     if (this.#handlers[device.id] === undefined) {
       // All arguments are passed by reference.
-      this.#handlers[device.id] = new ADTPulseAccessory(typedAccessory, this.#service, this.#characteristic, this.#log);
+      this.#handlers[device.id] = new ADTPulseAccessory(typedAccessory, this.#state, this.#service, this.#characteristic, this.#log);
     }
 
     // Save the new accessory into the accessories cache.
@@ -359,16 +359,16 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
   updateAccessory(device: ADTPulsePlatformUpdateAccessoryDevice): ADTPulsePlatformUpdateAccessoryReturns {
     const { index, value } = findIndexWithValue(
       this.#accessories,
-      (accessory) => device.hap.uuid === accessory.context.hap.uuid,
+      (accessory) => device.uuid === accessory.context.uuid,
     );
 
     if (index < 0 || value === undefined) {
-      this.#log.warn(`Attempted to update ${device.name} (id: ${device.id}, uuid: ${device.hap.uuid}) accessory that does not exist ...`);
+      this.#log.warn(`Attempted to update ${device.name} (id: ${device.id}, uuid: ${device.uuid}) accessory that does not exist ...`);
 
       return;
     }
 
-    this.#log.debug(`Updating ${value.context.name} (id: ${value.context.id}, uuid: ${value.context.hap.uuid}) accessory ...`);
+    this.#log.debug(`Updating ${value.context.name} (id: ${value.context.id}, uuid: ${value.context.uuid}) accessory ...`);
 
     // Set the context into the existing accessory.
     value.context = device;
@@ -379,7 +379,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     // Create the handler for the existing accessory if it does not exist.
     if (this.#handlers[device.id] === undefined) {
       // All arguments are passed by reference.
-      this.#handlers[device.id] = new ADTPulseAccessory(value, this.#service, this.#characteristic, this.#log);
+      this.#handlers[device.id] = new ADTPulseAccessory(value, this.#state, this.#service, this.#characteristic, this.#log);
     }
 
     // Update the existing accessory in the accessories cache.
@@ -400,10 +400,10 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
    * @since 1.0.0
    */
   removeAccessory(accessory: ADTPulsePlatformRemoveAccessoryAccessory): ADTPulsePlatformRemoveAccessoryReturns {
-    this.#log.info(`Removing ${accessory.context.name} (id: ${accessory.context.id}, uuid: ${accessory.context.hap.uuid}) accessory ...`);
+    this.#log.info(`Removing ${accessory.context.name} (id: ${accessory.context.id}, uuid: ${accessory.context.uuid}) accessory ...`);
 
     // Keep only the accessories in the cache that is not the accessory being removed.
-    this.#accessories = this.#accessories.filter((existingAccessory) => existingAccessory.context.hap.uuid !== accessory.context.hap.uuid);
+    this.#accessories = this.#accessories.filter((existingAccessory) => existingAccessory.context.uuid !== accessory.context.uuid);
 
     this.#api.unregisterPlatformAccessories(
       'homebridge-adt-pulse',
@@ -832,13 +832,12 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         id,
         name: 'ADT Pulse Gateway',
         type: 'gateway',
-        hap: {
-          category: 'BRIDGE',
-          uuid: this.#api.hap.uuid.generate(id),
-        },
+        zone: null,
+        category: 'BRIDGE',
         manufacturer: gatewayInfo.manufacturer,
         model: gatewayInfo.model,
         serial: gatewayInfo.serialNumber,
+        uuid: this.#api.hap.uuid.generate(id),
       });
     }
 
@@ -850,12 +849,12 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         id,
         name: 'Security Panel',
         type: 'panel',
-        hap: {
-          category: 'SECURITY_SYSTEM',
-          uuid: this.#api.hap.uuid.generate(id),
-        },
+        zone: null,
+        category: 'SECURITY_SYSTEM',
         manufacturer: panelInfo.manufacturerProvider,
         model: panelInfo.typeModel,
+        serial: 'N/A',
+        uuid: this.#api.hap.uuid.generate(id),
       });
     }
 
@@ -871,13 +870,12 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
 
         const sensor = sensorsInfo.find((sensorInfo) => {
           const sensorInfoName = sensorInfo.name;
-          const sensorInfoType = sensorInfo.deviceType;
+          const sensorInfoType = condenseSensorType(sensorInfo.deviceType);
           const sensorInfoZone = sensorInfo.zone;
-          const deviceType = condenseSensorType(sensorInfoType);
 
           return (
             adtName === sensorInfoName
-            && adtType === deviceType
+            && adtType === sensorInfoType
             && adtZone === sensorInfoZone
           );
         });
@@ -895,13 +893,12 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
           id,
           name: name ?? adtName,
           type: adtType,
-          hap: {
-            category: 'SENSOR',
-            uuid: this.#api.hap.uuid.generate(id),
-          },
+          zone: adtZone,
+          category: 'SENSOR',
           manufacturer: 'ADT',
           model: sensor.deviceType,
-          zone: adtZone,
+          serial: 'N/A',
+          uuid: this.#api.hap.uuid.generate(id),
         });
       }
     }
@@ -923,7 +920,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
    */
   private async pollAccessories(devices: ADTPulsePlatformPollAccessoriesDevices): ADTPulsePlatformPollAccessoriesReturns {
     for (let i = 0; i < devices.length; i += 1) {
-      const accessoryIndex = this.#accessories.findIndex((accessory) => devices[i].hap.uuid === accessory.context.hap.uuid);
+      const accessoryIndex = this.#accessories.findIndex((accessory) => devices[i].uuid === accessory.context.uuid);
 
       // Update the device if accessory is cached, otherwise add it as a new device.
       if (accessoryIndex >= 0) {

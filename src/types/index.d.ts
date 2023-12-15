@@ -48,7 +48,7 @@ import type {
   ConfigSubdomain,
   ConfigUsername,
   Device,
-  DeviceBaseId,
+  DeviceId,
   Devices,
   DoSubmitHandlerRelativeUrl,
   DoSubmitHandlers,
@@ -463,13 +463,21 @@ export type ADTPulseSetPanelStatusSessions = Sessions<{
 
 export type ADTPulseSetPanelStatusReadyButton = OrbSecurityButtonBase & OrbSecurityButtonReady;
 
-// todo finish this later
+/**
+ * ADT Pulse Accessory - Accessory.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseAccessoryAccessory = PlatformAccessory<Device>;
+
 /**
  * ADT Pulse Accessory - Constructor.
  *
  * @since 1.0.0
  */
 export type ADTPulseAccessoryConstructorAccessory = PlatformAccessory<Device>;
+
+export type ADTPulseAccessoryConstructorState = ADTPulsePlatformState;
 
 export type ADTPulseAccessoryConstructorService = typeof Service;
 
@@ -478,12 +486,27 @@ export type ADTPulseAccessoryConstructorCharacteristic = typeof Characteristic;
 export type ADTPulseAccessoryConstructorLog = Logger;
 
 /**
- * ADT Pulse Accessory - Service.
+ * ADT Pulse Accessory - Log.
  *
  * @since 1.0.0
  */
-export type ADTPulseAccessoryService = Service;
-// todo finish this later
+export type ADTPulseAccessoryLog = Logger;
+
+/**
+ * ADT Pulse Accessory - Services.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseAccessoryServices = {
+  [key: string]: Service | undefined;
+};
+
+/**
+ * ADT Pulse Accessory - State.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseAccessoryState = ADTPulsePlatformState;
 
 /**
  * ADT Pulse Platform.
@@ -754,7 +777,7 @@ export type ADTPulsePlatformUnifyDevicesReturns = Promise<void>;
 
 export type ADTPulsePlatformUnifyDevicesDevices = Devices;
 
-export type ADTPulsePlatformUnifyDevicesId = DeviceBaseId;
+export type ADTPulsePlatformUnifyDevicesId = DeviceId;
 
 /**
  * ADT Pulse Platform - Update accessory.

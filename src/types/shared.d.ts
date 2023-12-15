@@ -144,59 +144,35 @@ export type Config = {
  *
  * @since 1.0.0
  */
-export type DeviceBaseId = PluginDeviceId;
+export type DeviceId = PluginDeviceId;
 
-export type DeviceBaseName = string;
+export type DeviceName = string;
 
-export type DeviceBaseHapCategory = PluginDeviceCategory;
+export type DeviceType = PluginDeviceType;
 
-export type DeviceBaseHapUuid = string;
+export type DeviceZone = number | null;
 
-export type DeviceBaseHap = {
-  category: DeviceBaseHapCategory;
-  uuid: DeviceBaseHapUuid;
+export type DeviceCategory = PluginDeviceCategory;
+
+export type DeviceManufacturer = string | null;
+
+export type DeviceModel = string | null;
+
+export type DeviceSerial = string | null;
+
+export type DeviceUuid = UUID;
+
+export type Device = {
+  id: DeviceId;
+  name: DeviceName;
+  type: DeviceType;
+  zone: DeviceZone;
+  category: DeviceCategory;
+  manufacturer: DeviceManufacturer;
+  model: DeviceModel;
+  serial: DeviceSerial;
+  uuid: DeviceUuid;
 };
-
-export type DeviceBaseManufacturer = string | null;
-
-export type DeviceBaseModel = string | null;
-
-export type DeviceBase = {
-  id: DeviceBaseId;
-  name: DeviceBaseName;
-  hap: DeviceBaseHap;
-  manufacturer: DeviceBaseManufacturer;
-  model: DeviceBaseModel;
-};
-
-export type DeviceGatewayType = Extract<PluginDeviceType, 'gateway'>;
-
-export type DeviceGatewaySerialNumber = string | null;
-
-export type DeviceGateway = {
-  type: DeviceGatewayType;
-  serial: DeviceGatewaySerialNumber;
-};
-
-export type DevicePanelType = Extract<PluginDeviceType, 'panel'>;
-
-export type DevicePanel = {
-  type: DevicePanelType;
-};
-
-export type DeviceSensorType = Exclude<PluginDeviceType, 'gateway' | 'panel'>;
-
-export type DeviceSensorZone = number;
-
-export type DeviceSensor = {
-  type: DeviceSensorType;
-  zone: DeviceSensorZone;
-};
-
-export type Device =
-  (DeviceBase & DeviceGateway)
-  | (DeviceBase & DevicePanel)
-  | (DeviceBase & DeviceSensor);
 
 export type Devices = Device[];
 

@@ -180,6 +180,7 @@ export async function detectedNewPanelStatus(summary: DetectedNewPanelStatusSumm
     'Sensors Tripped',
     'Sensor Tripped',
     'Uncleared Alarm',
+    'WATER ALARM',
   ];
 
   // Compare with data above. Detection does not need to know if values are "null".
@@ -376,6 +377,7 @@ export async function detectedNewSensorsStatus(sensors: DetectedNewSensorsStatus
     'devStatUnknown',
   ];
   const knownStatuses: DetectedNewSensorsStatusKnownStatuses = [
+    'ALARM, Okay',
     'Closed',
     'Motion',
     'No Motion',
