@@ -1,7 +1,7 @@
 {
   "name": "homebridge-adt-pulse",
   "displayName": "Homebridge ADT Pulse",
-  "version": "3.0.0-beta.4",
+  "version": "3.0.0-beta.5",
   "description": "Homebridge security system platform for ADT Pulse",
   "exports": "./build/src/index.js",
   "type": "module",
@@ -13,8 +13,8 @@
     "build:cleanup": "rimraf build",
     "build:tsc": "tsc --project tsconfig.json",
     "build:fix-paths": "tsconfig-replace-paths --project tsconfig.json",
-    "preinstall": "npm install --production=false --ignore-scripts",
-    "postinstall": "npm run build",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run build",
     "repl": "node ./build/src/scripts/repl.js",
     "test-api": "node ./build/src/scripts/test-api.js"
   },
@@ -42,9 +42,8 @@
     "url": "https://github.com/mrjackyliang/homebridge-adt-pulse/issues"
   },
   "files": [
-    "./src",
-    "config.schema.json",
-    "tsconfig.json"
+    "./build",
+    "config.schema.json"
   ],
   "homepage": "https://github.com/mrjackyliang/homebridge-adt-pulse",
   "engines": {
