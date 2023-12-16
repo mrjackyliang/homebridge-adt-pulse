@@ -6,6 +6,16 @@ import { serializeError } from 'serialize-error';
 import { CookieJar } from 'tough-cookie';
 
 import {
+  detectedNewDoSubmitHandlers,
+  detectedNewGatewayInformation,
+  detectedNewOrbSecurityButtons,
+  detectedNewPanelInformation,
+  detectedNewPanelStatus,
+  detectedNewPortalVersion,
+  detectedNewSensorsInformation,
+  detectedNewSensorsStatus,
+} from '@/lib/detect.js';
+import {
   paramNetworkId,
   paramSat,
   requestPathAccessSignIn,
@@ -29,6 +39,7 @@ import {
   fetchTableCells,
   findNullKeys,
   generateDynatracePCHeaderValue,
+  generateHash,
   isPortalSyncCode,
   parseArmDisarmMessage,
   parseDoSubmitHandlers,
@@ -82,6 +93,9 @@ import type {
   ADTPulseLoginSessions,
   ADTPulseLogoutReturns,
   ADTPulseLogoutSessions,
+  ADTPulseNewInformationDispatcherData,
+  ADTPulseNewInformationDispatcherReturns,
+  ADTPulseNewInformationDispatcherType,
   ADTPulsePerformKeepAliveReturns,
   ADTPulsePerformKeepAliveSessions,
   ADTPulsePerformSyncCheckReturns,
@@ -149,6 +163,7 @@ export class ADTPulse {
       baseUrl: internalConfig.baseUrl ?? `https://${this.#credentials.subdomain}.adtpulse.com`,
       debug: internalConfig.debug ?? false,
       logger: internalConfig.logger ?? null,
+      reportedHashes: [],
       testMode: {
         enabled: internalConfig.testMode?.enabled ?? false,
         isDisarmChecked: internalConfig.testMode?.isDisarmChecked ?? false,
@@ -283,8 +298,47 @@ export class ADTPulse {
       loginForm.append('networkid', ''); // Blank if URL does not have the "networkid" param.
       loginForm.append('fingerprint', this.#credentials.fingerprint);
 
-      // Get and set the portal version based on the request path.
+      /**
+       * Detailed parsing information for "portalVersion".
+       *
+       * NOTICE: Responses may be inaccurate or missing.
+       * PATENT: https://patents.google.com/patent/US20170070361A1/en
+       *
+       * How the data may be displayed:
+       * ➜ /myhome/16.0.0-131/access/signin.jsp
+       *
+       * Example data after being processed by "replace()" function/method:
+       * ➜ 16.0.0-131
+       *
+       * @since 1.0.0
+       */
       this.#session.portalVersion = axiosIndexRequestPath.replace(requestPathAccessSignIn, '$2') as ADTPulseLoginPortalVersion;
+
+      /**
+       * Check if "portalVersion" needs documenting or testing.
+       *
+       * NOTICE: Parts NOT SHOWN below will NOT be tracked, documented, or tested.
+       * PATENT: https://patents.google.com/patent/US20170070361A1/en
+       *
+       * version: '16.0.0-131'
+       *          '17.0.0-69'
+       *          '18.0.0-78'
+       *          '19.0.0-89'
+       *          '20.0.0-221'
+       *          '20.0.0-244'
+       *          '21.0.0-344'
+       *          '21.0.0-353'
+       *          '21.0.0-354'
+       *          '22.0.0-233'
+       *          '23.0.0-99'
+       *          '24.0.0-117'
+       *          '25.0.0-21'
+       *          '26.0.0-32'
+       *          '27.0.0-140'
+       *
+       * @since 1.0.0
+       */
+      await this.newInformationDispatcher('portal-version', { version: this.#session.portalVersion });
 
       // sessions.axiosSignin: Emulate a sign-in request.
       sessions.axiosSignin = await this.#session.httpClient.post<unknown>(
@@ -714,12 +768,43 @@ export class ADTPulse {
         },
       );
 
+      /**
+       * Detailed parsing information for "gatewayInformation".
+       *
+       * NOTICE: Responses may be inaccurate or missing.
+       * PATENT: https://patents.google.com/patent/US20170070361A1/en
+       *
+       * How the data may be displayed:
+       * ➜ <tr>
+       *     <td>Manufacturer:</td>
+       *     <td>ADT Pulse Gateway</td>
+       *   </tr>
+       *   <tr>
+       *     <td>Model:</td>
+       *     <td>1234567890</td>
+       *   </tr>
+       *
+       * Example data after being processed by "fetchTableCells()" function/method:
+       * ➜ {
+       *     'Manufacturer:': [
+       *       'ADT Pulse Gateway',
+       *     ],
+       *     'Model:': [
+       *       '1234567890',
+       *     ],
+       *   }
+       *
+       * @since 1.0.0
+       */
       const jsdomSystemGatewayTableCells = sessions.jsdomSystemGateway.window.document.querySelectorAll('td');
       const fetchedTableCells = fetchTableCells(
         jsdomSystemGatewayTableCells,
         [
+          'Broadband Connection Status:',
           'Broadband LAN IP Address:',
           'Broadband LAN MAC:',
+          'Cellular Connection Status:',
+          'Cellular Signal Strength:',
           'Device LAN IP Address:',
           'Device LAN MAC:',
           'Firmware Version:',
@@ -728,12 +813,62 @@ export class ADTPulse {
           'Manufacturer:',
           'Model:',
           'Next Update:',
+          'Primary Connection Type:',
+          'Router LAN IP Address:',
+          'Router WAN IP Address:',
           'Serial Number:',
           'Status:',
         ],
         1,
         1,
       );
+      const gatewayInformation = {
+        communication: {
+          primaryConnectionType: _.get(fetchedTableCells, ['Primary Connection Type:', 0], null),
+          broadbandConnectionStatus: _.get(fetchedTableCells, ['Broadband Connection Status:', 0], null),
+          cellularConnectionStatus: _.get(fetchedTableCells, ['Cellular Connection Status:', 0], null),
+          cellularSignalStrength: _.get(fetchedTableCells, ['Cellular Signal Strength:', 0], null),
+        },
+        manufacturer: _.get(fetchedTableCells, ['Manufacturer:', 0], null),
+        model: _.get(fetchedTableCells, ['Model:', 0], null),
+        network: {
+          broadband: {
+            ip: _.get(fetchedTableCells, ['Broadband LAN IP Address:', 0], null),
+            mac: _.get(fetchedTableCells, ['Broadband LAN MAC:', 0], null),
+          },
+          device: {
+            ip: _.get(fetchedTableCells, ['Device LAN IP Address:', 0], null),
+            mac: _.get(fetchedTableCells, ['Device LAN MAC:', 0], null),
+          },
+          router: {
+            lanIp: _.get(fetchedTableCells, ['Router LAN IP Address:', 0], null),
+            wanIp: _.get(fetchedTableCells, ['Router WAN IP Address:', 0], null),
+          },
+        },
+        serialNumber: _.get(fetchedTableCells, ['Serial Number:', 0], null),
+        status: _.get(fetchedTableCells, ['Status:', 0], null) as ADTPulseGetGatewayInformationReturnsStatus,
+        update: {
+          last: _.get(fetchedTableCells, ['Last Update:', 0], null),
+          next: _.get(fetchedTableCells, ['Next Update:', 0], null),
+        },
+        versions: {
+          firmware: _.get(fetchedTableCells, ['Firmware Version:', 0], null),
+          hardware: _.get(fetchedTableCells, ['Hardware Version:', 0], null),
+        },
+      };
+
+      /**
+       * Check if "gatewayInformation" needs documenting or testing.
+       *
+       * NOTICE: Parts NOT SHOWN below will NOT be tracked, documented, or tested.
+       * PATENT: https://patents.google.com/patent/US20170070361A1/en
+       *
+       * status: 'Online'
+       *         'Status Unknown'
+       *
+       * @since 1.0.0
+       */
+      await this.newInformationDispatcher('gateway-information', gatewayInformation);
 
       if (this.#internal.debug) {
         debugLog(this.#internal.logger, 'api.ts / ADTPulse.getGatewayInformation()', 'success', `Successfully retrieved gateway information from "${this.#internal.baseUrl}"`);
@@ -742,30 +877,7 @@ export class ADTPulse {
       return {
         action: 'GET_GATEWAY_INFORMATION',
         success: true,
-        info: {
-          manufacturer: _.get(fetchedTableCells, ['Manufacturer:', 0], null),
-          model: _.get(fetchedTableCells, ['Model:', 0], null),
-          network: {
-            broadband: {
-              ip: _.get(fetchedTableCells, ['Broadband LAN IP Address:', 0], null),
-              mac: _.get(fetchedTableCells, ['Broadband LAN MAC:', 0], null),
-            },
-            device: {
-              ip: _.get(fetchedTableCells, ['Device LAN IP Address:', 0], null),
-              mac: _.get(fetchedTableCells, ['Device LAN MAC:', 0], null),
-            },
-          },
-          serialNumber: _.get(fetchedTableCells, ['Serial Number:', 0], null),
-          status: _.get(fetchedTableCells, ['Status:', 0], null) as ADTPulseGetGatewayInformationReturnsStatus,
-          update: {
-            last: _.get(fetchedTableCells, ['Last Update:', 0], null),
-            next: _.get(fetchedTableCells, ['Next Update:', 0], null),
-          },
-          versions: {
-            firmware: _.get(fetchedTableCells, ['Firmware Version:', 0], null),
-            hardware: _.get(fetchedTableCells, ['Hardware Version:', 0], null),
-          },
-        },
+        info: gatewayInformation,
       };
     } catch (error) {
       errorObject = serializeError(error);
@@ -890,20 +1002,80 @@ export class ADTPulse {
         },
       );
 
+      /**
+       * Detailed parsing information for "panelInformation".
+       *
+       * NOTICE: Responses may be inaccurate or missing.
+       * PATENT: https://patents.google.com/patent/US20170070361A1/en
+       *
+       * How the data may be displayed:
+       * ➜ <tr>
+       *     <td>Manufacturer/Provider:</td>
+       *     <td>ADT</td>
+       *   </tr>
+       *   <tr>
+       *     <td>Emergency Keys:</td>
+       *     <td>
+       *       <div>Button:&nbsp;Sample&nbsp;Alarm&nbsp;(Zone&nbsp;99)</div>
+       *       <div>Button:&nbsp;Sample&nbsp;Alarm&nbsp;(Zone&nbsp;99)</div>
+       *     </td>
+       *   </tr>
+       *
+       * Example data after being processed by "fetchTableCells()" function/method:
+       * ➜ {
+       *     'Manufacturer/Provider:': [
+       *       'ADT Pulse Gateway',
+       *     ],
+       *     'Emergency Keys:': [
+       *       'Button: Sample Alarm (Zone 99) Button: Sample Alarm (Zone 99)',
+       *     ],
+       *   }
+       *
+       * @since 1.0.0
+       */
       const jsdomSystemDeviceId1TableCells = sessions.jsdomSystemDeviceId1.window.document.querySelectorAll('td');
       const fetchedTableCells = fetchTableCells(
         jsdomSystemDeviceId1TableCells,
         [
-          'Manufacturer/Provider:',
-          'Type/Model:',
           'Emergency Keys:',
+          'Manufacturer/Provider:',
+          'Security Panel Master Code:',
           'Status:',
+          'Type/Model:',
         ],
         1,
         1,
       );
       const emergencyKeys = _.get(fetchedTableCells, ['Emergency Keys:', 0], null);
-      const newEmergencyKeys = (typeof emergencyKeys === 'string') ? emergencyKeys.match(textPanelEmergencyKeys) : null;
+      const parsedEmergencyKeys = (typeof emergencyKeys === 'string') ? emergencyKeys.match(textPanelEmergencyKeys) : null;
+      const manufacturerProvider = _.get(fetchedTableCells, ['Manufacturer/Provider:', 0], null);
+      const parsedManufacturer = (typeof manufacturerProvider === 'string') ? manufacturerProvider.split(' - ')[0] ?? null : null;
+      const parsedProvider = (typeof manufacturerProvider === 'string') ? manufacturerProvider.split(' - ')[1] ?? null : null;
+      const typeModel = _.get(fetchedTableCells, ['Type/Model:', 0], null);
+      const parsedType = (typeof typeModel === 'string') ? typeModel.split(' - ')[0] ?? null : null;
+      const parsedModel = (typeof typeModel === 'string') ? typeModel.split(' - ')[1] ?? null : null;
+      const panelInformation = {
+        emergencyKeys: parsedEmergencyKeys,
+        manufacturer: parsedManufacturer,
+        masterCode: _.get(fetchedTableCells, ['Security Panel Master Code:', 0], null),
+        provider: parsedProvider,
+        type: parsedType,
+        model: parsedModel,
+        status: _.get(fetchedTableCells, ['Status:', 0], null) as ADTPulseGetPanelInformationReturnsStatus,
+      };
+
+      /**
+       * Check if "panelInformation" needs documenting or testing.
+       *
+       * NOTICE: Parts NOT SHOWN below will NOT be tracked, documented, or tested.
+       * PATENT: https://patents.google.com/patent/US20170070361A1/en
+       *
+       * status: 'Online'
+       *         'Status Unknown'
+       *
+       * @since 1.0.0
+       */
+      await this.newInformationDispatcher('panel-information', panelInformation);
 
       if (this.#internal.debug) {
         debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelInformation()', 'success', `Successfully retrieved panel information from "${this.#internal.baseUrl}"`);
@@ -912,12 +1084,7 @@ export class ADTPulse {
       return {
         action: 'GET_PANEL_INFORMATION',
         success: true,
-        info: {
-          emergencyKeys: newEmergencyKeys,
-          manufacturerProvider: _.get(fetchedTableCells, ['Manufacturer/Provider:', 0], null),
-          typeModel: _.get(fetchedTableCells, ['Type/Model:', 0], null),
-          status: _.get(fetchedTableCells, ['Status:', 0], null) as ADTPulseGetPanelInformationReturnsStatus,
-        },
+        info: panelInformation,
       };
     } catch (error) {
       errorObject = serializeError(error);
@@ -1056,27 +1223,62 @@ export class ADTPulse {
       );
 
       /**
-       * A breakdown of the orb text summary shown in the portal.
+       * Detailed parsing information for "panelStatus".
        *
-       * NOTE: Responses may be inaccurate or missing.
-       * LINK: https://patents.google.com/patent/US20170070361A1/en
+       * NOTICE: Responses may be inaccurate or missing.
+       * PATENT: https://patents.google.com/patent/US20170070361A1/en
        *
-       * Original strings are displayed like this:
-       * - "Disarmed. All Quiet."
-       * - "Status Unavailable. "
+       * How the data may be displayed:
+       * ➜ "Disarmed. All Quiet."
+       * ➜ "Status Unavailable. "
        *
-       * After processing by the "parseOrbTextSummary()" function (two statuses):
-       * - state: 'Disarmed'
-       * - status: 'All Quiet'
-       *
-       * After processing by the "parseOrbTextSummary()" function (one status):
-       * - state: 'Status Unavailable'
-       * - status: null
+       * Example data after being processed by "parseOrbTextSummary()" function/method:
+       * ➜ {
+       *     state: 'Disarmed',
+       *     status: 'All Quiet',
+       *   }
+       * ➜ {
+       *     state: 'Status Unavailable',
+       *     status: null,
+       *   }
        *
        * @since 1.0.0
        */
       const jsdomSummaryOrbTextSummary = sessions.jsdomSummary.window.document.querySelector('#divOrbTextSummary');
       const parsedOrbTextSummary = parseOrbTextSummary(jsdomSummaryOrbTextSummary);
+
+      /**
+       * Check if "panelStatus" needs documenting or testing.
+       *
+       * NOTICE: Parts NOT SHOWN below will NOT be tracked, documented, or tested.
+       * PATENT: https://patents.google.com/patent/US20170070361A1/en
+       *
+       * state: 'Armed Away'
+       *        'Armed Night'
+       *        'Armed Stay'
+       *        'Disarmed'
+       *        'Status Unavailable'
+       *        null
+       *
+       * status: '1 Sensor Open'
+       *         '[# of sensors open] Sensors Open'
+       *         'All Quiet'
+       *         'BURGLARY ALARM'
+       *         'Carbon Monoxide Alarm'
+       *         'FIRE ALARM'
+       *         'Motion'
+       *         'Sensor Bypassed'
+       *         'Sensor Problem'
+       *         'Sensors Bypassed'
+       *         'Sensors Tripped'
+       *         'Sensor Tripped'
+       *         'Uncleared Alarm'
+       *         'WATER ALARM'
+       *         null
+       *
+       * @since 1.0.0
+       */
+      await this.newInformationDispatcher('panel-status', parsedOrbTextSummary);
 
       if (this.#internal.debug) {
         debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelStatus()', 'success', `Successfully retrieved panel status from "${this.#internal.baseUrl}"`);
@@ -1085,37 +1287,6 @@ export class ADTPulse {
       return {
         action: 'GET_PANEL_STATUS',
         success: true,
-        /**
-         * A breakdown of the responses when parsing the orb text summary.
-         *
-         * NOTE: Responses may be inaccurate or missing.
-         * LINK: https://patents.google.com/patent/US20170070361A1/en
-         *
-         * state: 'Armed Away'
-         *        'Armed Night'
-         *        'Armed Stay'
-         *        'Disarmed'
-         *        'Status Unavailable'
-         *        null
-         *
-         * status: '1 Sensor Open'
-         *         '[# of sensors open] Sensors Open'
-         *         'All Quiet'
-         *         'BURGLARY ALARM'
-         *         'Carbon Monoxide Alarm'
-         *         'FIRE ALARM'
-         *         'Motion'
-         *         'Sensor Bypassed'
-         *         'Sensor Problem'
-         *         'Sensors Bypassed'
-         *         'Sensors Tripped'
-         *         'Sensor Tripped'
-         *         'Uncleared Alarm'
-         *         'WATER ALARM'
-         *         null
-         *
-         * @since 1.0.0
-         */
         info: parsedOrbTextSummary,
       };
     } catch (error) {
@@ -1272,33 +1443,41 @@ export class ADTPulse {
       );
 
       /**
-       * A breakdown of the "setArmState" function used in the portal.
+       * Detailed parsing information for "orbSecurityButtons".
        *
-       * NOTE: Responses may be inaccurate or missing.
-       * LINK: https://patents.google.com/patent/US20170070361A1/en
+       * NOTICE: Responses may be inaccurate or missing.
+       * PATENT: https://patents.google.com/patent/US20170070361A1/en
        *
-       * The original function call is displayed like this:
-       * - "setArmState('quickcontrol/armDisarm.jsp','Arming Stay','1','2','false','href=rest/adt/ui/client/security/setArmState&armstate=off&arm=stay&sat=21580428-e539-4075-8237-5c58b6c6fec8')"
+       * How the data may be displayed:
+       * ➜ <input id="security_button_1" value="Arm Stay" onclick="setArmState('quickcontrol/armDisarm.jsp','Arming Stay','1','2','false','href=rest/adt/ui/client/security/setArmState&amp;armstate=off&amp;arm=stay&amp;sat=21580428-e539-4075-8237-5c58b6c6fec8')">
+       * ➜ <input id="security_button_1" value="Arming Stay" disabled="">
        *
-       * After processing by the "parseOrbSecurityButtons()" function (ready buttons):
-       * - buttonDisabled: false
-       * - buttonId: 'security_button_1'
-       * - buttonIndex: 1
-       * - buttonText: 'Arm Stay'
-       * - changeAccessCode: false
-       * - loadingText: 'Arming Stay'
-       * - relativeUrl: 'quickcontrol/armDisarm.jsp'
-       * - totalButtons: 2
-       * - urlParams
-       *   - arm: 'stay'
-       *   - armState: 'off'
-       *   - href: 'rest/adt/ui/client/security/setArmState'
-       *   - sat: '21580428-e539-4075-8237-5c58b6c6fec8'
-       *
-       * After processing by the "parseOrbSecurityButtons()" function (pending buttons):
-       * - buttonDisabled: true
-       * - buttonId: 'security_button_1'
-       * - buttonText: 'Arming Stay'
+       * Example data after being processed by "parseOrbSecurityButtons()" function/method:
+       * ➜ [
+       *     {
+       *       buttonDisabled: false,
+       *       buttonId: 'security_button_1',
+       *       buttonIndex: 1,
+       *       buttonText: 'Arm Stay',
+       *       changeAccessCode: false,
+       *       loadingText: 'Arming Stay',
+       *       relativeUrl: 'quickcontrol/armDisarm.jsp',
+       *       totalButtons: 2,
+       *       urlParams: {
+       *         arm: 'stay',
+       *         armState: 'off',
+       *         href: 'rest/adt/ui/client/security/setArmState',
+       *         sat: '21580428-e539-4075-8237-5c58b6c6fec8',
+       *       },
+       *     },
+       *   ]
+       * ➜ [
+       *     {
+       *       buttonDisabled: true,
+       *       buttonId: 'security_button_1',
+       *       buttonText: 'Arming Stay',
+       *     },
+       *   ]
        *
        * Notes I've gathered during the process:
        * - After disarming, "armState" will be set to "disarmed". It will be set to "off" after re-login.¹
@@ -1315,6 +1494,49 @@ export class ADTPulse {
        */
       const jsdomSummaryOrbSecurityButtons = sessions.jsdomSummary.window.document.querySelectorAll('#divOrbSecurityButtons input');
       const parsedOrbSecurityButtons = parseOrbSecurityButtons(jsdomSummaryOrbSecurityButtons);
+
+      /**
+       * Check if "orbSecurityButtons" needs documenting or testing.
+       *
+       * NOTICE: Parts NOT SHOWN below will NOT be tracked, documented, or tested.
+       * PATENT: https://patents.google.com/patent/US20170070361A1/en
+       *
+       * buttonText: 'Arm Away'
+       *             'Arm Night'
+       *             'Arm Stay'
+       *             'Clear Alarm'
+       *             'Disarm'
+       *
+       * loadingText: 'Arming Away'
+       *              'Arming Night'
+       *              'Arming Stay'
+       *              'Disarming'
+       *
+       * relativeUrl: 'quickcontrol/armDisarm.jsp'
+       *
+       * urlParams.arm: 'away'
+       *                'night'
+       *                'off'
+       *                'stay'
+       *
+       * urlParams.armState: 'away'
+       *                     'disarmed'
+       *                     'disarmed_with_alarm'
+       *                     'disarmed+with+alarm'
+       *                     'night'
+       *                     'night+stay'
+       *                     'off'
+       *                     'stay'
+       *
+       * urlParams.href: 'rest/adt/ui/client/security/setArmState'
+       *
+       * Notes I've gathered during the process:
+       * - When a button is in pending (disabled) state, the "buttonText" will be the "loadingText".
+       * - Currently, "disarmed+with+alarm" and "night+stay" are considered dirty states.
+       *
+       * @since 1.0.0
+       */
+      await this.newInformationDispatcher('orb-security-buttons', parsedOrbSecurityButtons);
 
       // WORKAROUND FOR ARM NIGHT BUTTON BUG: Find the "Arming Night" button location.
       const armingNightButtonIndex = parsedOrbSecurityButtons.findIndex((parsedOrbSecurityButton) => {
@@ -1599,35 +1821,63 @@ export class ADTPulse {
       );
 
       /**
-       * A breakdown of the sensors table shown in the portal.
+       * Detailed parsing information for "sensorsInformation".
        *
-       * NOTE: Responses may be inaccurate or missing.
-       * LINK: https://patents.google.com/patent/US20170070361A1/en
+       * NOTICE: Responses may be inaccurate or missing.
+       * PATENT: https://patents.google.com/patent/US20170070361A1/en
        *
-       * Original HTML code (filtered for clarity) is displayed like this:
-       * - <tr onclick="goToUrl('device.jsp?id=2');">
+       * How the data may be displayed:
+       * ➜ <tr onclick="goToUrl('device.jsp?id=2');">
        *     <td>
        *       <canvas title="Online"></canvas>
        *     </td>
        *     <td>
-       *       <a>Front Door</a>
+       *       <a>Sensor 1</a>
        *     </td>
-       *     <td> 4</td>
+       *     <td> 1</td>
        *     <td>&nbsp;</td>
        *     <td>Door/Window Sensor</td>
        *   </tr>
        *
-       * After processing by the "parseSensorsTable()" function:
-       * - deviceId: 2
-       * - deviceType: 'Door/Window Sensor'
-       * - name: 'Sensor 1'
-       * - status: 'Online'
-       * - zone: 1
+       * Example data after being processed by "parseSensorsTable()" function/method:
+       * ➜ [
+       *     {
+       *       deviceId: 2,
+       *       deviceType: 'Door/Window Sensor',
+       *       name: 'Sensor 1',
+       *       status: 'Online',
+       *       zone: 1,
+       *     },
+       *   ]
        *
        * @since 1.0.0
        */
       const jsdomSystemSensorsTable = sessions.jsdomSystem.window.document.querySelectorAll('#systemContentList tr[onclick^="goToUrl(\'device.jsp?id="]');
       const parsedSensorsTable = parseSensorsTable(jsdomSystemSensorsTable);
+
+      /**
+       * Check if "sensorsInformation" needs documenting or testing.
+       *
+       * NOTICE: Parts NOT SHOWN below will NOT be tracked, documented, or tested.
+       * PATENT: https://patents.google.com/patent/US20170070361A1/en
+       *
+       * deviceType: 'Door Sensor'
+       *             'Door/Window Sensor'
+       *             'Carbon Monoxide Detector'
+       *             'Fire (Smoke/Heat) Detector'
+       *             'Glass Break Detector'
+       *             'Motion Sensor'
+       *             'Motion Sensor (Notable Events Only)'
+       *             'Temperature Sensor'
+       *             'Water/Flood Sensor'
+       *             'Window Sensor'
+       *
+       * status: 'Online'
+       *         'Status Unknown'
+       *
+       * @since 1.0.0
+       */
+      await this.newInformationDispatcher('sensors-information', parsedSensorsTable);
 
       if (this.#internal.debug) {
         debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsInformation()', 'success', `Successfully retrieved sensors information from "${this.#internal.baseUrl}"`);
@@ -1637,34 +1887,6 @@ export class ADTPulse {
         action: 'GET_SENSORS_INFORMATION',
         success: true,
         info: {
-          /**
-           * A breakdown of the responses when parsing the sensors table.
-           *
-           * NOTE: Responses may be inaccurate or missing.
-           * LINK: https://patents.google.com/patent/US20170070361A1/en
-           *
-           * deviceId: 2
-           *
-           * deviceType: 'Door Sensor'
-           *             'Door/Window Sensor'
-           *             'Carbon Monoxide Detector'
-           *             'Fire (Smoke/Heat) Detector'
-           *             'Glass Break Detector'
-           *             'Motion Sensor'
-           *             'Motion Sensor (Notable Events Only)'
-           *             'Temperature Sensor'
-           *             'Water/Flood Sensor'
-           *             'Window Sensor'
-           *
-           * name: 'Sensor 1'
-           *
-           * status: 'Online'
-           *         'Status Unknown'
-           *
-           * zone: 1
-           *
-           * @since 1.0.0
-           */
           sensors: parsedSensorsTable,
         },
       };
@@ -1804,8 +2026,99 @@ export class ADTPulse {
         },
       );
 
+      /**
+       * Detailed parsing information for "sensorsStatus".
+       *
+       * NOTICE: Responses may be inaccurate or missing.
+       * PATENT: https://patents.google.com/patent/US20170070361A1/en
+       *
+       * How the data may be displayed:
+       * ➜ <tr>
+       *     <td>
+       *       <span>
+       *         <canvas icon="devStatOK"></canvas>
+       *       </span>
+       *     </td>
+       *     <td>
+       *       <img src="/myhome/16.0.0-131/images/spacer.gif">
+       *     </td>
+       *     <td>
+       *       <a class="p_deviceNameText">Sensor 1</a>
+       *       &nbsp;
+       *       <span class="p_grayNormalText">Zone&nbsp;1</div>
+       *     </td>
+       *     <td>
+       *       Closed&nbsp;
+       *     </td>
+       *   </tr>
+       * ➜ <tr>
+       *     <td>
+       *       <span>
+       *         <canvas icon="devStatMotion"></canvas>
+       *       </span>
+       *     </td>
+       *     <td>
+       *       <img src="/myhome/16.0.0-131/images/spacer.gif">
+       *     </td>
+       *     <td>
+       *       <a class="p_deviceNameText">Sensor 2</a>
+       *       &nbsp;
+       *       <div class="p_grayNormalText">Zone&nbsp;2</div>
+       *     </td>
+       *     <td>
+       *       Motion&nbsp;
+       *     </td>
+       *   </tr>
+       *
+       * Example data after being processed by "parseOrbSensors()" function/method:
+       * ➜ [
+       *     {
+       *       icon: 'devStatOK',
+       *       name: 'Sensor 1',
+       *       status: 'Closed',
+       *       zone: 1,
+       *     },
+       *   ]
+       * ➜ [
+       *     {
+       *       icon: 'devStatMotion',
+       *       name: 'Sensor 2',
+       *       status: 'Motion',
+       *       zone: 2,
+       *     },
+       *   ]
+       *
+       * @since 1.0.0
+       */
       const jsdomSummaryOrbSensors = sessions.jsdomSummary.window.document.querySelectorAll('#orbSensorsList tr.p_listRow');
       const parsedOrbSensors = parseOrbSensors(jsdomSummaryOrbSensors);
+
+      /**
+       * Check if "sensorsStatus" needs documenting or testing.
+       *
+       * NOTICE: Parts NOT SHOWN below will NOT be tracked, documented, or tested.
+       * PATENT: https://patents.google.com/patent/US20170070361A1/en
+       *
+       * icon: 'devStatAlarm'
+       *       'devStatLowBatt'
+       *       'devStatMotion'
+       *       'devStatOK'
+       *       'devStatOpen'
+       *       'devStatTamper'
+       *       'devStatUnknown'
+       *
+       * status: 'ALARM, Okay'
+       *         'Closed'
+       *         'Motion'
+       *         'No Motion'
+       *         'Okay'
+       *         'Open'
+       *         'Tripped'
+       *         'Unknown'
+       *
+       * @since 1.0.0
+       */
+      await this.newInformationDispatcher('sensors-status', parsedOrbSensors);
 
       if (this.#internal.debug) {
         debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsStatus()', 'success', `Successfully retrieved sensors status from "${this.#internal.baseUrl}"`);
@@ -1815,35 +2128,6 @@ export class ADTPulse {
         action: 'GET_SENSORS_STATUS',
         success: true,
         info: {
-          /**
-           * A breakdown of the responses when parsing the orb sensors.
-           *
-           * NOTE: Responses may be inaccurate or missing.
-           * LINK: https://patents.google.com/patent/US20170070361A1/en
-           *
-           * icon: 'devStatAlarm'
-           *       'devStatLowBatt'
-           *       'devStatMotion'
-           *       'devStatOK'
-           *       'devStatOpen'
-           *       'devStatTamper'
-           *       'devStatUnknown'
-           *
-           * name: 'Sensor 1'
-           *
-           * status: 'ALARM, Okay'
-           *         'Closed'
-           *         'Motion'
-           *         'No Motion'
-           *         'Okay'
-           *         'Open'
-           *         'Tripped'
-           *         'Unknown'
-           *
-           * zone: 1
-           *
-           * @since 1.0.0
-           */
           sensors: parsedOrbSensors,
         },
       };
@@ -2444,8 +2728,101 @@ export class ADTPulse {
         },
       );
 
+      /**
+       * Detailed parsing information for "orbSecurityButtons".
+       *
+       * NOTICE: Responses may be inaccurate or missing.
+       * PATENT: https://patents.google.com/patent/US20170070361A1/en
+       *
+       * How the data may be displayed:
+       * ➜ <input id="security_button_1" value="Arm Stay" onclick="setArmState('quickcontrol/armDisarm.jsp','Arming Stay','1','2','false','href=rest/adt/ui/client/security/setArmState&amp;armstate=off&amp;arm=stay&amp;sat=21580428-e539-4075-8237-5c58b6c6fec8')">
+       * ➜ <input id="security_button_1" value="Arming Stay" disabled="">
+       *
+       * Example data after being processed by "parseOrbSecurityButtons()" function/method:
+       * ➜ [
+       *     {
+       *       buttonDisabled: false,
+       *       buttonId: 'security_button_1',
+       *       buttonIndex: 1,
+       *       buttonText: 'Arm Stay',
+       *       changeAccessCode: false,
+       *       loadingText: 'Arming Stay',
+       *       relativeUrl: 'quickcontrol/armDisarm.jsp',
+       *       totalButtons: 2,
+       *       urlParams: {
+       *         arm: 'stay',
+       *         armState: 'off',
+       *         href: 'rest/adt/ui/client/security/setArmState',
+       *         sat: '21580428-e539-4075-8237-5c58b6c6fec8',
+       *       },
+       *     },
+       *   ]
+       * ➜ [
+       *     {
+       *       buttonDisabled: true,
+       *       buttonId: 'security_button_1',
+       *       buttonText: 'Arming Stay',
+       *     },
+       *   ]
+       *
+       * Notes I've gathered during the process:
+       * - After disarming, "armState" will be set to "disarmed". It will be set to "off" after re-login.¹
+       * - After turning off siren, "armState" will be set to "disarmed+with+alarm". It will be set to "disarmed_with_alarm" after re-login.¹²
+       * - After arming night, "armState" will be set to "night+stay". It will be set to "night" after re-login.¹
+       * - The "sat" code is required for all arm/disarm actions (UUID, generated on every login).
+       * - If "armState" is not "off" or "disarmed", you must disarm first before setting to other modes.
+       *
+       * Footnotes:
+       * ¹ States are synced across an entire site (per home). If one account arms, every user signed in during that phase becomes "dirty"
+       * ² Turning off siren means system is in "Uncleared Alarm" mode, not truly "Disarmed" mode.
+       *
+       * @since 1.0.0
+       */
       const jsdomSummaryOrbSecurityButtons = sessions.jsdomSummary.window.document.querySelectorAll('#divOrbSecurityButtons input');
       const parsedOrbSecurityButtons = parseOrbSecurityButtons(jsdomSummaryOrbSecurityButtons);
+
+      /**
+       * Check if "orbSecurityButtons" needs documenting or testing.
+       *
+       * NOTICE: Parts NOT SHOWN below will NOT be tracked, documented, or tested.
+       * PATENT: https://patents.google.com/patent/US20170070361A1/en
+       *
+       * buttonText: 'Arm Away'
+       *             'Arm Night'
+       *             'Arm Stay'
+       *             'Clear Alarm'
+       *             'Disarm'
+       *
+       * loadingText: 'Arming Away'
+       *              'Arming Night'
+       *              'Arming Stay'
+       *              'Disarming'
+       *
+       * relativeUrl: 'quickcontrol/armDisarm.jsp'
+       *
+       * urlParams.arm: 'away'
+       *                'night'
+       *                'off'
+       *                'stay'
+       *
+       * urlParams.armState: 'away'
+       *                     'disarmed'
+       *                     'disarmed_with_alarm'
+       *                     'disarmed+with+alarm'
+       *                     'night'
+       *                     'night+stay'
+       *                     'off'
+       *                     'stay'
+       *
+       * urlParams.href: 'rest/adt/ui/client/security/setArmState'
+       *
+       * Notes I've gathered during the process:
+       * - When a button is in pending (disabled) state, the "buttonText" will be the "loadingText".
+       * - Currently, "disarmed+with+alarm" and "night+stay" are considered dirty states.
+       *
+       * @since 1.0.0
+       */
+      await this.newInformationDispatcher('orb-security-buttons', parsedOrbSecurityButtons);
 
       let readyButtons = parsedOrbSecurityButtons.filter((parsedOrbSecurityButton): parsedOrbSecurityButton is ADTPulseArmDisarmHandlerReadyButton => !parsedOrbSecurityButton.buttonDisabled);
 
@@ -2564,41 +2941,69 @@ export class ADTPulse {
       );
 
       /**
-       * A breakdown of the "doSubmit" function used in the portal.
+       * Detailed parsing information for "doSubmitHandlers".
        *
-       * NOTE: Responses may be inaccurate or missing.
-       * LINK: https://patents.google.com/patent/US20170070361A1/en
+       * NOTICE: Responses may be inaccurate or missing.
+       * PATENT: https://patents.google.com/patent/US20170070361A1/en
        *
-       * The original function call is displayed like this:
-       * - "doSubmit( '/myhome/<portalVersion>/quickcontrol/serv/RunRRACommand?sat=f8e7c824-a88c-4fd2-ad4d-9b4b69039b09&href=rest\/adt\/ui\/client\/security\/setForceArm&armstate=forcearm&arm=stay' )"
-       * - "doSubmit( '/myhome/<portalVersion>/quickcontrol/serv/RunRRACommand?sat=f8e7c824-a88c-4fd2-ad4d-9b4b69039b09&href=rest\/adt\/ui\/client\/security\/setCancelProtest' )"
+       * How the data may be displayed:
+       * ➜ <input onclick="doSubmit( '/myhome/16.0.0-131/quickcontrol/serv/RunRRACommand?sat=f8e7c824-a88c-4fd2-ad4d-9b4b69039b09&href=rest\/adt\/ui\/client\/security\/setForceArm&armstate=forcearm&arm=stay' )">
+       * ➜ <input onclick="doSubmit( '/myhome/16.0.0-131/quickcontrol/serv/RunRRACommand?sat=f8e7c824-a88c-4fd2-ad4d-9b4b69039b09&href=rest\/adt\/ui\/client\/security\/setCancelProtest' )">
        *
-       * After processing by the "parseDoSubmitHandlers()" function (the "Arm Anyway" button):
-       * - relativeUrl: '/myhome/<portalVersion>/quickcontrol/serv/RunRRACommand'
-       * - urlParams
-       *   - arm: 'stay'
-       *   - armState: 'forcearm'
-       *   - href: 'rest/adt/ui/client/security/setForceArm'
-       *   - sat: 'f8e7c824-a88c-4fd2-ad4d-9b4b69039b09'
-       *
-       * After processing by the "parseDoSubmitHandlers()" function (the "Cancel" button):
-       * - relativeUrl: '/myhome/<portalVersion>/quickcontrol/serv/RunRRACommand'
-       * - urlParams
-       *   - arm: null
-       *   - armState: null
-       *   - href: 'rest/adt/ui/client/security/setCancelProtest'
-       *   - sat: 'f8e7c824-a88c-4fd2-ad4d-9b4b69039b09'
+       * Example data after being processed by "parseDoSubmitHandlers()" function/method:
+       * ➜ [
+       *     {
+       *       relativeUrl: '/myhome/16.0.0-131/quickcontrol/serv/RunRRACommand',
+       *       urlParams: {
+       *         arm: 'stay',
+       *         armState: 'forcearm',
+       *         href: 'rest/adt/ui/client/security/setForceArm',
+       *         sat: 'f8e7c824-a88c-4fd2-ad4d-9b4b69039b09',
+       *       },
+       *     },
+       *   ]
+       * ➜ [
+       *    {
+       *       relativeUrl: '/myhome/16.0.0-131/quickcontrol/serv/RunRRACommand',
+       *       urlParams: {
+       *         arm: null,
+       *         armState: null,
+       *         href: 'rest/adt/ui/client/security/setCancelProtest',
+       *         sat: 'f8e7c824-a88c-4fd2-ad4d-9b4b69039b09',
+       *       },
+       *     },
+       *   ]
        *
        * Notes I've gathered during the process:
-       * - Below the code there is a loop that is baked in just in case the order of the buttons are randomized.
        * - The "sat" code is required for all force arm actions (UUID, generated on every login).
        *
        * @since 1.0.0
        */
       const jsdomArmDisarmDoSubmitHandlers = sessions.jsdomArmDisarm.window.document.querySelectorAll('.p_armDisarmWrapper input');
       const jsdomArmDisarmArmDisarmMessage = sessions.jsdomArmDisarm.window.document.querySelector('.p_armDisarmWrapper div:first-child');
-      const parsedDoSubmitHandlers = parseDoSubmitHandlers(jsdomArmDisarmDoSubmitHandlers);
       const parsedArmDisarmMessage = parseArmDisarmMessage(jsdomArmDisarmArmDisarmMessage);
+      const parsedDoSubmitHandlers = parseDoSubmitHandlers(jsdomArmDisarmDoSubmitHandlers);
+
+      /**
+       * Check if "doSubmitHandlers" needs documenting or testing.
+       *
+       * NOTICE: Parts NOT SHOWN below will NOT be tracked, documented, or tested.
+       * PATENT: https://patents.google.com/patent/US20170070361A1/en
+       *
+       * relativeUrl: '/myhome/16.0.0-131/quickcontrol/serv/RunRRACommand'
+       *
+       * urlParams.arm: 'away'
+       *                'night'
+       *                'stay'
+       *
+       * urlParams.armState: 'forcearm'
+       *
+       * urlParams.href: 'rest/adt/ui/client/security/setForceArm'
+       *                 'rest/adt/ui/client/security/setCancelProtest'
+       *
+       * @since 1.0.0
+       */
+      await this.newInformationDispatcher('do-submit-handlers', parsedDoSubmitHandlers);
 
       // Check if there are no force arm buttons available.
       if (
@@ -2908,48 +3313,58 @@ export class ADTPulse {
   }
 
   /**
-   * ADT Pulse - Handle login failure.
+   * ADT Pulse - New information dispatcher.
    *
-   * @param {ADTPulseHandleLoginFailureRequestPath} requestPath - Request path.
-   * @param {ADTPulseHandleLoginFailureSession}     session     - Session.
+   * @param {ADTPulseNewInformationDispatcherType} type - Type.
+   * @param {ADTPulseNewInformationDispatcherData} data - Data.
    *
    * @private
    *
-   * @returns {ADTPulseHandleLoginFailureReturns}
+   * @returns {ADTPulseNewInformationDispatcherReturns}
    *
    * @since 1.0.0
    */
-  private handleLoginFailure(requestPath: ADTPulseHandleLoginFailureRequestPath, session: ADTPulseHandleLoginFailureSession): ADTPulseHandleLoginFailureReturns {
-    if (requestPath === null) {
-      return;
-    }
+  private async newInformationDispatcher(type: ADTPulseNewInformationDispatcherType, data: ADTPulseNewInformationDispatcherData<ADTPulseNewInformationDispatcherType>): ADTPulseNewInformationDispatcherReturns {
+    const dataHash = generateHash(`${type}: ${JSON.stringify(data)}`);
 
-    if (
-      requestPathAccessSignIn.test(requestPath)
-      || requestPathAccessSignInENsPartnerAdt.test(requestPath)
-      || requestPathMfaMfaSignInWorkflowChallenge.test(requestPath)
-    ) {
-      if (this.#internal.debug) {
-        const errorMessage = fetchErrorMessage(session);
+    // If the detector has not reported this event before.
+    if (this.#internal.reportedHashes.find((reportedHash) => dataHash === reportedHash) === undefined) {
+      let detectedNew = false;
 
-        // Determine if "this instance" was redirected to the sign-in page.
-        if (requestPathAccessSignIn.test(requestPath) || requestPathAccessSignInENsPartnerAdt.test(requestPath)) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.handleLoginFailure()', 'error', 'Either the username or password is incorrect, fingerprint format is invalid, or was signed out due to inactivity');
-        }
-
-        // Determine if "this instance" was redirected to the MFA challenge page.
-        if (requestPathMfaMfaSignInWorkflowChallenge.test(requestPath)) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.handleLoginFailure()', 'error', 'Either the fingerprint expired or "Trust this device" was not selected after completing MFA challenge');
-        }
-
-        // Show the portal error message if it exists.
-        if (errorMessage !== null) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.handleLoginFailure()', 'warn', `Portal message ➜ "${errorMessage}"`);
-        }
+      // Determine what information needs to be checked.
+      switch (type) {
+        case 'do-submit-handlers':
+          detectedNew = await detectedNewDoSubmitHandlers(data as ADTPulseNewInformationDispatcherData<'do-submit-handlers'>, this.#internal.logger, this.#internal.debug);
+          break;
+        case 'gateway-information':
+          detectedNew = await detectedNewGatewayInformation(data as ADTPulseNewInformationDispatcherData<'gateway-information'>, this.#internal.logger, this.#internal.debug);
+          break;
+        case 'orb-security-buttons':
+          detectedNew = await detectedNewOrbSecurityButtons(data as ADTPulseNewInformationDispatcherData<'orb-security-buttons'>, this.#internal.logger, this.#internal.debug);
+          break;
+        case 'panel-information':
+          detectedNew = await detectedNewPanelInformation(data as ADTPulseNewInformationDispatcherData<'panel-information'>, this.#internal.logger, this.#internal.debug);
+          break;
+        case 'panel-status':
+          detectedNew = await detectedNewPanelStatus(data as ADTPulseNewInformationDispatcherData<'panel-status'>, this.#internal.logger, this.#internal.debug);
+          break;
+        case 'portal-version':
+          detectedNew = await detectedNewPortalVersion(data as ADTPulseNewInformationDispatcherData<'portal-version'>, this.#internal.logger, this.#internal.debug);
+          break;
+        case 'sensors-information':
+          detectedNew = await detectedNewSensorsInformation(data as ADTPulseNewInformationDispatcherData<'sensors-information'>, this.#internal.logger, this.#internal.debug);
+          break;
+        case 'sensors-status':
+          detectedNew = await detectedNewSensorsStatus(data as ADTPulseNewInformationDispatcherData<'sensors-status'>, this.#internal.logger, this.#internal.debug);
+          break;
+        default:
+          break;
       }
 
-      // Reset the session state for "this instance".
-      this.resetSession();
+      // Save this hash so the detector does not detect the same thing multiple times.
+      if (detectedNew) {
+        this.#internal.reportedHashes.push(dataHash);
+      }
     }
   }
 
@@ -2996,6 +3411,52 @@ export class ADTPulse {
       _.omit(defaultConfig, findNullKeys(extraConfig)),
       _.omit(extraConfig, findNullKeys(extraConfig)),
     );
+  }
+
+  /**
+   * ADT Pulse - Handle login failure.
+   *
+   * @param {ADTPulseHandleLoginFailureRequestPath} requestPath - Request path.
+   * @param {ADTPulseHandleLoginFailureSession}     session     - Session.
+   *
+   * @private
+   *
+   * @returns {ADTPulseHandleLoginFailureReturns}
+   *
+   * @since 1.0.0
+   */
+  private handleLoginFailure(requestPath: ADTPulseHandleLoginFailureRequestPath, session: ADTPulseHandleLoginFailureSession): ADTPulseHandleLoginFailureReturns {
+    if (requestPath === null) {
+      return;
+    }
+
+    if (
+      requestPathAccessSignIn.test(requestPath)
+      || requestPathAccessSignInENsPartnerAdt.test(requestPath)
+      || requestPathMfaMfaSignInWorkflowChallenge.test(requestPath)
+    ) {
+      if (this.#internal.debug) {
+        const errorMessage = fetchErrorMessage(session);
+
+        // Determine if "this instance" was redirected to the sign-in page.
+        if (requestPathAccessSignIn.test(requestPath) || requestPathAccessSignInENsPartnerAdt.test(requestPath)) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.handleLoginFailure()', 'error', 'Either the username or password is incorrect, fingerprint format is invalid, or was signed out due to inactivity');
+        }
+
+        // Determine if "this instance" was redirected to the MFA challenge page.
+        if (requestPathMfaMfaSignInWorkflowChallenge.test(requestPath)) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.handleLoginFailure()', 'error', 'Either the fingerprint expired or "Trust this device" was not selected after completing MFA challenge');
+        }
+
+        // Show the portal error message if it exists.
+        if (errorMessage !== null) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.handleLoginFailure()', 'warn', `Portal message ➜ "${errorMessage}"`);
+        }
+      }
+
+      // Reset the session state for "this instance".
+      this.resetSession();
+    }
   }
 
   /**

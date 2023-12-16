@@ -1,7 +1,8 @@
-import { AxiosInstance, AxiosRequestConfig } from 'axios';
+import type { AxiosInstance, AxiosRequestConfig } from 'axios';
 import type {
   API,
   Characteristic,
+  CharacteristicValue,
   DynamicPlatformPlugin,
   Logger,
   PlatformAccessory,
@@ -24,10 +25,15 @@ import type {
   PluginLogLevel,
   PortalDeviceStatus,
   PortalPanelArmButtonHref,
+  PortalPanelArmButtonLoadingText,
   PortalPanelArmButtonRelativeUrl,
+  PortalPanelArmButtonText,
   PortalPanelArmStateClean,
   PortalPanelArmStateDirty,
+  PortalPanelArmStateForce,
   PortalPanelArmValue,
+  PortalPanelForceArmButtonHref,
+  PortalPanelForceArmButtonRelativeUrl,
   PortalPanelForceArmResponse,
   PortalPanelState,
   PortalPanelStatus,
@@ -73,6 +79,7 @@ import type {
   PanelStatus,
   PanelStatusState,
   PanelStatusStatus,
+  PortalVersionContent,
   SensorInformationDeviceType,
   SensorInformationStatus,
   SensorsInformation,
@@ -297,6 +304,10 @@ export type ADTPulseInternalDebug = boolean;
 
 export type ADTPulseInternalLogger = Logger | null;
 
+export type ADTPulseInternalReportedHash = string;
+
+export type ADTPulseInternalReportedHashes = ADTPulseInternalReportedHash[];
+
 export type ADTPulseInternalTestModeEnabled = boolean;
 
 export type ADTPulseInternalTestModeIsDisarmChecked = boolean;
@@ -310,6 +321,7 @@ export type ADTPulseInternal = {
   baseUrl: ADTPulseInternalBaseUrl;
   debug: ADTPulseInternalDebug;
   logger: ADTPulseInternalLogger;
+  reportedHashes: ADTPulseInternalReportedHashes,
   testMode: ADTPulseInternalTestMode;
 };
 
@@ -377,6 +389,26 @@ export type ADTPulseLogoutReturns = Promise<ApiResponse<'LOGOUT', ADTPulseLogout
 export type ADTPulseLogoutSessions = Sessions<{
   axiosSignout?: AxiosResponseWithRequest<unknown>;
 }>;
+
+/**
+ * ADT Pulse - New information dispatcher.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseNewInformationDispatcherType = 'do-submit-handlers' | 'gateway-information' | 'orb-security-buttons' | 'panel-information' | 'panel-status' | 'portal-version' | 'sensors-information' | 'sensors-status';
+
+export type ADTPulseNewInformationDispatcherData<Type extends ADTPulseNewInformationDispatcherType> =
+  Type extends 'do-submit-handlers' ? DoSubmitHandlers
+    : Type extends 'gateway-information' ? GatewayInformation
+      : Type extends 'orb-security-buttons' ? OrbSecurityButtons
+        : Type extends 'panel-information' ? PanelInformation
+          : Type extends 'panel-status' ? PanelStatus
+            : Type extends 'portal-version' ? PortalVersionContent
+              : Type extends 'sensors-information' ? SensorsInformation
+                : Type extends 'sensors-status' ? SensorsStatus
+                  : never;
+
+export type ADTPulseNewInformationDispatcherReturns = Promise<void>;
 
 /**
  * ADT Pulse - Perform keep alive.
@@ -471,6 +503,22 @@ export type ADTPulseSetPanelStatusReadyButton = OrbSecurityButtonBase & OrbSecur
 export type ADTPulseAccessoryAccessory = PlatformAccessory<Device>;
 
 /**
+ * ADT Pulse Accessory - Api.
+ *
+ * @private
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseAccessoryApi = API;
+
+/**
+ * ADT Pulse Accessory - Characteristic.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseAccessoryCharacteristic = typeof Characteristic;
+
+/**
  * ADT Pulse Accessory - Constructor.
  *
  * @since 1.0.0
@@ -479,11 +527,55 @@ export type ADTPulseAccessoryConstructorAccessory = PlatformAccessory<Device>;
 
 export type ADTPulseAccessoryConstructorState = ADTPulsePlatformState;
 
+export type ADTPulseAccessoryConstructorInstance = ADTPulse;
+
 export type ADTPulseAccessoryConstructorService = typeof Service;
 
 export type ADTPulseAccessoryConstructorCharacteristic = typeof Characteristic;
 
+export type ADTPulseAccessoryConstructorApi = API;
+
 export type ADTPulseAccessoryConstructorLog = Logger;
+
+/**
+ * ADT Pulse Accessory - Get panel status.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseAccessoryGetPanelStatusMode = 'current' | 'target';
+
+export type ADTPulseAccessoryGetPanelStatusContext = Device;
+
+export type ADTPulseAccessoryGetPanelStatusReturns = CharacteristicValue;
+
+/**
+ * ADT Pulse Accessory - Set panel status.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseAccessorySetPanelStatusArm = CharacteristicValue;
+
+export type ADTPulseAccessorySetPanelStatusContext = Device;
+
+export type ADTPulseAccessorySetPanelStatusReturns = Promise<void>;
+
+/**
+ * ADT Pulse Accessory - Get sensor status.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseAccessoryGetSensorStatusContext = Device;
+
+export type ADTPulseAccessoryGetSensorStatusReturns = CharacteristicValue;
+
+/**
+ * ADT Pulse Accessory - Instance.
+ *
+ * @private
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseAccessoryInstance = ADTPulse;
 
 /**
  * ADT Pulse Accessory - Log.
@@ -734,17 +826,12 @@ export type ADTPulsePlatformStateLastRunOn = {
   adtSyncCheck: ADTPulsePlatformStateLastRunOnAdtSyncCheck;
 };
 
-export type ADTPulsePlatformStateReportedHash = string;
-
-export type ADTPulsePlatformStateReportedHashes = ADTPulsePlatformStateReportedHash[];
-
 export type ADTPulsePlatformState = {
   activity: ADTPulsePlatformStateActivity;
   data: ADTPulsePlatformStateData;
   eventCounters: ADTPulsePlatformStateEventCounters;
   intervals: ADTPulsePlatformStateIntervals;
   lastRunOn: ADTPulsePlatformStateLastRunOn;
-  reportedHashes: ADTPulsePlatformStateReportedHashes;
 };
 
 /**
@@ -953,13 +1040,36 @@ export type DebugLogMessage = string;
 export type DebugLogReturns = void;
 
 /**
+ * Detected do submit handlers.
+ *
+ * @since 1.0.0
+ */
+export type DetectedNewDoSubmitHandlersHandlers = DoSubmitHandlers;
+
+export type DetectedNewDoSubmitHandlersLogger = Logger | null;
+
+export type DetectedNewDoSubmitHandlersDebugMode = boolean | null;
+
+export type DetectedNewDoSubmitHandlersReturns = Promise<boolean>;
+
+export type DetectedNewDoSubmitHandlersKnownRelativeUrls = PortalPanelForceArmButtonRelativeUrl[];
+
+export type DetectedNewDoSubmitHandlersKnownRelativeUrlsVersion = PortalPanelForceArmButtonRelativeUrl;
+
+export type DetectedNewDoSubmitHandlersKnownUrlParamsArm = Exclude<PortalPanelArmValue, 'off'>[];
+
+export type DetectedNewDoSubmitHandlersKnownUrlParamsArmState = PortalPanelArmStateForce[];
+
+export type DetectedNewDoSubmitHandlersKnownUrlParamsHref = PortalPanelForceArmButtonHref[];
+
+/**
  * Detected new gateway information.
  *
  * @since 1.0.0
  */
 export type DetectedNewGatewayInformationDevice = GatewayInformation;
 
-export type DetectedNewGatewayInformationLogger = Logger;
+export type DetectedNewGatewayInformationLogger = Logger | null;
 
 export type DetectedNewGatewayInformationDebugMode = boolean | null;
 
@@ -968,13 +1078,38 @@ export type DetectedNewGatewayInformationReturns = Promise<boolean>;
 export type DetectedNewGatewayInformationKnownStatuses = PortalDeviceStatus[];
 
 /**
+ * Detected orb security buttons.
+ *
+ * @since 1.0.0
+ */
+export type DetectedNewOrbSecurityButtonsButtons = OrbSecurityButtons;
+
+export type DetectedNewOrbSecurityButtonsLogger = Logger | null;
+
+export type DetectedNewOrbSecurityButtonsDebugMode = boolean | null;
+
+export type DetectedNewOrbSecurityButtonsReturns = Promise<boolean>;
+
+export type DetectedNewOrbSecurityButtonsKnownButtonText = PortalPanelArmButtonText[];
+
+export type DetectedNewOrbSecurityButtonsKnownLoadingText = PortalPanelArmButtonLoadingText[];
+
+export type DetectedNewOrbSecurityButtonsKnownRelativeUrl = PortalPanelArmButtonRelativeUrl[];
+
+export type DetectedNewOrbSecurityButtonsKnownUrlParamsArm = PortalPanelArmValue[];
+
+export type DetectedNewOrbSecurityButtonsKnownUrlParamsArmState = (PortalPanelArmStateClean | PortalPanelArmStateDirty)[];
+
+export type DetectedNewOrbSecurityButtonsKnownUrlParamsHref = PortalPanelArmButtonHref[];
+
+/**
  * Detected new panel information.
  *
  * @since 1.0.0
  */
 export type DetectedNewPanelInformationDevice = PanelInformation;
 
-export type DetectedNewPanelInformationLogger = Logger;
+export type DetectedNewPanelInformationLogger = Logger | null;
 
 export type DetectedNewPanelInformationDebugMode = boolean | null;
 
@@ -989,7 +1124,7 @@ export type DetectedNewPanelInformationKnownStatuses = PortalDeviceStatus[];
  */
 export type DetectedNewPanelStatusSummary = PanelStatus;
 
-export type DetectedNewPanelStatusLogger = Logger;
+export type DetectedNewPanelStatusLogger = Logger | null;
 
 export type DetectedNewPanelStatusDebugMode = boolean | null;
 
@@ -1006,9 +1141,9 @@ export type DetectedNewPanelStatusKnownStatusesSensorsOpen = PortalPanelStatusSe
  *
  * @since 1.0.0
  */
-export type DetectedNewPortalVersionVersion = PortalVersion | null;
+export type DetectedNewPortalVersionVersion = PortalVersionContent;
 
-export type DetectedNewPortalVersionLogger = Logger;
+export type DetectedNewPortalVersionLogger = Logger | null;
 
 export type DetectedNewPortalVersionDebugMode = boolean | null;
 
@@ -1023,7 +1158,7 @@ export type DetectedNewPortalVersionKnownVersions = PortalVersion[];
  */
 export type DetectedNewSensorsInformationSensors = SensorsInformation;
 
-export type DetectedNewSensorsInformationLogger = Logger;
+export type DetectedNewSensorsInformationLogger = Logger | null;
 
 export type DetectedNewSensorsInformationDebugMode = boolean | null;
 
@@ -1040,7 +1175,7 @@ export type DetectedNewSensorsInformationKnownStatuses = PortalDeviceStatus[];
  */
 export type DetectedNewSensorsStatusSensors = SensorsStatus;
 
-export type DetectedNewSensorsStatusLogger = Logger;
+export type DetectedNewSensorsStatusLogger = Logger | null;
 
 export type DetectedNewSensorsStatusDebugMode = boolean | null;
 
@@ -1293,6 +1428,23 @@ export type ParseOrbSensorsTableSensors = SensorsInformation;
 export type ParseOrbSensorsTableDeviceType = SensorInformationDeviceType;
 
 export type ParseOrbSensorsTableStatus = SensorInformationStatus;
+
+/**
+ * Remove personal identifiable information.
+ *
+ * @since 1.0.0
+ */
+export type RemovePersonalIdentifiableInformationModifiedObject = {
+  [key: string]: unknown;
+};
+
+export type RemovePersonalIdentifiableInformationData = RemovePersonalIdentifiableInformationModifiedObject | RemovePersonalIdentifiableInformationModifiedObject[];
+
+export type RemovePersonalIdentifiableInformationReturns = RemovePersonalIdentifiableInformationModifiedObject | RemovePersonalIdentifiableInformationModifiedObject[];
+
+export type RemovePersonalIdentifiableInformationReplaceValueObject = RemovePersonalIdentifiableInformationModifiedObject;
+
+export type RemovePersonalIdentifiableInformationReplaceValueReturns = RemovePersonalIdentifiableInformationModifiedObject;
 
 /**
  * Sleep.

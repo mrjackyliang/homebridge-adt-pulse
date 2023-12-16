@@ -97,6 +97,11 @@ import type {
   ParseOrbTextSummaryCurrentStatus,
   ParseOrbTextSummaryElement,
   ParseOrbTextSummaryReturns,
+  RemovePersonalIdentifiableInformationData,
+  RemovePersonalIdentifiableInformationModifiedObject,
+  RemovePersonalIdentifiableInformationReplaceValueObject,
+  RemovePersonalIdentifiableInformationReplaceValueReturns,
+  RemovePersonalIdentifiableInformationReturns,
   SleepMilliseconds,
   SleepReturns,
   StackTracerError,
@@ -415,8 +420,8 @@ export function findIndexWithValue<Value>(array: FindIndexWithValueArray<Value>,
 export function findNullKeys(properties: FindNullKeysProperties, parentKey: FindNullKeysParentKey = ''): FindNullKeysReturns {
   const found: FindNullKeysFound = [];
 
-  _.forOwn(properties, (property, propertyKey) => {
-    const currentKey = (parentKey !== '') ? `${parentKey}.${propertyKey}` : propertyKey;
+  Object.entries(properties).forEach(([propertyKey, property]) => {
+    const currentKey = parentKey !== '' ? `${parentKey}.${propertyKey}` : propertyKey;
 
     if (_.isPlainObject(property)) {
       found.push(...findNullKeys(property, currentKey));
@@ -510,8 +515,6 @@ export function getAccessoryCategory(deviceCategory: GetAccessoryCategoryDeviceC
   switch (deviceCategory) {
     case 'ALARM_SYSTEM':
       return Categories.ALARM_SYSTEM;
-    case 'BRIDGE':
-      return Categories.BRIDGE;
     case 'OTHER':
       return Categories.OTHER;
     case 'SECURITY_SYSTEM':
@@ -825,6 +828,60 @@ export function parseSensorsTable(elements: ParseOrbSensorsTableElements): Parse
   });
 
   return sensors.sort((a, b) => a.zone - b.zone);
+}
+
+/**
+ * Remove personal identifiable information.
+ *
+ * @param {RemovePersonalIdentifiableInformationData} data - Data.
+ *
+ * @returns {RemovePersonalIdentifiableInformationReturns}
+ *
+ * @since 1.0.0
+ */
+export function removePersonalIdentifiableInformation(data: RemovePersonalIdentifiableInformationData): RemovePersonalIdentifiableInformationReturns {
+  const redactedKeys = [
+    'ip',
+    'lanIp',
+    'mac',
+    'masterCode',
+    'sat',
+    'serialNumber',
+    'wanIp',
+  ];
+
+  /**
+   * Remove personal identifiable information - Replace value.
+   *
+   * @param {RemovePersonalIdentifiableInformationReplaceValueObject} object - Object.
+   *
+   * @returns {RemovePersonalIdentifiableInformationReplaceValueReturns}
+   *
+   * @since 1.0.0
+   */
+  const replaceValue = (object: RemovePersonalIdentifiableInformationReplaceValueObject): RemovePersonalIdentifiableInformationReplaceValueReturns => {
+    const modifiedObject: RemovePersonalIdentifiableInformationModifiedObject = {};
+
+    Object.keys(object).forEach((key) => {
+      const value = object[key];
+
+      if (_.isPlainObject(value)) {
+        modifiedObject[key] = replaceValue(value as RemovePersonalIdentifiableInformationModifiedObject);
+      } else if (redactedKeys.includes(key)) {
+        modifiedObject[key] = '*** REDACTED FOR PRIVACY ***';
+      } else {
+        modifiedObject[key] = value;
+      }
+    });
+
+    return modifiedObject;
+  };
+
+  if (Array.isArray(data)) {
+    return data.map(replaceValue);
+  }
+
+  return replaceValue(data);
 }
 
 /**

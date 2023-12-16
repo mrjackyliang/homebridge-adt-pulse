@@ -289,6 +289,9 @@ class ADTPulseRepl {
       'Welcome to the REPL interface for ADT Pulse for Homebridge. This interface',
       'allows you to interact with the ADT Pulse portal via the included API and is designed',
       `for advanced users only. ${chalk.redBright('PLEASE USE WITH CAUTION, NO WARRANTY IS PROVIDED.')}`,
+      '',
+      `${chalk.bold.yellowBright('NOTICE')}: The API gathers anonymous analytics to detect potential bugs or issues.`,
+      '        All personally identifiable information redacted. You will see exactly what will be sent out.',
     ].join('\n'));
   }
 }

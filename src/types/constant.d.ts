@@ -13,7 +13,6 @@ export type PluginConfigPlatform =
  */
 export type PluginDeviceCategory =
   'ALARM_SYSTEM'
-  | 'BRIDGE'
   | 'OTHER'
   | 'SECURITY_SYSTEM'
   | 'SENSOR';

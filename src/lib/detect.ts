@@ -3,13 +3,32 @@ import _ from 'lodash';
 import { env } from 'node:process';
 import { serializeError } from 'serialize-error';
 
-import { debugLog, stackTracer } from '@/lib/utility.js';
+import { debugLog, removePersonalIdentifiableInformation, stackTracer } from '@/lib/utility.js';
 import type {
+  DetectedNewDoSubmitHandlersDebugMode,
+  DetectedNewDoSubmitHandlersHandlers,
+  DetectedNewDoSubmitHandlersKnownRelativeUrls,
+  DetectedNewDoSubmitHandlersKnownRelativeUrlsVersion,
+  DetectedNewDoSubmitHandlersKnownUrlParamsArm,
+  DetectedNewDoSubmitHandlersKnownUrlParamsArmState,
+  DetectedNewDoSubmitHandlersKnownUrlParamsHref,
+  DetectedNewDoSubmitHandlersLogger,
+  DetectedNewDoSubmitHandlersReturns,
   DetectedNewGatewayInformationDebugMode,
   DetectedNewGatewayInformationDevice,
   DetectedNewGatewayInformationKnownStatuses,
   DetectedNewGatewayInformationLogger,
   DetectedNewGatewayInformationReturns,
+  DetectedNewOrbSecurityButtonsButtons,
+  DetectedNewOrbSecurityButtonsDebugMode,
+  DetectedNewOrbSecurityButtonsKnownButtonText,
+  DetectedNewOrbSecurityButtonsKnownLoadingText,
+  DetectedNewOrbSecurityButtonsKnownRelativeUrl,
+  DetectedNewOrbSecurityButtonsKnownUrlParamsArm,
+  DetectedNewOrbSecurityButtonsKnownUrlParamsArmState,
+  DetectedNewOrbSecurityButtonsKnownUrlParamsHref,
+  DetectedNewOrbSecurityButtonsLogger,
+  DetectedNewOrbSecurityButtonsReturns,
   DetectedNewPanelInformationDebugMode,
   DetectedNewPanelInformationDevice,
   DetectedNewPanelInformationKnownStatuses,
@@ -42,11 +61,111 @@ import type {
 } from '@/types/index.d.ts';
 
 /**
+ * Detected do submit handlers.
+ *
+ * @param {DetectedNewDoSubmitHandlersHandlers}  handlers  - Handlers.
+ * @param {DetectedNewDoSubmitHandlersLogger}    logger    - Logger.
+ * @param {DetectedNewDoSubmitHandlersDebugMode} debugMode - Debug mode.
+ *
+ * @returns {DetectedNewDoSubmitHandlersReturns}
+ *
+ * @since 1.0.0
+ */
+export async function detectedNewDoSubmitHandlers(handlers: DetectedNewDoSubmitHandlersHandlers, logger: DetectedNewDoSubmitHandlersLogger, debugMode: DetectedNewDoSubmitHandlersDebugMode): DetectedNewDoSubmitHandlersReturns {
+  const knownRelativeUrls: DetectedNewDoSubmitHandlersKnownRelativeUrls = [
+    '16.0.0-131',
+    '17.0.0-69',
+    '18.0.0-78',
+    '19.0.0-89',
+    '20.0.0-221',
+    '20.0.0-244',
+    '21.0.0-344',
+    '21.0.0-353',
+    '21.0.0-354',
+    '22.0.0-233',
+    '23.0.0-99',
+    '24.0.0-117',
+    '25.0.0-21',
+    '26.0.0-32',
+    '27.0.0-140',
+  ].map((version) => `/myhome/${version}/quickcontrol/serv/RunRRACommand` as DetectedNewDoSubmitHandlersKnownRelativeUrlsVersion);
+  const knownUrlParamsArm: DetectedNewDoSubmitHandlersKnownUrlParamsArm = [
+    'away',
+    'night',
+    'stay',
+  ];
+  const knownUrlParamsArmState: DetectedNewDoSubmitHandlersKnownUrlParamsArmState = [
+    'forcearm',
+  ];
+  const knownUrlParamsHref: DetectedNewDoSubmitHandlersKnownUrlParamsHref = [
+    'rest/adt/ui/client/security/setForceArm',
+    'rest/adt/ui/client/security/setCancelProtest',
+  ];
+
+  // Compare with data above.
+  const detectedNewHandlers = handlers.filter((handler) => (
+    !knownRelativeUrls.includes(handler.relativeUrl)
+    || (
+      handler.urlParams.arm !== null
+      && !knownUrlParamsArm.includes(handler.urlParams.arm)
+    )
+    || (
+      handler.urlParams.armState !== null
+      && !knownUrlParamsArmState.includes(handler.urlParams.armState)
+    )
+    || !knownUrlParamsHref.includes(handler.urlParams.href)
+  ));
+
+  if (detectedNewHandlers.length > 0) {
+    const cleanedData = removePersonalIdentifiableInformation(detectedNewHandlers);
+
+    if (logger !== null) {
+      logger.warn('Plugin has detected new do submit handlers. Notifying plugin author about this discovery ...');
+    }
+
+    // This is intentionally duplicated if using Homebridge debug mode.
+    if (debugMode) {
+      debugLog(logger, 'detect.ts / detectedNewDoSubmitHandlers()', 'warn', 'Plugin has detected new do submit handlers. Notifying plugin author about this discovery');
+    }
+
+    // Show content being sent to author.
+    stackTracer('detect-content', cleanedData);
+
+    try {
+      await axios.post(
+        'https://9wv5o73w.ntfy.mrjackyliang.com',
+        JSON.stringify({
+          title: 'Detected new do submit handlers',
+          description: 'New do submit handlers detected. Please update the plugin as soon as possible.',
+          content: JSON.stringify(cleanedData, null, 2),
+        }),
+        {
+          family: 4,
+          headers: {
+            'Content-Type': 'application/json',
+            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? '0.1.0'}`,
+          },
+        },
+      );
+    } catch (error) {
+      if (debugMode === true) {
+        debugLog(logger, 'detect.ts / detectedNewDoSubmitHandlers()', 'error', 'Failed to notify plugin author about the new do submit handlers');
+        stackTracer('serialize-error', serializeError(error));
+      }
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * Detected new gateway information.
  *
  * @param {DetectedNewGatewayInformationDevice}    device    - Device.
  * @param {DetectedNewGatewayInformationLogger}    logger    - Logger.
- * @param {DetectedNewGatewayInformationDebugMode} debugMode - Logger.
+ * @param {DetectedNewGatewayInformationDebugMode} debugMode - Debug mode.
  *
  * @returns {DetectedNewGatewayInformationReturns}
  *
@@ -62,8 +181,19 @@ export async function detectedNewGatewayInformation(device: DetectedNewGatewayIn
   const detectedNewStatus = (device.status !== null && !knownStatuses.includes(device.status));
 
   if (detectedNewStatus) {
-    logger.warn('Plugin has detected new gateway information. Notifying plugin author about this discovery ...');
-    stackTracer('detect-content', device);
+    const cleanedData = removePersonalIdentifiableInformation(device);
+
+    if (logger !== null) {
+      logger.warn('Plugin has detected new gateway information. Notifying plugin author about this discovery ...');
+    }
+
+    // This is intentionally duplicated if using Homebridge debug mode.
+    if (debugMode) {
+      debugLog(logger, 'detect.ts / detectedNewGatewayInformation()', 'warn', 'Plugin has detected new gateway information. Notifying plugin author about this discovery');
+    }
+
+    // Show content being sent to author.
+    stackTracer('detect-content', cleanedData);
 
     try {
       await axios.post(
@@ -71,13 +201,13 @@ export async function detectedNewGatewayInformation(device: DetectedNewGatewayIn
         JSON.stringify({
           title: 'Detected new gateway information',
           description: 'New gateway information detected. Please update the plugin as soon as possible.',
-          content: JSON.stringify(device, null, 2),
+          content: JSON.stringify(cleanedData, null, 2),
         }),
         {
           family: 4,
           headers: {
             'Content-Type': 'application/json',
-            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version}`,
+            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? '0.1.0'}`,
           },
         },
       );
@@ -95,11 +225,128 @@ export async function detectedNewGatewayInformation(device: DetectedNewGatewayIn
 }
 
 /**
+ * Detected orb security buttons.
+ *
+ * @param {DetectedNewOrbSecurityButtonsButtons}   buttons   - Buttons.
+ * @param {DetectedNewOrbSecurityButtonsLogger}    logger    - Logger.
+ * @param {DetectedNewOrbSecurityButtonsDebugMode} debugMode - Debug mode.
+ *
+ * @returns {DetectedNewOrbSecurityButtonsReturns}
+ *
+ * @since 1.0.0
+ */
+export async function detectedNewOrbSecurityButtons(buttons: DetectedNewOrbSecurityButtonsButtons, logger: DetectedNewOrbSecurityButtonsLogger, debugMode: DetectedNewOrbSecurityButtonsDebugMode): DetectedNewOrbSecurityButtonsReturns {
+  const knownButtonText: DetectedNewOrbSecurityButtonsKnownButtonText = [
+    'Arm Away',
+    'Arm Night',
+    'Arm Stay',
+    'Clear Alarm',
+    'Disarm',
+  ];
+  const knownLoadingText: DetectedNewOrbSecurityButtonsKnownLoadingText = [
+    'Arming Away',
+    'Arming Night',
+    'Arming Stay',
+    'Disarming',
+  ];
+  const knownRelativeUrl: DetectedNewOrbSecurityButtonsKnownRelativeUrl = [
+    'quickcontrol/armDisarm.jsp',
+  ];
+  const knownUrlParamsArm: DetectedNewOrbSecurityButtonsKnownUrlParamsArm = [
+    'away',
+    'night',
+    'off',
+    'stay',
+  ];
+  const knownUrlParamsArmState: DetectedNewOrbSecurityButtonsKnownUrlParamsArmState = [
+    'away',
+    'disarmed',
+    'disarmed_with_alarm',
+    'disarmed+with+alarm',
+    'night',
+    'night+stay',
+    'off',
+    'stay',
+  ];
+  const knownUrlParamsHref: DetectedNewOrbSecurityButtonsKnownUrlParamsHref = [
+    'rest/adt/ui/client/security/setArmState',
+  ];
+
+  // Compare with data above.
+  const detectedNewButtons = buttons.filter((button) => (
+    (
+      !button.buttonDisabled
+      && (
+        (
+          button.buttonText !== null
+          && !knownButtonText.includes(button.buttonText)
+        )
+        || !knownLoadingText.includes(button.loadingText)
+        || !knownRelativeUrl.includes(button.relativeUrl)
+        || !knownUrlParamsArm.includes(button.urlParams.arm)
+        || !knownUrlParamsArmState.includes(button.urlParams.armState)
+        || !knownUrlParamsHref.includes(button.urlParams.href)
+      )
+    )
+    || (
+      button.buttonDisabled
+      && (
+        button.buttonText !== null
+        && !knownLoadingText.includes(button.buttonText)
+      )
+    )
+  ));
+
+  if (detectedNewButtons.length > 0) {
+    const cleanedData = removePersonalIdentifiableInformation(detectedNewButtons);
+
+    if (logger !== null) {
+      logger.warn('Plugin has detected new orb security buttons. Notifying plugin author about this discovery ...');
+    }
+
+    // This is intentionally duplicated if using Homebridge debug mode.
+    if (debugMode) {
+      debugLog(logger, 'detect.ts / detectedNewOrbSecurityButtons()', 'warn', 'Plugin has detected new orb security buttons. Notifying plugin author about this discovery');
+    }
+
+    // Show content being sent to author.
+    stackTracer('detect-content', cleanedData);
+
+    try {
+      await axios.post(
+        'https://9wv5o73w.ntfy.mrjackyliang.com',
+        JSON.stringify({
+          title: 'Detected new orb security buttons',
+          description: 'New orb security buttons detected. Please update the plugin as soon as possible.',
+          content: JSON.stringify(cleanedData, null, 2),
+        }),
+        {
+          family: 4,
+          headers: {
+            'Content-Type': 'application/json',
+            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? '0.1.0'}`,
+          },
+        },
+      );
+    } catch (error) {
+      if (debugMode === true) {
+        debugLog(logger, 'detect.ts / detectedNewOrbSecurityButtons()', 'error', 'Failed to notify plugin author about the new orb security buttons');
+        stackTracer('serialize-error', serializeError(error));
+      }
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * Detected new panel information.
  *
  * @param {DetectedNewPanelInformationDevice}    device    - Device.
  * @param {DetectedNewPanelInformationLogger}    logger    - Logger.
- * @param {DetectedNewPanelInformationDebugMode} debugMode - Logger.
+ * @param {DetectedNewPanelInformationDebugMode} debugMode - Debug mode.
  *
  * @returns {DetectedNewPanelInformationReturns}
  *
@@ -115,8 +362,19 @@ export async function detectedNewPanelInformation(device: DetectedNewPanelInform
   const detectedNewStatus = (device.status !== null && !knownStatuses.includes(device.status));
 
   if (detectedNewStatus) {
-    logger.warn('Plugin has detected new panel information. Notifying plugin author about this discovery ...');
-    stackTracer('detect-content', device);
+    const cleanedData = removePersonalIdentifiableInformation(device);
+
+    if (logger !== null) {
+      logger.warn('Plugin has detected new panel information. Notifying plugin author about this discovery ...');
+    }
+
+    // This is intentionally duplicated if using Homebridge debug mode.
+    if (debugMode) {
+      debugLog(logger, 'detect.ts / detectedNewPanelInformation()', 'warn', 'Plugin has detected new panel information. Notifying plugin author about this discovery');
+    }
+
+    // Show content being sent to author.
+    stackTracer('detect-content', cleanedData);
 
     try {
       await axios.post(
@@ -124,13 +382,13 @@ export async function detectedNewPanelInformation(device: DetectedNewPanelInform
         JSON.stringify({
           title: 'Detected new panel information',
           description: 'New panel information detected. Please update the plugin as soon as possible.',
-          content: JSON.stringify(device, null, 2),
+          content: JSON.stringify(cleanedData, null, 2),
         }),
         {
           family: 4,
           headers: {
             'Content-Type': 'application/json',
-            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version}`,
+            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? '0.1.0'}`,
           },
         },
       );
@@ -152,7 +410,7 @@ export async function detectedNewPanelInformation(device: DetectedNewPanelInform
  *
  * @param {DetectedNewPanelStatusSummary}   summary   - Summary.
  * @param {DetectedNewPanelStatusLogger}    logger    - Logger.
- * @param {DetectedNewPanelStatusDebugMode} debugMode - Logger.
+ * @param {DetectedNewPanelStatusDebugMode} debugMode - Debug mode.
  *
  * @returns {DetectedNewPanelStatusReturns}
  *
@@ -188,8 +446,19 @@ export async function detectedNewPanelStatus(summary: DetectedNewPanelStatusSumm
   const detectedNewStatus = (summary.status !== null && !knownStatuses.includes(summary.status));
 
   if (detectedNewState || detectedNewStatus) {
-    logger.warn('Plugin has detected a new panel state and/or status. Notifying plugin author about this discovery ...');
-    stackTracer('detect-content', summary);
+    const cleanedData = removePersonalIdentifiableInformation(summary);
+
+    if (logger !== null) {
+      logger.warn('Plugin has detected a new panel state and/or status. Notifying plugin author about this discovery ...');
+    }
+
+    // This is intentionally duplicated if using Homebridge debug mode.
+    if (debugMode) {
+      debugLog(logger, 'detect.ts / detectedNewPanelStatus()', 'warn', 'Plugin has detected a new panel state and/or status. Notifying plugin author about this discovery');
+    }
+
+    // Show content being sent to author.
+    stackTracer('detect-content', cleanedData);
 
     try {
       await axios.post(
@@ -197,13 +466,13 @@ export async function detectedNewPanelStatus(summary: DetectedNewPanelStatusSumm
         JSON.stringify({
           title: 'Detected a new panel state and/or status',
           description: 'A new panel state and/or status detected. Please update the plugin as soon as possible.',
-          content: JSON.stringify(summary, null, 2),
+          content: JSON.stringify(cleanedData, null, 2),
         }),
         {
           family: 4,
           headers: {
             'Content-Type': 'application/json',
-            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version}`,
+            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? '0.1.0'}`,
           },
         },
       );
@@ -251,13 +520,22 @@ export async function detectedNewPortalVersion(version: DetectedNewPortalVersion
   ];
 
   // Compare with data above. Detection does not need to know if values are "null".
-  const detectedNewVersion = (version !== null && !knownVersions.includes(version));
+  const detectedNewVersion = (version.version !== null && !knownVersions.includes(version.version));
 
   if (detectedNewVersion) {
-    logger.warn('Plugin has detected a new portal version. Notifying plugin author about this discovery ...');
-    stackTracer('detect-content', {
-      version,
-    });
+    const cleanedData = removePersonalIdentifiableInformation(version);
+
+    if (logger !== null) {
+      logger.warn('Plugin has detected a new portal version. Notifying plugin author about this discovery ...');
+    }
+
+    // This is intentionally duplicated if using Homebridge debug mode.
+    if (debugMode) {
+      debugLog(logger, 'detect.ts / detectedNewPortalVersion()', 'warn', 'Plugin has detected a new portal version. Notifying plugin author about this discovery');
+    }
+
+    // Show content being sent to author.
+    stackTracer('detect-content', cleanedData);
 
     try {
       await axios.post(
@@ -265,15 +543,13 @@ export async function detectedNewPortalVersion(version: DetectedNewPortalVersion
         JSON.stringify({
           title: 'Detected a new portal version',
           description: 'A new portal version detected. Please update the plugin as soon as possible.',
-          content: JSON.stringify({
-            version,
-          }, null, 2),
+          content: JSON.stringify(cleanedData, null, 2),
         }),
         {
           family: 4,
           headers: {
             'Content-Type': 'application/json',
-            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version}`,
+            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? '0.1.0'}`,
           },
         },
       );
@@ -320,11 +596,25 @@ export async function detectedNewSensorsInformation(sensors: DetectedNewSensorsI
   ];
 
   // Compare with data above.
-  const detectedNewInformation = sensors.filter((sensor) => (!knownDeviceTypes.includes(sensor.deviceType) || !knownStatuses.includes(sensor.status)));
+  const detectedNewInformation = sensors.filter((sensor) => (
+    !knownDeviceTypes.includes(sensor.deviceType)
+    || !knownStatuses.includes(sensor.status)
+  ));
 
   if (detectedNewInformation.length > 0) {
-    logger.warn('Plugin has detected new sensors information. Notifying plugin author about this discovery ...');
-    stackTracer('detect-content', detectedNewInformation);
+    const cleanedData = removePersonalIdentifiableInformation(detectedNewInformation);
+
+    if (logger !== null) {
+      logger.warn('Plugin has detected new sensors information. Notifying plugin author about this discovery ...');
+    }
+
+    // This is intentionally duplicated if using Homebridge debug mode.
+    if (debugMode) {
+      debugLog(logger, 'detect.ts / detectedNewSensorsInformation()', 'warn', 'Plugin has detected new sensors information. Notifying plugin author about this discovery');
+    }
+
+    // Show content being sent to author.
+    stackTracer('detect-content', cleanedData);
 
     try {
       await axios.post(
@@ -332,13 +622,13 @@ export async function detectedNewSensorsInformation(sensors: DetectedNewSensorsI
         JSON.stringify({
           title: 'Detected new sensors information',
           description: 'New sensors information detected. Please update the plugin as soon as possible.',
-          content: JSON.stringify(detectedNewInformation, null, 2),
+          content: JSON.stringify(cleanedData, null, 2),
         }),
         {
           family: 4,
           headers: {
             'Content-Type': 'application/json',
-            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version}`,
+            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? '0.1.0'}`,
           },
         },
       );
@@ -388,11 +678,25 @@ export async function detectedNewSensorsStatus(sensors: DetectedNewSensorsStatus
   ];
 
   // Compare with data above.
-  const detectedNewStatuses = sensors.filter((sensor) => (!knownIcons.includes(sensor.icon) || !knownStatuses.includes(sensor.status)));
+  const detectedNewStatuses = sensors.filter((sensor) => (
+    !knownIcons.includes(sensor.icon)
+    || !knownStatuses.includes(sensor.status)
+  ));
 
   if (detectedNewStatuses.length > 0) {
-    logger.warn('Plugin has detected new sensors status. Notifying plugin author about this discovery ...');
-    stackTracer('detect-content', detectedNewStatuses);
+    const cleanedData = removePersonalIdentifiableInformation(detectedNewStatuses);
+
+    if (logger !== null) {
+      logger.warn('Plugin has detected new sensors status. Notifying plugin author about this discovery ...');
+    }
+
+    // This is intentionally duplicated if using Homebridge debug mode.
+    if (debugMode) {
+      debugLog(logger, 'detect.ts / detectedNewSensorsStatus()', 'warn', 'Plugin has detected new sensors status. Notifying plugin author about this discovery');
+    }
+
+    // Show content being sent to author.
+    stackTracer('detect-content', cleanedData);
 
     try {
       await axios.post(
@@ -400,19 +704,19 @@ export async function detectedNewSensorsStatus(sensors: DetectedNewSensorsStatus
         JSON.stringify({
           title: 'Detected new sensors status',
           description: 'New sensors status detected. Please update the plugin as soon as possible.',
-          content: JSON.stringify(detectedNewStatuses, null, 2),
+          content: JSON.stringify(cleanedData, null, 2),
         }),
         {
           family: 4,
           headers: {
             'Content-Type': 'application/json',
-            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version}`,
+            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? '0.1.0'}`,
           },
         },
       );
     } catch (error) {
       if (debugMode === true) {
-        debugLog(logger, 'detect.ts / detectedNewSensorStatus()', 'error', 'Failed to notify plugin author about the new sensors status');
+        debugLog(logger, 'detect.ts / detectedNewSensorsStatus()', 'error', 'Failed to notify plugin author about the new sensors status');
         stackTracer('serialize-error', serializeError(error));
       }
     }

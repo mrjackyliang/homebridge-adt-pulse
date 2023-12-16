@@ -8,6 +8,11 @@ ADT Pulse for Homebridge
 
 This is a [verified Homebridge plugin](https://github.com/homebridge/homebridge/wiki/verified-Plugins#verified-plugins) for ADT Pulse users that allow homeowners to control their security system and view sensor status through HomeKit. The API relies on the ADT Pulse Web Portal (by Icontrol One).
 
+# Please install the beta version!
+### This plugin is completely re-written from the ground up, and I need everyone on board! Please install the pre-release version, so I can quickly get a faster and more stable version to you!
+### Everything is still very sloppy, please bear with me, even the readme has to be re-written.
+### In the meantime, do not use the UI to configure your plugin (the latest config is below). The UI uses v2 (this is now v3) config. All sensors will now HAVE TO be added manually to prevent automatic-adding/removals if ADT strikes a bug to break things again.
+
 To use this plugin, here are three simple steps you need to follow:
 1. Run `npm install homebridge-adt-pulse`
 2. Configure the plugin using the [configuration example](#configuration)
@@ -23,25 +28,20 @@ When configuring this plugin, simply add the platform to your existing `config.j
     {
       "platform": "ADTPulse",
       "name": "ADT Pulse",
+      "subdomain": "CAN BE 'portal' (USA) or 'portal-ca' (Canada)",
       "username": "email@email.com",
       "password": "1234567890",
       "fingerprint": "abcdef1234567890=",
-      "overrideSensors": [
+      "sensors": [
         {
-          "name": "Sample Sensor 1",
-          "type": "sensor,doorWindow"
-        },
-        {
-          "name": "...",
-          "type": "..."
+          "name": "Lounge Smoke",
+          "adtName": "Basement Smoke",
+          "adtType": "fire",
+          "adtZone": 1
         }
       ],
-      "country": "us",
-      "logLevel": 30,
-      "logActivity": true,
-      "removeObsoleteZones": true,
-      "pausePlugin": false,
-      "resetAll": false
+      "pause": false,
+      "reset": false
     },
     {
       "platform": "...",

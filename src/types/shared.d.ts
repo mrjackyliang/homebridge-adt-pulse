@@ -27,6 +27,7 @@ import type {
   PortalSensorStatusIcon,
   PortalSensorStatusText,
   PortalSubdomain,
+  PortalVersion,
 } from '@/types/constant.d.ts';
 
 /**
@@ -53,27 +54,27 @@ export type ApiResponseSuccessSuccess = true;
 
 export type ApiResponseSuccessInfo = object | null;
 
-export type ApiResponseSuccessFail = false;
-
-export type ApiResponseErrorInfoError = ErrorObject;
-
-export type ApiResponseErrorInfoMessage = string;
-
-export type ApiResponseErrorInfo = {
-  error?: ApiResponseErrorInfoError,
-  message?: ApiResponseErrorInfoMessage;
-} | undefined;
-
 export type ApiResponseSuccess<Action extends ApiResponseAction, Info extends ApiResponseSuccessInfo> = {
   action: Action,
   success: ApiResponseSuccessSuccess,
   info: Info,
 };
 
+export type ApiResponseFailSuccess = false;
+
+export type ApiResponseFailInfoError = ErrorObject;
+
+export type ApiResponseFailInfoMessage = string;
+
+export type ApiResponseFailInfo = {
+  error?: ApiResponseFailInfoError,
+  message?: ApiResponseFailInfoMessage;
+};
+
 export type ApiResponseFail<Action extends ApiResponseAction> = {
   action: Action,
-  success: ApiResponseSuccessFail,
-  info: ApiResponseErrorInfo,
+  success: ApiResponseFailSuccess,
+  info: ApiResponseFailInfo,
 };
 
 export type ApiResponse<Action extends ApiResponseAction, Info extends ApiResponseSuccessInfo> =
@@ -160,6 +161,12 @@ export type DeviceModel = string | null;
 
 export type DeviceSerial = string | null;
 
+export type DeviceFirmware = string | null;
+
+export type DeviceHardware = string | null;
+
+export type DeviceSoftware = string | null;
+
 export type DeviceUuid = UUID;
 
 export type Device = {
@@ -171,6 +178,9 @@ export type Device = {
   manufacturer: DeviceManufacturer;
   model: DeviceModel;
   serial: DeviceSerial;
+  firmware: DeviceFirmware;
+  hardware: DeviceHardware;
+  software: DeviceSoftware;
   uuid: DeviceUuid;
 };
 
@@ -210,6 +220,21 @@ export type DoSubmitHandlers = DoSubmitHandler[];
  *
  * @since 1.0.0
  */
+export type GatewayInformationCommunicationPrimaryConnectionType = string | null;
+
+export type GatewayInformationCommunicationBroadbandConnectionStatus = string | null;
+
+export type GatewayInformationCommunicationCellularConnectionStatus = string | null;
+
+export type GatewayInformationCommunicationCellularSignalStrength = string | null;
+
+export type GatewayInformationCommunication = {
+  primaryConnectionType: GatewayInformationCommunicationPrimaryConnectionType;
+  broadbandConnectionStatus: GatewayInformationCommunicationBroadbandConnectionStatus;
+  cellularConnectionStatus: GatewayInformationCommunicationCellularConnectionStatus;
+  cellularSignalStrength: GatewayInformationCommunicationCellularSignalStrength;
+};
+
 export type GatewayInformationManufacturer = string | null;
 
 export type GatewayInformationModel = string | null;
@@ -232,9 +257,19 @@ export type GatewayInformationNetworkDevice = {
   mac: GatewayInformationNetworkDeviceMac;
 };
 
+export type GatewayInformationNetworkRouterLanIp = string | null;
+
+export type GatewayInformationNetworkRouterWanIp = string | null;
+
+export type GatewayInformationNetworkRouter = {
+  lanIp: GatewayInformationNetworkRouterLanIp;
+  wanIp: GatewayInformationNetworkRouterWanIp;
+};
+
 export type GatewayInformationNetwork = {
   broadband: GatewayInformationNetworkBroadband;
   device: GatewayInformationNetworkDevice;
+  router: GatewayInformationNetworkRouter;
 };
 
 export type GatewayInformationSerialNumber = string | null;
@@ -260,6 +295,7 @@ export type GatewayInformationVersions = {
 };
 
 export type GatewayInformation = {
+  communication: GatewayInformationCommunication;
   manufacturer: GatewayInformationManufacturer;
   model: GatewayInformationModel;
   network: GatewayInformationNetwork;
@@ -374,17 +410,26 @@ export type OrbSecurityButtons = OrbSecurityButton[];
  */
 export type PanelInformationEmergencyKeys = RegExpMatchArray | null;
 
-export type PanelInformationManufacturerProvider = string | null;
+export type PanelInformationManufacturer = string | null;
 
-export type PanelInformationTypeModel = string | null;
+export type PanelInformationMasterCode = string | null;
+
+export type PanelInformationModel = string | null;
+
+export type PanelInformationProvider = string | null;
 
 export type PanelInformationStatus = PortalDeviceStatus | null;
 
+export type PanelInformationType = string | null;
+
 export type PanelInformation = {
   emergencyKeys: PanelInformationEmergencyKeys;
-  manufacturerProvider: PanelInformationManufacturerProvider;
-  typeModel: PanelInformationTypeModel;
+  manufacturer: PanelInformationManufacturer;
+  masterCode: PanelInformationMasterCode;
+  model: PanelInformationModel;
+  provider: PanelInformationProvider;
   status: PanelInformationStatus;
+  type: PanelInformationType;
 };
 
 /**
@@ -399,6 +444,15 @@ export type PanelStatusStatus = Exclude<PortalPanelStatus, ''> | null;
 export type PanelStatus = {
   state: PanelStatusState;
   status: PanelStatusStatus;
+};
+
+/**
+ * Portal version content.
+ *
+ * @since 1.0.0
+ */
+export type PortalVersionContent = {
+  version: PortalVersion | null;
 };
 
 /**

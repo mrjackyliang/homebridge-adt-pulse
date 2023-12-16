@@ -10,19 +10,10 @@ import { serializeError } from 'serialize-error';
 
 import { ADTPulseAccessory } from '@/lib/accessory.js';
 import { ADTPulse } from '@/lib/api.js';
-import {
-  detectedNewGatewayInformation,
-  detectedNewPanelInformation,
-  detectedNewPanelStatus,
-  detectedNewPortalVersion,
-  detectedNewSensorsInformation,
-  detectedNewSensorsStatus,
-} from '@/lib/detect.js';
 import { platformConfig } from '@/lib/schema.js';
 import {
   condenseSensorType,
   findIndexWithValue,
-  generateHash,
   getAccessoryCategory,
   getPluralForm,
   sleep,
@@ -78,7 +69,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
    *
    * @since 1.0.0
    */
-  #accessories: ADTPulsePlatformAccessories;
+  accessories: ADTPulsePlatformAccessories;
 
   /**
    * ADT Pulse Platform - Api.
@@ -180,7 +171,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
    * @since 1.0.0
    */
   constructor(log: ADTPulsePlatformConstructorLog, config: ADTPulsePlatformConstructorConfig, api: ADTPulsePlatformConstructorApi) {
-    this.#accessories = [];
+    this.accessories = [];
     this.#api = api;
     this.#characteristic = api.hap.Characteristic;
     this.#config = null;
@@ -223,7 +214,6 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         adtKeepAlive: 0, // January 1, 1970, at 00:00:00 UTC.
         adtSyncCheck: 0, // January 1, 1970, at 00:00:00 UTC.
       },
-      reportedHashes: [],
     };
 
     // Parsed Homebridge platform configuration.
@@ -256,7 +246,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
       this.printSystemInformation();
 
       // Give notice to users this plugin is being anonymously tracked.
-      this.#log.info(`${chalk.bold.underline('TRANSPARENCY NOTICE')}: Plugin gathers anonymous analytics to detect potential issues. Warnings will appear when analytics are sent.`);
+      this.#log.info(`${chalk.bold.yellowBright('NOTICE')}: The API gathers anonymous analytics to detect potential bugs or issues. All personally identifiable information redacted. You will see exactly what will be sent out.`);
 
       // If the config specifies that plugin should be paused.
       if (this.#config.pause === true) {
@@ -270,8 +260,8 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         this.#log.warn('Plugin is now removing all related accessories from Homebridge ...');
 
         // Remove all related accessories from Homebridge.
-        for (let i = this.#accessories.length - 1; i >= 0; i -= 1) {
-          this.removeAccessory(this.#accessories[i]);
+        for (let i = this.accessories.length - 1; i >= 0; i -= 1) {
+          this.removeAccessory(this.accessories[i]);
         }
 
         return;
@@ -292,10 +282,10 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
    * @since 1.0.0
    */
   configureAccessory(accessory: ADTPulsePlatformConfigureAccessoryAccessory): ADTPulsePlatformConfigureAccessoryReturns {
-    this.#log.info(`Configuring cached accessory for ${accessory.context.name} (id: ${accessory.context.id}, uuid: ${accessory.context.uuid}) ...`);
+    this.#log.info(`Configuring cached accessory for ${chalk.underline(accessory.context.name)} (id: ${accessory.context.id}, uuid: ${accessory.context.uuid}) ...`);
 
     // Add the restored accessory to the accessories cache.
-    this.#accessories.push(accessory);
+    this.accessories.push(accessory);
   }
 
   /**
@@ -308,10 +298,18 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
    * @since 1.0.0
    */
   addAccessory(device: ADTPulsePlatformAddAccessoryDevice): ADTPulsePlatformAddAccessoryReturns {
-    const accessoryIndex = this.#accessories.findIndex((accessory) => device.uuid === accessory.context.uuid);
+    const accessoryIndex = this.accessories.findIndex((accessory) => device.uuid === accessory.context.uuid);
 
+    // Prevent adding duplicate accessory.
     if (accessoryIndex >= 0) {
-      this.#log.error(`Cannot add ${device.name} (id: ${device.id}, uuid: ${device.uuid}) accessory that already exists ...`);
+      this.#log.error(`Cannot add ${chalk.underline(device.name)} (id: ${device.id}, uuid: ${device.uuid}) accessory that already exists.`);
+
+      return;
+    }
+
+    // If API instance is not available.
+    if (this.#instance === null) {
+      this.#log.error(`Attempted to add ${chalk.underline(device.name)} (id: ${device.id}, uuid: ${device.uuid}) accessory but API instance is not available.`);
 
       return;
     }
@@ -329,16 +327,16 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     // Let TypeScript know that the context now exists. This creates additional runtime.
     const typedAccessory = newAccessory as ADTPulsePlatformAddAccessoryTypedNewAccessory;
 
-    this.#log.info(`Adding ${typedAccessory.context.name} (id: ${typedAccessory.context.id}, uuid: ${typedAccessory.context.uuid}) accessory ...`);
+    this.#log.info(`Adding ${chalk.underline(typedAccessory.context.name)} (id: ${typedAccessory.context.id}, uuid: ${typedAccessory.context.uuid}) accessory ...`);
 
     // Create the handler for the new accessory if it does not exist.
     if (this.#handlers[device.id] === undefined) {
       // All arguments are passed by reference.
-      this.#handlers[device.id] = new ADTPulseAccessory(typedAccessory, this.#state, this.#service, this.#characteristic, this.#log);
+      this.#handlers[device.id] = new ADTPulseAccessory(typedAccessory, this.#state, this.#instance, this.#service, this.#characteristic, this.#api, this.#log);
     }
 
     // Save the new accessory into the accessories cache.
-    this.#accessories.push(typedAccessory);
+    this.accessories.push(typedAccessory);
 
     this.#api.registerPlatformAccessories(
       'homebridge-adt-pulse',
@@ -358,17 +356,24 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
    */
   updateAccessory(device: ADTPulsePlatformUpdateAccessoryDevice): ADTPulsePlatformUpdateAccessoryReturns {
     const { index, value } = findIndexWithValue(
-      this.#accessories,
+      this.accessories,
       (accessory) => device.uuid === accessory.context.uuid,
     );
 
     if (index < 0 || value === undefined) {
-      this.#log.warn(`Attempted to update ${device.name} (id: ${device.id}, uuid: ${device.uuid}) accessory that does not exist ...`);
+      this.#log.warn(`Attempted to update ${chalk.underline(device.name)} (id: ${device.id}, uuid: ${device.uuid}) accessory that does not exist.`);
 
       return;
     }
 
-    this.#log.debug(`Updating ${value.context.name} (id: ${value.context.id}, uuid: ${value.context.uuid}) accessory ...`);
+    // If API instance is not available.
+    if (this.#instance === null) {
+      this.#log.error(`Attempted to updated ${chalk.underline(device.name)} (id: ${device.id}, uuid: ${device.uuid}) accessory but API instance is not available.`);
+
+      return;
+    }
+
+    this.#log.debug(`Updating ${chalk.underline(value.context.name)} (id: ${value.context.id}, uuid: ${value.context.uuid}) accessory ...`);
 
     // Set the context into the existing accessory.
     value.context = device;
@@ -379,11 +384,11 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     // Create the handler for the existing accessory if it does not exist.
     if (this.#handlers[device.id] === undefined) {
       // All arguments are passed by reference.
-      this.#handlers[device.id] = new ADTPulseAccessory(value, this.#state, this.#service, this.#characteristic, this.#log);
+      this.#handlers[device.id] = new ADTPulseAccessory(value, this.#state, this.#instance, this.#service, this.#characteristic, this.#api, this.#log);
     }
 
     // Update the existing accessory in the accessories cache.
-    this.#accessories[index] = value;
+    this.accessories[index] = value;
 
     this.#api.updatePlatformAccessories(
       [value],
@@ -400,10 +405,10 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
    * @since 1.0.0
    */
   removeAccessory(accessory: ADTPulsePlatformRemoveAccessoryAccessory): ADTPulsePlatformRemoveAccessoryReturns {
-    this.#log.info(`Removing ${accessory.context.name} (id: ${accessory.context.id}, uuid: ${accessory.context.uuid}) accessory ...`);
+    this.#log.info(`Removing ${chalk.underline(accessory.context.name)} (id: ${accessory.context.id}, uuid: ${accessory.context.uuid}) accessory ...`);
 
     // Keep only the accessories in the cache that is not the accessory being removed.
-    this.#accessories = this.#accessories.filter((existingAccessory) => existingAccessory.context.uuid !== accessory.context.uuid);
+    this.accessories = this.accessories.filter((existingAccessory) => existingAccessory.context.uuid !== accessory.context.uuid);
 
     this.#api.unregisterPlatformAccessories(
       'homebridge-adt-pulse',
@@ -425,7 +430,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     const homebridgeVersion = chalk.yellowBright(`v${this.#api.serverVersion}`);
     const nodeVersion = chalk.blueBright(`v${versions.node}`);
     const opensslVersion = chalk.magentaBright(`v${versions.openssl}`);
-    const packageVersion = chalk.greenBright(`v${env.npm_package_version}`);
+    const packageVersion = chalk.greenBright(`v${env.npm_package_version ?? '0.1.0'}`);
     const platformPlusArch = chalk.redBright(`${platform} (${arch})`);
 
     this.#log.info([
@@ -476,25 +481,11 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
 
             // If login was successful.
             if (login.success) {
-              const { portalVersion } = login.info;
-
               const currentTimestamp = Date.now();
 
               // Update timing for the sync protocols, so they can pace themselves.
               this.#state.lastRunOn.adtKeepAlive = currentTimestamp;
               this.#state.lastRunOn.adtSyncCheck = currentTimestamp;
-
-              const contentHash = generateHash(JSON.stringify(portalVersion));
-
-              // If the detector has not reported this event before.
-              if (this.#state.reportedHashes.find((reportedHash) => contentHash === reportedHash) === undefined) {
-                const detectedNew = await detectedNewPortalVersion(portalVersion, this.#log, this.#debugMode);
-
-                // Save this hash so the detector does not detect the same thing multiple times.
-                if (detectedNew) {
-                  this.#state.reportedHashes.push(contentHash);
-                }
-              }
             }
 
             // If login was not successful.
@@ -659,8 +650,25 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
 
         // If sync checking was not successful.
         if (!syncCheck.success) {
-          this.#log.error('Sync checking attempt has failed. Trying again later.');
-          stackTracer('api-response', syncCheck);
+          const { error } = syncCheck.info;
+          const { message } = error ?? {};
+
+          // Determine if the message is related to a minor connection issue.
+          if (message !== undefined) {
+            switch (true) {
+              case message.includes('ECONNABORTED'):
+                this.#log.debug('Sync checking attempt has failed because the connection timed out. Trying again later.');
+                break;
+              case message.includes('ECONNRESET'):
+                this.#log.debug('Sync checking attempt has failed because the connection was reset. Trying again later.');
+                break;
+              default:
+                break;
+            }
+          } else {
+            this.#log.error('Sync checking attempt has failed. Trying again later.');
+            stackTracer('api-response', syncCheck);
+          }
         }
 
         // Update timestamp for sync check request, even if request failed.
@@ -706,100 +714,40 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
       if (requests[0].success) {
         const { info } = requests[0];
 
-        const contentHash = generateHash(JSON.stringify(info));
-
         // Set gateway information into memory.
         this.#state.data.gatewayInfo = info;
-
-        // If the detector has not reported this event before.
-        if (this.#state.reportedHashes.find((reportedHash) => contentHash === reportedHash) === undefined) {
-          const detectedNewStatus = await detectedNewGatewayInformation(info, this.#log, this.#debugMode);
-
-          // Save this hash so the detector does not detect the same thing multiple times.
-          if (detectedNewStatus) {
-            this.#state.reportedHashes.push(contentHash);
-          }
-        }
       }
 
       // Update panel information.
       if (requests[1].success) {
         const { info } = requests[1];
 
-        const contentHash = generateHash(JSON.stringify(info));
-
         // Set panel information into memory.
         this.#state.data.panelInfo = info;
-
-        // If the detector has not reported this event before.
-        if (this.#state.reportedHashes.find((reportedHash) => contentHash === reportedHash) === undefined) {
-          const detectedNew = await detectedNewPanelInformation(info, this.#log, this.#debugMode);
-
-          // Save this hash so the detector does not detect the same thing multiple times.
-          if (detectedNew) {
-            this.#state.reportedHashes.push(contentHash);
-          }
-        }
       }
 
       // Update panel status.
       if (requests[2].success) {
         const { info } = requests[2];
 
-        const contentHash = generateHash(JSON.stringify(info));
-
         // Set panel status into memory.
         this.#state.data.panelStatus = info;
-
-        // If the detector has not reported this event before.
-        if (this.#state.reportedHashes.find((reportedHash) => contentHash === reportedHash) === undefined) {
-          const detectedNew = await detectedNewPanelStatus(info, this.#log, this.#debugMode);
-
-          // Save this hash so the detector does not detect the same thing multiple times.
-          if (detectedNew) {
-            this.#state.reportedHashes.push(contentHash);
-          }
-        }
       }
 
       // Update sensors information.
       if (requests[3].success) {
         const { sensors } = requests[3].info;
 
-        const contentHash = generateHash(JSON.stringify(sensors));
-
         // Set sensors information into memory.
         this.#state.data.sensorsInfo = sensors;
-
-        // If the detector has not reported this event before.
-        if (this.#state.reportedHashes.find((reportedHash) => contentHash === reportedHash) === undefined) {
-          const detectedNew = await detectedNewSensorsInformation(sensors, this.#log, this.#debugMode);
-
-          // Save this hash so the detector does not detect the same thing multiple times.
-          if (detectedNew) {
-            this.#state.reportedHashes.push(contentHash);
-          }
-        }
       }
 
       // Update sensors status.
       if (requests[4].success) {
         const { sensors } = requests[4].info;
 
-        const contentHash = generateHash(JSON.stringify(sensors));
-
         // Set sensors status into memory.
         this.#state.data.sensorsStatus = sensors;
-
-        // If the detector has not reported this event before.
-        if (this.#state.reportedHashes.find((reportedHash) => contentHash === reportedHash) === undefined) {
-          const detectedNew = await detectedNewSensorsStatus(sensors, this.#log, this.#debugMode);
-
-          // Save this hash so the detector does not detect the same thing multiple times.
-          if (detectedNew) {
-            this.#state.reportedHashes.push(contentHash);
-          }
-        }
       }
 
       // Consolidate devices first, then update them all.
@@ -833,10 +781,13 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         name: 'ADT Pulse Gateway',
         type: 'gateway',
         zone: null,
-        category: 'BRIDGE',
+        category: 'OTHER',
         manufacturer: gatewayInfo.manufacturer,
         model: gatewayInfo.model,
         serial: gatewayInfo.serialNumber,
+        firmware: gatewayInfo.versions.firmware,
+        hardware: gatewayInfo.versions.hardware,
+        software: env.npm_package_version ?? '0.1.0',
         uuid: this.#api.hap.uuid.generate(id),
       });
     }
@@ -851,9 +802,12 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         type: 'panel',
         zone: null,
         category: 'SECURITY_SYSTEM',
-        manufacturer: panelInfo.manufacturerProvider,
-        model: panelInfo.typeModel,
+        manufacturer: panelInfo.manufacturer,
+        model: panelInfo.model,
         serial: 'N/A',
+        firmware: null,
+        hardware: null,
+        software: env.npm_package_version ?? '0.1.0',
         uuid: this.#api.hap.uuid.generate(id),
       });
     }
@@ -882,7 +836,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
 
         // If sensor was not found, it could be that the config was wrong.
         if (sensor === undefined) {
-          this.#log.warn(`Attempted to add or update ${adtName} (zone: ${adtZone}) accessory that does not exist on the portal. Skipping ...`);
+          this.#log.warn(`Attempted to add or update ${adtName} (zone: ${adtZone}) accessory that does not exist on the portal.`);
 
           continue;
         }
@@ -897,7 +851,10 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
           category: 'SENSOR',
           manufacturer: 'ADT',
           model: sensor.deviceType,
-          serial: 'N/A',
+          serial: null,
+          firmware: null,
+          hardware: null,
+          software: env.npm_package_version ?? '0.1.0',
           uuid: this.#api.hap.uuid.generate(id),
         });
       }
@@ -920,7 +877,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
    */
   private async pollAccessories(devices: ADTPulsePlatformPollAccessoriesDevices): ADTPulsePlatformPollAccessoriesReturns {
     for (let i = 0; i < devices.length; i += 1) {
-      const accessoryIndex = this.#accessories.findIndex((accessory) => devices[i].uuid === accessory.context.uuid);
+      const accessoryIndex = this.accessories.findIndex((accessory) => devices[i].uuid === accessory.context.uuid);
 
       // Update the device if accessory is cached, otherwise add it as a new device.
       if (accessoryIndex >= 0) {
