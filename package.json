@@ -1,7 +1,7 @@
 {
   "name": "homebridge-adt-pulse",
   "displayName": "Homebridge ADT Pulse",
-  "version": "3.0.0-beta.1",
+  "version": "3.0.0-beta.2",
   "description": "Homebridge security system platform for ADT Pulse",
   "exports": "./build/src/index.js",
   "type": "module",
@@ -9,15 +9,13 @@
   "scripts": {
     "start": "homebridge --plugin-path $(pwd)",
     "debug": "homebridge --debug --plugin-path $(pwd)",
-    "build": "npm-run-all --sequential build:*",
+    "build": "npm run build:cleanup && npm run build:tsc && npm run build:fix-paths",
     "build:cleanup": "rimraf build",
     "build:tsc": "tsc --project tsconfig.json",
     "build:fix-paths": "tsconfig-replace-paths --project tsconfig.json",
     "postinstall": "npm run build",
     "repl": "node ./build/src/scripts/repl.js",
-    "test-api": "node ./build/src/scripts/test-api.js",
-    "zzz-dev-run-normal": "npm run build && npm run start",
-    "zzz-dev-run-debug": "npm run build && npm run debug"
+    "test-api": "node ./build/src/scripts/test-api.js"
   },
   "repository": {
     "type": "git",
@@ -73,7 +71,6 @@
     "eslint-config-airbnb-typescript": "17.1.0",
     "eslint-plugin-import": "2.29.0",
     "homebridge": "1.7.0",
-    "npm-run-all": "4.1.5",
     "rimraf": "5.0.5",
     "tsconfig-replace-paths": "0.0.14",
     "typescript": "5.3.3"
