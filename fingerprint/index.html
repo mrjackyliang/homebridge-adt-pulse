@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>ADT Pulse Device Fingerprint Detector</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="referrer" content="no-referrer" />
+        <link href="favicon.ico" type="image/x-icon" rel="shortcut icon" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+        <script src="https://auth.pulse-api.io/v2/sso/US/devicefingerprint" integrity="sha384-H37TJs6fmaTeOSUhTXdFEvlfdAggaxXfjBxk/X/Y1TIhS777wr24khrw/wxOe3I0" crossOrigin="anonymous"></script>
+        <script src="script.js" integrity="de8cwZOnzHyR3BXz+D9BUzEg4PCCQ9jXjA2hz0fc2okku3MNPmL92A74zkJRGOXF" crossorigin="anonymous"></script>
+    </head>
+    <body data-bs-theme="light">
+        <header id="header">
+            <nav class="navbar navbar-expand-lg bg-secondary-subtle">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="index.html">ADT Pulse Fingerprint</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-nav" aria-controls="navbar-nav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse justify-content-end" id="navbar-nav">
+                        <ul class="navbar-nav" id="tab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="get-code-tab" data-bs-toggle="tab" data-bs-target="#get-code-tab-pane" type="button" role="tab" aria-controls="get-code-tab-pane" aria-selected="true">Get Code</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="device-details-tab" data-bs-toggle="tab" data-bs-target="#device-details-tab-pane" type="button" role="tab" aria-controls="device-details-tab-pane" aria-selected="false">Device Details</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link" href="https://github.com/mrjackyliang/homebridge-adt-pulse/">GitHub Repo</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </header>
+        <section id="content">
+            <noscript>
+                <div class="container mt-5">
+                    <div class="alert alert-danger" role="alert">JavaScript must be enabled.</div>
+                </div>
+            </noscript>
+            <div class="tab-content" id="tab-content" aria-hidden="true" style="display: none;">
+                <div class="tab-pane fade show active" id="get-code-tab-pane" role="tabpanel" aria-labelledby="get-code-tab" tabindex="0">
+                    <div class="container mt-5">
+                        <div class="alert alert-danger" id="error-get-code-tab" role="alert" aria-hidden="true" style="display: none;">Something went wrong, please check the browser console for more details.</div>
+                        <div class="jumbotron">
+                            <h1 class="display-3">Get Code</h1>
+                            <p class="lead">Copy your unique browser fingerprint for use specifically with logging into the ADT Pulse portal.</p>
+                            <hr class="my-4">
+                            <p>It's important to highlight that this procedure should be executed within a browser environment rather than through a script. Browser fingerprints are inherently unique to each browser and can only be accurately captured within the specific browser you are utilizing.</p>
+                            <p>Remember to first log in to ADT Pulse, ticking the "Trust this device" option, then paste the fingerprint code generated below into your Homebridge configuration. If you authorized your ADT Pulse account with another browser, the fingerprint below will not work.</p>
+                            <p>To learn more about the information collected by the device fingerprint script, please view the "Device Details" tab.</p>
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="copyToClipboard(this, 'fingerprint')">Copy Fingerprint</button>
+                        <pre class="bg-light-subtle text-wrap border mt-4 p-4"><code id="fingerprint-code"></code></pre>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="device-details-tab-pane" role="tabpanel" aria-labelledby="device-details-tab" tabindex="0">
+                    <div class="container mt-5">
+                        <div class="alert alert-danger" id="error-device-details-tab" role="alert" aria-hidden="true" style="display: none;">Something went wrong, please check the browser console for more details.</div>
+                        <div class="jumbotron">
+                            <h1 class="display-3">Device Details</h1>
+                            <p class="lead">Explore in-depth details regarding the contents of the browser fingerprint.</p>
+                            <hr class="my-4">
+                            <p>While the browser fingerprint is primarily used for authentication rather than tracking, there's no assurance it won't be used for it. Avoid anonymizing the fingerprint, as it may weaken the 2FA protection to your ADT Pulse account.</p>
+                            <p>To access and copy the fingerprint for your Homebridge configuration, navigate to the "Get Code" tab.</p>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <h4>Table View</h4>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Key</th>
+                                                <th>Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="device-details-table">
+                                            <!-- Table body will be populated dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <h4>Code View</h4>
+                                <pre class="bg-light-subtle border p-4"><code id="raw-code"></code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <footer class="footer my-5" id="footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12 text-center">
+                        <p class="mb-0">Copyright &copy; 2023 <a href="https://www.mrjackyliang.com">Jacky Liang</a>. All Rights Reserved.</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </body>
+</html>

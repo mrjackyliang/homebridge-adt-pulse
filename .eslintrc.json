@@ -1,32 +1,69 @@
 {
-    "env": {
-        "node": true
-    },
-    "extends": [
-        "airbnb-base"
+  "env": {
+    "node": true
+  },
+  "extends": [
+    "airbnb-base",
+    "airbnb-typescript/base"
+  ],
+  "ignorePatterns": [
+    "/build/**/*"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "project": "./tsconfig.json",
+    "sourceType": "module"
+  },
+  "plugins": [
+    "@typescript-eslint"
+  ],
+  "root": true,
+  "rules": {
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "": "never"
+      }
     ],
-    "overrides": [
-        {
-            "files": [
-                "api.js"
-            ],
-            "rules": {
-                "no-irregular-whitespace": [
-                    "error",
-                    {
-                        "skipRegExps": true
-                    }
-                ]
-            }
-        }
+    "import/no-default-export": [
+      "off"
     ],
-    "root": true,
-    "rules": {
-        "max-len": [
-            "off"
-        ],
-        "no-console": [
-            "off"
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "devDependencies": true
+      }
+    ],
+    "import/prefer-default-export": [
+      "off"
+    ],
+    "max-len": [
+      "off"
+    ],
+    "new-cap": [
+      "error",
+      {
+        "newIsCapExceptions": [
+          "platformAccessory"
         ]
-    }
+      }
+    ],
+    "no-await-in-loop": [
+      "off"
+    ],
+    "no-console": [
+      "off"
+    ],
+    "no-continue": [
+      "off"
+    ],
+    "no-irregular-whitespace": [
+      "error",
+      {
+        "skipComments": true
+      }
+    ]
+  }
 }
