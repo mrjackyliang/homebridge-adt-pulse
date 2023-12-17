@@ -11,7 +11,6 @@ This is a [verified Homebridge plugin](https://github.com/homebridge/homebridge/
 # Please install the beta version!
 ### This plugin is completely re-written from the ground up, and I need everyone on board! Please install the pre-release version, so I can quickly get a faster and more stable version to you!
 ### Everything is still very sloppy, please bear with me, even the readme has to be re-written.
-### In the meantime, do not use the UI to configure your plugin (the latest config is below). The UI uses v2 (this is now v3) config. All sensors will now HAVE TO be added manually to prevent automatic-adding/removals if ADT strikes a bug to break things again.
 
 To use this plugin, here are three simple steps you need to follow:
 1. Run `npm install homebridge-adt-pulse`
@@ -28,10 +27,12 @@ When configuring this plugin, simply add the platform to your existing `config.j
     {
       "platform": "ADTPulse",
       "name": "ADT Pulse",
-      "subdomain": "CAN BE 'portal' (USA) or 'portal-ca' (Canada)",
-      "username": "email@email.com",
-      "password": "1234567890",
-      "fingerprint": "abcdef1234567890=",
+      "subdomain": "portal",
+      "username": "user@example.com",
+      "password": "Mys7r0nG!P@ssw0rd",
+      "fingerprint": "VGhpc0lzQVNlY3VyZVBhc3N3b3JkMTIzIQ==",
+      "mode": "normal",
+      "speed": 1,
       "sensors": [
         {
           "name": "Lounge Smoke",
@@ -39,9 +40,7 @@ When configuring this plugin, simply add the platform to your existing `config.j
           "adtType": "fire",
           "adtZone": 1
         }
-      ],
-      "pause": false,
-      "reset": false
+      ]
     },
     {
       "platform": "...",

@@ -7,17 +7,28 @@ import z from 'zod';
  */
 export const platformConfig = z.object({
   platform: z.literal('ADTPulse'),
-  name: z.string().optional(),
+  name: z.string().min(1).max(50),
   subdomain: z.union([
     z.literal('portal'),
     z.literal('portal-ca'),
   ]),
-  username: z.string().min(1),
-  password: z.string().min(1),
-  fingerprint: z.string().min(1),
+  username: z.string().min(1).max(100),
+  password: z.string().min(1).max(300),
+  fingerprint: z.string().min(1).max(5120),
+  mode: z.union([
+    z.literal('normal'),
+    z.literal('paused'),
+    z.literal('reset'),
+  ]),
+  speed: z.union([
+    z.literal(1),
+    z.literal(0.75),
+    z.literal(0.5),
+    z.literal(0.25),
+  ]),
   sensors: z.array(z.object({
-    name: z.string().optional(),
-    adtName: z.string().min(1),
+    name: z.string().min(1).max(50).optional(),
+    adtName: z.string().min(1).max(100),
     adtType: z.union([
       z.literal('co'),
       z.literal('doorWindow'),
@@ -27,8 +38,6 @@ export const platformConfig = z.object({
       z.literal('motion'),
       z.literal('temperature'),
     ]),
-    adtZone: z.number().finite(),
-  })).min(1),
-  pause: z.boolean().optional(),
-  reset: z.boolean().optional(),
+    adtZone: z.number().min(1).max(99),
+  })).min(1).max(148),
 });

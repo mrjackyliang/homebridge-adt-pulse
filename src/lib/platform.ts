@@ -246,17 +246,51 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
       this.printSystemInformation();
 
       // Give notice to users this plugin is being anonymously tracked.
-      this.#log.info(`${chalk.bold.yellowBright('NOTICE')}: The API gathers anonymous analytics to detect potential bugs or issues. All personally identifiable information redacted. You will see exactly what will be sent out.`);
+      this.#log.info('The API gathers anonymous analytics to detect potential bugs or issues. All personally identifiable information redacted. You will see exactly what will be sent out.');
 
       // If the config specifies that plugin should be paused.
-      if (this.#config.pause === true) {
+      if (this.#config.mode === 'paused') {
         this.#log.warn('Plugin is now paused and all related accessories will no longer respond.');
 
         return;
       }
 
       // If the config specifies that plugin should be reset.
-      if (this.#config.reset === true) {
+      if (this.#config.mode === 'reset') {
+        let warningCount = 0;
+        let warningTerm = '';
+
+        this.#log.warn('Plugin started in reset mode and will remove all accessories shortly.');
+
+        // Make sure user sees the first warning.
+        await sleep(10000);
+
+        for (let i = 3; i >= 1; i -= 1) {
+          const seconds = 10 * i;
+
+          // Track the warning count.
+          warningCount += 1;
+
+          // Display the warning term based on the warning count.
+          switch (warningCount) {
+            case 1:
+              warningTerm = 'FIRST';
+              break;
+            case 2:
+              warningTerm = 'SECOND';
+              break;
+            case 3:
+            default:
+              warningTerm = 'FINAL';
+              break;
+          }
+
+          this.#log.warn(`${warningTerm} WARNING! ${seconds} SECONDS REMAINING before all related accessories are removed.`);
+
+          // Safe countdown in case the user regrets their choice.
+          await sleep(10000);
+        }
+
         this.#log.warn('Plugin is now removing all related accessories from Homebridge ...');
 
         // Remove all related accessories from Homebridge.
@@ -264,7 +298,17 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
           this.removeAccessory(this.accessories[i]);
         }
 
+        this.#log.warn('Plugin finished removing all related accessories from Homebridge.');
+
         return;
+      }
+
+      // If the config specifies that plugin should run under reduced speed mode.
+      if (this.#config.speed !== 1) {
+        this.#log.warn(`Plugin is now running under ${this.#config.speed}x operational speed. You may see slower device updates.`);
+
+        // Formula: New Time = Original Time * (1 / Speed).
+        this.#constants.intervalTimestamps.synchronize *= (1 / this.#config.speed);
       }
 
       // Start synchronization with the portal.
