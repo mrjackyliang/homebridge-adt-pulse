@@ -148,6 +148,9 @@ export class ADTPulseAccessory {
       case 'glass':
         this.#services.Primary = this.#accessory.getService(service.MotionSensor) ?? this.#accessory.addService(service.MotionSensor);
         break;
+      case 'keypad':
+        // TODO nothing done here yet
+        break;
       case 'motion':
         this.#services.Primary = this.#accessory.getService(service.MotionSensor) ?? this.#accessory.addService(service.MotionSensor);
         break;
@@ -199,6 +202,9 @@ export class ADTPulseAccessory {
         this.#services.Primary.getCharacteristic(this.#characteristic.MotionDetected)
           .onGet(() => this.getSensorStatus(accessory.context));
         break;
+      case 'keypad':
+        // TODO nothing done here yet
+        break;
       case 'motion':
         this.#services.Primary.getCharacteristic(this.#characteristic.MotionDetected)
           .onGet(() => this.getSensorStatus(accessory.context));
@@ -237,9 +243,20 @@ export class ADTPulseAccessory {
     const { name, type, zone } = context;
 
     const sensor = this.#state.data.sensorsStatus.find((sensorStatus) => zone !== null && sensorStatus.name === name && sensorStatus.zone === zone);
+    const knownSensorTypes = [
+      'co',
+      'doorWindow',
+      'fire',
+      'flood',
+      'glass',
+      'keypad',
+      'motion',
+      'panic',
+      'temperature',
+    ];
 
     // If the sensor is not found or sensor type is invalid.
-    if (sensor === undefined || !['co', 'doorWindow', 'fire', 'flood', 'glass', 'motion', 'panic', 'temperature'].includes(type)) {
+    if (sensor === undefined || !knownSensorTypes.includes(type)) {
       throw new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.RESOURCE_DOES_NOT_EXIST);
     }
 
@@ -284,6 +301,9 @@ export class ADTPulseAccessory {
         if (status.includes('Tripped')) {
           return true;
         }
+        break;
+      case 'keypad':
+        // TODO nothing done here yet
         break;
       case 'motion':
         if (status.includes('No Motion')) {

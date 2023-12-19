@@ -35,10 +35,11 @@ export const platformConfig = z.object({
       z.literal('fire'),
       z.literal('flood'),
       z.literal('glass'),
+      z.literal('keypad'),
       z.literal('motion'),
       z.literal('panic'),
       z.literal('temperature'),
     ]),
-    adtZone: z.number().min(1).max(99),
+    adtZone: z.number().min(1).max(999),
   })).min(1).max(148),
 });

@@ -165,6 +165,9 @@ export function condenseSensorType(sensorType: CondenseSensorTypeSensorType): Co
     case 'Glass Break Detector':
       condensed = 'glass';
       break;
+    case 'Keypad/Touchpad':
+      condensed = 'keypad';
+      break;
     case 'Motion Sensor':
     case 'Motion Sensor (Notable Events Only)':
       condensed = 'motion';

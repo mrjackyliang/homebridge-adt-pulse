@@ -1866,6 +1866,7 @@ export class ADTPulse {
        *             'Carbon Monoxide Detector'
        *             'Fire (Smoke/Heat) Detector'
        *             'Glass Break Detector'
+       *             'Keypad/Touchpad'
        *             'Motion Sensor'
        *             'Motion Sensor (Notable Events Only)'
        *             'Silent Panic Button/Pendant'
