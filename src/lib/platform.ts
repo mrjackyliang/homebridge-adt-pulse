@@ -474,7 +474,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     const homebridgeVersion = chalk.yellowBright(`v${this.#api.serverVersion}`);
     const nodeVersion = chalk.blueBright(`v${versions.node}`);
     const opensslVersion = chalk.magentaBright(`v${versions.openssl}`);
-    const packageVersion = chalk.greenBright(`v${env.npm_package_version ?? '0.1.0'}`);
+    const packageVersion = chalk.greenBright(`v${env.npm_package_version ?? 'unknown'}`);
     const platformPlusArch = chalk.redBright(`${platform} (${arch})`);
 
     this.#log.info([
@@ -831,7 +831,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         serial: gatewayInfo.serialNumber,
         firmware: gatewayInfo.versions.firmware,
         hardware: gatewayInfo.versions.hardware,
-        software: env.npm_package_version ?? '0.1.0',
+        software: env.npm_package_version ?? 'unknown',
         uuid: this.#api.hap.uuid.generate(id),
       });
     }
@@ -851,7 +851,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         serial: 'N/A',
         firmware: null,
         hardware: null,
-        software: env.npm_package_version ?? '0.1.0',
+        software: env.npm_package_version ?? 'unknown',
         uuid: this.#api.hap.uuid.generate(id),
       });
     }
@@ -898,7 +898,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
           serial: null,
           firmware: null,
           hardware: null,
-          software: env.npm_package_version ?? '0.1.0',
+          software: env.npm_package_version ?? 'unknown',
           uuid: this.#api.hap.uuid.generate(id),
         });
       }

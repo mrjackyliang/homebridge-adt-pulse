@@ -48,6 +48,7 @@ export type PluginDeviceType =
   | 'glass'
   | 'motion'
   | 'panel'
+  | 'panic'
   | 'temperature';
 
 /**
@@ -232,6 +233,7 @@ export type PortalSensorDeviceType =
   | 'Glass Break Detector'
   | 'Motion Sensor'
   | 'Motion Sensor (Notable Events Only)'
+  | 'Silent Panic Button/Pendant'
   | 'Temperature Sensor'
   | 'Water/Flood Sensor'
   | 'Window Sensor';
@@ -257,6 +259,8 @@ export type PortalSensorStatusIcon =
  */
 export type PortalSensorStatusText =
   'ALARM, Okay'
+  | 'ALARM, Open'
+  | 'Bypassed, Open'
   | 'Closed'
   | 'Motion'
   | 'No Motion'

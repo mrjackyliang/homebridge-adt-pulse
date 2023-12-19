@@ -1323,6 +1323,13 @@ export type InitializeReturns = void;
 export type IsForwardSlashOSReturns = boolean;
 
 /**
+ * Is plugin outdated.
+ *
+ * @since 1.0.0
+ */
+export type IsPluginOutdatedReturns = Promise<boolean>;
+
+/**
  * Is portal sync code.
  *
  * @since 1.0.0

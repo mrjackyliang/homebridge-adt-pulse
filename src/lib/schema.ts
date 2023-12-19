@@ -36,6 +36,7 @@ export const platformConfig = z.object({
       z.literal('flood'),
       z.literal('glass'),
       z.literal('motion'),
+      z.literal('panic'),
       z.literal('temperature'),
     ]),
     adtZone: z.number().min(1).max(99),

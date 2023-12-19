@@ -49,7 +49,6 @@ $RECYCLE.BIN/
 #### NodeJS ####
 ################
 node_modules/
-build/
 package-lock.json
 .env
 .env.development.local
@@ -76,3 +75,4 @@ package-lock.json
 ##########################
 #### Project Excludes ####
 ##########################
+build/

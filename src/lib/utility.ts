@@ -1,9 +1,11 @@
 import chalk from 'chalk';
 import { Categories } from 'homebridge';
 import { JSDOM } from 'jsdom';
+import latestVersion from 'latest-version';
 import _ from 'lodash';
 import { createHash } from 'node:crypto';
 import os from 'node:os';
+import { env } from 'node:process';
 import util from 'node:util';
 
 import {
@@ -61,6 +63,7 @@ import type {
   GetPluralFormReturns,
   GetPluralFormSingular,
   IsForwardSlashOSReturns,
+  IsPluginOutdatedReturns,
   IsPortalSyncCodeSyncCode,
   IsPortalSyncCodeVerifiedSyncCode,
   ParseArmDisarmMessageElement,
@@ -148,29 +151,32 @@ export function condenseSensorType(sensorType: CondenseSensorTypeSensorType): Co
   let condensed: CondenseSensorTypeCondensed;
 
   switch (sensorType) {
+    case 'Carbon Monoxide Detector':
+      condensed = 'co';
+      break;
     case 'Door Sensor':
     case 'Window Sensor':
     case 'Door/Window Sensor':
       condensed = 'doorWindow';
       break;
-    case 'Motion Sensor':
-    case 'Motion Sensor (Notable Events Only)':
-      condensed = 'motion';
+    case 'Fire (Smoke/Heat) Detector':
+      condensed = 'fire';
       break;
     case 'Glass Break Detector':
       condensed = 'glass';
       break;
-    case 'Fire (Smoke/Heat) Detector':
-      condensed = 'fire';
+    case 'Motion Sensor':
+    case 'Motion Sensor (Notable Events Only)':
+      condensed = 'motion';
       break;
-    case 'Carbon Monoxide Detector':
-      condensed = 'co';
-      break;
-    case 'Water/Flood Sensor':
-      condensed = 'flood';
+    case 'Silent Panic Button/Pendant':
+      condensed = 'panic';
       break;
     case 'Temperature Sensor':
       condensed = 'temperature';
+      break;
+    case 'Water/Flood Sensor':
+      condensed = 'flood';
       break;
     default:
       break;
@@ -566,6 +572,34 @@ export function isForwardSlashOS(): IsForwardSlashOSReturns {
     'sunos',
     'netbsd',
   ].includes(currentOS);
+}
+
+/**
+ * Is plugin outdated.
+ *
+ * @returns {IsPluginOutdatedReturns}
+ *
+ * @since 1.0.0
+ */
+export async function isPluginOutdated(): IsPluginOutdatedReturns {
+  const currentVersion = env.npm_package_version;
+
+  // If we cannot compare version, simply return "not outdated".
+  if (currentVersion === undefined) {
+    return false;
+  }
+
+  try {
+    const fetchedVersion = await latestVersion('homebridge-adt-pulse');
+
+    if (currentVersion !== fetchedVersion) {
+      return true;
+    }
+  } catch (error) {
+    /* empty */
+  }
+
+  return false;
 }
 
 /**

@@ -3,7 +3,12 @@ import _ from 'lodash';
 import { env } from 'node:process';
 import { serializeError } from 'serialize-error';
 
-import { debugLog, removePersonalIdentifiableInformation, stackTracer } from '@/lib/utility.js';
+import {
+  debugLog,
+  isPluginOutdated,
+  removePersonalIdentifiableInformation,
+  stackTracer,
+} from '@/lib/utility.js';
 import type {
   DetectedNewDoSubmitHandlersDebugMode,
   DetectedNewDoSubmitHandlersHandlers,
@@ -119,6 +124,30 @@ export async function detectedNewDoSubmitHandlers(handlers: DetectedNewDoSubmitH
   if (detectedNewHandlers.length > 0) {
     const cleanedData = removePersonalIdentifiableInformation(detectedNewHandlers);
 
+    // If outdated, it means plugin may already have support.
+    try {
+      const outdated = await isPluginOutdated();
+
+      if (outdated) {
+        if (logger !== null) {
+          logger.warn('Plugin has detected new do submit handlers. You are running an older plugin version, please update soon.');
+        }
+
+        // This is intentionally duplicated if using Homebridge debug mode.
+        if (debugMode) {
+          debugLog(logger, 'detect.ts / detectedNewDoSubmitHandlers()', 'warn', 'Plugin has detected new do submit handlers. You are running an older plugin version, please update soon');
+        }
+
+        // Do not send analytics for users running outdated plugin versions.
+        return false;
+      }
+    } catch (error) {
+      if (debugMode === true) {
+        debugLog(logger, 'detect.ts / detectedNewDoSubmitHandlers()', 'error', 'Failed to check if plugin is outdated');
+        stackTracer('serialize-error', serializeError(error));
+      }
+    }
+
     if (logger !== null) {
       logger.warn('Plugin has detected new do submit handlers. Notifying plugin author about this discovery ...');
     }
@@ -143,7 +172,7 @@ export async function detectedNewDoSubmitHandlers(handlers: DetectedNewDoSubmitH
           family: 4,
           headers: {
             'Content-Type': 'application/json',
-            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? '0.1.0'}`,
+            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? 'unknown'}`,
           },
         },
       );
@@ -183,6 +212,30 @@ export async function detectedNewGatewayInformation(device: DetectedNewGatewayIn
   if (detectedNewStatus) {
     const cleanedData = removePersonalIdentifiableInformation(device);
 
+    // If outdated, it means plugin may already have support.
+    try {
+      const outdated = await isPluginOutdated();
+
+      if (outdated) {
+        if (logger !== null) {
+          logger.warn('Plugin has detected new gateway information. You are running an older plugin version, please update soon.');
+        }
+
+        // This is intentionally duplicated if using Homebridge debug mode.
+        if (debugMode) {
+          debugLog(logger, 'detect.ts / detectedNewGatewayInformation()', 'warn', 'Plugin has detected new gateway information. You are running an older plugin version, please update soon');
+        }
+
+        // Do not send analytics for users running outdated plugin versions.
+        return false;
+      }
+    } catch (error) {
+      if (debugMode === true) {
+        debugLog(logger, 'detect.ts / detectedNewGatewayInformation()', 'error', 'Failed to check if plugin is outdated');
+        stackTracer('serialize-error', serializeError(error));
+      }
+    }
+
     if (logger !== null) {
       logger.warn('Plugin has detected new gateway information. Notifying plugin author about this discovery ...');
     }
@@ -207,7 +260,7 @@ export async function detectedNewGatewayInformation(device: DetectedNewGatewayIn
           family: 4,
           headers: {
             'Content-Type': 'application/json',
-            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? '0.1.0'}`,
+            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? 'unknown'}`,
           },
         },
       );
@@ -300,6 +353,30 @@ export async function detectedNewOrbSecurityButtons(buttons: DetectedNewOrbSecur
   if (detectedNewButtons.length > 0) {
     const cleanedData = removePersonalIdentifiableInformation(detectedNewButtons);
 
+    // If outdated, it means plugin may already have support.
+    try {
+      const outdated = await isPluginOutdated();
+
+      if (outdated) {
+        if (logger !== null) {
+          logger.warn('Plugin has detected new orb security buttons. You are running an older plugin version, please update soon.');
+        }
+
+        // This is intentionally duplicated if using Homebridge debug mode.
+        if (debugMode) {
+          debugLog(logger, 'detect.ts / detectedNewOrbSecurityButtons()', 'warn', 'Plugin has detected new orb security buttons. You are running an older plugin version, please update soon');
+        }
+
+        // Do not send analytics for users running outdated plugin versions.
+        return false;
+      }
+    } catch (error) {
+      if (debugMode === true) {
+        debugLog(logger, 'detect.ts / detectedNewOrbSecurityButtons()', 'error', 'Failed to check if plugin is outdated');
+        stackTracer('serialize-error', serializeError(error));
+      }
+    }
+
     if (logger !== null) {
       logger.warn('Plugin has detected new orb security buttons. Notifying plugin author about this discovery ...');
     }
@@ -324,7 +401,7 @@ export async function detectedNewOrbSecurityButtons(buttons: DetectedNewOrbSecur
           family: 4,
           headers: {
             'Content-Type': 'application/json',
-            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? '0.1.0'}`,
+            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? 'unknown'}`,
           },
         },
       );
@@ -364,6 +441,30 @@ export async function detectedNewPanelInformation(device: DetectedNewPanelInform
   if (detectedNewStatus) {
     const cleanedData = removePersonalIdentifiableInformation(device);
 
+    // If outdated, it means plugin may already have support.
+    try {
+      const outdated = await isPluginOutdated();
+
+      if (outdated) {
+        if (logger !== null) {
+          logger.warn('Plugin has detected new panel information. You are running an older plugin version, please update soon.');
+        }
+
+        // This is intentionally duplicated if using Homebridge debug mode.
+        if (debugMode) {
+          debugLog(logger, 'detect.ts / detectedNewPanelInformation()', 'warn', 'Plugin has detected new panel information. You are running an older plugin version, please update soon');
+        }
+
+        // Do not send analytics for users running outdated plugin versions.
+        return false;
+      }
+    } catch (error) {
+      if (debugMode === true) {
+        debugLog(logger, 'detect.ts / detectedNewPanelInformation()', 'error', 'Failed to check if plugin is outdated');
+        stackTracer('serialize-error', serializeError(error));
+      }
+    }
+
     if (logger !== null) {
       logger.warn('Plugin has detected new panel information. Notifying plugin author about this discovery ...');
     }
@@ -388,7 +489,7 @@ export async function detectedNewPanelInformation(device: DetectedNewPanelInform
           family: 4,
           headers: {
             'Content-Type': 'application/json',
-            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? '0.1.0'}`,
+            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? 'unknown'}`,
           },
         },
       );
@@ -448,6 +549,30 @@ export async function detectedNewPanelStatus(summary: DetectedNewPanelStatusSumm
   if (detectedNewState || detectedNewStatus) {
     const cleanedData = removePersonalIdentifiableInformation(summary);
 
+    // If outdated, it means plugin may already have support.
+    try {
+      const outdated = await isPluginOutdated();
+
+      if (outdated) {
+        if (logger !== null) {
+          logger.warn('Plugin has detected a new panel state and/or status. You are running an older plugin version, please update soon.');
+        }
+
+        // This is intentionally duplicated if using Homebridge debug mode.
+        if (debugMode) {
+          debugLog(logger, 'detect.ts / detectedNewPanelStatus()', 'warn', 'Plugin has detected a new panel state and/or status. You are running an older plugin version, please update soon');
+        }
+
+        // Do not send analytics for users running outdated plugin versions.
+        return false;
+      }
+    } catch (error) {
+      if (debugMode === true) {
+        debugLog(logger, 'detect.ts / detectedNewPanelStatus()', 'error', 'Failed to check if plugin is outdated');
+        stackTracer('serialize-error', serializeError(error));
+      }
+    }
+
     if (logger !== null) {
       logger.warn('Plugin has detected a new panel state and/or status. Notifying plugin author about this discovery ...');
     }
@@ -472,7 +597,7 @@ export async function detectedNewPanelStatus(summary: DetectedNewPanelStatusSumm
           family: 4,
           headers: {
             'Content-Type': 'application/json',
-            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? '0.1.0'}`,
+            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? 'unknown'}`,
           },
         },
       );
@@ -525,6 +650,30 @@ export async function detectedNewPortalVersion(version: DetectedNewPortalVersion
   if (detectedNewVersion) {
     const cleanedData = removePersonalIdentifiableInformation(version);
 
+    // If outdated, it means plugin may already have support.
+    try {
+      const outdated = await isPluginOutdated();
+
+      if (outdated) {
+        if (logger !== null) {
+          logger.warn('Plugin has detected a new portal version. You are running an older plugin version, please update soon.');
+        }
+
+        // This is intentionally duplicated if using Homebridge debug mode.
+        if (debugMode) {
+          debugLog(logger, 'detect.ts / detectedNewPortalVersion()', 'warn', 'Plugin has detected a new portal version. You are running an older plugin version, please update soon');
+        }
+
+        // Do not send analytics for users running outdated plugin versions.
+        return false;
+      }
+    } catch (error) {
+      if (debugMode === true) {
+        debugLog(logger, 'detect.ts / detectedNewPortalVersion()', 'error', 'Failed to check if plugin is outdated');
+        stackTracer('serialize-error', serializeError(error));
+      }
+    }
+
     if (logger !== null) {
       logger.warn('Plugin has detected a new portal version. Notifying plugin author about this discovery ...');
     }
@@ -549,7 +698,7 @@ export async function detectedNewPortalVersion(version: DetectedNewPortalVersion
           family: 4,
           headers: {
             'Content-Type': 'application/json',
-            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? '0.1.0'}`,
+            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? 'unknown'}`,
           },
         },
       );
@@ -586,6 +735,7 @@ export async function detectedNewSensorsInformation(sensors: DetectedNewSensorsI
     'Glass Break Detector',
     'Motion Sensor',
     'Motion Sensor (Notable Events Only)',
+    'Silent Panic Button/Pendant',
     'Temperature Sensor',
     'Water/Flood Sensor',
     'Window Sensor',
@@ -603,6 +753,30 @@ export async function detectedNewSensorsInformation(sensors: DetectedNewSensorsI
 
   if (detectedNewInformation.length > 0) {
     const cleanedData = removePersonalIdentifiableInformation(detectedNewInformation);
+
+    // If outdated, it means plugin may already have support.
+    try {
+      const outdated = await isPluginOutdated();
+
+      if (outdated) {
+        if (logger !== null) {
+          logger.warn('Plugin has detected new sensors information. You are running an older plugin version, please update soon.');
+        }
+
+        // This is intentionally duplicated if using Homebridge debug mode.
+        if (debugMode) {
+          debugLog(logger, 'detect.ts / detectedNewSensorsInformation()', 'warn', 'Plugin has detected new sensors information. You are running an older plugin version, please update soon');
+        }
+
+        // Do not send analytics for users running outdated plugin versions.
+        return false;
+      }
+    } catch (error) {
+      if (debugMode === true) {
+        debugLog(logger, 'detect.ts / detectedNewSensorsInformation()', 'error', 'Failed to check if plugin is outdated');
+        stackTracer('serialize-error', serializeError(error));
+      }
+    }
 
     if (logger !== null) {
       logger.warn('Plugin has detected new sensors information. Notifying plugin author about this discovery ...');
@@ -628,7 +802,7 @@ export async function detectedNewSensorsInformation(sensors: DetectedNewSensorsI
           family: 4,
           headers: {
             'Content-Type': 'application/json',
-            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? '0.1.0'}`,
+            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? 'unknown'}`,
           },
         },
       );
@@ -668,6 +842,8 @@ export async function detectedNewSensorsStatus(sensors: DetectedNewSensorsStatus
   ];
   const knownStatuses: DetectedNewSensorsStatusKnownStatuses = [
     'ALARM, Okay',
+    'ALARM, Open',
+    'Bypassed, Open',
     'Closed',
     'Motion',
     'No Motion',
@@ -685,6 +861,30 @@ export async function detectedNewSensorsStatus(sensors: DetectedNewSensorsStatus
 
   if (detectedNewStatuses.length > 0) {
     const cleanedData = removePersonalIdentifiableInformation(detectedNewStatuses);
+
+    // If outdated, it means plugin may already have support.
+    try {
+      const outdated = await isPluginOutdated();
+
+      if (outdated) {
+        if (logger !== null) {
+          logger.warn('Plugin has detected new sensors status. You are running an older plugin version, please update soon.');
+        }
+
+        // This is intentionally duplicated if using Homebridge debug mode.
+        if (debugMode) {
+          debugLog(logger, 'detect.ts / detectedNewSensorsStatus()', 'warn', 'Plugin has detected new sensors status. You are running an older plugin version, please update soon');
+        }
+
+        // Do not send analytics for users running outdated plugin versions.
+        return false;
+      }
+    } catch (error) {
+      if (debugMode === true) {
+        debugLog(logger, 'detect.ts / detectedNewSensorsStatus()', 'error', 'Failed to check if plugin is outdated');
+        stackTracer('serialize-error', serializeError(error));
+      }
+    }
 
     if (logger !== null) {
       logger.warn('Plugin has detected new sensors status. Notifying plugin author about this discovery ...');
@@ -710,7 +910,7 @@ export async function detectedNewSensorsStatus(sensors: DetectedNewSensorsStatus
           family: 4,
           headers: {
             'Content-Type': 'application/json',
-            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? '0.1.0'}`,
+            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? 'unknown'}`,
           },
         },
       );

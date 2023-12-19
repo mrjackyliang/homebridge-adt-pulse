@@ -1868,6 +1868,7 @@ export class ADTPulse {
        *             'Glass Break Detector'
        *             'Motion Sensor'
        *             'Motion Sensor (Notable Events Only)'
+       *             'Silent Panic Button/Pendant'
        *             'Temperature Sensor'
        *             'Water/Flood Sensor'
        *             'Window Sensor'
@@ -2108,6 +2109,8 @@ export class ADTPulse {
        *       'devStatUnknown'
        *
        * status: 'ALARM, Okay'
+       *         'ALARM, Open'
+       *         'Bypassed, Open'
        *         'Closed'
        *         'Motion'
        *         'No Motion'

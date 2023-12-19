@@ -154,6 +154,9 @@ export class ADTPulseAccessory {
       case 'panel':
         this.#services.Primary = this.#accessory.getService(service.SecuritySystem) ?? this.#accessory.addService(service.SecuritySystem);
         break;
+      case 'panic':
+        // TODO nothing done here yet
+        break;
       case 'temperature':
         this.#services.Primary = this.#accessory.getService(service.TemperatureSensor) ?? this.#accessory.addService(service.TemperatureSensor);
         break;
@@ -207,6 +210,9 @@ export class ADTPulseAccessory {
           .onGet(() => this.getPanelStatus('target', accessory.context))
           .onSet((value) => this.setPanelStatus(value, accessory.context));
         break;
+      case 'panic':
+        // TODO nothing done here yet
+        break;
       case 'temperature':
         this.#services.Primary.getCharacteristic(this.#characteristic.CurrentTemperature)
           .onGet(() => this.getSensorStatus(accessory.context));
@@ -233,7 +239,7 @@ export class ADTPulseAccessory {
     const sensor = this.#state.data.sensorsStatus.find((sensorStatus) => zone !== null && sensorStatus.name === name && sensorStatus.zone === zone);
 
     // If the sensor is not found or sensor type is invalid.
-    if (sensor === undefined || !['co', 'doorWindow', 'fire', 'flood', 'glass', 'motion', 'temperature'].includes(type)) {
+    if (sensor === undefined || !['co', 'doorWindow', 'fire', 'flood', 'glass', 'motion', 'panic', 'temperature'].includes(type)) {
       throw new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.RESOURCE_DOES_NOT_EXIST);
     }
 
@@ -287,6 +293,9 @@ export class ADTPulseAccessory {
         if (status.includes('Motion')) {
           return true;
         }
+        break;
+      case 'panic':
+        // TODO nothing done here yet
         break;
       case 'temperature':
         return 75; // TODO Fake status, need more information from portal.
