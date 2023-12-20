@@ -17,7 +17,7 @@ Additionally, I am seeing that the developers for HOOBS are stale based on the a
 
 This is a [verified Homebridge plugin](https://github.com/homebridge/homebridge/wiki/verified-Plugins#verified-plugins) for ADT Pulse customers that allow homeowners to control their security system and view sensor status through the Home app (the HAP protocol).
 
-The API relies on the ADT Pulse Web Portal (powered by Icontrol One, owned by ICN Acquisition LLC, an indirect subsidiary of [Alarm.com](https://alarm.com)). View details of the acquisition from via the [SEC Form 8-K](https://www.sec.gov/Archives/edgar/data/1459200/000119312517074906/d355785d8k.htm).
+The API relies on the ADT Pulse Web Portal (powered by Icontrol One, owned by ICN Acquisition LLC, an indirect subsidiary of [Alarm.com](https://alarm.com)). View details of the acquisition via the [SEC Form 8-K](https://www.sec.gov/Archives/edgar/data/1459200/000119312517074906/d355785d8k.htm).
 
 To use this plugin, here are three simple steps you need to follow:
 1. Run `npm install homebridge-adt-pulse`
@@ -76,15 +76,15 @@ This plugin can expose these devices (in read-only mode) based on your configura
 8. `panic` - Audible Panic Button/Pendant __::__ Silent Panic Button/Pendant
 9. `temperature` - Temperature Sensor
 
-Due to implementation complexity and platform instability, any Z-Wave accessory connected to the gateway will not be planned for development or supported. Consider purchasing the [Hubitat Hub](https://hubitat.com) for a seamless setup experience, or read about the [Home Assistant Z-Wave](https://www.home-assistant.io/integrations/zwave_js/) integration.
+Due to implementation complexity and platform instability, all Z-Wave accessories connected to the ADT Pulse gateway will not be planned for development or be supported overall. Consider purchasing the [Hubitat Hub](https://hubitat.com) for a seamless setup experience, or read about the [Home Assistant Z-Wave](https://www.home-assistant.io/integrations/zwave_js/) integration.
 
 ## Specifying the Portal Region
-ADT Pulse is available to consumers in either the United States or Canada. To specify your country for is, use the following settings:
+ADT Pulse is available to consumers in either the United States or Canada. To specify your country, use the following settings:
 
 - If you are a United States customer, set the `subdomain` value to `"portal"`.
 - If you are a Canada customer, set the `subdomain` value to `"portal-ca"`.
 
-Select the appropriate setting based on your country, as the ability to switch between countries is determined by the region to which you are subscribed.
+Select the appropriate setting based on your country, as the ability to switch between countries is determined by the ADT region to which you are subscribed to.
 
 ## Finding the Device Fingerprint
 Since the introduction of 2-factor authentication during login is now required, a device fingerprint has become a necessity. Follow these steps:
@@ -99,17 +99,17 @@ For a detailed breakdown of the device fingerprint contents, explore the "Device
 This plugin offers three operational modes: "Normal", "Paused", and "Reset". To configure these modes, use the following settings:
 
 - For regular operation, set the `mode` value to `"normal"`.
-- To pause the plugin (all devices will not respond), set the `mode` value to `"paused"`.
+- To pause the plugin (all devices will become non-responsive), set the `mode` value to `"paused"`.
 - To reset the plugin (remove associated accessories), set the `mode` value to `"reset"`.
 
-It is crucial to note that if you set the plugin to "Reset" mode, the plugin will initiate a countdown with warnings, and __you have approximately 30 seconds to reverse the setting and restart Homebridge before all accessories are deleted__.
+It is crucial to note that if you set the plugin to "Reset" mode, the plugin will initiate a countdown with warnings, and __you have approximately 30 seconds to reverse the setting and restart Homebridge before all accessories related to this plugin are removed__.
 
 This precautionary measure is in place to avoid unintended resets that could lead to the time-consuming task of reconfiguring automations and accessories.
 
 ## Specifying the Synchronization Speed
 Typically, the plugin triggers every second to assess whether sync check signals or keep-alive signals should be dispatched.
 
-However, for older devices incompatible with newer OpenSSL versions (`v3.1`), this may result in constant 100% CPU usage. To adjust the firing interval, use the following settings:
+However, for older devices incompatible with newer OpenSSL versions (e.g. `v3.1`), this may result in consistent 100% CPU usage. To adjust the firing interval, use the following settings:
 
 - For "Normal" operation speed, set the `speed` value to `1`.
 - For "Moderate" operation speed, set the `speed` value to `0.75`.
@@ -129,44 +129,44 @@ In this updated version of the plugin, I have implemented a new requirement that
 
 All sensors are now organized within an array of objects, with each object containing the following settings:
 - Name (`name`)
-  - Meant for Homebridge (offers clarity in the event of an unforeseen reset).
+  - For display purposes (offers clarity in the event of an unforeseen reset).
 - ADT Name: (`adtName`)
-  - Must match the name shown in the "System" tab when logged into the portal.
+  - Must match the name shown under the "Name" column in the "System" tab when logged into the portal.
 - ADT Type: (`adtType`)
-  - Must match the type shown in the "System" tab when logged into the portal.
+  - Must match the type shown under the "Device Type" column in the "System" tab when logged into the portal.
   - Contingent to the devices shown under the [Supported Devices](#supported-devices) section.
 - ADT Zone: (`adtZone`)
-  - Must match the zone shown in the "System" tab when logged into the portal.
+  - Must match the zone shown under the "Zone" column in the "System" tab when logged into the portal.
 
-If you do not find the supported type listed, please note that the plugin has already alerted me. There's no need to create a separate issue on GitHub, as I am actively working on adding support as soon as I gather sufficient information to determine the statuses displayed on the portal.
+If you do not find the supported type listed, please note that the plugin will notify me. There's no need to create a separate issue on GitHub, as I am actively working on adding support as soon as I gather sufficient information to determine the statuses displayed on the portal.
 
 Your patience is appreciated as I address and incorporate the necessary updates.
 
 ## Force Arming (Arm Away / Arm Stay / Arm Night)
-Because of the way the Home app (the HAP protocol) establishes arm states, the plugin will initiate force arming upon detecting active motion or open sensors. Disabling this feature is not possible, as it will result in arming failures without alert notifications from the Home app.
+Due to the way how the Home app (the HAP protocol) establishes arm states, the plugin will force arm upon detecting active motion or open sensors. Disabling this feature is not possible, as this will result in arming failures without alert notifications from the Home app.
 
 If you are concerned about this, please read the instructions below to check the status of the sensors in your home before arming your system:
 
 1. Open the Home app
 2. Tap the dotted circle (`...`) (located on the top right of the screen)
-3. View the sensors that require attention, and resolve those issues
+3. View the sensors that require attention and resolve those issues
 
-If you are using automation, __you acknowledge that this will happen__ and accept the risks for the system not completing arming the system.
+If you are using automation, __you acknowledge that this will happen__ and accept the risks for the system not completely arming the system.
 
 ## Arm Night Support
 As for ADT Pulse systems, __Arm Night__ is only available for use through the panel itself. Although it is not visible on the Web Portal or the mobile app, you can still place your system in __Arm Night__ mode with this plugin.
 
 ## Debug Mode
-Previously, there was a specific setting to configure debug logs at five different levels. Over time, it became apparent that this setting made debugging excessively challenging for the average consumer. Consequently, debug mode is now activated ONLY when the debug mode is enabled on the Homebridge itself.
+Previously, there was a specific setting to configure debug logs at five different levels. Over time, it became apparent that this setting made debugging excessively challenging for the average consumer. To improve this, debug mode is now activated __ONLY when the debug mode is enabled on the Homebridge__ itself.
 
 This approach promotes isolation (by using a separate bridge for each plugin) and helps enhance the troubleshooting experience in case any issues arise.
 
 ## Documentation, Logging, and Detection
 This function comes with a built-in feature to notify me if the plugin detects anomalies in the states of sensors and panel statuses. In the event of such occurrences, especially when these statuses are undocumented, I will receive notifications.
 
-Be assured that this plugin strictly adheres to the [verified Homebridge plugin](https://github.com/homebridge/homebridge/wiki/verified-Plugins#verified-plugins) requirements, ensuring that it does not track users in any manner.
+__Be assured that this plugin strictly adheres to the [verified Homebridge plugin](https://github.com/homebridge/homebridge/wiki/verified-Plugins#verified-plugins) requirements, ensuring that it does not track users in any manner.__
 
-If the information sent includes personally identifiable details, such as IP addresses, MAC addresses, or serial numbers, those fields will be automatically redacted (replaced with `*** REDACTED FOR PRIVACY ***`) since they are unnecessary for me to enhance this plugin.
+If the information sent includes personally identifiable details, such as IP addresses, MAC addresses, or serial numbers, those fields will be automatically redacted (replaced with `*** REDACTED FOR PRIVACY ***`) since they are unwanted information needed to improve the plugin.
 
 To reinforce this, a warning will be issued each time you utilize the included scripts, start the plugin, or when the plugin is about to notify me, serving as a reminder of these privacy measures.
 
