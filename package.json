@@ -1,7 +1,7 @@
 {
   "name": "homebridge-adt-pulse",
   "displayName": "Homebridge ADT Pulse",
-  "version": "3.0.0-beta.9",
+  "version": "3.0.0-beta.10",
   "description": "Homebridge security system platform for ADT Pulse",
   "main": "./build/src/index.js",
   "exports": "./build/src/index.js",

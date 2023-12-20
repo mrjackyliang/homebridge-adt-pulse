@@ -26,15 +26,6 @@ export type PluginDeviceId =
   `adt-device-${number}`;
 
 /**
- * Portal device status.
- *
- * @since 1.0.0
- */
-export type PortalDeviceStatus =
-  'Online'
-  | 'Status Unknown';
-
-/**
  * Plugin device type.
  *
  * @since 1.0.0
@@ -64,12 +55,23 @@ export type PluginLogLevel =
   | 'warn';
 
 /**
- * Portal panel arm button id.
+ * Portal device status.
  *
  * @since 1.0.0
  */
-export type PortalPanelArmButtonId =
-  `security_button_${number}`;
+export type PortalDeviceStatus =
+  'Online'
+  | 'Status Unknown';
+
+/**
+ * Portal gateway status.
+ *
+ * @since 1.0.0
+ */
+export type PortalGatewayStatus =
+  'Offline'
+  | 'Online'
+  | 'Status Unknown';
 
 /**
  * Portal panel arm button href.
@@ -78,6 +80,14 @@ export type PortalPanelArmButtonId =
  */
 export type PortalPanelArmButtonHref =
   'rest/adt/ui/client/security/setArmState';
+
+/**
+ * Portal panel arm button id.
+ *
+ * @since 1.0.0
+ */
+export type PortalPanelArmButtonId =
+  `security_button_${number}`;
 
 /**
  * Portal panel arm button loading text.
@@ -270,6 +280,8 @@ export type PortalSensorStatusText =
   | 'Okay'
   | 'Open'
   | 'Tripped'
+  | 'Trouble, Open'
+  | 'Trouble, Closed'
   | 'Unknown';
 
 /**

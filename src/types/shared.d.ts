@@ -10,6 +10,7 @@ import type {
   PluginDeviceId,
   PluginDeviceType,
   PortalDeviceStatus,
+  PortalGatewayStatus,
   PortalPanelArmButtonHref,
   PortalPanelArmButtonId,
   PortalPanelArmButtonLoadingText,
@@ -274,7 +275,7 @@ export type GatewayInformationNetwork = {
 
 export type GatewayInformationSerialNumber = string | null;
 
-export type GatewayInformationStatus = PortalDeviceStatus | null;
+export type GatewayInformationStatus = PortalGatewayStatus | null;
 
 export type GatewayInformationUpdateLast = string | null;
 

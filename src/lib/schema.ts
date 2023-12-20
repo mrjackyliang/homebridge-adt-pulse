@@ -41,5 +41,5 @@ export const platformConfig = z.object({
       z.literal('temperature'),
     ]),
     adtZone: z.number().min(1).max(999),
-  })).min(1).max(148),
+  })).min(0).max(148),
 });

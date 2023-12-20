@@ -24,6 +24,7 @@ import type {
   PluginDeviceType,
   PluginLogLevel,
   PortalDeviceStatus,
+  PortalGatewayStatus,
   PortalPanelArmButtonHref,
   PortalPanelArmButtonLoadingText,
   PortalPanelArmButtonRelativeUrl,
@@ -203,7 +204,7 @@ export type ADTPulseGetGatewayInformationSessions = Sessions<{
   jsdomSystemGateway?: JSDOM;
 }>;
 
-export type ADTPulseGetGatewayInformationReturnsStatus = PortalDeviceStatus | null;
+export type ADTPulseGetGatewayInformationReturnsStatus = PortalGatewayStatus | null;
 
 /**
  * ADT Pulse - Get panel information.
@@ -1075,7 +1076,7 @@ export type DetectedNewGatewayInformationDebugMode = boolean | null;
 
 export type DetectedNewGatewayInformationReturns = Promise<boolean>;
 
-export type DetectedNewGatewayInformationKnownStatuses = PortalDeviceStatus[];
+export type DetectedNewGatewayInformationKnownStatuses = PortalGatewayStatus[];
 
 /**
  * Detected orb security buttons.

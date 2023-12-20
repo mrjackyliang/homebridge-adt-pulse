@@ -863,7 +863,8 @@ export class ADTPulse {
        * NOTICE: Parts NOT SHOWN below will NOT be tracked, documented, or tested.
        * PATENT: https://patents.google.com/patent/US20170070361A1/en
        *
-       * status: 'Online'
+       * status: 'Offline'
+       *         'Online'
        *         'Status Unknown'
        *
        * @since 1.0.0
@@ -2119,6 +2120,8 @@ export class ADTPulse {
        *         'Okay'
        *         'Open'
        *         'Tripped'
+       *         'Trouble, Open'
+       *         'Trouble, Closed'
        *         'Unknown'
        *
        * @since 1.0.0

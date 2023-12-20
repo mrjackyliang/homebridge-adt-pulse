@@ -202,6 +202,7 @@ export async function detectedNewDoSubmitHandlers(handlers: DetectedNewDoSubmitH
  */
 export async function detectedNewGatewayInformation(device: DetectedNewGatewayInformationDevice, logger: DetectedNewGatewayInformationLogger, debugMode: DetectedNewGatewayInformationDebugMode): DetectedNewGatewayInformationReturns {
   const knownStatuses: DetectedNewGatewayInformationKnownStatuses = [
+    'Offline',
     'Online',
     'Status Unknown',
   ];
@@ -852,6 +853,8 @@ export async function detectedNewSensorsStatus(sensors: DetectedNewSensorsStatus
     'Okay',
     'Open',
     'Tripped',
+    'Trouble, Open',
+    'Trouble, Closed',
     'Unknown',
   ];
 

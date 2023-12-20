@@ -1,26 +1,33 @@
 ADT Pulse for Homebridge
 =========================
 
+### ⚠️ Please Install the Beta Version ⚠️
+This plugin is completely re-written from the ground up (supports v27.0.0-140), and I would love everyone on board! Please install the beta version, so I can quickly get a faster and more stable version to you!
+
+Please bear with me, as the beta version is being actively developed and tested. If you see any unusual or annoying bugs, please comment on this [GitHub issue](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/124).
+
+__HOOBS Users:__ Please do not use the configuration UI as that is currently outdated and being cached by HOOBS. I have no control of why that is happening ([GitHub link](https://github.com/hoobs-org/HOOBS/issues/1873)), so you must configure it manually using the sample configuration below.
+
+Additionally, I am seeing that the developers for HOOBS are stale based on the activity and complaints I see on [Reddit](https://www.reddit.com/r/HOOBS/). Support will be "best effort", and official status will be pulled in the meantime.
+
 [![NPM Version](https://img.shields.io/npm/v/homebridge-adt-pulse.svg?style=flat-square&color=blue)](https://www.npmjs.com/package/homebridge-adt-pulse)
 [![NPM Downloads](https://img.shields.io/npm/dt/homebridge-adt-pulse.svg?style=flat-square&color=success)](https://www.npmjs.com/package/homebridge-adt-pulse)
 [![GitHub License](https://img.shields.io/github/license/mrjackyliang/homebridge-adt-pulse?style=flat-square&color=yellow)](https://github.com/mrjackyliang/homebridge-adt-pulse/blob/master/LICENSE)
 [![Become a GitHub Sponsor](https://img.shields.io/badge/sponsor-github-black?style=flat-square&color=orange)](https://github.com/sponsors/mrjackyliang)
 
-This is a [verified Homebridge plugin](https://github.com/homebridge/homebridge/wiki/verified-Plugins#verified-plugins) for ADT Pulse users that allow homeowners to control their security system and view sensor status through HomeKit. The API relies on the ADT Pulse Web Portal (by Icontrol One).
+This is a [verified Homebridge plugin](https://github.com/homebridge/homebridge/wiki/verified-Plugins#verified-plugins) for ADT Pulse customers that allow homeowners to control their security system and view sensor status through the Home app (the HAP protocol).
 
-# Please install the beta version!
-### This plugin is completely re-written from the ground up, and I need everyone on board! Please install the pre-release version, so I can quickly get a faster and more stable version to you!
-### Everything is still very sloppy, please bear with me, even the readme has to be re-written.
+The API relies on the ADT Pulse Web Portal (powered by Icontrol One, owned by ICN Acquisition LLC, an indirect subsidiary of [Alarm.com](https://alarm.com)). View details of the acquisition from via the [SEC Form 8-K](https://www.sec.gov/Archives/edgar/data/1459200/000119312517074906/d355785d8k.htm).
 
 To use this plugin, here are three simple steps you need to follow:
 1. Run `npm install homebridge-adt-pulse`
-2. Configure the plugin using the [configuration example](#configuration)
-3. Restart Homebridge
+2. Configure this plugin using the [configuration example](#configuration)
+3. Restart Homebridge and see magic happen 😁
 
-You can also search `adt-pulse` using [HOOBS](https://github.com/mkellsy/homebridge-config-ui) or [Onzu's Homebridge Config UI](https://github.com/oznu/homebridge-config-ui-x). Then proceed to configure the plugin using the included settings in the plugin page.
+Another option is to search for `adt-pulse` using Onzu's [Homebridge Config UI](https://github.com/oznu/homebridge-config-ui-x). Afterward, you can proceed to configure this plugin through the configuration UI available in the "Plugins" tab.
 
 ## Configuration
-When configuring this plugin, simply add the platform to your existing `config.json` file. Mind that the `platform` name must always be `ADTPulse`.
+Here is an example of how the `config.json` file for this plugin should be configured:
 ```json
 {
   "platforms": [
@@ -49,131 +56,164 @@ When configuring this plugin, simply add the platform to your existing `config.j
   ]
 }
 ```
+Ensure that you customize the values of `subdomain`, `username`, `password`, `fingerprint`, and `sensors` to match your specific setup. If you encounter any queries regarding the configuration, refer to the details provided below this section.
 
-## Plugin Limitations
-Even though the plugin name is "ADT Pulse for Homebridge", this Homebridge plugin supports certain ADT hardware. In addition, this plugin is NOT a complete replacement to the [official ADT Pulse app](https://www.adt.com/help/faq/adt-pulse/adt-pulse-mobile-app).
+## Supported Devices
+While named "ADT Pulse for Homebridge," this Homebridge plugin exclusively accommodates only the sensors listed below. It is important to note that this plugin does not serve as a comprehensive substitute for the [official ADT Pulse app](https://www.adt.com/help/faq/adt-pulse/adt-pulse-mobile-app).
 
-The hardware configurations supported by this plugin are:
-1. ADT Security Panel (`system`)
-2. ADT Door/Window Sensors (`doorWindow`)
-3. ADT Glass Break Detectors (`glass`)
-4. ADT Motion Sensors (`motion`)
-5. ADT Carbon Monoxide Detector (`co`)
-6. ADT Fire (Smoke/Heat) Detector (`fire`)
+This plugin will expose these devices by default:
+1. ADT Pulse Gateway (`gateway`)
+2. Security Panel (`panel`)
 
-If you have a sensor that is unsupported by this plugin, please [submit an issue](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new/choose) so I can add support for it.
+This plugin can expose these devices (in read-only mode) based on your configuration:
+1. `co` - Carbon Monoxide Detector
+2. `doorWindow` - Door/Window Sensor __::__ Door Sensor __::__ Window Sensor
+3. `fire` - Fire (Smoke/Heat) Detector
+4. `flood` - Water/Flood Sensor
+5. `glass` - Glass Break Detector
+6. `keypad` - Keypad/Touchpad
+7. `motion` - Motion Sensor __::__ Motion Sensor (Notable Events Only)
+8. `panic` - Audible Panic Button/Pendant __::__ Silent Panic Button/Pendant
+9. `temperature` - Temperature Sensor
 
-Due to ADT Pulse limitations, accessories that are connected to the Z-Wave Platform cannot be supported. Consider using other Homebridge plugins.
+Due to implementation complexity and platform instability, any Z-Wave accessory connected to the gateway will not be planned for development or supported. Consider purchasing the [Hubitat Hub](https://hubitat.com) for a seamless setup experience, or read about the [Home Assistant Z-Wave](https://www.home-assistant.io/integrations/zwave_js/) integration.
 
-## Configure 2-Factor Authentication
-With the recent updates, ADT Pulse now requires 2-factor authentication for your account. In the near future, this fingerprint will be required. Before you begin, make sure 2-Factor Authentication is already setup.
+## Specifying the Portal Region
+ADT Pulse is available to consumers in either the United States or Canada. To specify your country for is, use the following settings:
 
-1. Open a Chrome browser tab (under Incognito mode)
-2. Open Developer Tools (using **View** ➜ **Developer** ➜ **Developer Tools** menu)
-3. Click on the **Network** tab (make sure **Preserve log** checkbox is checked)
-4. In the filter box, enter `signin.jsp?networkid=`
-5. Go to `https://portal.adtpulse.com` or `https://portal-ca.adtpulse.com` and login to your account
-6. Click **Request Code**, type in the requested code, and then click **Submit Code**
-7. Click **Trust this device** and name the device `Homebridge`
-8. Click **Save and Continue**
-9. Click **Sign Out** in the top right corner of the webpage
-10. Login to your account (once again)
-11. Click on the network call (beginning with `signin.jsp?networkid=`) appearing in the DevTools window. Select the last one.
-12. In the **Payload** tab, under **Form Data**, copy the entire **fingerprint** (after `fingerprint:`, do not include spaces)
-13. Paste the copied text into the `fingerprint` field into your `config.json`
-14. Close the Chrome window (DO NOT sign out)
+- If you are a United States customer, set the `subdomain` value to `"portal"`.
+- If you are a Canada customer, set the `subdomain` value to `"portal-ca"`.
 
-## Force Arming (Arm Away/Stay/Night)
-Due to the nature of how HomeKit and ADT Pulse processes `setDeviceStatus` commands, this plugin will force arm when it detects active motion or open sensors.
+Select the appropriate setting based on your country, as the ability to switch between countries is determined by the region to which you are subscribed.
 
-__Without force arm, arm away/stay/night may stall and reset to Disarm with no errors.__
+## Finding the Device Fingerprint
+Since the introduction of 2-factor authentication during login is now required, a device fingerprint has become a necessity. Follow these steps:
 
-Before arming, please check the status of your Home (instructions below), as HomeKit will not check if your devices are in an active state.
+1. Log in to the ADT Pulse portal, complete the MFA challenge, and choose to "Trust this device" (you can name the device as you see fit).
+2. Using the same browser used for login, access the [ADT Pulse Device Fingerprint Detector](https://raw.githack.com/mrjackyliang/homebridge-adt-pulse/main/fingerprint/index.html).
+3. Click the "Copy Fingerprint" button and paste it into the `fingerprint` value in the `config.json` file.
+
+For a detailed breakdown of the device fingerprint contents, explore the "Device Details" tab located at the top right of the web page.
+
+## Specifying the Operational Mode
+This plugin offers three operational modes: "Normal", "Paused", and "Reset". To configure these modes, use the following settings:
+
+- For regular operation, set the `mode` value to `"normal"`.
+- To pause the plugin (all devices will not respond), set the `mode` value to `"paused"`.
+- To reset the plugin (remove associated accessories), set the `mode` value to `"reset"`.
+
+It is crucial to note that if you set the plugin to "Reset" mode, the plugin will initiate a countdown with warnings, and __you have approximately 30 seconds to reverse the setting and restart Homebridge before all accessories are deleted__.
+
+This precautionary measure is in place to avoid unintended resets that could lead to the time-consuming task of reconfiguring automations and accessories.
+
+## Specifying the Synchronization Speed
+Typically, the plugin triggers every second to assess whether sync check signals or keep-alive signals should be dispatched.
+
+However, for older devices incompatible with newer OpenSSL versions (`v3.1`), this may result in constant 100% CPU usage. To adjust the firing interval, use the following settings:
+
+- For "Normal" operation speed, set the `speed` value to `1`.
+- For "Moderate" operation speed, set the `speed` value to `0.75`.
+- For "Slower" operation speed, set the `speed` value to `0.5`.
+- For "Slowest" operation speed, set the `speed` value to `0.25`.
+
+If the plugin does not operate under "Normal" mode, a warning will be issued on every startup, and this warning cannot be disabled. While an option is available to downgrade to the deprecated OpenSSL version (`v1.1.1`), it is not recommended.
+
+## Specifying the Sensors
+In the past, this plugin would automatically detect sensors and dynamically manage their addition and removal based on its observations.
+
+However, this approach posed challenges. If the plugin failed to detect sensors or encountered portal irregularities, it could unintentionally remove all sensors, resulting in an inadvertent reset.
+
+While a setting was introduced (prior to `v3.0.0`) to prevent the removal of obsolete zones, over time, it felt more like a workaround than a solution.
+
+In this updated version of the plugin, I have implemented a new requirement that users must explicitly specify each sensor they wish to integrate into Homebridge.
+
+All sensors are now organized within an array of objects, with each object containing the following settings:
+- Name (`name`)
+  - Meant for Homebridge (offers clarity in the event of an unforeseen reset).
+- ADT Name: (`adtName`)
+  - Must match the name shown in the "System" tab when logged into the portal.
+- ADT Type: (`adtType`)
+  - Must match the type shown in the "System" tab when logged into the portal.
+  - Contingent to the devices shown under the [Supported Devices](#supported-devices) section.
+- ADT Zone: (`adtZone`)
+  - Must match the zone shown in the "System" tab when logged into the portal.
+
+If you do not find the supported type listed, please note that the plugin has already alerted me. There's no need to create a separate issue on GitHub, as I am actively working on adding support as soon as I gather sufficient information to determine the statuses displayed on the portal.
+
+Your patience is appreciated as I address and incorporate the necessary updates.
+
+## Force Arming (Arm Away / Arm Stay / Arm Night)
+Because of the way the Home app (the HAP protocol) establishes arm states, the plugin will initiate force arming upon detecting active motion or open sensors. Disabling this feature is not possible, as it will result in arming failures without alert notifications from the Home app.
+
+If you are concerned about this, please read the instructions below to check the status of the sensors in your home before arming your system:
 
 1. Open the Home app
-2. Tap the Status Details (listed in the Home tab _below_ the title)
-3. View the __ATTENTION__ area of your home
+2. Tap the dotted circle (`...`) (located on the top right of the screen)
+3. View the sensors that require attention, and resolve those issues
+
+If you are using automation, __you acknowledge that this will happen__ and accept the risks for the system not completing arming the system.
 
 ## Arm Night Support
 As for ADT Pulse systems, __Arm Night__ is only available for use through the panel itself. Although it is not visible on the Web Portal or the mobile app, you can still place your system in __Arm Night__ mode with this plugin.
 
-Because of the force arming procedure (above), __please make sure no devices are open or reporting motion__ as this may render the __Arm Night__ mode less effective.
+## Debug Mode
+Previously, there was a specific setting to configure debug logs at five different levels. Over time, it became apparent that this setting made debugging excessively challenging for the average consumer. Consequently, debug mode is now activated ONLY when the debug mode is enabled on the Homebridge itself.
 
-## Manually Override Sensors
-Due to ADT Pulse portal limitations, sensors may be inaccurately detected. Use this setting to manually override default detection features. _Optional._
+This approach promotes isolation (by using a separate bridge for each plugin) and helps enhance the troubleshooting experience in case any issues arise.
 
-The default is `[]`. Configure `overrideSensors[]` with the values below:
-* Set `name` to the name that is displayed in the ADT Pulse portal
-* Set `type` to `sensor,doorWindow`, `sensor,glass`, `sensor,motion`, `sensor,co`, or `sensor,fire`
+## Documentation, Logging, and Detection
+This function comes with a built-in feature to notify me if the plugin detects anomalies in the states of sensors and panel statuses. In the event of such occurrences, especially when these statuses are undocumented, I will receive notifications.
 
-__NOTE:__ Examples are noted above in the [configuration](#configuration) section.
+Be assured that this plugin strictly adheres to the [verified Homebridge plugin](https://github.com/homebridge/homebridge/wiki/verified-Plugins#verified-plugins) requirements, ensuring that it does not track users in any manner.
 
-## Set Country
-ADT Pulse is available both in the United States and Canada. Use this setting to toggle which country you will be using the plugin in. _Optional._
+If the information sent includes personally identifiable details, such as IP addresses, MAC addresses, or serial numbers, those fields will be automatically redacted (replaced with `*** REDACTED FOR PRIVACY ***`) since they are unnecessary for me to enhance this plugin.
 
-The default is `us`. Configure `country` with the values below:
-* Set `country` to `us` for United States
-* Set `country` to `ca` for Canada
+To reinforce this, a warning will be issued each time you utilize the included scripts, start the plugin, or when the plugin is about to notify me, serving as a reminder of these privacy measures.
 
-__NOTE:__ If the `country` setting has been specified incorrectly, a warning will be shown then subsequently set to `us`.
-
-## Log Level (Debugging)
-Debugging is difficult without the proper information, in such, this plugin offers a way to filter out messages sent to the logs. _Optional._
-
-The default is `30`. Configure `logLevel` with the values below:
-* Set `logLevel` to `10` for errors only
-* Set `logLevel` to `20` for warnings (and the above)
-* Set `logLevel` to `30` for info (and the above)
-* Set `logLevel` to `40` for debugging (and the above)
-* Set `logLevel` to `50` for verbose (and the above)
-
-__NOTE:__ If the `logLevel` setting has been specified incorrectly, a warning will be shown then subsequently set to `30`.
-
-__NOTE 2:__ Don't forget to enable Homebridge Debug Mode when setting `logLevel` to `40` or above or else debug messages won't be shown.
-
-## Log Activity
-While the plugin is running, it has the ability to record alarm and sensor activity from the ADT Pulse portal to the Homebridge logs. _Optional._
-
-The default is `true`. Configure `logActivity` with the values below:
-* Set `logActivity` to `true` for active mode
-* Set `logActivity` to `false` for passive mode
-
-__NOTE:__ Logging alarm and sensor activity requires the `logLevel` setting to be set to `30` or greater.
-
-## Remove Obsolete Zones
-The plugin offers a way to automatically detect and remove obsolete zones. If you have recently experienced __sensor reset__ issues, you may disable this setting. _Optional._
-
-The default is `true`. Configure `removeObsoleteZones` with the values below:
-* Set `removeObsoleteZones` to `true` for removal mode
-* Set `removeObsoleteZones` to `false` for notification mode
-
-__NOTE:__ If recently, you had sensors removed from ADT Pulse, the plugin will not remove these sensors unless `removeObsoleteZones` is set to `true`.
-
-## Pausing the Plugin
-The plugin may continuously ping the ADT Pulse servers, even when authentication fails, which will cause your IP to be temporarily banned. This will pause the plugin without you breaking other plugins. _Optional._
-
-The default is `false`. Configure `pausePlugin` with the values below:
-* Set `pausePlugin` to `true` for reset mode
-* Set `pausePlugin` to `false` for normal mode
-
-__NOTE:__ Once you are ready to resume the plugin, remember to set the `pausePlugin` setting back to `false` or else the plugin will continue to stay paused.
-
-## Resetting the Plugin
-Managing many accessories in a Homebridge environment is already a seemingly hard task, and sometimes you might want to step back and do a reset. _Optional._
-
-The default is `false`. Configure `resetAll` with the values below:
-* Set `resetAll` to `true` for reset mode
-* Set `resetAll` to `false` for normal mode
-
-__NOTE:__ Once reset is complete, remember to set the `resetAll` setting back to `false` or else the plugin will just repeat reset mode again.
-
-## Developer Information
-The script provides an active connection to the ADT Pulse portal. Here is a list of must-knows, just in case you might want to debug (or improve) the plugin:
-
-1. Device and zone statuses will be fetched every __3 seconds__. If logins have failed more than 2 times, portal sync will pause for 10 minutes.
-2. Supported versions are `25.0.0-21` and `26.0.0-32`. If this plugin does not support either version, a warning will appear in the logs. Please [submit an issue](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new/choose) to let me know!
+Here is an example of the information I see when the plugin detects unknown statuses from the gateway:
+```json
+{
+  "communication": {
+    "primaryConnectionType": "Broadband",
+    "broadbandConnectionStatus": "Unavailable",
+    "cellularConnectionStatus": "N/A",
+    "cellularSignalStrength": "N/A"
+  },
+  "manufacturer": "ADT Pulse Gateway",
+  "model": "Some Model",
+  "network": {
+    "broadband": {
+      "ip": "*** REDACTED FOR PRIVACY ***",
+      "mac": "*** REDACTED FOR PRIVACY ***"
+    },
+    "device": {
+      "ip": "*** REDACTED FOR PRIVACY ***",
+      "mac": "*** REDACTED FOR PRIVACY ***"
+    },
+    "router": {
+      "lanIp": "*** REDACTED FOR PRIVACY ***",
+      "wanIp": "*** REDACTED FOR PRIVACY ***"
+    }
+  },
+  "serialNumber": "*** REDACTED FOR PRIVACY ***",
+  "status": "Online",
+  "update": {
+    "last": "Yesterday 12:00 PM",
+    "next": "Today 12:00 PM"
+  },
+  "versions": {
+    "firmware": "Some Firmware Version",
+    "hardware": "Some Hardware Version"
+  }
+}
+```
+__Notice:__ If you prefer to prevent this functionality, you can block the URL that the plugin utilizes to notify me. However, it is essential to note that I will not be able to offer assistance or support if you choose to impede the plugin from fulfilling its purpose to the best of its capabilities.
 
 ## Credits and Appreciation
-If you would like to show your appreciation for its continued development, you can optionally become my supporter on [GitHub Sponsors](https://github.com/sponsors/mrjackyliang)!
+If you find value in the ongoing development of this plugin and wish to express your appreciation, you have the option to become my supporter on [GitHub Sponsors](https://github.com/sponsors/mrjackyliang)!
 
-Also, thank you to [@kevinmkickey](https://github.com/kevinmhickey) for providing the [ADT Pulse script](https://github.com/kevinmhickey/adt-pulse) and [@Danimal4326](https://github.com/Danimal4326) for finding the solution for ADT Pulse's 2-factor authentication.
+Moreover, I extend a special acknowledgment and heartfelt gratitude to the following individuals:
+- [@kevinmhickey](https://github.com/kevinmhickey) - For the inspiration to build a better script used in `v1.0.0` through `v2.2.0`.
+- [@Danimal4326](https://github.com/Danimal4326) - For successfully identifying the solution for ADT Pulse's 2-factor authentication.
+
+Their contributions have significantly enhanced the functionality and reliability of this plugin.

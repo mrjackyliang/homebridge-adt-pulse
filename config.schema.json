@@ -93,10 +93,10 @@
         "default": "normal"
       },
       "speed": {
-        "title": "Operational Speed",
+        "title": "Synchronization Speed",
         "type": "number",
         "required": true,
-        "description": "Choose the operational speed for the plugin. Designed to enhance the performance of devices with older hardware. May result in slower device updates.",
+        "description": "Choose the synchronization speed for the plugin. Designed to enhance the performance of devices with older hardware. May result in slower device updates.",
         "oneOf": [
           {
             "title": "Normal Speed (1x)",
@@ -129,7 +129,7 @@
         "title": "Sensors",
         "type": "array",
         "required": true,
-        "description": "Define your sensors here. Sensors include devices like \"Door/Window Sensor\" or \"Motion Sensor\". <strong class=\"font-weight-bold\">Please note that Z-Wave accessories are not supported.</strong> Ensure at least one sensor is specified for proper functionality.",
+        "description": "Define your sensors here. Sensors include devices like \"Door/Window Sensor\" or \"Motion Sensor\". <strong class=\"font-weight-bold\">Please note that Z-Wave accessories are not supported.</strong> A maximum of 148 sensors can be added (the plugin reserves 2 accessories for the gateway and security panel).",
         "items": {
           "type": "object",
           "properties": {
@@ -164,7 +164,7 @@
                   ]
                 },
                 {
-                  "title": "Door/Window Sensor / Door Sensor / Window Sensor",
+                  "title": "Door/Window Sensor :: Door Sensor :: Window Sensor",
                   "enum": [
                     "doorWindow"
                   ]
@@ -194,13 +194,13 @@
                   ]
                 },
                 {
-                  "title": "Motion Sensor / Motion Sensor (Notable Events Only)",
+                  "title": "Motion Sensor :: Motion Sensor (Notable Events Only)",
                   "enum": [
                     "motion"
                   ]
                 },
                 {
-                  "title": "Audible Panic Button/Pendant or Silent Panic Button/Pendant",
+                  "title": "Audible Panic Button/Pendant :: Silent Panic Button/Pendant",
                   "enum": [
                     "panic"
                   ]
@@ -224,7 +224,7 @@
             }
           }
         },
-        "minItems": 1,
+        "minItems": 0,
         "maxItems": 148
       }
     }
