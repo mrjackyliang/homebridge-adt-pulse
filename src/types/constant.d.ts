@@ -227,9 +227,10 @@ export type PortalPanelStatusSensorsOpen =
  * @since 1.0.0
  */
 export type PortalSensorDeviceType =
-  'Door Sensor'
-  | 'Door/Window Sensor'
+  'Audible Panic Button/Pendant'
   | 'Carbon Monoxide Detector'
+  | 'Door/Window Sensor'
+  | 'Door Sensor'
   | 'Fire (Smoke/Heat) Detector'
   | 'Glass Break Detector'
   | 'Keypad/Touchpad'

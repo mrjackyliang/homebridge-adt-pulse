@@ -1861,9 +1861,10 @@ export class ADTPulse {
        * NOTICE: Parts NOT SHOWN below will NOT be tracked, documented, or tested.
        * PATENT: https://patents.google.com/patent/US20170070361A1/en
        *
-       * deviceType: 'Door Sensor'
-       *             'Door/Window Sensor'
+       * deviceType: 'Audible Panic Button/Pendant'
        *             'Carbon Monoxide Detector'
+       *             'Door/Window Sensor'
+       *             'Door Sensor'
        *             'Fire (Smoke/Heat) Detector'
        *             'Glass Break Detector'
        *             'Keypad/Touchpad'

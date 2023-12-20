@@ -150,17 +150,21 @@ export function clearWhitespace(data: ClearWhitespaceData): ClearWhitespaceRetur
 export function condenseSensorType(sensorType: CondenseSensorTypeSensorType): CondenseSensorTypeReturns {
   let condensed: CondenseSensorTypeCondensed;
 
+  // Sort by "condensed" first, then switch cases, both in alphabet order.
   switch (sensorType) {
     case 'Carbon Monoxide Detector':
       condensed = 'co';
       break;
+    case 'Door/Window Sensor':
     case 'Door Sensor':
     case 'Window Sensor':
-    case 'Door/Window Sensor':
       condensed = 'doorWindow';
       break;
     case 'Fire (Smoke/Heat) Detector':
       condensed = 'fire';
+      break;
+    case 'Water/Flood Sensor':
+      condensed = 'flood';
       break;
     case 'Glass Break Detector':
       condensed = 'glass';
@@ -172,14 +176,12 @@ export function condenseSensorType(sensorType: CondenseSensorTypeSensorType): Co
     case 'Motion Sensor (Notable Events Only)':
       condensed = 'motion';
       break;
+    case 'Audible Panic Button/Pendant':
     case 'Silent Panic Button/Pendant':
       condensed = 'panic';
       break;
     case 'Temperature Sensor':
       condensed = 'temperature';
-      break;
-    case 'Water/Flood Sensor':
-      condensed = 'flood';
       break;
     default:
       break;

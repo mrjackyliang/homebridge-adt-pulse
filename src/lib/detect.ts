@@ -728,9 +728,10 @@ export async function detectedNewPortalVersion(version: DetectedNewPortalVersion
  */
 export async function detectedNewSensorsInformation(sensors: DetectedNewSensorsInformationSensors, logger: DetectedNewSensorsInformationLogger, debugMode: DetectedNewSensorsInformationDebugMode): DetectedNewSensorsInformationReturns {
   const knownDeviceTypes: DetectedNewSensorsInformationKnownDeviceTypes = [
-    'Door Sensor',
-    'Door/Window Sensor',
+    'Audible Panic Button/Pendant',
     'Carbon Monoxide Detector',
+    'Door/Window Sensor',
+    'Door Sensor',
     'Fire (Smoke/Heat) Detector',
     'Glass Break Detector',
     'Keypad/Touchpad',

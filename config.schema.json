@@ -176,6 +176,12 @@
                   ]
                 },
                 {
+                  "title": "Water/Flood Sensor",
+                  "enum": [
+                    "flood"
+                  ]
+                },
+                {
                   "title": "Glass Break Detector",
                   "enum": [
                     "glass"
@@ -194,15 +200,15 @@
                   ]
                 },
                 {
-                  "title": "Temperature Sensor",
+                  "title": "Audible Panic Button/Pendant or Silent Panic Button/Pendant",
                   "enum": [
-                    "temperature"
+                    "panic"
                   ]
                 },
                 {
-                  "title": "Water/Flood Sensor",
+                  "title": "Temperature Sensor",
                   "enum": [
-                    "flood"
+                    "temperature"
                   ]
                 }
               ]
