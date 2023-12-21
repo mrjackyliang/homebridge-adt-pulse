@@ -160,6 +160,9 @@ export class ADTPulseAccessory {
       case 'panic':
         // TODO nothing done here yet
         break;
+      case 'shock':
+        // TODO nothing done here yet
+        break;
       case 'temperature':
         this.#services.Primary = this.#accessory.getService(service.TemperatureSensor) ?? this.#accessory.addService(service.TemperatureSensor);
         break;
@@ -219,6 +222,9 @@ export class ADTPulseAccessory {
       case 'panic':
         // TODO nothing done here yet
         break;
+      case 'shock':
+        // TODO nothing done here yet
+        break;
       case 'temperature':
         this.#services.Primary.getCharacteristic(this.#characteristic.CurrentTemperature)
           .onGet(() => this.getSensorStatus(accessory.context));
@@ -252,6 +258,7 @@ export class ADTPulseAccessory {
       'keypad',
       'motion',
       'panic',
+      'shock',
       'temperature',
     ];
 
@@ -315,6 +322,9 @@ export class ADTPulseAccessory {
         }
         break;
       case 'panic':
+        // TODO nothing done here yet
+        break;
+      case 'shock':
         // TODO nothing done here yet
         break;
       case 'temperature':

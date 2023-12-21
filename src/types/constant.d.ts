@@ -41,6 +41,7 @@ export type PluginDeviceType =
   | 'motion'
   | 'panel'
   | 'panic'
+  | 'shock'
   | 'temperature';
 
 /**
@@ -246,6 +247,7 @@ export type PortalSensorDeviceType =
   | 'Keypad/Touchpad'
   | 'Motion Sensor'
   | 'Motion Sensor (Notable Events Only)'
+  | 'Shock Sensor'
   | 'Silent Panic Button/Pendant'
   | 'Temperature Sensor'
   | 'Water/Flood Sensor'
@@ -271,7 +273,8 @@ export type PortalSensorStatusIcon =
  * @since 1.0.0
  */
 export type PortalSensorStatusText =
-  'ALARM, Okay'
+  'ALARM, Closed'
+  | 'ALARM, Okay'
   | 'ALARM, Open'
   | 'Bypassed, Open'
   | 'Closed'

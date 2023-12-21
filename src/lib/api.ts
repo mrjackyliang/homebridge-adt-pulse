@@ -1871,6 +1871,7 @@ export class ADTPulse {
        *             'Keypad/Touchpad'
        *             'Motion Sensor'
        *             'Motion Sensor (Notable Events Only)'
+       *             'Shock Sensor'
        *             'Silent Panic Button/Pendant'
        *             'Temperature Sensor'
        *             'Water/Flood Sensor'
@@ -2111,7 +2112,8 @@ export class ADTPulse {
        *       'devStatTamper'
        *       'devStatUnknown'
        *
-       * status: 'ALARM, Okay'
+       * status: 'ALARM, Closed'
+       *         'ALARM, Okay'
        *         'ALARM, Open'
        *         'Bypassed, Open'
        *         'Closed'

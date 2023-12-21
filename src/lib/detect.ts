@@ -738,6 +738,7 @@ export async function detectedNewSensorsInformation(sensors: DetectedNewSensorsI
     'Keypad/Touchpad',
     'Motion Sensor',
     'Motion Sensor (Notable Events Only)',
+    'Shock Sensor',
     'Silent Panic Button/Pendant',
     'Temperature Sensor',
     'Water/Flood Sensor',
@@ -844,6 +845,7 @@ export async function detectedNewSensorsStatus(sensors: DetectedNewSensorsStatus
     'devStatUnknown',
   ];
   const knownStatuses: DetectedNewSensorsStatusKnownStatuses = [
+    'ALARM, Closed',
     'ALARM, Okay',
     'ALARM, Open',
     'Bypassed, Open',

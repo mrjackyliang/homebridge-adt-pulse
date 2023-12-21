@@ -38,6 +38,7 @@ export const platformConfig = z.object({
       z.literal('keypad'),
       z.literal('motion'),
       z.literal('panic'),
+      z.literal('shock'),
       z.literal('temperature'),
     ]),
     adtZone: z.number().min(1).max(999),

@@ -180,6 +180,9 @@ export function condenseSensorType(sensorType: CondenseSensorTypeSensorType): Co
     case 'Silent Panic Button/Pendant':
       condensed = 'panic';
       break;
+    case 'Shock Sensor':
+      condensed = 'shock';
+      break;
     case 'Temperature Sensor':
       condensed = 'temperature';
       break;

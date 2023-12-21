@@ -42,10 +42,10 @@ Here is an example of how the `config.json` file for this plugin should be confi
       "speed": 1,
       "sensors": [
         {
-          "name": "Lounge Smoke",
-          "adtName": "Basement Smoke",
-          "adtType": "fire",
-          "adtZone": 1
+          "name": "Family Room Couch Window 1",
+          "adtName": "Family Room Window (99)",
+          "adtType": "doorWindow",
+          "adtZone": 99
         }
       ]
     },
@@ -74,7 +74,8 @@ This plugin can expose these devices (in read-only mode) based on your configura
 6. `keypad` - Keypad/Touchpad
 7. `motion` - Motion Sensor __::__ Motion Sensor (Notable Events Only)
 8. `panic` - Audible Panic Button/Pendant __::__ Silent Panic Button/Pendant
-9. `temperature` - Temperature Sensor
+9. `shock` - Shock Sensor
+10. `temperature` - Temperature Sensor
 
 Due to implementation complexity and platform instability, all Z-Wave accessories connected to the ADT Pulse gateway will not be planned for development or be supported overall. Consider purchasing the [Hubitat Hub](https://hubitat.com) for a seamless setup experience, or read about the [Home Assistant Z-Wave](https://www.home-assistant.io/integrations/zwave_js/) integration.
 
@@ -128,14 +129,14 @@ While a setting was introduced (prior to `v3.0.0`) to prevent the removal of obs
 In this updated version of the plugin, I have implemented a new requirement that users must explicitly specify each sensor they wish to integrate into Homebridge.
 
 All sensors are now organized within an array of objects, with each object containing the following settings:
-- Name (`name`)
+- __Name__ (`name`)
   - For display purposes (offers clarity in the event of an unforeseen reset).
-- ADT Name: (`adtName`)
+- __ADT Name__ (`adtName`)
   - Must match the name shown under the "Name" column in the "System" tab when logged into the portal.
-- ADT Type: (`adtType`)
+- __ADT Type__ (`adtType`)
   - Must match the type shown under the "Device Type" column in the "System" tab when logged into the portal.
   - Contingent to the devices shown under the [Supported Devices](#supported-devices) section.
-- ADT Zone: (`adtZone`)
+- __ADT Zone__ (`adtZone`)
   - Must match the zone shown under the "Zone" column in the "System" tab when logged into the portal.
 
 If you do not find the supported type listed, please note that the plugin will notify me. There's no need to create a separate issue on GitHub, as I am actively working on adding support as soon as I gather sufficient information to determine the statuses displayed on the portal.
