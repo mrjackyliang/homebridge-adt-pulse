@@ -14,10 +14,11 @@ Additionally, I am seeing that the developers for HOOBS are stale based on the a
 [![NPM Downloads](https://img.shields.io/npm/dt/homebridge-adt-pulse.svg?style=flat-square&color=success)](https://www.npmjs.com/package/homebridge-adt-pulse)
 [![GitHub License](https://img.shields.io/github/license/mrjackyliang/homebridge-adt-pulse?style=flat-square&color=yellow)](https://github.com/mrjackyliang/homebridge-adt-pulse/blob/master/LICENSE)
 [![Become a GitHub Sponsor](https://img.shields.io/badge/sponsor-github-black?style=flat-square&color=orange)](https://github.com/sponsors/mrjackyliang)
+[![Donate via PayPal](https://img.shields.io/badge/donate-paypal-black?style=flat-square&color=blue)](https://liang.nyc/paypal)
 
 This is a [verified Homebridge plugin](https://github.com/homebridge/homebridge/wiki/verified-Plugins#verified-plugins) for ADT Pulse customers that allow homeowners to control their security system and view sensor status through the Home app (the HAP protocol).
 
-The API relies on the ADT Pulse Web Portal (powered by Icontrol One, owned by ICN Acquisition LLC, an indirect subsidiary of [Alarm.com](https://alarm.com)). View details of the acquisition via the [SEC Form 8-K](https://www.sec.gov/Archives/edgar/data/1459200/000119312517074906/d355785d8k.htm).
+The API relies on the ADT Pulse Web Portal (powered by Icontrol One, owned by ICN Acquisition LLC, an indirect subsidiary of [Alarm.com](https://alarm.com))
 
 To use this plugin, here are three simple steps you need to follow:
 1. Run `npm install homebridge-adt-pulse`
@@ -75,7 +76,9 @@ This plugin can expose these devices (in read-only mode) based on your configura
 7. `motion` - Motion Sensor __::__ Motion Sensor (Notable Events Only)
 8. `panic` - Audible Panic Button/Pendant __::__ Silent Panic Button/Pendant
 9. `shock` - Shock Sensor
-10. `temperature` - Temperature Sensor
+10. `supervisory` - System/Supervisory
+11. `temperature` - Temperature Sensor
+12. `unknown` - Unknown Device Type
 
 Due to implementation complexity and platform instability, all Z-Wave accessories connected to the ADT Pulse gateway will not be planned for development or be supported overall. Consider purchasing the [Hubitat Hub](https://hubitat.com) for a seamless setup experience, or read about the [Home Assistant Z-Wave](https://www.home-assistant.io/integrations/zwave_js/) integration.
 
@@ -85,13 +88,13 @@ ADT Pulse is available to consumers in either the United States or Canada. To sp
 - If you are a United States customer, set the `subdomain` value to `"portal"`.
 - If you are a Canada customer, set the `subdomain` value to `"portal-ca"`.
 
-Select the appropriate setting based on your country, as the ability to switch between countries is determined by the ADT region to which you are subscribed to.
+Select the appropriate setting based on your country, as the ability to switch between countries is determined by the ADT region you are subscribed to.
 
 ## Finding the Device Fingerprint
-Since the introduction of 2-factor authentication during login is now required, a device fingerprint has become a necessity. Follow these steps:
+Since the introduction of 2-factor authentication, a device fingerprint has become a necessity during login. To retrieve the fingerprint, follow these steps:
 
 1. Log in to the ADT Pulse portal, complete the MFA challenge, and choose to "Trust this device" (you can name the device as you see fit).
-2. Using the same browser used for login, access the [ADT Pulse Device Fingerprint Detector](https://raw.githack.com/mrjackyliang/homebridge-adt-pulse/main/fingerprint/index.html).
+2. Using the same browser that was used for login, visit the [ADT Pulse Device Fingerprint Detector](https://raw.githack.com/mrjackyliang/homebridge-adt-pulse/main/fingerprint/index.html) web page.
 3. Click the "Copy Fingerprint" button and paste it into the `fingerprint` value in the `config.json` file.
 
 For a detailed breakdown of the device fingerprint contents, explore the "Device Details" tab located at the top right of the web page.
@@ -110,14 +113,14 @@ This precautionary measure is in place to avoid unintended resets that could lea
 ## Specifying the Synchronization Speed
 Typically, the plugin triggers every second to assess whether sync check signals or keep-alive signals should be dispatched.
 
-However, for older devices incompatible with newer OpenSSL versions (e.g. `v3.1`), this may result in consistent 100% CPU usage. To adjust the firing interval, use the following settings:
+However, for certain consumer routers, this plugin may induce a network slowdown, and on older devices incompatible with newer OpenSSL versions (`v3.1`), may result in sustained 100% CPU usage. In an attempt to address both issues, adjust the firing interval using the following settings:
 
 - For "Normal" operation speed, set the `speed` value to `1`.
 - For "Moderate" operation speed, set the `speed` value to `0.75`.
 - For "Slower" operation speed, set the `speed` value to `0.5`.
 - For "Slowest" operation speed, set the `speed` value to `0.25`.
 
-If the plugin does not operate under "Normal" mode, a warning will be issued on every startup, and this warning cannot be disabled. While an option is available to downgrade to the deprecated OpenSSL version (`v1.1.1`), it is not recommended.
+If the plugin does not operate under "Normal" mode, a warning will be issued on every startup, and this warning cannot be disabled.
 
 ## Specifying the Sensors
 In the past, this plugin would automatically detect sensors and dynamically manage their addition and removal based on its observations.
@@ -144,7 +147,7 @@ If you do not find the supported type listed, please note that the plugin will n
 Your patience is appreciated as I address and incorporate the necessary updates.
 
 ## Force Arming (Arm Away / Arm Stay / Arm Night)
-Due to the way how the Home app (the HAP protocol) establishes arm states, the plugin will force arm upon detecting active motion or open sensors. Disabling this feature is not possible, as this will result in arming failures without alert notifications from the Home app.
+Due to the way how the Home app (the HAP protocol) establishes arm states, the plugin will force arm upon detecting active motion or open sensors. Disabling this feature is not possible, as this will result in arming failures without alert notifications.
 
 If you are concerned about this, please read the instructions below to check the status of the sensors in your home before arming your system:
 

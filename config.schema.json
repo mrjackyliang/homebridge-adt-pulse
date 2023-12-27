@@ -84,7 +84,7 @@
             ]
           },
           {
-            "title": "Reset (danger)",
+            "title": "Reset - \uD83D\uDED1 DANGER",
             "enum": [
               "reset"
             ]
@@ -212,9 +212,21 @@
                   ]
                 },
                 {
+                  "title": "System/Supervisory",
+                  "enum": [
+                    "supervisory"
+                  ]
+                },
+                {
                   "title": "Temperature Sensor",
                   "enum": [
                     "temperature"
+                  ]
+                },
+                {
+                  "title": "Unknown Device Type",
+                  "enum": [
+                    "unknown"
                   ]
                 }
               ]
@@ -289,12 +301,11 @@
           "items": [
             {
               "key": "sensors",
-              "htmlClass": "p-10",
               "buttonText": "Add Sensor",
               "items": [
                 {
                   "type": "div",
-                  "htmlClass": "my-3",
+                  "htmlClass": "my-4 p-4",
                   "items": [
                     {
                       "key": "sensors[].name",

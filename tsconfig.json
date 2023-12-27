@@ -4,6 +4,9 @@
     "baseUrl": "./",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "lib": [
+      "esnext"
+    ],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "noFallthroughCasesInSwitch": true,
@@ -12,9 +15,6 @@
     "noUnusedLocals": true,
     "outDir": "./build",
     "paths": {
-      "#/*": [
-        "./*"
-      ],
       "@/*": [
         "./src/*"
       ]
@@ -23,7 +23,13 @@
     "resolveJsonModule": true,
     "sourceMap": true,
     "strict": true,
-    "target": "ESNext"
+    "target": "ESNext",
+    "types": [
+      "node",
+      "jsdom",
+      "lodash",
+      "tough-cookie"
+    ]
   },
   "include": [
     "./src",

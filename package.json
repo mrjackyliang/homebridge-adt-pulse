@@ -1,7 +1,7 @@
 {
   "name": "homebridge-adt-pulse",
   "displayName": "Homebridge ADT Pulse",
-  "version": "3.0.0-beta.11",
+  "version": "3.0.0-beta.12",
   "description": "Homebridge security system platform for ADT Pulse",
   "main": "./build/src/index.js",
   "exports": "./build/src/index.js",
@@ -23,10 +23,16 @@
     "type": "git",
     "url": "git://github.com/mrjackyliang/homebridge-adt-pulse.git"
   },
-  "funding": {
-    "type": "github",
-    "url": "https://github.com/sponsors/mrjackyliang"
-  },
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/mrjackyliang"
+    },
+    {
+      "type": "paypal",
+      "url": "https://liang.nyc/paypal"
+    }
+  ],
   "keywords": [
     "homebridge",
     "homebridge-plugin",

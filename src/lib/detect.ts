@@ -1,6 +1,5 @@
 import axios from 'axios';
 import _ from 'lodash';
-import { env } from 'node:process';
 import { serializeError } from 'serialize-error';
 
 import {
@@ -162,17 +161,16 @@ export async function detectedNewDoSubmitHandlers(handlers: DetectedNewDoSubmitH
 
     try {
       await axios.post(
-        'https://9wv5o73w.ntfy.mrjackyliang.com',
-        JSON.stringify({
-          title: 'Detected new do submit handlers',
-          description: 'New do submit handlers detected. Please update the plugin as soon as possible.',
-          content: JSON.stringify(cleanedData, null, 2),
-        }),
+        'https://fs65kt4c5xf8.ntfy.mrjackyliang.com',
+        [
+          'Please update the plugin as soon as possible.',
+          JSON.stringify(cleanedData, null, 2),
+        ].join('\n\n'),
         {
           family: 4,
           headers: {
-            'Content-Type': 'application/json',
-            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? 'unknown'}`,
+            'User-Agent': 'homebridge-adt-pulse',
+            'X-Title': 'Detected new do submit handlers',
           },
         },
       );
@@ -251,17 +249,16 @@ export async function detectedNewGatewayInformation(device: DetectedNewGatewayIn
 
     try {
       await axios.post(
-        'https://9wv5o73w.ntfy.mrjackyliang.com',
-        JSON.stringify({
-          title: 'Detected new gateway information',
-          description: 'New gateway information detected. Please update the plugin as soon as possible.',
-          content: JSON.stringify(cleanedData, null, 2),
-        }),
+        'https://fs65kt4c5xf8.ntfy.mrjackyliang.com',
+        [
+          'Please update the plugin as soon as possible.',
+          JSON.stringify(cleanedData, null, 2),
+        ].join('\n\n'),
         {
           family: 4,
           headers: {
-            'Content-Type': 'application/json',
-            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? 'unknown'}`,
+            'User-Agent': 'homebridge-adt-pulse',
+            'X-Title': 'Detected new gateway information',
           },
         },
       );
@@ -392,17 +389,16 @@ export async function detectedNewOrbSecurityButtons(buttons: DetectedNewOrbSecur
 
     try {
       await axios.post(
-        'https://9wv5o73w.ntfy.mrjackyliang.com',
-        JSON.stringify({
-          title: 'Detected new orb security buttons',
-          description: 'New orb security buttons detected. Please update the plugin as soon as possible.',
-          content: JSON.stringify(cleanedData, null, 2),
-        }),
+        'https://fs65kt4c5xf8.ntfy.mrjackyliang.com',
+        [
+          'Please update the plugin as soon as possible.',
+          JSON.stringify(cleanedData, null, 2),
+        ].join('\n\n'),
         {
           family: 4,
           headers: {
-            'Content-Type': 'application/json',
-            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? 'unknown'}`,
+            'User-Agent': 'homebridge-adt-pulse',
+            'X-Title': 'Detected new orb security buttons',
           },
         },
       );
@@ -480,17 +476,16 @@ export async function detectedNewPanelInformation(device: DetectedNewPanelInform
 
     try {
       await axios.post(
-        'https://9wv5o73w.ntfy.mrjackyliang.com',
-        JSON.stringify({
-          title: 'Detected new panel information',
-          description: 'New panel information detected. Please update the plugin as soon as possible.',
-          content: JSON.stringify(cleanedData, null, 2),
-        }),
+        'https://fs65kt4c5xf8.ntfy.mrjackyliang.com',
+        [
+          'Please update the plugin as soon as possible.',
+          JSON.stringify(cleanedData, null, 2),
+        ].join('\n\n'),
         {
           family: 4,
           headers: {
-            'Content-Type': 'application/json',
-            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? 'unknown'}`,
+            'User-Agent': 'homebridge-adt-pulse',
+            'X-Title': 'Detected new panel information',
           },
         },
       );
@@ -588,17 +583,16 @@ export async function detectedNewPanelStatus(summary: DetectedNewPanelStatusSumm
 
     try {
       await axios.post(
-        'https://9wv5o73w.ntfy.mrjackyliang.com',
-        JSON.stringify({
-          title: 'Detected a new panel state and/or status',
-          description: 'A new panel state and/or status detected. Please update the plugin as soon as possible.',
-          content: JSON.stringify(cleanedData, null, 2),
-        }),
+        'https://fs65kt4c5xf8.ntfy.mrjackyliang.com',
+        [
+          'Please update the plugin as soon as possible.',
+          JSON.stringify(cleanedData, null, 2),
+        ].join('\n\n'),
         {
           family: 4,
           headers: {
-            'Content-Type': 'application/json',
-            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? 'unknown'}`,
+            'User-Agent': 'homebridge-adt-pulse',
+            'X-Title': 'Detected a new panel state and/or status',
           },
         },
       );
@@ -689,17 +683,16 @@ export async function detectedNewPortalVersion(version: DetectedNewPortalVersion
 
     try {
       await axios.post(
-        'https://9wv5o73w.ntfy.mrjackyliang.com',
-        JSON.stringify({
-          title: 'Detected a new portal version',
-          description: 'A new portal version detected. Please update the plugin as soon as possible.',
-          content: JSON.stringify(cleanedData, null, 2),
-        }),
+        'https://fs65kt4c5xf8.ntfy.mrjackyliang.com',
+        [
+          'Please update the plugin as soon as possible.',
+          JSON.stringify(cleanedData, null, 2),
+        ].join('\n\n'),
         {
           family: 4,
           headers: {
-            'Content-Type': 'application/json',
-            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? 'unknown'}`,
+            'User-Agent': 'homebridge-adt-pulse',
+            'X-Title': 'Detected a new portal version',
           },
         },
       );
@@ -740,7 +733,9 @@ export async function detectedNewSensorsInformation(sensors: DetectedNewSensorsI
     'Motion Sensor (Notable Events Only)',
     'Shock Sensor',
     'Silent Panic Button/Pendant',
+    'System/Supervisory',
     'Temperature Sensor',
+    'Unknown Device Type',
     'Water/Flood Sensor',
     'Window Sensor',
   ];
@@ -796,17 +791,16 @@ export async function detectedNewSensorsInformation(sensors: DetectedNewSensorsI
 
     try {
       await axios.post(
-        'https://9wv5o73w.ntfy.mrjackyliang.com',
-        JSON.stringify({
-          title: 'Detected new sensors information',
-          description: 'New sensors information detected. Please update the plugin as soon as possible.',
-          content: JSON.stringify(cleanedData, null, 2),
-        }),
+        'https://fs65kt4c5xf8.ntfy.mrjackyliang.com',
+        [
+          'Please update the plugin as soon as possible.',
+          JSON.stringify(cleanedData, null, 2),
+        ].join('\n\n'),
         {
           family: 4,
           headers: {
-            'Content-Type': 'application/json',
-            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? 'unknown'}`,
+            'User-Agent': 'homebridge-adt-pulse',
+            'X-Title': 'Detected new sensors information',
           },
         },
       );
@@ -848,8 +842,12 @@ export async function detectedNewSensorsStatus(sensors: DetectedNewSensorsStatus
     'ALARM, Closed',
     'ALARM, Okay',
     'ALARM, Open',
+    'Bypassed, Closed',
     'Bypassed, Open',
+    'Bypassed, Tripped',
     'Closed',
+    'Low Battery, Motion',
+    'Low Battery, No Motion',
     'Motion',
     'No Motion',
     'Okay',
@@ -907,17 +905,16 @@ export async function detectedNewSensorsStatus(sensors: DetectedNewSensorsStatus
 
     try {
       await axios.post(
-        'https://9wv5o73w.ntfy.mrjackyliang.com',
-        JSON.stringify({
-          title: 'Detected new sensors status',
-          description: 'New sensors status detected. Please update the plugin as soon as possible.',
-          content: JSON.stringify(cleanedData, null, 2),
-        }),
+        'https://fs65kt4c5xf8.ntfy.mrjackyliang.com',
+        [
+          'Please update the plugin as soon as possible.',
+          JSON.stringify(cleanedData, null, 2),
+        ].join('\n\n'),
         {
           family: 4,
           headers: {
-            'Content-Type': 'application/json',
-            'User-Agent': `homebridge-adt-pulse/${env.npm_package_version ?? 'unknown'}`,
+            'User-Agent': 'homebridge-adt-pulse',
+            'X-Title': 'Detected new sensors status',
           },
         },
       );

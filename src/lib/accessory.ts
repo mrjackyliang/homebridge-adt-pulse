@@ -163,8 +163,14 @@ export class ADTPulseAccessory {
       case 'shock':
         // TODO nothing done here yet
         break;
+      case 'supervisory':
+        // TODO nothing done here yet
+        break;
       case 'temperature':
         this.#services.Primary = this.#accessory.getService(service.TemperatureSensor) ?? this.#accessory.addService(service.TemperatureSensor);
+        break;
+      case 'unknown':
+        // TODO nothing done here yet
         break;
       default:
         break;
@@ -225,9 +231,15 @@ export class ADTPulseAccessory {
       case 'shock':
         // TODO nothing done here yet
         break;
+      case 'supervisory':
+        // TODO nothing done here yet
+        break;
       case 'temperature':
         this.#services.Primary.getCharacteristic(this.#characteristic.CurrentTemperature)
           .onGet(() => this.getSensorStatus(accessory.context));
+        break;
+      case 'unknown':
+        // TODO nothing done here yet
         break;
       default:
         break;
@@ -259,7 +271,9 @@ export class ADTPulseAccessory {
       'motion',
       'panic',
       'shock',
+      'supervisory',
       'temperature',
+      'unknown',
     ];
 
     // If the sensor is not found or sensor type is invalid.
@@ -327,9 +341,15 @@ export class ADTPulseAccessory {
       case 'shock':
         // TODO nothing done here yet
         break;
+      case 'supervisory':
+        // TODO nothing done here yet
+        break;
       case 'temperature':
         return 75; // TODO Fake status, need more information from portal.
         // break; TODO Put this back later when I get the full information in.
+      case 'unknown':
+        // TODO nothing done here yet
+        break;
       default:
         break;
     }

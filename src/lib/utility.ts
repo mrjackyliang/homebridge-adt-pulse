@@ -183,8 +183,14 @@ export function condenseSensorType(sensorType: CondenseSensorTypeSensorType): Co
     case 'Shock Sensor':
       condensed = 'shock';
       break;
+    case 'System/Supervisory':
+      condensed = 'supervisory';
+      break;
     case 'Temperature Sensor':
       condensed = 'temperature';
+      break;
+    case 'Unknown Device Type':
+      condensed = 'unknown';
       break;
     default:
       break;

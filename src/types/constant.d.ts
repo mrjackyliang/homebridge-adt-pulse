@@ -42,7 +42,9 @@ export type PluginDeviceType =
   | 'panel'
   | 'panic'
   | 'shock'
-  | 'temperature';
+  | 'supervisory'
+  | 'temperature'
+  | 'unknown';
 
 /**
  * Plugin log level.
@@ -249,7 +251,9 @@ export type PortalSensorDeviceType =
   | 'Motion Sensor (Notable Events Only)'
   | 'Shock Sensor'
   | 'Silent Panic Button/Pendant'
+  | 'System/Supervisory'
   | 'Temperature Sensor'
+  | 'Unknown Device Type'
   | 'Water/Flood Sensor'
   | 'Window Sensor';
 
@@ -276,8 +280,12 @@ export type PortalSensorStatusText =
   'ALARM, Closed'
   | 'ALARM, Okay'
   | 'ALARM, Open'
+  | 'Bypassed, Closed'
   | 'Bypassed, Open'
+  | 'Bypassed, Tripped'
   | 'Closed'
+  | 'Low Battery, Motion'
+  | 'Low Battery, No Motion'
   | 'Motion'
   | 'No Motion'
   | 'Okay'
