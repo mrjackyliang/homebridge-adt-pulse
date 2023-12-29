@@ -51,3 +51,4 @@ indent_style = tab
 
 [{*.markdown,*.md}]
 ij_markdown_max_lines_around_block_elements = 0
+ij_markdown_max_lines_around_header = 0
