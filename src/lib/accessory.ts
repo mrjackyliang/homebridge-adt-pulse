@@ -621,6 +621,9 @@ export class ADTPulseAccessory {
     // If mode is "tamper".
     if (mode === 'tamper') {
       // TODO: Not enough statuses currently to determine whether system is tampered or not.
+      if (!panelStatuses.some((panelStatus) => panelStatus.includes('tamper'))) {
+        return this.#characteristic.StatusTampered.NOT_TAMPERED;
+      }
     }
 
     // If mode is "target".
