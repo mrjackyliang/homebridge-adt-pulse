@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 
-import { detectedNewDeviceContext } from '@/lib/detect.js';
+import { detectedUnknownPanelAction, detectedUnknownSensorAction } from '@/lib/detect.js';
 import { condensedSensorTypeItems } from '@/lib/items.js';
 import { condensePanelStates, generateHash } from '@/lib/utility.js';
 import type {
@@ -23,8 +23,11 @@ import type {
   ADTPulseAccessoryGetSensorStatusReturns,
   ADTPulseAccessoryInstance,
   ADTPulseAccessoryLog,
-  ADTPulseAccessoryNewInformationDispatcherContext,
+  ADTPulseAccessoryNewInformationDispatcherData,
+  ADTPulseAccessoryNewInformationDispatcherPanel,
   ADTPulseAccessoryNewInformationDispatcherReturns,
+  ADTPulseAccessoryNewInformationDispatcherSensor,
+  ADTPulseAccessoryNewInformationDispatcherType,
   ADTPulseAccessoryReportedHashes,
   ADTPulseAccessoryServices,
   ADTPulseAccessorySetPanelStatusArm,
@@ -302,11 +305,11 @@ export class ADTPulseAccessory {
       zone,
     } = context;
 
-    const sensor = this.#state.data.sensorsStatus.find((sensorStatus) => zone !== null && sensorStatus.name === name && sensorStatus.zone === zone);
+    const matchedSensorStatus = this.#state.data.sensorsStatus.find((sensorStatus) => zone !== null && sensorStatus.name === name && sensorStatus.zone === zone);
 
     // If sensor is not found or sensor type is not supported.
     if (
-      sensor === undefined
+      matchedSensorStatus === undefined
       || type === 'gateway'
       || type === 'panel'
       || !condensedSensorTypeItems.includes(type)
@@ -316,7 +319,7 @@ export class ADTPulseAccessory {
       throw new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.RESOURCE_DOES_NOT_EXIST);
     }
 
-    const { statuses } = sensor;
+    const { statuses } = matchedSensorStatus;
 
     // If sensor is currently "Offline" or "Unknown".
     if (statuses.includes('Offline') || statuses.includes('Unknown')) {
@@ -387,7 +390,7 @@ export class ADTPulseAccessory {
 
     this.#log.warn(`Attempted to get sensor status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but actions have not been implemented yet.`);
 
-    await this.newInformationDispatcher(context);
+    await this.newInformationDispatcher(type, matchedSensorStatus);
 
     throw new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.INVALID_VALUE_IN_REQUEST);
   }
@@ -460,7 +463,7 @@ export class ADTPulseAccessory {
 
     this.#log.warn(`Attempted to get panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but actions have not been implemented yet.`);
 
-    await this.newInformationDispatcher(context);
+    await this.newInformationDispatcher(type, this.#state.data.panelStatus);
 
     throw new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
   }
@@ -552,7 +555,8 @@ export class ADTPulseAccessory {
   /**
    * ADT Pulse Accessory - New information dispatcher.
    *
-   * @param {ADTPulseAccessoryNewInformationDispatcherContext} context - Context.
+   * @param {ADTPulseAccessoryNewInformationDispatcherType} type - Type.
+   * @param {ADTPulseAccessoryNewInformationDispatcherData} data - Data.
    *
    * @private
    *
@@ -560,12 +564,35 @@ export class ADTPulseAccessory {
    *
    * @since 1.0.0
    */
-  private async newInformationDispatcher(context: ADTPulseAccessoryNewInformationDispatcherContext): ADTPulseAccessoryNewInformationDispatcherReturns {
-    const dataHash = generateHash(JSON.stringify(context));
+  private async newInformationDispatcher(type: ADTPulseAccessoryNewInformationDispatcherType, data: ADTPulseAccessoryNewInformationDispatcherData): ADTPulseAccessoryNewInformationDispatcherReturns {
+    const dataHash = generateHash(`${type}: ${JSON.stringify(data)}`);
 
     // If the detector has not reported this event before.
     if (this.#reportedHashes.find((reportedHash) => dataHash === reportedHash) === undefined) {
-      const detectedNew = await detectedNewDeviceContext(context, this.#log, this.#debugMode);
+      let detectedNew = false;
+
+      // Determine what information needs to be checked.
+      switch (type) {
+        case 'panel':
+          detectedNew = await detectedUnknownPanelAction(data as ADTPulseAccessoryNewInformationDispatcherPanel, this.#log, this.#debugMode);
+          break;
+        case 'co':
+        case 'doorWindow':
+        case 'fire':
+        case 'flood':
+        case 'glass':
+        case 'keypad':
+        case 'motion':
+        case 'panic':
+        case 'shock':
+        case 'supervisory':
+        case 'temperature':
+        case 'unknown':
+          detectedNew = await detectedUnknownSensorAction(data as ADTPulseAccessoryNewInformationDispatcherSensor, this.#log, this.#debugMode);
+          break;
+        default:
+          break;
+      }
 
       // Save this hash so the detector does not detect the same thing multiple times.
       if (detectedNew) {

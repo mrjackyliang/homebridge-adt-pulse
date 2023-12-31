@@ -20,6 +20,7 @@ import type { ADTPulse } from '@/lib/api.js';
 import type { platformConfig } from '@/lib/schema.js';
 import type {
   PluginDeviceCategory,
+  PluginDevicePanelType,
   PluginDeviceSensorType,
   PluginLogLevel,
   PortalDeviceGatewayStatus,
@@ -83,6 +84,7 @@ import type {
   SensorInformationStatus,
   SensorsInformation,
   SensorsStatus,
+  SensorStatus,
   SensorStatusIcon,
   SensorStatusStatus,
   Sessions,
@@ -565,9 +567,15 @@ export type ADTPulseAccessoryGetPanelStatusReturns = Promise<CharacteristicValue
  *
  * @since 1.0.0
  */
-export type ADTPulseAccessoryNewInformationDispatcherContext = Device;
+export type ADTPulseAccessoryNewInformationDispatcherType = PluginDevicePanelType | PluginDeviceSensorType;
+
+export type ADTPulseAccessoryNewInformationDispatcherData = PanelStatus | SensorStatus;
 
 export type ADTPulseAccessoryNewInformationDispatcherReturns = Promise<void>;
+
+export type ADTPulseAccessoryNewInformationDispatcherPanel = PanelStatus;
+
+export type ADTPulseAccessoryNewInformationDispatcherSensor = SensorStatus;
 
 /**
  * ADT Pulse Accessory - Set panel status.
@@ -1092,19 +1100,6 @@ export type DebugLogMessage = string;
 export type DebugLogReturns = void;
 
 /**
- * Detected new device context.
- *
- * @since 1.0.0
- */
-export type DetectedNewDeviceContextContext = Device;
-
-export type DetectedNewDeviceContextLogger = Logger | null;
-
-export type DetectedNewDeviceContextDebugMode = boolean | null;
-
-export type DetectedNewDeviceContextReturns = Promise<boolean>;
-
-/**
  * Detected new do submit handlers.
  *
  * @since 1.0.0
@@ -1207,6 +1202,32 @@ export type DetectedNewSensorsStatusLogger = Logger | null;
 export type DetectedNewSensorsStatusDebugMode = boolean | null;
 
 export type DetectedNewSensorsStatusReturns = Promise<boolean>;
+
+/**
+ * Detected unknown panel action.
+ *
+ * @since 1.0.0
+ */
+export type DetectedUnknownPanelActionStatus = PanelStatus;
+
+export type DetectedUnknownPanelActionLogger = Logger | null;
+
+export type DetectedUnknownPanelActionDebugMode = boolean | null;
+
+export type DetectedUnknownPanelActionReturns = Promise<boolean>;
+
+/**
+ * Detected unknown sensor action.
+ *
+ * @since 1.0.0
+ */
+export type DetectedUnknownSensorActionStatus = SensorStatus;
+
+export type DetectedUnknownSensorActionLogger = Logger | null;
+
+export type DetectedUnknownSensorActionDebugMode = boolean | null;
+
+export type DetectedUnknownSensorActionReturns = Promise<boolean>;
 
 /**
  * Do submit handler relative url items.
