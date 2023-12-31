@@ -6,10 +6,6 @@ This plugin is completely re-written from the ground up (supports v27.0.0-140), 
 
 Please bear with me, as the beta version is being actively developed and tested. If you see any unusual or annoying bugs, please comment on this [GitHub issue](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/124).
 
-__HOOBS Users:__ Please do not use the configuration UI as that is currently outdated and being cached by HOOBS. I have no control of why that is happening ([GitHub link](https://github.com/hoobs-org/HOOBS/issues/1873)), so you must configure it manually using the sample configuration below.
-
-Additionally, I am seeing that the developers for HOOBS are stale based on the activity and complaints I see on [Reddit](https://www.reddit.com/r/HOOBS/). Support will be "best effort", and official status will be pulled in the meantime.
-
 [![NPM Package](https://img.shields.io/npm/v/homebridge-adt-pulse?style=flat-square&logo=npm&logoColor=%23ffffff&color=%23b25da6)](https://www.npmjs.com/package/homebridge-adt-pulse)
 [![NPM Downloads](https://img.shields.io/npm/dt/homebridge-adt-pulse?style=flat-square&logo=npm&logoColor=%23ffffff&color=%236688c3)](https://www.npmjs.com/package/homebridge-adt-pulse)
 [![GitHub License](https://img.shields.io/github/license/mrjackyliang/homebridge-adt-pulse?style=flat-square&logo=googledocs&logoColor=%23ffffff&color=%2348a56a)](https://github.com/mrjackyliang/homebridge-adt-pulse/blob/main/LICENSE)
@@ -21,9 +17,9 @@ This is a [verified Homebridge plugin](https://github.com/homebridge/homebridge/
 The API relies on the ADT Pulse Web Portal (powered by Icontrol One, owned by ICN Acquisition LLC, an indirect subsidiary of [Alarm.com](https://alarm.com))
 
 To use this plugin, here are three simple steps you need to follow:
-1. Run `npm install homebridge-adt-pulse`
-2. Configure this plugin using the [configuration example](#configuration)
-3. Restart Homebridge and see magic happen 😁
+1. Run `npm install homebridge-adt-pulse`.
+2. Configure this plugin using this [sample](#configuration) for guidance.
+3. Restart Homebridge and see magic happen!
 
 Another option is to search for `adt-pulse` using Onzu's [Homebridge Config UI](https://github.com/oznu/homebridge-config-ui-x). Afterward, you can proceed to configure this plugin through the configuration UI available in the "Plugins" tab.
 
@@ -160,12 +156,29 @@ If you are using automation, __you acknowledge that this will happen__ and accep
 ## Arm Night Support
 As for ADT Pulse systems, __Arm Night__ is only available for use through the panel itself. Although it is not visible on the Web Portal or the mobile app, you can still place your system in __Arm Night__ mode with this plugin.
 
+__Note:__ A workaround has been implemented to address portal issues preventing the completion of the "Arm Night" action. If you encounter warnings related to this, you can safely disregard them.
+
 ## Debug Mode
 Previously, there was a setting to allow users to switch the plugin to debug mode. Over time, it became apparent that this setting made resolving issues excessively challenging.
 
 Consumers would enable debug mode, but forget to also enable Homebridge debug mode, causing contributors to not be able to effectively resolve bug reports.
 
 To improve this, debug mode is now activated __ONLY when debug mode is enabled on Homebridge__ itself. This approach promotes isolation (logs can be separated for each bridge) and helps enhance the troubleshooting experience in case any issues arise.
+
+## Support for HOOBS
+Please note that HOOBS may use an outdated configuration UI. This issue that was reported by me, remains unresolved by the HOOBS team. For additional details, refer to this [GitHub issue](https://github.com/hoobs-org/HOOBS/issues/1873).
+
+In the interim, HOOBS users should manually configure the plugin using the [sample configuration](#configuration) provided above. For those technically inclined, consider replacing the HOOBS software with [Homebridge](https://github.com/homebridge/homebridge/wiki).
+
+__Note:__ Based on user complaints on [Reddit](https://www.reddit.com/r/HOOBS/), it appears that HOOBS developers have stopped working on the product. Support will be offered on a "best effort" basis, and the official status will be pulled.
+
+## Accidental Removal of Stale Accessories
+While not mandatory, it's highly advisable to take precautions in case of unexpected events, such as a plugin failing to initialize that leads to Homebridge automatically removing all outdated accessories, potentially disrupting automations and customizations.
+
+To safeguard against such scenarios, consider the following options:
+- Enable the **Keep Accessories Of Disabled/Uninstalled Platform Plugins** setting in Homebridge.
+  - Or add the `-K` or `--keep-orphans` option when running via commands.
+- Create a backup using the [Home+](https://hochgatterer.me/home+/) app by Matthias Hochgatterer after making changes.
 
 ## Documentation, Logging, and Detection
 This function comes with a built-in feature to notify me if the plugin detects anomalies in the states of sensors and panel statuses. In the event of such occurrences, especially when these statuses are undocumented, I will receive notifications.
@@ -180,13 +193,13 @@ Here is an example of the information I see when the plugin detects unknown stat
 ```json
 {
   "communication": {
-    "primaryConnectionType": "Broadband",
     "broadbandConnectionStatus": "Unavailable",
     "cellularConnectionStatus": "N/A",
-    "cellularSignalStrength": "N/A"
+    "cellularSignalStrength": "N/A",
+    "primaryConnectionType": "Broadband"
   },
   "manufacturer": "ADT Pulse Gateway",
-  "model": "Some Model",
+  "model": "XYZ",
   "network": {
     "broadband": {
       "ip": "*** REDACTED FOR PRIVACY ***",
@@ -208,8 +221,8 @@ Here is an example of the information I see when the plugin detects unknown stat
     "next": "Today 12:00 PM"
   },
   "versions": {
-    "firmware": "Some Firmware Version",
-    "hardware": "Some Hardware Version"
+    "firmware": "1.0.0",
+    "hardware": "1.0.0"
   }
 }
 ```

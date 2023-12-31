@@ -952,6 +952,7 @@ export function removePersonalIdentifiableInformation(data: RemovePersonalIdenti
     'mac',
     'masterCode',
     'sat',
+    'serial',
     'serialNumber',
     'wanIp',
   ];

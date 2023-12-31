@@ -154,6 +154,8 @@ export type DeviceId = PluginDeviceId;
 
 export type DeviceName = string;
 
+export type DeviceOriginalName = string;
+
 export type DeviceType = PluginDeviceGatewayType | PluginDevicePanelType | PluginDeviceSensorType;
 
 export type DeviceZone = number | null;
@@ -177,6 +179,7 @@ export type DeviceUuid = UUID;
 export type Device = {
   id: DeviceId;
   name: DeviceName;
+  originalName: DeviceOriginalName;
   type: DeviceType;
   zone: DeviceZone;
   category: DeviceCategory;

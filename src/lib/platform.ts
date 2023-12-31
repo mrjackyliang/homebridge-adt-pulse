@@ -43,6 +43,7 @@ import type {
   ADTPulsePlatformPollAccessoriesReturns,
   ADTPulsePlatformPrintSystemInformationReturns,
   ADTPulsePlatformRemoveAccessoryAccessory,
+  ADTPulsePlatformRemoveAccessoryReason,
   ADTPulsePlatformRemoveAccessoryReturns,
   ADTPulsePlatformService,
   ADTPulsePlatformState,
@@ -295,7 +296,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
 
         // Remove all related accessories from Homebridge.
         for (let i = this.accessories.length - 1; i >= 0; i -= 1) {
-          this.removeAccessory(this.accessories[i]);
+          this.removeAccessory(this.accessories[i], 'plugin is being reset');
         }
 
         this.#log.warn('Plugin finished removing all related accessories from Homebridge.');
@@ -434,8 +435,6 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     // Update the display name.
     value.displayName = device.name;
 
-    // TODO Have a feeling this is what is causing the sensors to be always unavailable.
-
     // Create the handler for the existing accessory if it does not exist.
     if (this.#handlers[device.id] === undefined) {
       // All arguments are passed by reference.
@@ -463,13 +462,17 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
    * ADT Pulse Platform - Remove accessory.
    *
    * @param {ADTPulsePlatformRemoveAccessoryAccessory} accessory - Accessory.
+   * @param {ADTPulsePlatformRemoveAccessoryReason}    reason    - Reason.
    *
    * @returns {ADTPulsePlatformRemoveAccessoryReturns}
    *
    * @since 1.0.0
    */
-  removeAccessory(accessory: ADTPulsePlatformRemoveAccessoryAccessory): ADTPulsePlatformRemoveAccessoryReturns {
+  removeAccessory(accessory: ADTPulsePlatformRemoveAccessoryAccessory, reason: ADTPulsePlatformRemoveAccessoryReason): ADTPulsePlatformRemoveAccessoryReturns {
     this.#log.info(`Removing ${chalk.underline(accessory.context.name)} (id: ${accessory.context.id}, uuid: ${accessory.context.uuid}) accessory ...`);
+
+    // Specify the reason why this accessory is removed.
+    this.#log.debug(`${chalk.underline(accessory.context.name)} (id: ${accessory.context.id}, uuid: ${accessory.context.uuid}) is removed because ${reason}.`);
 
     // Keep only the accessories in the cache that is not the accessory being removed.
     this.accessories = this.accessories.filter((existingAccessory) => existingAccessory.context.uuid !== accessory.context.uuid);
@@ -702,13 +705,15 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
 
           // If new sync code is different from the cached sync code.
           if (syncCheck.info.syncCode !== this.#state.data.syncCode) {
-            this.#log.debug(`Panel and sensor data is outdated (old: ${this.#state.data.syncCode}, new: ${syncCheck.info.syncCode}). Preparing to retrieve the latest panel and sensor data ...`);
+            this.#log.debug(`Panel and sensor data is outdated (cached: ${this.#state.data.syncCode}, fetched: ${syncCheck.info.syncCode}). Preparing to retrieve the latest panel and sensor data ...`);
 
             // Cache the sync code.
             this.#state.data.syncCode = syncCheck.info.syncCode;
 
             // Request new data from the portal. Should be awaited.
             await this.fetchUpdatedInformation();
+          } else {
+            this.#log.debug(`Panel and sensor data is up to date (cached: ${this.#state.data.syncCode}, fetched: ${syncCheck.info.syncCode}).`);
           }
         }
 
@@ -843,6 +848,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
       devices.push({
         id,
         name: 'ADT Pulse Gateway',
+        originalName: 'ADT Pulse Gateway',
         type: 'gateway',
         zone: null,
         category: 'OTHER',
@@ -863,6 +869,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
       devices.push({
         id,
         name: 'Security Panel',
+        originalName: 'Security Panel',
         type: 'panel',
         zone: null,
         category: 'SECURITY_SYSTEM',
@@ -878,8 +885,6 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
 
     // Add sensors as an accessory.
     if (this.#config !== null && sensorsInfo !== null) {
-      // TODO Automatically remove sensors not defined in config.
-
       for (let i = 0; i < this.#config.sensors.length; i += 1) {
         const {
           adtName,
@@ -902,7 +907,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
 
         // If sensor was not found, it could be that the config was wrong.
         if (sensor === undefined) {
-          this.#log.warn(`Attempted to add or update ${adtName} (zone: ${adtZone}) accessory that does not exist on the portal.`);
+          this.#log.warn(`Attempted to add or update ${chalk.underline(name)} (adtName: ${adtName}, adtType: ${adtType}, adtZone: ${adtZone}) accessory that does not exist on the portal.`);
 
           continue;
         }
@@ -912,6 +917,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         devices.push({
           id,
           name: name ?? adtName,
+          originalName: adtName,
           type: adtType,
           zone: adtZone,
           category: 'SENSOR',
@@ -923,6 +929,25 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
           software: env.npm_package_version ?? 'unknown',
           uuid: this.#api.hap.uuid.generate(id),
         });
+      }
+    }
+
+    // Check if accessories were removed from config.
+    if (this.#config !== null) {
+      const { sensors } = this.#config;
+
+      for (let i = 0; i < this.accessories.length; i += 1) {
+        const { originalName, type, zone } = this.accessories[i].context;
+
+        // If current accessory is a "gateway" or "panel", skip check.
+        if (type === 'gateway' || type === 'panel') {
+          continue;
+        }
+
+        // If current accessory is not listed in the "sensors" config, remove it.
+        if (!sensors.some((sensor) => originalName === sensor.adtName && zone !== null && zone === sensor.adtZone)) {
+          this.removeAccessory(this.accessories[i], 'accessory is missing in config');
+        }
       }
     }
 

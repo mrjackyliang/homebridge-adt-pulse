@@ -1,15 +1,15 @@
 {
   "name": "homebridge-adt-pulse",
   "displayName": "Homebridge ADT Pulse",
-  "version": "3.0.0-beta.15",
+  "version": "3.0.0-beta.16",
   "description": "Homebridge security system platform for ADT Pulse",
   "main": "./build/src/index.js",
   "exports": "./build/src/index.js",
   "type": "module",
   "private": false,
   "scripts": {
-    "start": "homebridge --plugin-path $(pwd)",
-    "debug": "homebridge --debug --plugin-path $(pwd)",
+    "start": "homebridge --keep-orphans --plugin-path $(pwd)",
+    "debug": "homebridge --debug --keep-orphans --plugin-path $(pwd)",
     "build": "npm-run-all --sequential build:*",
     "build:cleanup": "rimraf build",
     "build:tsc": "tsc --project tsconfig.json",
@@ -43,8 +43,12 @@
     "security",
     "security-system"
   ],
-  "author": "Jacky Liang",
-  "license": "ISC",
+  "author": {
+    "name": "Jacky Liang",
+    "email": "hello@mrjackyliang.com",
+    "url": "https://www.mrjackyliang.com"
+  },
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/mrjackyliang/homebridge-adt-pulse/issues"
   },
@@ -54,8 +58,8 @@
   ],
   "homepage": "https://github.com/mrjackyliang/homebridge-adt-pulse",
   "engines": {
-    "homebridge": "1.7.0",
-    "node": "18"
+    "homebridge": "~1.7.0",
+    "node": ">=18"
   },
   "dependencies": {
     "axios": "1.6.3",

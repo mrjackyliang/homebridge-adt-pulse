@@ -825,10 +825,10 @@ export class ADTPulse {
       );
       const gatewayInformation = {
         communication: {
-          primaryConnectionType: _.get(fetchedTableCells, ['Primary Connection Type:', 0], null),
           broadbandConnectionStatus: _.get(fetchedTableCells, ['Broadband Connection Status:', 0], null),
           cellularConnectionStatus: _.get(fetchedTableCells, ['Cellular Connection Status:', 0], null),
           cellularSignalStrength: _.get(fetchedTableCells, ['Cellular Signal Strength:', 0], null),
+          primaryConnectionType: _.get(fetchedTableCells, ['Primary Connection Type:', 0], null),
         },
         manufacturer: _.get(fetchedTableCells, ['Manufacturer:', 0], null),
         model: _.get(fetchedTableCells, ['Model:', 0], null),

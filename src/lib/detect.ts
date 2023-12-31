@@ -59,10 +59,10 @@ import type {
   DetectedNewSensorsStatusLogger,
   DetectedNewSensorsStatusReturns,
   DetectedNewSensorsStatusSensors,
+  DetectedUnknownAccessoryActionData,
   DetectedUnknownAccessoryActionDebugMode,
   DetectedUnknownAccessoryActionLogger,
   DetectedUnknownAccessoryActionReturns,
-  DetectedUnknownAccessoryActionStatus,
 } from '@/types/index.d.ts';
 
 /**
@@ -800,7 +800,7 @@ export async function detectedNewSensorsStatus(sensors: DetectedNewSensorsStatus
 /**
  * Detected unknown accessory action.
  *
- * @param {DetectedUnknownAccessoryActionStatus}    status    - Status.
+ * @param {DetectedUnknownAccessoryActionData}      data      - Data.
  * @param {DetectedUnknownAccessoryActionLogger}    logger    - Logger.
  * @param {DetectedUnknownAccessoryActionDebugMode} debugMode - Debug mode.
  *
@@ -808,8 +808,8 @@ export async function detectedNewSensorsStatus(sensors: DetectedNewSensorsStatus
  *
  * @since 1.0.0
  */
-export async function detectedUnknownAccessoryAction(status: DetectedUnknownAccessoryActionStatus, logger: DetectedUnknownAccessoryActionLogger, debugMode: DetectedUnknownAccessoryActionDebugMode): DetectedUnknownAccessoryActionReturns {
-  const cleanedData = removePersonalIdentifiableInformation(status);
+export async function detectedUnknownAccessoryAction(data: DetectedUnknownAccessoryActionData, logger: DetectedUnknownAccessoryActionLogger, debugMode: DetectedUnknownAccessoryActionDebugMode): DetectedUnknownAccessoryActionReturns {
+  const cleanedData = removePersonalIdentifiableInformation(data);
 
   // If outdated, it means plugin may already have support.
   try {

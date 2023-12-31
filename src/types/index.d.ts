@@ -5,6 +5,7 @@ import type {
   CharacteristicValue,
   DynamicPlatformPlugin,
   Logger,
+  Nullable,
   PlatformAccessory,
   PlatformConfig,
   Service,
@@ -556,7 +557,7 @@ export type ADTPulseAccessoryDebugMode = boolean | null;
  *
  * @since 1.0.0
  */
-export type ADTPulseAccessoryGetPanelStatusMode = 'current' | 'target';
+export type ADTPulseAccessoryGetPanelStatusMode = 'alarmType' | 'current' | 'fault' | 'tamper' | 'target';
 
 export type ADTPulseAccessoryGetPanelStatusContext = Device;
 
@@ -569,7 +570,9 @@ export type ADTPulseAccessoryGetPanelStatusReturns = Promise<CharacteristicValue
  */
 export type ADTPulseAccessoryNewInformationDispatcherType = PluginDevicePanelType | PluginDeviceSensorType;
 
-export type ADTPulseAccessoryNewInformationDispatcherData = PanelStatus | SensorStatus;
+export type ADTPulseAccessoryNewInformationDispatcherStatus = PanelStatus | SensorStatus;
+
+export type ADTPulseAccessoryNewInformationDispatcherContext = Device;
 
 export type ADTPulseAccessoryNewInformationDispatcherReturns = Promise<void>;
 
@@ -589,9 +592,11 @@ export type ADTPulseAccessorySetPanelStatusReturns = Promise<void>;
  *
  * @since 1.0.0
  */
+export type ADTPulseAccessoryGetSensorStatusMode = 'active' | 'fault' | 'lowBattery' | 'status' | 'tamper';
+
 export type ADTPulseAccessoryGetSensorStatusContext = Device;
 
-export type ADTPulseAccessoryGetSensorStatusReturns = Promise<CharacteristicValue>;
+export type ADTPulseAccessoryGetSensorStatusReturns = Promise<Nullable<CharacteristicValue>>;
 
 /**
  * ADT Pulse Accessory - Instance.
@@ -790,6 +795,8 @@ export type ADTPulsePlatformPrintSystemInformationReturns = void;
  * @since 1.0.0
  */
 export type ADTPulsePlatformRemoveAccessoryAccessory = PlatformAccessory<Device>;
+
+export type ADTPulsePlatformRemoveAccessoryReason = string;
 
 export type ADTPulsePlatformRemoveAccessoryReturns = void;
 
@@ -1204,13 +1211,13 @@ export type DetectedNewSensorsStatusReturns = Promise<boolean>;
  *
  * @since 1.0.0
  */
-export type DetectedUnknownAccessoryActionStatusType = PluginDevicePanelType | PluginDeviceSensorType;
+export type DetectedUnknownAccessoryActionDataStatus = PanelStatus | SensorStatus;
 
-export type DetectedUnknownAccessoryActionStatusData = PanelStatus | SensorStatus;
+export type DetectedUnknownAccessoryActionDataContext = Device;
 
-export type DetectedUnknownAccessoryActionStatus = {
-  type: DetectedUnknownAccessoryActionStatusType;
-  data: DetectedUnknownAccessoryActionStatusData;
+export type DetectedUnknownAccessoryActionData = {
+  status: DetectedUnknownAccessoryActionDataStatus;
+  context: DetectedUnknownAccessoryActionDataContext;
 };
 
 export type DetectedUnknownAccessoryActionLogger = Logger | null;
