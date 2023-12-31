@@ -20,11 +20,11 @@ import type { ADTPulse } from '@/lib/api.js';
 import type { platformConfig } from '@/lib/schema.js';
 import type {
   PluginDeviceCategory,
-  PluginDeviceId,
-  PluginDeviceType,
+  PluginDeviceSensorType,
   PluginLogLevel,
-  PortalDeviceStatus,
-  PortalGatewayStatus,
+  PortalDeviceGatewayStatus,
+  PortalDevicePanelStatus,
+  PortalDeviceSensorStatus,
   PortalPanelArmButtonHref,
   PortalPanelArmButtonLoadingText,
   PortalPanelArmButtonRelativeUrl,
@@ -35,10 +35,9 @@ import type {
   PortalPanelArmValue,
   PortalPanelForceArmButtonHref,
   PortalPanelForceArmButtonRelativeUrl,
-  PortalPanelForceArmResponse,
+  PortalPanelNote,
   PortalPanelState,
   PortalPanelStatus,
-  PortalPanelStatusSensorsOpen,
   PortalSensorDeviceType,
   PortalSensorStatusIcon,
   PortalSensorStatusText,
@@ -78,8 +77,7 @@ import type {
   OrbSecurityButtons,
   PanelInformation,
   PanelStatus,
-  PanelStatusState,
-  PanelStatusStatus,
+  PanelStatusStates,
   PortalVersionContent,
   SensorInformationDeviceType,
   SensorInformationStatus,
@@ -108,7 +106,9 @@ export type ADTPulseArmDisarmHandlerSat = UUID;
 
 export type ADTPulseArmDisarmHandlerReturnsInfoForceArmRequired = boolean;
 
-export type ADTPulseArmDisarmHandlerReturnsInfoReadyButtons = (OrbSecurityButtonBase & OrbSecurityButtonReady)[];
+export type ADTPulseArmDisarmHandlerReturnsInfoReadyButton = OrbSecurityButtonBase & OrbSecurityButtonReady;
+
+export type ADTPulseArmDisarmHandlerReturnsInfoReadyButtons = ADTPulseArmDisarmHandlerReturnsInfoReadyButton[];
 
 export type ADTPulseArmDisarmHandlerReturnsInfo = {
   forceArmRequired: ADTPulseArmDisarmHandlerReturnsInfoForceArmRequired;
@@ -176,8 +176,6 @@ export type ADTPulseForceArmHandlerSessions = Sessions<{
   jsdomArmDisarm?: JSDOM;
 }>;
 
-export type ADTPulseForceArmHandlerSessionsAxiosForceArm = PortalPanelForceArmResponse;
-
 export type ADTPulseForceArmHandlerTrackerComplete = boolean;
 
 export type ADTPulseForceArmHandlerTrackerErrorMessage = string | null;
@@ -204,7 +202,7 @@ export type ADTPulseGetGatewayInformationSessions = Sessions<{
   jsdomSystemGateway?: JSDOM;
 }>;
 
-export type ADTPulseGetGatewayInformationReturnsStatus = PortalGatewayStatus | null;
+export type ADTPulseGetGatewayInformationReturnsStatus = PortalDeviceGatewayStatus | null;
 
 /**
  * ADT Pulse - Get panel information.
@@ -220,7 +218,7 @@ export type ADTPulseGetPanelInformationSessions = Sessions<{
   jsdomSystemDeviceId1?: JSDOM;
 }>;
 
-export type ADTPulseGetPanelInformationReturnsStatus = PortalDeviceStatus | null;
+export type ADTPulseGetPanelInformationReturnsStatus = PortalDevicePanelStatus | null;
 
 /**
  * ADT Pulse - Get panel status.
@@ -311,11 +309,11 @@ export type ADTPulseInternalReportedHashes = ADTPulseInternalReportedHash[];
 
 export type ADTPulseInternalTestModeEnabled = boolean;
 
-export type ADTPulseInternalTestModeIsDisarmChecked = boolean;
+export type ADTPulseInternalTestModeIsSystemDisarmedBeforeTest = boolean;
 
 export type ADTPulseInternalTestMode = {
   enabled: ADTPulseInternalTestModeEnabled;
-  isDisarmChecked: ADTPulseInternalTestModeIsDisarmChecked;
+  isSystemDisarmedBeforeTest: ADTPulseInternalTestModeIsSystemDisarmedBeforeTest;
 };
 
 export type ADTPulseInternal = {
@@ -479,6 +477,8 @@ export type ADTPulseSession = {
  *
  * @since 1.0.0
  */
+export type ADTPulseSetPanelStatusArmFrom = PortalPanelArmValue;
+
 export type ADTPulseSetPanelStatusArmTo = PortalPanelArmValue;
 
 export type ADTPulseSetPanelStatusReturnsInfoForceArmRequired = boolean;
@@ -538,6 +538,17 @@ export type ADTPulseAccessoryConstructorApi = API;
 
 export type ADTPulseAccessoryConstructorLog = Logger;
 
+export type ADTPulseAccessoryConstructorDebugMode = boolean | null;
+
+/**
+ * ADT Pulse Accessory - Debug mode.
+ *
+ * @private
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseAccessoryDebugMode = boolean | null;
+
 /**
  * ADT Pulse Accessory - Get panel status.
  *
@@ -547,7 +558,16 @@ export type ADTPulseAccessoryGetPanelStatusMode = 'current' | 'target';
 
 export type ADTPulseAccessoryGetPanelStatusContext = Device;
 
-export type ADTPulseAccessoryGetPanelStatusReturns = CharacteristicValue;
+export type ADTPulseAccessoryGetPanelStatusReturns = Promise<CharacteristicValue>;
+
+/**
+ * ADT Pulse Accessory - New information dispatcher.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseAccessoryNewInformationDispatcherContext = Device;
+
+export type ADTPulseAccessoryNewInformationDispatcherReturns = Promise<void>;
 
 /**
  * ADT Pulse Accessory - Set panel status.
@@ -567,7 +587,7 @@ export type ADTPulseAccessorySetPanelStatusReturns = Promise<void>;
  */
 export type ADTPulseAccessoryGetSensorStatusContext = Device;
 
-export type ADTPulseAccessoryGetSensorStatusReturns = CharacteristicValue;
+export type ADTPulseAccessoryGetSensorStatusReturns = Promise<CharacteristicValue>;
 
 /**
  * ADT Pulse Accessory - Instance.
@@ -584,6 +604,17 @@ export type ADTPulseAccessoryInstance = ADTPulse;
  * @since 1.0.0
  */
 export type ADTPulseAccessoryLog = Logger;
+
+/**
+ * ADT Pulse Accessory - Reported hashes.
+ *
+ * @private
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseAccessoryReportedHash = string;
+
+export type ADTPulseAccessoryReportedHashes = ADTPulseAccessoryReportedHash[];
 
 /**
  * ADT Pulse Accessory - Services.
@@ -1015,15 +1046,35 @@ export type ClearWhitespaceData = string;
 export type ClearWhitespaceReturns = string;
 
 /**
+ * Condense panel states.
+ *
+ * @since 1.0.0
+ */
+export type CondensePanelStatesPanelStates = PanelStatusStates;
+
+export type CondensePanelStatesReturns = PortalPanelArmValue | undefined;
+
+export type CondensePanelStatesCondensed = PortalPanelArmValue | undefined;
+
+/**
+ * Condensed sensor type items.
+ *
+ * @since 1.0.0
+ */
+export type CondensedSensorTypeItem = PluginDeviceSensorType;
+
+export type CondensedSensorTypeItems = CondensedSensorTypeItem[];
+
+/**
  * Condense sensor type.
  *
  * @since 1.0.0
  */
 export type CondenseSensorTypeSensorType = PortalSensorDeviceType;
 
-export type CondenseSensorTypeReturns = Exclude<PluginDeviceType, 'gateway' | 'panel'> | undefined;
+export type CondenseSensorTypeReturns = PluginDeviceSensorType | undefined;
 
-export type CondenseSensorTypeCondensed = Exclude<PluginDeviceType, 'gateway' | 'panel'> | undefined;
+export type CondenseSensorTypeCondensed = PluginDeviceSensorType | undefined;
 
 /**
  * Debug log.
@@ -1041,7 +1092,20 @@ export type DebugLogMessage = string;
 export type DebugLogReturns = void;
 
 /**
- * Detected do submit handlers.
+ * Detected new device context.
+ *
+ * @since 1.0.0
+ */
+export type DetectedNewDeviceContextContext = Device;
+
+export type DetectedNewDeviceContextLogger = Logger | null;
+
+export type DetectedNewDeviceContextDebugMode = boolean | null;
+
+export type DetectedNewDeviceContextReturns = Promise<boolean>;
+
+/**
+ * Detected new do submit handlers.
  *
  * @since 1.0.0
  */
@@ -1052,16 +1116,6 @@ export type DetectedNewDoSubmitHandlersLogger = Logger | null;
 export type DetectedNewDoSubmitHandlersDebugMode = boolean | null;
 
 export type DetectedNewDoSubmitHandlersReturns = Promise<boolean>;
-
-export type DetectedNewDoSubmitHandlersKnownRelativeUrls = PortalPanelForceArmButtonRelativeUrl[];
-
-export type DetectedNewDoSubmitHandlersKnownRelativeUrlsVersion = PortalPanelForceArmButtonRelativeUrl;
-
-export type DetectedNewDoSubmitHandlersKnownUrlParamsArm = Exclude<PortalPanelArmValue, 'off'>[];
-
-export type DetectedNewDoSubmitHandlersKnownUrlParamsArmState = PortalPanelArmStateForce[];
-
-export type DetectedNewDoSubmitHandlersKnownUrlParamsHref = PortalPanelForceArmButtonHref[];
 
 /**
  * Detected new gateway information.
@@ -1076,10 +1130,8 @@ export type DetectedNewGatewayInformationDebugMode = boolean | null;
 
 export type DetectedNewGatewayInformationReturns = Promise<boolean>;
 
-export type DetectedNewGatewayInformationKnownStatuses = PortalGatewayStatus[];
-
 /**
- * Detected orb security buttons.
+ * Detected new orb security buttons.
  *
  * @since 1.0.0
  */
@@ -1090,18 +1142,6 @@ export type DetectedNewOrbSecurityButtonsLogger = Logger | null;
 export type DetectedNewOrbSecurityButtonsDebugMode = boolean | null;
 
 export type DetectedNewOrbSecurityButtonsReturns = Promise<boolean>;
-
-export type DetectedNewOrbSecurityButtonsKnownButtonText = PortalPanelArmButtonText[];
-
-export type DetectedNewOrbSecurityButtonsKnownLoadingText = PortalPanelArmButtonLoadingText[];
-
-export type DetectedNewOrbSecurityButtonsKnownRelativeUrl = PortalPanelArmButtonRelativeUrl[];
-
-export type DetectedNewOrbSecurityButtonsKnownUrlParamsArm = PortalPanelArmValue[];
-
-export type DetectedNewOrbSecurityButtonsKnownUrlParamsArmState = (PortalPanelArmStateClean | PortalPanelArmStateDirty)[];
-
-export type DetectedNewOrbSecurityButtonsKnownUrlParamsHref = PortalPanelArmButtonHref[];
 
 /**
  * Detected new panel information.
@@ -1116,8 +1156,6 @@ export type DetectedNewPanelInformationDebugMode = boolean | null;
 
 export type DetectedNewPanelInformationReturns = Promise<boolean>;
 
-export type DetectedNewPanelInformationKnownStatuses = PortalDeviceStatus[];
-
 /**
  * Detected new panel status.
  *
@@ -1130,12 +1168,6 @@ export type DetectedNewPanelStatusLogger = Logger | null;
 export type DetectedNewPanelStatusDebugMode = boolean | null;
 
 export type DetectedNewPanelStatusReturns = Promise<boolean>;
-
-export type DetectedNewPanelStatusKnownStates = PortalPanelState[];
-
-export type DetectedNewPanelStatusKnownStatuses = PortalPanelStatus[];
-
-export type DetectedNewPanelStatusKnownStatusesSensorsOpen = PortalPanelStatusSensorsOpen;
 
 /**
  * Detected new portal version.
@@ -1150,10 +1182,8 @@ export type DetectedNewPortalVersionDebugMode = boolean | null;
 
 export type DetectedNewPortalVersionReturns = Promise<boolean>;
 
-export type DetectedNewPortalVersionKnownVersions = PortalVersion[];
-
 /**
- * Detected new sensors' information.
+ * Detected new sensors information.
  *
  * @since 1.0.0
  */
@@ -1165,12 +1195,8 @@ export type DetectedNewSensorsInformationDebugMode = boolean | null;
 
 export type DetectedNewSensorsInformationReturns = Promise<boolean>;
 
-export type DetectedNewSensorsInformationKnownDeviceTypes = PortalSensorDeviceType[];
-
-export type DetectedNewSensorsInformationKnownStatuses = PortalDeviceStatus[];
-
 /**
- * Detected new sensors' status.
+ * Detected new sensors status.
  *
  * @since 1.0.0
  */
@@ -1182,9 +1208,41 @@ export type DetectedNewSensorsStatusDebugMode = boolean | null;
 
 export type DetectedNewSensorsStatusReturns = Promise<boolean>;
 
-export type DetectedNewSensorsStatusKnownIcons = PortalSensorStatusIcon[];
+/**
+ * Do submit handler relative url items.
+ *
+ * @since 1.0.0
+ */
+export type DoSubmitHandlerRelativeUrlItem = PortalPanelForceArmButtonRelativeUrl;
 
-export type DetectedNewSensorsStatusKnownStatuses = PortalSensorStatusText[];
+export type DoSubmitHandlerRelativeUrlItems = DoSubmitHandlerRelativeUrlItem[];
+
+/**
+ * Do submit handler url params arm items.
+ *
+ * @since 1.0.0
+ */
+export type DoSubmitHandlerUrlParamsArmItem = Exclude<PortalPanelArmValue, 'off'>;
+
+export type DoSubmitHandlerUrlParamsArmItems = DoSubmitHandlerUrlParamsArmItem[];
+
+/**
+ * Do submit handler url params arm state items.
+ *
+ * @since 1.0.0
+ */
+export type DoSubmitHandlerUrlParamsArmStateItem = PortalPanelArmStateForce;
+
+export type DoSubmitHandlerUrlParamsArmStateItems = DoSubmitHandlerUrlParamsArmStateItem[];
+
+/**
+ * Do submit handler url params href items.
+ *
+ * @since 1.0.0
+ */
+export type DoSubmitHandlerUrlParamsHrefItem = PortalPanelForceArmButtonHref;
+
+export type DoSubmitHandlerUrlParamsHrefItems = DoSubmitHandlerUrlParamsHrefItem[];
 
 /**
  * Fetch error message.
@@ -1211,7 +1269,9 @@ export type FetchMissingSatCodeReturns = UUID | null;
  */
 export type FetchTableCellsNodeElements = NodeListOf<HTMLTableCellElement>;
 
-export type FetchTableCellsMatchList = string[];
+export type FetchTableCellsMatchItem = string;
+
+export type FetchTableCellsMatchItems = FetchTableCellsMatchItem[];
 
 export type FetchTableCellsIncrementFrom = number;
 
@@ -1220,8 +1280,6 @@ export type FetchTableCellsIncrementTo = number;
 export type FetchTableCellsReturns = {
   [key: string]: string[];
 };
-
-export type FetchTableCellsCleaner = (text: string) => string;
 
 export type FetchTableCellsMatched = {
   [key: string]: string[];
@@ -1259,13 +1317,13 @@ export type FindNullKeysReturns = string[];
 export type FindNullKeysFound = string[];
 
 /**
- * Generate device id.
+ * Gateway information status items.
  *
  * @since 1.0.0
  */
-export type GenerateDeviceIdId = number;
+export type GatewayInformationStatusItem = PortalDeviceGatewayStatus;
 
-export type GenerateDeviceIdReturns = PluginDeviceId;
+export type GatewayInformationStatusItems = GatewayInformationStatusItem[];
 
 /**
  * Generate dynatrace pc header value.
@@ -1340,6 +1398,98 @@ export type IsPortalSyncCodeSyncCode = string;
 export type IsPortalSyncCodeVerifiedSyncCode = PortalSyncCode;
 
 /**
+ * Orb security button button text items.
+ *
+ * @since 1.0.0
+ */
+export type OrbSecurityButtonButtonTextItem = PortalPanelArmButtonText;
+
+export type OrbSecurityButtonButtonTextItems = OrbSecurityButtonButtonTextItem[];
+
+/**
+ * Orb security button loading text items.
+ *
+ * @since 1.0.0
+ */
+export type OrbSecurityButtonLoadingTextItem = PortalPanelArmButtonLoadingText;
+
+export type OrbSecurityButtonLoadingTextItems = OrbSecurityButtonLoadingTextItem[];
+
+/**
+ * Orb security button relative url items.
+ *
+ * @since 1.0.0
+ */
+export type OrbSecurityButtonRelativeUrlItem = PortalPanelArmButtonRelativeUrl;
+
+export type OrbSecurityButtonRelativeUrlItems = OrbSecurityButtonRelativeUrlItem[];
+
+/**
+ * Orb security button url params arm items.
+ *
+ * @since 1.0.0
+ */
+export type OrbSecurityButtonUrlParamsArmItem = PortalPanelArmValue;
+
+export type OrbSecurityButtonUrlParamsArmItems = OrbSecurityButtonUrlParamsArmItem[];
+
+/**
+ * Orb security button url params arm state items.
+ *
+ * @since 1.0.0
+ */
+export type OrbSecurityButtonUrlParamsArmStateItem = PortalPanelArmStateClean | PortalPanelArmStateDirty;
+
+export type OrbSecurityButtonUrlParamsArmStateItems = OrbSecurityButtonUrlParamsArmStateItem[];
+
+/**
+ * Orb security button url params href items.
+ *
+ * @since 1.0.0
+ */
+export type OrbSecurityButtonUrlParamsHrefItem = PortalPanelArmButtonHref;
+
+export type OrbSecurityButtonUrlParamsHrefItems = OrbSecurityButtonUrlParamsHrefItem[];
+
+/**
+ * Panel information status items.
+ *
+ * @since 1.0.0
+ */
+export type PanelInformationStatusItem = PortalDevicePanelStatus;
+
+export type PanelInformationStatusItems = PanelInformationStatusItem[];
+
+/**
+ * Panel status note items.
+ *
+ * @since 1.0.0
+ */
+export type PanelStatusNoteItem = PortalPanelNote;
+
+export type PanelStatusNoteItems = PanelStatusNoteItem[];
+
+/**
+ * Panel status state items.
+ *
+ * @since 1.0.0
+ */
+export type PanelStatusStateItem = PortalPanelState;
+
+export type PanelStatusStateItems = PanelStatusStateItem[];
+
+/**
+ * Panel status status items.
+ *
+ * @since 1.0.0
+ */
+export type PanelStatusStatusItem = PortalPanelStatus;
+
+export type PanelStatusStatusItems = PanelStatusStatusItem[];
+
+export type PanelStatusStatusItemsSensorsOpen = `${number} Sensors Open`;
+
+/**
  * Parse arm disarm message.
  *
  * @since 1.0.0
@@ -1382,6 +1532,8 @@ export type ParseOrbSensorsCleanedIcon = SensorStatusIcon;
 
 export type ParseOrbSensorsCleanedStatus = SensorStatusStatus;
 
+export type ParseOrbSensorsCleanedStatuses = ParseOrbSensorsCleanedStatus[];
+
 /**
  * Parse orb text summary.
  *
@@ -1391,9 +1543,13 @@ export type ParseOrbTextSummaryElement = Element | null;
 
 export type ParseOrbTextSummaryReturns = PanelStatus;
 
-export type ParseOrbTextSummaryCurrentState = Exclude<PanelStatusState, null>;
+export type ParseOrbTextSummaryFinalParsed = PanelStatus;
 
-export type ParseOrbTextSummaryCurrentStatus = Exclude<PanelStatusStatus, null> | '';
+export type ParseOrbTextSummaryStateItem = PortalPanelState;
+
+export type ParseOrbTextSummaryStatusItem = PortalPanelStatus;
+
+export type ParseOrbTextSummaryNoteItem = PortalPanelNote;
 
 /**
  * Parse orb security buttons.
@@ -1438,6 +1594,15 @@ export type ParseOrbSensorsTableDeviceType = SensorInformationDeviceType;
 export type ParseOrbSensorsTableStatus = SensorInformationStatus;
 
 /**
+ * Portal version items.
+ *
+ * @since 1.0.0
+ */
+export type PortalVersionItem = PortalVersion;
+
+export type PortalVersionItems = PortalVersionItem[];
+
+/**
  * Remove personal identifiable information.
  *
  * @since 1.0.0
@@ -1453,6 +1618,42 @@ export type RemovePersonalIdentifiableInformationReturns = RemovePersonalIdentif
 export type RemovePersonalIdentifiableInformationReplaceValueObject = RemovePersonalIdentifiableInformationModifiedObject;
 
 export type RemovePersonalIdentifiableInformationReplaceValueReturns = RemovePersonalIdentifiableInformationModifiedObject;
+
+/**
+ * Sensor information device type items.
+ *
+ * @since 1.0.0
+ */
+export type SensorInformationDeviceTypeItem = PortalSensorDeviceType;
+
+export type SensorInformationDeviceTypeItems = SensorInformationDeviceTypeItem[];
+
+/**
+ * Sensor information status items.
+ *
+ * @since 1.0.0
+ */
+export type SensorInformationStatusItem = PortalDeviceSensorStatus;
+
+export type SensorInformationStatusItems = SensorInformationStatusItem[];
+
+/**
+ * Sensor status icon items.
+ *
+ * @since 1.0.0
+ */
+export type SensorStatusIconItem = PortalSensorStatusIcon;
+
+export type SensorStatusIconItems = SensorStatusIconItem[];
+
+/**
+ * Sensor status status items.
+ *
+ * @since 1.0.0
+ */
+export type SensorStatusStatusItem = PortalSensorStatusText;
+
+export type SensorStatusStatusItems = SensorStatusStatusItem[];
 
 /**
  * Sleep.

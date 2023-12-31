@@ -146,11 +146,11 @@ export const requestPathSystemSystem = /^(\/myhome\/)([0-9.-]+)(\/system\/system
 export const textOrbSensorZone = /^(Zone )(.*)$/;
 
 /**
- * Text orb text summary.
+ * Text orb text summary sections.
  *
  * @since 1.0.0
  */
-export const textOrbTextSummary = /^([A-Za-z0-9 ]+)\. ?([A-Za-z0-9 ]*)\.?$/;
+export const textOrbTextSummarySections = /\.\s*/;
 
 /**
  * Text panel emergency keys.

@@ -8,6 +8,7 @@ import os from 'node:os';
 import { env } from 'node:process';
 import util from 'node:util';
 
+import { panelStatusNoteItems, panelStatusStateItems, panelStatusStatusItems } from '@/lib/items.js';
 import {
   characterBackslashForwardSlash,
   characterHtmlLineBreak,
@@ -17,7 +18,7 @@ import {
   functionSetArmState,
   paramSat,
   textOrbSensorZone,
-  textOrbTextSummary,
+  textOrbTextSummarySections,
   textSyncCode,
 } from '@/lib/regex.js';
 import type {
@@ -25,6 +26,9 @@ import type {
   ClearHtmlLineBreakReturns,
   ClearWhitespaceData,
   ClearWhitespaceReturns,
+  CondensePanelStatesCondensed,
+  CondensePanelStatesPanelStates,
+  CondensePanelStatesReturns,
   CondenseSensorTypeCondensed,
   CondenseSensorTypeReturns,
   CondenseSensorTypeSensorType,
@@ -40,7 +44,7 @@ import type {
   FetchTableCellsIncrementFrom,
   FetchTableCellsIncrementTo,
   FetchTableCellsMatched,
-  FetchTableCellsMatchList,
+  FetchTableCellsMatchItems,
   FetchTableCellsNodeElements,
   FetchTableCellsReturns,
   FindIndexWithValueArray,
@@ -50,8 +54,6 @@ import type {
   FindNullKeysParentKey,
   FindNullKeysProperties,
   FindNullKeysReturns,
-  GenerateDeviceIdId,
-  GenerateDeviceIdReturns,
   GenerateDynatracePCHeaderValueMode,
   GenerateDynatracePCHeaderValueReturns,
   GenerateHashData,
@@ -87,7 +89,7 @@ import type {
   ParseOrbSecurityButtonsRelativeUrl,
   ParseOrbSecurityButtonsReturns,
   ParseOrbSensorsCleanedIcon,
-  ParseOrbSensorsCleanedStatus,
+  ParseOrbSensorsCleanedStatuses,
   ParseOrbSensorsElements,
   ParseOrbSensorsReturns,
   ParseOrbSensorsSensors,
@@ -96,10 +98,12 @@ import type {
   ParseOrbSensorsTableReturns,
   ParseOrbSensorsTableSensors,
   ParseOrbSensorsTableStatus,
-  ParseOrbTextSummaryCurrentState,
-  ParseOrbTextSummaryCurrentStatus,
   ParseOrbTextSummaryElement,
+  ParseOrbTextSummaryFinalParsed,
+  ParseOrbTextSummaryNoteItem,
   ParseOrbTextSummaryReturns,
+  ParseOrbTextSummaryStateItem,
+  ParseOrbTextSummaryStatusItem,
   RemovePersonalIdentifiableInformationData,
   RemovePersonalIdentifiableInformationModifiedObject,
   RemovePersonalIdentifiableInformationReplaceValueObject,
@@ -136,6 +140,39 @@ export function clearHtmlLineBreak(data: ClearHtmlLineBreakData): ClearHtmlLineB
  */
 export function clearWhitespace(data: ClearWhitespaceData): ClearWhitespaceReturns {
   return data.replace(characterWhitespace, ' ').trim();
+}
+
+/**
+ * Condense panel states.
+ *
+ * @param {CondensePanelStatesPanelStates} panelStates - Panel states.
+ *
+ * @returns {CondensePanelStatesReturns}
+ *
+ * @since 1.0.0
+ */
+export function condensePanelStates(panelStates: CondensePanelStatesPanelStates): CondensePanelStatesReturns {
+  let condensed: CondensePanelStatesCondensed;
+
+  // Only detect panel states used for arming/disarming system.
+  switch (true) {
+    case panelStates.includes('Armed Away'):
+      condensed = 'away';
+      break;
+    case panelStates.includes('Armed Night'):
+      condensed = 'night';
+      break;
+    case panelStates.includes('Armed Stay'):
+      condensed = 'stay';
+      break;
+    case panelStates.includes('Disarmed'):
+      condensed = 'off';
+      break;
+    default:
+      break;
+  }
+
+  return condensed;
 }
 
 /**
@@ -323,7 +360,7 @@ export function fetchMissingSatCode(response: FetchMissingSatCodeResponse): Fetc
  * Fetch table cells.
  *
  * @param {FetchTableCellsNodeElements}  nodeElements  - Node elements.
- * @param {FetchTableCellsMatchList}     matchList     - Match list.
+ * @param {FetchTableCellsMatchItems}    matchItems    - Match items.
  * @param {FetchTableCellsIncrementFrom} incrementFrom - Increment from.
  * @param {FetchTableCellsIncrementTo}   incrementTo   - Increment to.
  *
@@ -331,7 +368,7 @@ export function fetchMissingSatCode(response: FetchMissingSatCodeResponse): Fetc
  *
  * @since 1.0.0
  */
-export function fetchTableCells(nodeElements: FetchTableCellsNodeElements, matchList: FetchTableCellsMatchList, incrementFrom: FetchTableCellsIncrementFrom, incrementTo: FetchTableCellsIncrementTo): FetchTableCellsReturns {
+export function fetchTableCells(nodeElements: FetchTableCellsNodeElements, matchItems: FetchTableCellsMatchItems, incrementFrom: FetchTableCellsIncrementFrom, incrementTo: FetchTableCellsIncrementTo): FetchTableCellsReturns {
   const matched: FetchTableCellsMatched = {};
 
   let newIncrementFrom = incrementFrom;
@@ -357,7 +394,7 @@ export function fetchTableCells(nodeElements: FetchTableCellsNodeElements, match
     const currentNodeCleaned = clearWhitespace(currentNode);
     const collectedNodes = [];
 
-    if (!matchList.includes(currentNodeCleaned)) {
+    if (!matchItems.includes(currentNodeCleaned)) {
       return;
     }
 
@@ -451,19 +488,6 @@ export function findNullKeys(properties: FindNullKeysProperties, parentKey: Find
   });
 
   return found;
-}
-
-/**
- * Generate device id.
- *
- * @param {GenerateDeviceIdId} id - Id.
- *
- * @returns {GenerateDeviceIdReturns}
- *
- * @since 1.0.0
- */
-export function generateDeviceId(id: GenerateDeviceIdId): GenerateDeviceIdReturns {
-  return `adt-device-${id}`;
 }
 
 /**
@@ -606,10 +630,11 @@ export async function isPluginOutdated(): IsPluginOutdatedReturns {
   try {
     const fetchedVersion = await latestVersion('homebridge-adt-pulse');
 
+    // Simple equals comparison is enough, no need to over-complicate things.
     if (currentVersion !== fetchedVersion) {
       return true;
     }
-  } catch (error) {
+  } catch {
     /* empty */
   }
 
@@ -714,12 +739,12 @@ export function parseOrbSensors(elements: ParseOrbSensorsElements): ParseOrbSens
         const cleanedIcon = clearWhitespace(canvasIcon) as ParseOrbSensorsCleanedIcon;
         const cleanedName = clearWhitespace(nameText);
         const cleanedZone = Number(clearWhitespace(zoneText).replace(textOrbSensorZone, '$2'));
-        const cleanedStatus = clearWhitespace(statusText) as ParseOrbSensorsCleanedStatus;
+        const cleanedStatuses = clearWhitespace(statusText).split(', ') as ParseOrbSensorsCleanedStatuses;
 
         sensors.push({
           icon: cleanedIcon,
           name: cleanedName,
-          status: cleanedStatus,
+          statuses: cleanedStatuses,
           zone: cleanedZone,
         });
       }
@@ -741,19 +766,52 @@ export function parseOrbSensors(elements: ParseOrbSensorsElements): ParseOrbSens
 export function parseOrbTextSummary(element: ParseOrbTextSummaryElement): ParseOrbTextSummaryReturns {
   if (element === null || element.textContent === null) {
     return {
-      state: null,
-      status: null,
+      panelStates: [],
+      panelStatuses: [],
+      panelNotes: [],
+      rawData: {
+        cleanedNode: '',
+        rawNode: '',
+        unknownPieces: [],
+      },
     };
   }
 
   const cleanedNode = clearWhitespace(element.textContent);
-  const currentState = cleanedNode.replace(textOrbTextSummary, '$1') as ParseOrbTextSummaryCurrentState;
-  const currentStatus = cleanedNode.replace(textOrbTextSummary, '$2') as ParseOrbTextSummaryCurrentStatus;
-
-  return {
-    state: currentState,
-    status: (currentStatus !== '') ? currentStatus : null,
+  const rawSections = cleanedNode.split(textOrbTextSummarySections).filter(Boolean).map((section) => section.split(', '));
+  const finalParsed: ParseOrbTextSummaryFinalParsed = {
+    panelStates: [],
+    panelStatuses: [],
+    panelNotes: [],
+    rawData: {
+      cleanedNode,
+      rawNode: element.textContent,
+      unknownPieces: [],
+    },
   };
+
+  // Match the sections and organize them to where they belong.
+  for (let i = 0; i < rawSections.length; i += 1) {
+    for (let j = 0; j < rawSections[i].length; j += 1) {
+      // Don't forget, we are matching arrays against strings here; "rawSections[i][j]" is a string not an array.
+      switch (true) {
+        case panelStatusStateItems.includes(<ParseOrbTextSummaryStateItem>rawSections[i][j]):
+          finalParsed.panelStates.push(<ParseOrbTextSummaryStateItem>rawSections[i][j]);
+          break;
+        case panelStatusStatusItems.includes(<ParseOrbTextSummaryStatusItem>rawSections[i][j]):
+          finalParsed.panelStatuses.push(<ParseOrbTextSummaryStatusItem>rawSections[i][j]);
+          break;
+        case panelStatusNoteItems.includes(<ParseOrbTextSummaryNoteItem>rawSections[i][j]):
+          finalParsed.panelNotes.push(<ParseOrbTextSummaryNoteItem>rawSections[i][j]);
+          break;
+        default:
+          finalParsed.rawData.unknownPieces.push(rawSections[i][j]);
+          break;
+      }
+    }
+  }
+
+  return finalParsed;
 }
 
 /**
@@ -894,6 +952,7 @@ export function removePersonalIdentifiableInformation(data: RemovePersonalIdenti
     'mac',
     'masterCode',
     'sat',
+    'serial',
     'serialNumber',
     'wanIp',
   ];

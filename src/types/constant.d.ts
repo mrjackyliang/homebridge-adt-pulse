@@ -18,6 +18,14 @@ export type PluginDeviceCategory =
   | 'SENSOR';
 
 /**
+ * Plugin device gateway type.
+ *
+ * @since 1.0.0
+ */
+export type PluginDeviceGatewayType =
+  'gateway';
+
+/**
  * Plugin device id.
  *
  * @since 1.0.0
@@ -26,20 +34,26 @@ export type PluginDeviceId =
   `adt-device-${number}`;
 
 /**
- * Plugin device type.
+ * Plugin device panel type.
  *
  * @since 1.0.0
  */
-export type PluginDeviceType =
+export type PluginDevicePanelType =
+  'panel';
+
+/**
+ * Plugin device sensor type.
+ *
+ * @since 1.0.0
+ */
+export type PluginDeviceSensorType =
   'co'
   | 'doorWindow'
   | 'fire'
   | 'flood'
-  | 'gateway'
   | 'glass'
   | 'keypad'
   | 'motion'
-  | 'panel'
   | 'panic'
   | 'shock'
   | 'supervisory'
@@ -58,20 +72,31 @@ export type PluginLogLevel =
   | 'warn';
 
 /**
- * Portal device status.
+ * Portal device gateway status.
  *
  * @since 1.0.0
  */
-export type PortalDeviceStatus =
-  'Online'
+export type PortalDeviceGatewayStatus =
+  'Offline'
+  | 'Online'
   | 'Status Unknown';
 
 /**
- * Portal gateway status.
+ * Portal device panel status.
  *
  * @since 1.0.0
  */
-export type PortalGatewayStatus =
+export type PortalDevicePanelStatus =
+  'Offline'
+  | 'Online'
+  | 'Status Unknown';
+
+/**
+ * Portal device sensor status.
+ *
+ * @since 1.0.0
+ */
+export type PortalDeviceSensorStatus =
   'Offline'
   | 'Online'
   | 'Status Unknown';
@@ -181,16 +206,29 @@ export type PortalPanelForceArmButtonHref =
  * @since 1.0.0
  */
 export type PortalPanelForceArmButtonRelativeUrl =
-  `/myhome/${PortalVersion}/quickcontrol/serv/RunRRACommand`;
+  '/myhome/16.0.0-131/quickcontrol/serv/RunRRACommand'
+  | '/myhome/17.0.0-69/quickcontrol/serv/RunRRACommand'
+  | '/myhome/18.0.0-78/quickcontrol/serv/RunRRACommand'
+  | '/myhome/19.0.0-89/quickcontrol/serv/RunRRACommand'
+  | '/myhome/20.0.0-221/quickcontrol/serv/RunRRACommand'
+  | '/myhome/20.0.0-244/quickcontrol/serv/RunRRACommand'
+  | '/myhome/21.0.0-344/quickcontrol/serv/RunRRACommand'
+  | '/myhome/21.0.0-353/quickcontrol/serv/RunRRACommand'
+  | '/myhome/21.0.0-354/quickcontrol/serv/RunRRACommand'
+  | '/myhome/22.0.0-233/quickcontrol/serv/RunRRACommand'
+  | '/myhome/23.0.0-99/quickcontrol/serv/RunRRACommand'
+  | '/myhome/24.0.0-117/quickcontrol/serv/RunRRACommand'
+  | '/myhome/25.0.0-21/quickcontrol/serv/RunRRACommand'
+  | '/myhome/26.0.0-32/quickcontrol/serv/RunRRACommand'
+  | '/myhome/27.0.0-140/quickcontrol/serv/RunRRACommand';
 
 /**
- * Portal panel force arm response.
+ * Portal panel note.
  *
  * @since 1.0.0
  */
-export type PortalPanelForceArmResponse =
-  'Could not process the request!</br></br>Error: 1.0-OKAY'
-  | 'Could not process the request!</br></br>Error: Method not allowed.  Allowed methods GET, HEAD';
+export type PortalPanelNote =
+  'This may take several minutes';
 
 /**
  * Portal panel state.
@@ -202,6 +240,7 @@ export type PortalPanelState =
   | 'Armed Night'
   | 'Armed Stay'
   | 'Disarmed'
+  | 'No Entry Delay'
   | 'Status Unavailable';
 
 /**
@@ -219,12 +258,12 @@ export type PortalPanelStatus =
   | 'Motion'
   | 'Sensor Bypassed'
   | 'Sensor Problem'
+  | 'Sensor Problems'
   | 'Sensors Bypassed'
   | 'Sensors Tripped'
   | 'Sensor Tripped'
   | 'Uncleared Alarm'
-  | 'WATER ALARM'
-  | '';
+  | 'WATER ALARM';
 
 /**
  * Portal panel status sensors open.
@@ -266,6 +305,7 @@ export type PortalSensorStatusIcon =
   'devStatAlarm'
   | 'devStatLowBatt'
   | 'devStatMotion'
+  | 'devStatOffline'
   | 'devStatOK'
   | 'devStatOpen'
   | 'devStatTamper'
@@ -277,22 +317,17 @@ export type PortalSensorStatusIcon =
  * @since 1.0.0
  */
 export type PortalSensorStatusText =
-  'ALARM, Closed'
-  | 'ALARM, Okay'
-  | 'ALARM, Open'
-  | 'Bypassed, Closed'
-  | 'Bypassed, Open'
-  | 'Bypassed, Tripped'
+  'ALARM'
+  | 'Bypassed'
   | 'Closed'
-  | 'Low Battery, Motion'
-  | 'Low Battery, No Motion'
+  | 'Low Battery'
   | 'Motion'
   | 'No Motion'
+  | 'Offline'
   | 'Okay'
   | 'Open'
   | 'Tripped'
-  | 'Trouble, Open'
-  | 'Trouble, Closed'
+  | 'Trouble'
   | 'Unknown';
 
 /**

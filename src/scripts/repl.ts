@@ -50,7 +50,7 @@ class ADTPulseRepl {
    *
    * @since 1.0.0
    */
-  async startRepl(): ADTPulseReplStartReplReturns {
+  public async startRepl(): ADTPulseReplStartReplReturns {
     ADTPulseRepl.displayStartupHeader();
     ADTPulseRepl.displayHelpMenu();
 
@@ -131,7 +131,7 @@ class ADTPulseRepl {
    *
    * @since 1.0.0
    */
-  setInstance(subdomain: ADTPulseReplSetInstanceSubdomain, username: ADTPulseReplSetInstanceUsername, password: ADTPulseReplSetInstancePassword, fingerprint: ADTPulseReplSetInstanceFingerprint): ADTPulseReplSetInstanceReturns {
+  public setInstance(subdomain: ADTPulseReplSetInstanceSubdomain, username: ADTPulseReplSetInstanceUsername, password: ADTPulseReplSetInstancePassword, fingerprint: ADTPulseReplSetInstanceFingerprint): ADTPulseReplSetInstanceReturns {
     if (subdomain !== 'portal' && subdomain !== 'portal-ca') {
       ADTPulseRepl.colorLog('error', 'Invalid subdomain specified. Valid values are either "portal" or "portal-ca".');
 
@@ -290,7 +290,7 @@ class ADTPulseRepl {
       'allows you to interact with the ADT Pulse portal via the included API and is designed',
       `for advanced users only. ${chalk.redBright('PLEASE USE WITH CAUTION, NO WARRANTY IS PROVIDED.')}`,
       '',
-      `${chalk.bold.yellowBright('NOTICE')}: The API gathers anonymous analytics to detect potential bugs or issues.`,
+      `${chalk.yellowBright('NOTICE')}: The API gathers anonymous analytics to detect potential bugs or issues.`,
       '        All personally identifiable information redacted. You will see exactly what will be sent out.',
     ].join('\n'));
   }

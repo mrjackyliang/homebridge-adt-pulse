@@ -7,10 +7,13 @@ import type { ErrorObject } from 'serialize-error';
 import type {
   PluginConfigPlatform,
   PluginDeviceCategory,
+  PluginDeviceGatewayType,
   PluginDeviceId,
-  PluginDeviceType,
-  PortalDeviceStatus,
-  PortalGatewayStatus,
+  PluginDevicePanelType,
+  PluginDeviceSensorType,
+  PortalDeviceGatewayStatus,
+  PortalDevicePanelStatus,
+  PortalDeviceSensorStatus,
   PortalPanelArmButtonHref,
   PortalPanelArmButtonId,
   PortalPanelArmButtonLoadingText,
@@ -22,6 +25,7 @@ import type {
   PortalPanelArmValue,
   PortalPanelForceArmButtonHref,
   PortalPanelForceArmButtonRelativeUrl,
+  PortalPanelNote,
   PortalPanelState,
   PortalPanelStatus,
   PortalSensorDeviceType,
@@ -112,7 +116,7 @@ export type ConfigSensorName = string;
 
 export type ConfigSensorAdtName = string;
 
-export type ConfigSensorAdtType = Exclude<PluginDeviceType, 'gateway' | 'panel'>;
+export type ConfigSensorAdtType = PluginDeviceSensorType;
 
 export type ConfigSensorAdtZone = number;
 
@@ -150,7 +154,7 @@ export type DeviceId = PluginDeviceId;
 
 export type DeviceName = string;
 
-export type DeviceType = PluginDeviceType;
+export type DeviceType = PluginDeviceGatewayType | PluginDevicePanelType | PluginDeviceSensorType;
 
 export type DeviceZone = number | null;
 
@@ -275,7 +279,7 @@ export type GatewayInformationNetwork = {
 
 export type GatewayInformationSerialNumber = string | null;
 
-export type GatewayInformationStatus = PortalGatewayStatus | null;
+export type GatewayInformationStatus = PortalDeviceGatewayStatus | null;
 
 export type GatewayInformationUpdateLast = string | null;
 
@@ -319,11 +323,11 @@ export type InternalConfigLogger = Logger | null;
 
 export type InternalConfigTestModeEnabled = boolean;
 
-export type InternalConfigTestModeIsDisarmChecked = boolean;
+export type InternalConfigTestModeIsSystemDisarmedBeforeTest = boolean;
 
 export type InternalConfigTestMode = {
   enabled?: InternalConfigTestModeEnabled;
-  isDisarmChecked?: InternalConfigTestModeIsDisarmChecked;
+  isSystemDisarmedBeforeTest?: InternalConfigTestModeIsSystemDisarmedBeforeTest;
 };
 
 export type InternalConfig = {
@@ -419,7 +423,7 @@ export type PanelInformationModel = string | null;
 
 export type PanelInformationProvider = string | null;
 
-export type PanelInformationStatus = PortalDeviceStatus | null;
+export type PanelInformationStatus = PortalDevicePanelStatus | null;
 
 export type PanelInformationType = string | null;
 
@@ -438,13 +442,37 @@ export type PanelInformation = {
  *
  * @since 1.0.0
  */
-export type PanelStatusState = PortalPanelState | null;
+export type PanelStatusState = PortalPanelState;
 
-export type PanelStatusStatus = Exclude<PortalPanelStatus, ''> | null;
+export type PanelStatusStates = PanelStatusState[];
+
+export type PanelStatusStatus = PortalPanelStatus;
+
+export type PanelStatusStatuses = PanelStatusStatus[];
+
+export type PanelStatusNote = PortalPanelNote;
+
+export type PanelStatusNotes = PanelStatusNote[];
+
+export type PanelStatusRawDataCleanedNode = string;
+
+export type PanelStatusRawDataRawNode = string;
+
+export type PanelStatusRawDataUnknownPiece = string;
+
+export type PanelStatusRawDataUnknownPieces = PanelStatusRawDataUnknownPiece[];
+
+export type PanelStatusRawData = {
+  cleanedNode: PanelStatusRawDataCleanedNode;
+  rawNode: PanelStatusRawDataRawNode;
+  unknownPieces: PanelStatusRawDataUnknownPieces;
+};
 
 export type PanelStatus = {
-  state: PanelStatusState;
-  status: PanelStatusStatus;
+  panelStates: PanelStatusStates;
+  panelStatuses: PanelStatusStatuses;
+  panelNotes: PanelStatusNotes;
+  rawData: PanelStatusRawData;
 };
 
 /**
@@ -467,7 +495,7 @@ export type SensorInformationDeviceType = PortalSensorDeviceType;
 
 export type SensorInformationName = string;
 
-export type SensorInformationStatus = PortalDeviceStatus;
+export type SensorInformationStatus = PortalDeviceSensorStatus;
 
 export type SensorInformationZone = number;
 
@@ -492,12 +520,14 @@ export type SensorStatusName = string;
 
 export type SensorStatusStatus = PortalSensorStatusText;
 
+export type SensorStatusStatuses = SensorStatusStatus[];
+
 export type SensorStatusZone = number;
 
 export type SensorStatus = {
   icon: SensorStatusIcon;
   name: SensorStatusName;
-  status: SensorStatusStatus;
+  statuses: SensorStatusStatuses;
   zone: SensorStatusZone;
 };
 

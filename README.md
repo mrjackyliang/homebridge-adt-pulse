@@ -10,11 +10,11 @@ __HOOBS Users:__ Please do not use the configuration UI as that is currently out
 
 Additionally, I am seeing that the developers for HOOBS are stale based on the activity and complaints I see on [Reddit](https://www.reddit.com/r/HOOBS/). Support will be "best effort", and official status will be pulled in the meantime.
 
-[![NPM Version](https://img.shields.io/npm/v/homebridge-adt-pulse.svg?style=flat-square&color=blue)](https://www.npmjs.com/package/homebridge-adt-pulse)
-[![NPM Downloads](https://img.shields.io/npm/dt/homebridge-adt-pulse.svg?style=flat-square&color=success)](https://www.npmjs.com/package/homebridge-adt-pulse)
-[![GitHub License](https://img.shields.io/github/license/mrjackyliang/homebridge-adt-pulse?style=flat-square&color=yellow)](https://github.com/mrjackyliang/homebridge-adt-pulse/blob/master/LICENSE)
-[![Become a GitHub Sponsor](https://img.shields.io/badge/sponsor-github-black?style=flat-square&color=orange)](https://github.com/sponsors/mrjackyliang)
-[![Donate via PayPal](https://img.shields.io/badge/donate-paypal-black?style=flat-square&color=blue)](https://liang.nyc/paypal)
+[![NPM Package](https://img.shields.io/npm/v/homebridge-adt-pulse?style=flat-square&logo=npm&logoColor=%23ffffff&color=%23b25da6)](https://www.npmjs.com/package/homebridge-adt-pulse)
+[![NPM Downloads](https://img.shields.io/npm/dt/homebridge-adt-pulse?style=flat-square&logo=npm&logoColor=%23ffffff&color=%236688c3)](https://www.npmjs.com/package/homebridge-adt-pulse)
+[![GitHub License](https://img.shields.io/github/license/mrjackyliang/homebridge-adt-pulse?style=flat-square&logo=googledocs&logoColor=%23ffffff&color=%2348a56a)](https://github.com/mrjackyliang/homebridge-adt-pulse/blob/main/LICENSE)
+[![Become a GitHub Sponsor](https://img.shields.io/badge/github-sponsor-gray?style=flat-square&logo=githubsponsors&logoColor=%23ffffff&color=%23eaaf41)](https://github.com/sponsors/mrjackyliang)
+[![Donate via PayPal](https://img.shields.io/badge/paypal-donate-gray?style=flat-square&logo=paypal&logoColor=%23ffffff&color=%23ce4a4a)](https://liang.nyc/paypal)
 
 This is a [verified Homebridge plugin](https://github.com/homebridge/homebridge/wiki/verified-Plugins#verified-plugins) for ADT Pulse customers that allow homeowners to control their security system and view sensor status through the Home app (the HAP protocol).
 
@@ -161,9 +161,11 @@ If you are using automation, __you acknowledge that this will happen__ and accep
 As for ADT Pulse systems, __Arm Night__ is only available for use through the panel itself. Although it is not visible on the Web Portal or the mobile app, you can still place your system in __Arm Night__ mode with this plugin.
 
 ## Debug Mode
-Previously, there was a specific setting to configure debug logs at five different levels. Over time, it became apparent that this setting made debugging excessively challenging for the average consumer. To improve this, debug mode is now activated __ONLY when the debug mode is enabled on the Homebridge__ itself.
+Previously, there was a setting to allow users to switch the plugin to debug mode. Over time, it became apparent that this setting made resolving issues excessively challenging.
 
-This approach promotes isolation (by using a separate bridge for each plugin) and helps enhance the troubleshooting experience in case any issues arise.
+Consumers would enable debug mode, but forget to also enable Homebridge debug mode, causing contributors to not be able to effectively resolve bug reports.
+
+To improve this, debug mode is now activated __ONLY when debug mode is enabled on Homebridge__ itself. This approach promotes isolation (logs can be separated for each bridge) and helps enhance the troubleshooting experience in case any issues arise.
 
 ## Documentation, Logging, and Detection
 This function comes with a built-in feature to notify me if the plugin detects anomalies in the states of sensors and panel statuses. In the event of such occurrences, especially when these statuses are undocumented, I will receive notifications.

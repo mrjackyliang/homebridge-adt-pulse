@@ -325,7 +325,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
    *
    * @since 1.0.0
    */
-  configureAccessory(accessory: ADTPulsePlatformConfigureAccessoryAccessory): ADTPulsePlatformConfigureAccessoryReturns {
+  public configureAccessory(accessory: ADTPulsePlatformConfigureAccessoryAccessory): ADTPulsePlatformConfigureAccessoryReturns {
     this.#log.info(`Configuring cached accessory for ${chalk.underline(accessory.context.name)} (id: ${accessory.context.id}, uuid: ${accessory.context.uuid}) ...`);
 
     // Add the restored accessory to the accessories cache.
@@ -376,7 +376,16 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     // Create the handler for the new accessory if it does not exist.
     if (this.#handlers[device.id] === undefined) {
       // All arguments are passed by reference.
-      this.#handlers[device.id] = new ADTPulseAccessory(typedAccessory, this.#state, this.#instance, this.#service, this.#characteristic, this.#api, this.#log);
+      this.#handlers[device.id] = new ADTPulseAccessory(
+        typedAccessory,
+        this.#state,
+        this.#instance,
+        this.#service,
+        this.#characteristic,
+        this.#api,
+        this.#log,
+        this.#debugMode,
+      );
     }
 
     // Save the new accessory into the accessories cache.
@@ -425,10 +434,21 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     // Update the display name.
     value.displayName = device.name;
 
+    // TODO Have a feeling this is what is causing the sensors to be always unavailable.
+
     // Create the handler for the existing accessory if it does not exist.
     if (this.#handlers[device.id] === undefined) {
       // All arguments are passed by reference.
-      this.#handlers[device.id] = new ADTPulseAccessory(value, this.#state, this.#instance, this.#service, this.#characteristic, this.#api, this.#log);
+      this.#handlers[device.id] = new ADTPulseAccessory(
+        value,
+        this.#state,
+        this.#instance,
+        this.#service,
+        this.#characteristic,
+        this.#api,
+        this.#log,
+        this.#debugMode,
+      );
     }
 
     // Update the existing accessory in the accessories cache.
@@ -858,6 +878,8 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
 
     // Add sensors as an accessory.
     if (this.#config !== null && sensorsInfo !== null) {
+      // TODO Automatically remove sensors not defined in config.
+
       for (let i = 0; i < this.#config.sensors.length; i += 1) {
         const {
           adtName,

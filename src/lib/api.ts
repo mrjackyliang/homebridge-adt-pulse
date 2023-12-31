@@ -102,6 +102,7 @@ import type {
   ADTPulsePerformSyncCheckSessions,
   ADTPulseResetSessionReturns,
   ADTPulseSession,
+  ADTPulseSetPanelStatusArmFrom,
   ADTPulseSetPanelStatusArmTo,
   ADTPulseSetPanelStatusReadyButton,
   ADTPulseSetPanelStatusReturns,
@@ -149,7 +150,7 @@ export class ADTPulse {
    *
    * @since 1.0.0
    */
-  constructor(config: ADTPulseConstructorConfig, internalConfig: ADTPulseConstructorInternalConfig) {
+  public constructor(config: ADTPulseConstructorConfig, internalConfig: ADTPulseConstructorInternalConfig) {
     // Set config options.
     this.#credentials = {
       fingerprint: config.fingerprint,
@@ -166,7 +167,7 @@ export class ADTPulse {
       reportedHashes: [],
       testMode: {
         enabled: internalConfig.testMode?.enabled ?? false,
-        isDisarmChecked: internalConfig.testMode?.isDisarmChecked ?? false,
+        isSystemDisarmedBeforeTest: internalConfig.testMode?.isSystemDisarmedBeforeTest ?? false,
       },
     };
 
@@ -190,7 +191,7 @@ export class ADTPulse {
    *
    * @since 1.0.0
    */
-  async login(): ADTPulseLoginReturns {
+  public async login(): ADTPulseLoginReturns {
     let errorObject;
 
     if (this.#internal.debug) {
@@ -507,7 +508,7 @@ export class ADTPulse {
    *
    * @since 1.0.0
    */
-  async logout(): ADTPulseLogoutReturns {
+  public async logout(): ADTPulseLogoutReturns {
     let errorObject;
 
     if (this.#internal.debug) {
@@ -669,7 +670,7 @@ export class ADTPulse {
    *
    * @since 1.0.0
    */
-  async getGatewayInformation(): ADTPulseGetGatewayInformationReturns {
+  public async getGatewayInformation(): ADTPulseGetGatewayInformationReturns {
     let errorObject;
 
     if (this.#internal.debug) {
@@ -905,7 +906,7 @@ export class ADTPulse {
    *
    * @since 1.0.0
    */
-  async getPanelInformation(): ADTPulseGetPanelInformationReturns {
+  public async getPanelInformation(): ADTPulseGetPanelInformationReturns {
     let errorObject;
 
     if (this.#internal.debug) {
@@ -1048,13 +1049,13 @@ export class ADTPulse {
         1,
       );
       const emergencyKeys = _.get(fetchedTableCells, ['Emergency Keys:', 0], null);
-      const parsedEmergencyKeys = (typeof emergencyKeys === 'string') ? emergencyKeys.match(textPanelEmergencyKeys) : null;
+      const parsedEmergencyKeys = (emergencyKeys !== null) ? emergencyKeys.match(textPanelEmergencyKeys) : null;
       const manufacturerProvider = _.get(fetchedTableCells, ['Manufacturer/Provider:', 0], null);
-      const parsedManufacturer = (typeof manufacturerProvider === 'string') ? manufacturerProvider.split(' - ')[0] ?? null : null;
-      const parsedProvider = (typeof manufacturerProvider === 'string') ? manufacturerProvider.split(' - ')[1] ?? null : null;
+      const parsedManufacturer = (manufacturerProvider !== null) ? manufacturerProvider.split(' - ')[0] ?? null : null;
+      const parsedProvider = (manufacturerProvider !== null) ? manufacturerProvider.split(' - ')[1] ?? null : null;
       const typeModel = _.get(fetchedTableCells, ['Type/Model:', 0], null);
-      const parsedType = (typeof typeModel === 'string') ? typeModel.split(' - ')[0] ?? null : null;
-      const parsedModel = (typeof typeModel === 'string') ? typeModel.split(' - ')[1] ?? null : null;
+      const parsedType = (typeModel !== null) ? typeModel.split(' - ')[0] ?? null : null;
+      const parsedModel = (typeModel !== null) ? typeModel.split(' - ')[1] ?? null : null;
       const panelInformation = {
         emergencyKeys: parsedEmergencyKeys,
         manufacturer: parsedManufacturer,
@@ -1071,7 +1072,8 @@ export class ADTPulse {
        * NOTICE: Parts NOT SHOWN below will NOT be tracked, documented, or tested.
        * PATENT: https://patents.google.com/patent/US20170070361A1/en
        *
-       * status: 'Online'
+       * status: 'Offline'
+       *         'Online'
        *         'Status Unknown'
        *
        * @since 1.0.0
@@ -1112,7 +1114,7 @@ export class ADTPulse {
    *
    * @since 1.0.0
    */
-  async getPanelStatus(): ADTPulseGetPanelStatusReturns {
+  public async getPanelStatus(): ADTPulseGetPanelStatusReturns {
     let errorObject;
 
     if (this.#internal.debug) {
@@ -1232,15 +1234,35 @@ export class ADTPulse {
        * How the data may be displayed:
        * ➜ "Disarmed. All Quiet."
        * ➜ "Status Unavailable. "
+       * ➜ "All Quiet."
+       * ➜ "Armed Stay. All Quiet. This may take several minutes."
+       * ➜ "Armed Stay, No Entry Delay. All Quiet."
        *
-       * Example data after being processed by "parseOrbTextSummary()" function/method:
+       * Example data after being processed by "parseOrbTextSummary()" function/method (excluding "rawData"):
        * ➜ {
-       *     state: 'Disarmed',
-       *     status: 'All Quiet',
+       *     panelStates: ['Disarmed'],
+       *     panelStatuses: ['All Quiet'],
+       *     panelNotes: [],
        *   }
        * ➜ {
-       *     state: 'Status Unavailable',
-       *     status: null,
+       *     panelStates: ['Status Unavailable'],
+       *     panelStatuses: [],
+       *     panelNotes: [],
+       *   }
+       * ➜ {
+       *     panelStates: [],
+       *     panelStatuses: ['All Quiet'],
+       *     panelNotes: [],
+       *   }
+       * ➜ {
+       *     panelStates: ['Armed Stay'],
+       *     panelStatuses: ['All Quiet'],
+       *     panelNotes: ['This may take several minutes'],
+       *   }
+       * ➜ {
+       *     panelStates: ['Armed Stay', 'No Entry Delay'],
+       *     panelStatuses: ['All Quiet'],
+       *     panelNotes: [],
        *   }
        *
        * @since 1.0.0
@@ -1258,8 +1280,8 @@ export class ADTPulse {
        *        'Armed Night'
        *        'Armed Stay'
        *        'Disarmed'
+       *        'No Entry Delay'
        *        'Status Unavailable'
-       *        null
        *
        * status: '1 Sensor Open'
        *         '[# of sensors open] Sensors Open'
@@ -1270,12 +1292,14 @@ export class ADTPulse {
        *         'Motion'
        *         'Sensor Bypassed'
        *         'Sensor Problem'
+       *         'Sensor Problems'
        *         'Sensors Bypassed'
        *         'Sensors Tripped'
        *         'Sensor Tripped'
        *         'Uncleared Alarm'
        *         'WATER ALARM'
-       *         null
+       *
+       * note: 'This may take several minutes'
        *
        * @since 1.0.0
        */
@@ -1311,17 +1335,33 @@ export class ADTPulse {
   /**
    * ADT Pulse - Set panel status.
    *
-   * @param {ADTPulseSetPanelStatusArmTo} armTo - Arm to.
+   * @param {ADTPulseSetPanelStatusArmFrom} armFrom - Arm from.
+   * @param {ADTPulseSetPanelStatusArmTo}   armTo   - Arm to.
    *
    * @returns {ADTPulseSetPanelStatusReturns}
    *
    * @since 1.0.0
    */
-  async setPanelStatus(armTo: ADTPulseSetPanelStatusArmTo): ADTPulseSetPanelStatusReturns {
+  public async setPanelStatus(armFrom: ADTPulseSetPanelStatusArmFrom, armTo: ADTPulseSetPanelStatusArmTo): ADTPulseSetPanelStatusReturns {
     let errorObject;
 
     if (this.#internal.debug) {
-      debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'info', `Attempting to update panel status to "${armTo}" at "${this.#internal.baseUrl}"`);
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'info', `Attempting to update panel status from "${armFrom}" to "${armTo}" at "${this.#internal.baseUrl}"`);
+    }
+
+    if (
+      armFrom !== 'away'
+      && armFrom !== 'night'
+      && armFrom !== 'off'
+      && armFrom !== 'stay'
+    ) {
+      return {
+        action: 'SET_PANEL_STATUS',
+        success: false,
+        info: {
+          message: `"${armFrom}" is an invalid arm from state`,
+        },
+      };
     }
 
     if (
@@ -1335,6 +1375,21 @@ export class ADTPulse {
         success: false,
         info: {
           message: `"${armTo}" is an invalid arm to state`,
+        },
+      };
+    }
+
+    // If system is being set to the current arm state (e.g. disarmed to off).
+    if (armFrom === armTo) {
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'info', `No need to change arm state from "${armFrom}" to "${armTo}" due to its equivalence`);
+      }
+
+      return {
+        action: 'SET_PANEL_STATUS',
+        success: true,
+        info: {
+          forceArmRequired: false,
         },
       };
     }
@@ -1539,7 +1594,7 @@ export class ADTPulse {
        */
       await this.newInformationDispatcher('orb-security-buttons', parsedOrbSecurityButtons);
 
-      // WORKAROUND FOR ARM NIGHT BUTTON BUG: Find the "Arming Night" button location.
+      // WORKAROUND: For arm night button bug - Find the "Arming Night" button location.
       const armingNightButtonIndex = parsedOrbSecurityButtons.findIndex((parsedOrbSecurityButton) => {
         const parsedOrbSecurityButtonButtonDisabled = parsedOrbSecurityButton.buttonDisabled;
         const parsedOrbSecurityButtonButtonText = parsedOrbSecurityButton.buttonText;
@@ -1547,7 +1602,7 @@ export class ADTPulse {
         return (parsedOrbSecurityButtonButtonDisabled && parsedOrbSecurityButtonButtonText === 'Arming Night');
       });
 
-      // WORKAROUND FOR ARM NIGHT BUTTON BUG: Replace the "Arming Night" button with a fake "Disarm" button.
+      // WORKAROUND: For arm night button bug - Replace the "Arming Night" button with a fake "Disarm" button.
       if (
         this.#session.backupSatCode !== null // Backup sat code must be available.
         && armingNightButtonIndex >= 0 // Make sure that the pending "Arming Night" button is there.
@@ -1595,7 +1650,7 @@ export class ADTPulse {
       // In test mode, system must be disarmed first.
       if (
         this.#internal.testMode.enabled
-        && !this.#internal.testMode.isDisarmChecked
+        && !this.#internal.testMode.isSystemDisarmedBeforeTest
       ) {
         // If system is not disarmed, end the test.
         if (!['off', 'disarmed'].includes(readyButtons[0].urlParams.armState)) {
@@ -1612,8 +1667,8 @@ export class ADTPulse {
           };
         }
 
-        // If system is disarmed, set "isDisarmChecked" to true, so it does not check again.
-        this.#internal.testMode.isDisarmChecked = true;
+        // If system is disarmed, set "isSystemDisarmedBeforeTest" to true, so it does not check again.
+        this.#internal.testMode.isSystemDisarmedBeforeTest = true;
       }
 
       // If current arm state is not truly "disarmed", disarm it first.
@@ -1723,7 +1778,7 @@ export class ADTPulse {
    *
    * @since 1.0.0
    */
-  async getSensorsInformation(): ADTPulseGetSensorsInformationReturns {
+  public async getSensorsInformation(): ADTPulseGetSensorsInformationReturns {
     let errorObject;
 
     if (this.#internal.debug) {
@@ -1879,7 +1934,8 @@ export class ADTPulse {
        *             'Water/Flood Sensor'
        *             'Window Sensor'
        *
-       * status: 'Online'
+       * status: 'Offline'
+       *         'Online'
        *         'Status Unknown'
        *
        * @since 1.0.0
@@ -1922,7 +1978,7 @@ export class ADTPulse {
    *
    * @since 1.0.0
    */
-  async getSensorsStatus(): ADTPulseGetSensorsStatusReturns {
+  public async getSensorsStatus(): ADTPulseGetSensorsStatusReturns {
     let errorObject;
 
     if (this.#internal.debug) {
@@ -2109,27 +2165,23 @@ export class ADTPulse {
        * icon: 'devStatAlarm'
        *       'devStatLowBatt'
        *       'devStatMotion'
+       *       'devStatOffline'
        *       'devStatOK'
        *       'devStatOpen'
        *       'devStatTamper'
        *       'devStatUnknown'
        *
-       * status: 'ALARM, Closed'
-       *         'ALARM, Okay'
-       *         'ALARM, Open'
-       *         'Bypassed, Closed'
-       *         'Bypassed, Open'
-       *         'Bypassed, Tripped'
+       * status: 'ALARM'
+       *         'Bypassed'
        *         'Closed'
-       *         'Low Battery, Motion'
-       *         'Low Battery, No Motion'
+       *         'Low Battery'
        *         'Motion'
        *         'No Motion'
+       *         'Offline'
        *         'Okay'
        *         'Open'
        *         'Tripped'
-       *         'Trouble, Open'
-       *         'Trouble, Closed'
+       *         'Trouble'
        *         'Unknown'
        *
        * @since 1.0.0
@@ -2172,7 +2224,7 @@ export class ADTPulse {
    *
    * @since 1.0.0
    */
-  async performSyncCheck(): ADTPulsePerformSyncCheckReturns {
+  public async performSyncCheck(): ADTPulsePerformSyncCheckReturns {
     let errorObject;
 
     if (this.#internal.debug) {
@@ -2328,7 +2380,7 @@ export class ADTPulse {
    *
    * @since 1.0.0
    */
-  async performKeepAlive(): ADTPulsePerformKeepAliveReturns {
+  public async performKeepAlive(): ADTPulsePerformKeepAliveReturns {
     let errorObject;
 
     if (this.#internal.debug) {
@@ -2443,7 +2495,7 @@ export class ADTPulse {
    *
    * @since 1.0.0
    */
-  isAuthenticated(): ADTPulseIsAuthenticatedReturns {
+  public isAuthenticated(): ADTPulseIsAuthenticatedReturns {
     return this.#session.isAuthenticated;
   }
 
@@ -2842,7 +2894,7 @@ export class ADTPulse {
 
       let readyButtons = parsedOrbSecurityButtons.filter((parsedOrbSecurityButton): parsedOrbSecurityButton is ADTPulseArmDisarmHandlerReadyButton => !parsedOrbSecurityButton.buttonDisabled);
 
-      // WORKAROUND FOR ARM NIGHT BUTTON BUG: Generate a fake "parsedOrbSecurityButtons" response after system has been set to "night" mode if "Arming Night" is stuck.
+      // WORKAROUND: For arm night button bug -  Generate a fake "parsedOrbSecurityButtons" response after system has been set to "night" mode if "Arming Night" is stuck.
       if (
         ['disarmed', 'off'].includes(armState) // Checks if state was "disarmed" (dirty) or "off" (clean).
         && ['night'].includes(arm) // Checks if system was trying to change to "night" mode.

@@ -163,6 +163,7 @@ function generateDeviceFingerprint() {
   const { secureAuth } = window;
   const { fingerprint } = secureAuth || {};
   const { getAllResults } = fingerprint || {};
+
   const fingerprintCode = document.getElementById('fingerprint-code');
   const rawCode = document.getElementById('raw-code');
 
