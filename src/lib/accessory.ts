@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 
-import { detectedUnknownPanelAction, detectedUnknownSensorAction } from '@/lib/detect.js';
+import { detectedUnknownAccessoryAction } from '@/lib/detect.js';
 import { condensedSensorTypeItems } from '@/lib/items.js';
 import { condensePanelStates, generateHash } from '@/lib/utility.js';
 import type {
@@ -24,9 +24,7 @@ import type {
   ADTPulseAccessoryInstance,
   ADTPulseAccessoryLog,
   ADTPulseAccessoryNewInformationDispatcherData,
-  ADTPulseAccessoryNewInformationDispatcherPanel,
   ADTPulseAccessoryNewInformationDispatcherReturns,
-  ADTPulseAccessoryNewInformationDispatcherSensor,
   ADTPulseAccessoryNewInformationDispatcherType,
   ADTPulseAccessoryReportedHashes,
   ADTPulseAccessoryServices,
@@ -569,30 +567,11 @@ export class ADTPulseAccessory {
 
     // If the detector has not reported this event before.
     if (this.#reportedHashes.find((reportedHash) => dataHash === reportedHash) === undefined) {
-      let detectedNew = false;
-
-      // Determine what information needs to be checked.
-      switch (type) {
-        case 'panel':
-          detectedNew = await detectedUnknownPanelAction(data as ADTPulseAccessoryNewInformationDispatcherPanel, this.#log, this.#debugMode);
-          break;
-        case 'co':
-        case 'doorWindow':
-        case 'fire':
-        case 'flood':
-        case 'glass':
-        case 'keypad':
-        case 'motion':
-        case 'panic':
-        case 'shock':
-        case 'supervisory':
-        case 'temperature':
-        case 'unknown':
-          detectedNew = await detectedUnknownSensorAction(data as ADTPulseAccessoryNewInformationDispatcherSensor, this.#log, this.#debugMode);
-          break;
-        default:
-          break;
-      }
+      const status = {
+        type,
+        data,
+      };
+      const detectedNew = await detectedUnknownAccessoryAction(status, this.#log, this.#debugMode);
 
       // Save this hash so the detector does not detect the same thing multiple times.
       if (detectedNew) {

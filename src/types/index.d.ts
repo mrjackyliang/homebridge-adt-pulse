@@ -573,10 +573,6 @@ export type ADTPulseAccessoryNewInformationDispatcherData = PanelStatus | Sensor
 
 export type ADTPulseAccessoryNewInformationDispatcherReturns = Promise<void>;
 
-export type ADTPulseAccessoryNewInformationDispatcherPanel = PanelStatus;
-
-export type ADTPulseAccessoryNewInformationDispatcherSensor = SensorStatus;
-
 /**
  * ADT Pulse Accessory - Set panel status.
  *
@@ -1204,30 +1200,24 @@ export type DetectedNewSensorsStatusDebugMode = boolean | null;
 export type DetectedNewSensorsStatusReturns = Promise<boolean>;
 
 /**
- * Detected unknown panel action.
+ * Detected unknown accessory action.
  *
  * @since 1.0.0
  */
-export type DetectedUnknownPanelActionStatus = PanelStatus;
+export type DetectedUnknownAccessoryActionStatusType = PluginDevicePanelType | PluginDeviceSensorType;
 
-export type DetectedUnknownPanelActionLogger = Logger | null;
+export type DetectedUnknownAccessoryActionStatusData = PanelStatus | SensorStatus;
 
-export type DetectedUnknownPanelActionDebugMode = boolean | null;
+export type DetectedUnknownAccessoryActionStatus = {
+  type: DetectedUnknownAccessoryActionStatusType;
+  data: DetectedUnknownAccessoryActionStatusData;
+};
 
-export type DetectedUnknownPanelActionReturns = Promise<boolean>;
+export type DetectedUnknownAccessoryActionLogger = Logger | null;
 
-/**
- * Detected unknown sensor action.
- *
- * @since 1.0.0
- */
-export type DetectedUnknownSensorActionStatus = SensorStatus;
+export type DetectedUnknownAccessoryActionDebugMode = boolean | null;
 
-export type DetectedUnknownSensorActionLogger = Logger | null;
-
-export type DetectedUnknownSensorActionDebugMode = boolean | null;
-
-export type DetectedUnknownSensorActionReturns = Promise<boolean>;
+export type DetectedUnknownAccessoryActionReturns = Promise<boolean>;
 
 /**
  * Do submit handler relative url items.

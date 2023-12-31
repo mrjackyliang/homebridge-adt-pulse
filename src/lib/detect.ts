@@ -59,14 +59,10 @@ import type {
   DetectedNewSensorsStatusLogger,
   DetectedNewSensorsStatusReturns,
   DetectedNewSensorsStatusSensors,
-  DetectedUnknownPanelActionDebugMode,
-  DetectedUnknownPanelActionLogger,
-  DetectedUnknownPanelActionReturns,
-  DetectedUnknownPanelActionStatus,
-  DetectedUnknownSensorActionDebugMode,
-  DetectedUnknownSensorActionLogger,
-  DetectedUnknownSensorActionReturns,
-  DetectedUnknownSensorActionStatus,
+  DetectedUnknownAccessoryActionDebugMode,
+  DetectedUnknownAccessoryActionLogger,
+  DetectedUnknownAccessoryActionReturns,
+  DetectedUnknownAccessoryActionStatus,
 } from '@/types/index.d.ts';
 
 /**
@@ -802,17 +798,17 @@ export async function detectedNewSensorsStatus(sensors: DetectedNewSensorsStatus
 }
 
 /**
- * Detected unknown panel action.
+ * Detected unknown accessory action.
  *
- * @param {DetectedUnknownPanelActionStatus}    status    - Status.
- * @param {DetectedUnknownPanelActionLogger}    logger    - Logger.
- * @param {DetectedUnknownPanelActionDebugMode} debugMode - Debug mode.
+ * @param {DetectedUnknownAccessoryActionStatus}    status    - Status.
+ * @param {DetectedUnknownAccessoryActionLogger}    logger    - Logger.
+ * @param {DetectedUnknownAccessoryActionDebugMode} debugMode - Debug mode.
  *
- * @returns {DetectedUnknownPanelActionReturns}
+ * @returns {DetectedUnknownAccessoryActionReturns}
  *
  * @since 1.0.0
  */
-export async function detectedUnknownPanelAction(status: DetectedUnknownPanelActionStatus, logger: DetectedUnknownPanelActionLogger, debugMode: DetectedUnknownPanelActionDebugMode): DetectedUnknownPanelActionReturns {
+export async function detectedUnknownAccessoryAction(status: DetectedUnknownAccessoryActionStatus, logger: DetectedUnknownAccessoryActionLogger, debugMode: DetectedUnknownAccessoryActionDebugMode): DetectedUnknownAccessoryActionReturns {
   const cleanedData = removePersonalIdentifiableInformation(status);
 
   // If outdated, it means plugin may already have support.
@@ -821,12 +817,12 @@ export async function detectedUnknownPanelAction(status: DetectedUnknownPanelAct
 
     if (outdated) {
       if (logger !== null) {
-        logger.warn('Plugin has detected unknown panel action. You are running an older plugin version, please update soon.');
+        logger.warn('Plugin has detected unknown accessory action. You are running an older plugin version, please update soon.');
       }
 
       // This is intentionally duplicated if using Homebridge debug mode.
       if (debugMode) {
-        debugLog(logger, 'detect.ts / detectedUnknownPanelAction()', 'warn', 'Plugin has detected unknown panel action. You are running an older plugin version, please update soon');
+        debugLog(logger, 'detect.ts / detectedUnknownAccessoryAction()', 'warn', 'Plugin has detected unknown accessory action. You are running an older plugin version, please update soon');
       }
 
       // Do not send analytics for users running outdated plugin versions.
@@ -834,7 +830,7 @@ export async function detectedUnknownPanelAction(status: DetectedUnknownPanelAct
     }
   } catch (error) {
     if (debugMode === true) {
-      debugLog(logger, 'detect.ts / detectedUnknownPanelAction()', 'error', 'Failed to check if plugin is outdated');
+      debugLog(logger, 'detect.ts / detectedUnknownAccessoryAction()', 'error', 'Failed to check if plugin is outdated');
       stackTracer('serialize-error', serializeError(error));
     }
 
@@ -843,12 +839,12 @@ export async function detectedUnknownPanelAction(status: DetectedUnknownPanelAct
   }
 
   if (logger !== null) {
-    logger.warn('Plugin has detected unknown panel action. Notifying plugin author about this discovery ...');
+    logger.warn('Plugin has detected unknown accessory action. Notifying plugin author about this discovery ...');
   }
 
   // This is intentionally duplicated if using Homebridge debug mode.
   if (debugMode) {
-    debugLog(logger, 'detect.ts / detectedUnknownPanelAction()', 'warn', 'Plugin has detected unknown panel action. Notifying plugin author about this discovery');
+    debugLog(logger, 'detect.ts / detectedUnknownAccessoryAction()', 'warn', 'Plugin has detected unknown accessory action. Notifying plugin author about this discovery');
   }
 
   // Show content being sent to author.
@@ -865,7 +861,7 @@ export async function detectedUnknownPanelAction(status: DetectedUnknownPanelAct
         family: 4,
         headers: {
           'User-Agent': 'homebridge-adt-pulse',
-          'X-Title': 'Detected unknown panel action',
+          'X-Title': 'Detected unknown accessory action',
         },
       },
     );
@@ -873,88 +869,7 @@ export async function detectedUnknownPanelAction(status: DetectedUnknownPanelAct
     return true;
   } catch (error) {
     if (debugMode === true) {
-      debugLog(logger, 'detect.ts / detectedUnknownPanelAction()', 'error', 'Failed to notify plugin author about the unknown panel action');
-      stackTracer('serialize-error', serializeError(error));
-    }
-
-    // Try to send information to author later.
-    return false;
-  }
-}
-
-/**
- * Detected unknown sensor action.
- *
- * @param {DetectedUnknownSensorActionStatus}    status    - Status.
- * @param {DetectedUnknownSensorActionLogger}    logger    - Logger.
- * @param {DetectedUnknownSensorActionDebugMode} debugMode - Debug mode.
- *
- * @returns {DetectedUnknownSensorActionReturns}
- *
- * @since 1.0.0
- */
-export async function detectedUnknownSensorAction(status: DetectedUnknownSensorActionStatus, logger: DetectedUnknownSensorActionLogger, debugMode: DetectedUnknownSensorActionDebugMode): DetectedUnknownSensorActionReturns {
-  const cleanedData = removePersonalIdentifiableInformation(status);
-
-  // If outdated, it means plugin may already have support.
-  try {
-    const outdated = await isPluginOutdated();
-
-    if (outdated) {
-      if (logger !== null) {
-        logger.warn('Plugin has detected unknown sensor action. You are running an older plugin version, please update soon.');
-      }
-
-      // This is intentionally duplicated if using Homebridge debug mode.
-      if (debugMode) {
-        debugLog(logger, 'detect.ts / detectedUnknownSensorAction()', 'warn', 'Plugin has detected unknown sensor action. You are running an older plugin version, please update soon');
-      }
-
-      // Do not send analytics for users running outdated plugin versions.
-      return false;
-    }
-  } catch (error) {
-    if (debugMode === true) {
-      debugLog(logger, 'detect.ts / detectedUnknownSensorAction()', 'error', 'Failed to check if plugin is outdated');
-      stackTracer('serialize-error', serializeError(error));
-    }
-
-    // Try to check if plugin is outdated later on.
-    return false;
-  }
-
-  if (logger !== null) {
-    logger.warn('Plugin has detected unknown sensor action. Notifying plugin author about this discovery ...');
-  }
-
-  // This is intentionally duplicated if using Homebridge debug mode.
-  if (debugMode) {
-    debugLog(logger, 'detect.ts / detectedUnknownSensorAction()', 'warn', 'Plugin has detected unknown sensor action. Notifying plugin author about this discovery');
-  }
-
-  // Show content being sent to author.
-  stackTracer('detect-content', cleanedData);
-
-  try {
-    await axios.post(
-      'https://fs65kt4c5xf8.ntfy.mrjackyliang.com',
-      [
-        'Please update the plugin as soon as possible.',
-        JSON.stringify(cleanedData, null, 2),
-      ].join('\n\n'),
-      {
-        family: 4,
-        headers: {
-          'User-Agent': 'homebridge-adt-pulse',
-          'X-Title': 'Detected unknown sensor action',
-        },
-      },
-    );
-
-    return true;
-  } catch (error) {
-    if (debugMode === true) {
-      debugLog(logger, 'detect.ts / detectedUnknownSensorAction()', 'error', 'Failed to notify plugin author about the unknown sensor action');
+      debugLog(logger, 'detect.ts / detectedUnknownAccessoryAction()', 'error', 'Failed to notify plugin author about the unknown accessory action');
       stackTracer('serialize-error', serializeError(error));
     }
 
