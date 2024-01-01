@@ -561,7 +561,7 @@ export type ADTPulseAccessoryGetPanelStatusMode = 'alarmType' | 'current' | 'fau
 
 export type ADTPulseAccessoryGetPanelStatusContext = Device;
 
-export type ADTPulseAccessoryGetPanelStatusReturns = Promise<CharacteristicValue>;
+export type ADTPulseAccessoryGetPanelStatusReturns = Promise<Nullable<CharacteristicValue>>;
 
 /**
  * ADT Pulse Accessory - New information dispatcher.

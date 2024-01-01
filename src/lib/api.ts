@@ -2702,8 +2702,8 @@ export class ADTPulse {
       // After changing any arm state, the "armState" may be different from when you logged into the portal.
       this.#session.isCleanState = false;
 
-      // Allow the security orb buttons to refresh (usually takes around 6 seconds).
-      await sleep(6000);
+      // Allow the security orb buttons to refresh (usually takes around 4 seconds).
+      await sleep(4000);
 
       // sessions.axiosSummary: Load the summary page.
       sessions.axiosSummary = await this.#session.httpClient.get<unknown>(
