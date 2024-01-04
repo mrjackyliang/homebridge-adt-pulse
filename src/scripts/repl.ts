@@ -159,10 +159,13 @@ class ADTPulseRepl {
     // If the values are valid, set a new instance.
     this.#api = new ADTPulse({
       platform: 'ADTPulse',
+      name: 'ADT Pulse',
       subdomain,
       username,
       password,
       fingerprint,
+      mode: 'normal',
+      speed: 1,
       sensors: [],
     }, {
       debug: true,
@@ -291,7 +294,7 @@ class ADTPulseRepl {
       `for advanced users only. ${chalk.redBright('PLEASE USE WITH CAUTION, NO WARRANTY IS PROVIDED.')}`,
       '',
       `${chalk.yellowBright('NOTICE')}: The API gathers anonymous analytics to detect potential bugs or issues.`,
-      '        All personally identifiable information redacted. You will see exactly what will be sent out.',
+      '        All personally identifiable information will be redacted.',
     ].join('\n'));
   }
 }

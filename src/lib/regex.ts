@@ -62,11 +62,11 @@ export const paramSat = /sat=([^&']*)/;
 export const requestPathAccessSignIn = /^(\/myhome\/)([0-9.-]+)(\/access\/signin\.jsp)$/;
 
 /**
- * Request path access sign in e ns partner adt.
+ * Request path access sign in e xx partner adt.
  *
  * @since 1.0.0
  */
-export const requestPathAccessSignInENsPartnerAdt = /^(\/myhome\/)([0-9.-]+)(\/access\/signin\.jsp\?e=ns&partner=adt)$/;
+export const requestPathAccessSignInEXxPartnerAdt = /^(\/myhome\/)([0-9.-]+)(\/access\/signin\.jsp\?e=(ns|to)&partner=adt)$/;
 
 /**
  * Request path access sign in network id xx partner adt.

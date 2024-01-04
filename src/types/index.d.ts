@@ -21,6 +21,7 @@ import type { ADTPulse } from '@/lib/api.js';
 import type { platformConfig } from '@/lib/schema.js';
 import type {
   PluginDeviceCategory,
+  PluginDeviceId,
   PluginDevicePanelType,
   PluginDeviceSensorType,
   PluginLogLevel,
@@ -43,6 +44,7 @@ import type {
   PortalSensorDeviceType,
   PortalSensorStatusIcon,
   PortalSensorStatusText,
+  PortalSubdomain,
   PortalSyncCode,
   PortalVersion,
 } from '@/types/constant.d.ts';
@@ -51,12 +53,7 @@ import type {
   ApiResponseFail,
   AxiosResponseWithRequest,
   Config,
-  ConfigFingerprint,
-  ConfigPassword,
-  ConfigSubdomain,
-  ConfigUsername,
   Device,
-  DeviceId,
   Devices,
   DoSubmitHandlerRelativeUrl,
   DoSubmitHandlers,
@@ -142,13 +139,13 @@ export type ADTPulseConstructorInternalConfig = InternalConfig;
  *
  * @since 1.0.0
  */
-export type ADTPulseCredentialsFingerprint = ConfigFingerprint;
+export type ADTPulseCredentialsFingerprint = string;
 
-export type ADTPulseCredentialsPassword = ConfigPassword;
+export type ADTPulseCredentialsPassword = string;
 
-export type ADTPulseCredentialsSubdomain = ConfigSubdomain;
+export type ADTPulseCredentialsSubdomain = PortalSubdomain;
 
-export type ADTPulseCredentialsUsername = ConfigUsername;
+export type ADTPulseCredentialsUsername = string;
 
 export type ADTPulseCredentials = {
   fingerprint: ADTPulseCredentialsFingerprint;
@@ -319,12 +316,15 @@ export type ADTPulseInternalTestMode = {
   isSystemDisarmedBeforeTest: ADTPulseInternalTestModeIsSystemDisarmedBeforeTest;
 };
 
+export type ADTPulseInternalWaitTimeAfterArm = number;
+
 export type ADTPulseInternal = {
   baseUrl: ADTPulseInternalBaseUrl;
   debug: ADTPulseInternalDebug;
   logger: ADTPulseInternalLogger;
   reportedHashes: ADTPulseInternalReportedHashes,
   testMode: ADTPulseInternalTestMode;
+  waitTimeAfterArm: ADTPulseInternalWaitTimeAfterArm;
 };
 
 /**
@@ -907,7 +907,7 @@ export type ADTPulsePlatformUnifyDevicesReturns = Promise<void>;
 
 export type ADTPulsePlatformUnifyDevicesDevices = Devices;
 
-export type ADTPulsePlatformUnifyDevicesId = DeviceId;
+export type ADTPulsePlatformUnifyDevicesId = PluginDeviceId;
 
 /**
  * ADT Pulse Platform - Update accessory.
@@ -1369,6 +1369,13 @@ export type GenerateHashReturns = string;
 export type GetAccessoryCategoryDeviceCategory = PluginDeviceCategory;
 
 export type GetAccessoryCategoryReturns = number;
+
+/**
+ * Get package version.
+ *
+ * @since 1.0.0
+ */
+export type GetPackageVersionReturns = string;
 
 /**
  * Get plural form.

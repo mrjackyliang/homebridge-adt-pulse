@@ -84,7 +84,7 @@
             ]
           },
           {
-            "title": "Reset - \uD83D\uDED1 DANGER",
+            "title": "Reset",
             "enum": [
               "reset"
             ]

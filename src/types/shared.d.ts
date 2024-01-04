@@ -3,9 +3,10 @@ import type { Logger } from 'homebridge';
 import type http from 'http';
 import type { JSDOM } from 'jsdom';
 import type { ErrorObject } from 'serialize-error';
+import z from 'zod';
 
+import type { platformConfig } from '@/lib/schema.js';
 import type {
-  PluginConfigPlatform,
   PluginDeviceCategory,
   PluginDeviceGatewayType,
   PluginDeviceId,
@@ -31,7 +32,6 @@ import type {
   PortalSensorDeviceType,
   PortalSensorStatusIcon,
   PortalSensorStatusText,
-  PortalSubdomain,
   PortalVersion,
 } from '@/types/constant.d.ts';
 
@@ -100,50 +100,7 @@ export interface AxiosResponseWithRequest<T = any, D = any> extends AxiosRespons
  *
  * @since 1.0.0
  */
-export type ConfigPlatform = PluginConfigPlatform;
-
-export type ConfigName = string;
-
-export type ConfigSubdomain = PortalSubdomain;
-
-export type ConfigUsername = string;
-
-export type ConfigPassword = string;
-
-export type ConfigFingerprint = string;
-
-export type ConfigSensorName = string;
-
-export type ConfigSensorAdtName = string;
-
-export type ConfigSensorAdtType = PluginDeviceSensorType;
-
-export type ConfigSensorAdtZone = number;
-
-export type ConfigSensor = {
-  name?: ConfigSensorName;
-  adtName: ConfigSensorAdtName;
-  adtType: ConfigSensorAdtType;
-  adtZone: ConfigSensorAdtZone;
-};
-
-export type ConfigSensors = ConfigSensor[];
-
-export type ConfigPause = boolean;
-
-export type ConfigReset = boolean;
-
-export type Config = {
-  platform: ConfigPlatform;
-  name?: ConfigName;
-  subdomain: ConfigSubdomain;
-  username: ConfigUsername;
-  password: ConfigPassword;
-  fingerprint: ConfigFingerprint;
-  sensors: ConfigSensors;
-  pause?: ConfigPause;
-  reset?: ConfigReset;
-};
+export type Config = z.infer<typeof platformConfig>;
 
 /**
  * Devices.

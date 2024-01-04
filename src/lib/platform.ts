@@ -2,7 +2,6 @@ import chalk from 'chalk';
 import {
   arch,
   argv,
-  env,
   platform,
   versions,
 } from 'node:process';
@@ -15,6 +14,7 @@ import {
   condenseSensorType,
   findIndexWithValue,
   getAccessoryCategory,
+  getPackageVersion,
   getPluralForm,
   sleep,
   stackTracer,
@@ -233,21 +233,11 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
       // Assign the parsed config.
       this.#config = parsedConfig.data;
 
-      // Initialize the API instance.
-      this.#instance = new ADTPulse(
-        this.#config,
-        {
-          // If Homebridge debug mode, set "this instance" to debug mode as well.
-          debug: this.#debugMode === true,
-          logger: this.#log,
-        },
-      );
-
       // Print the system information into logs.
       this.printSystemInformation();
 
       // Give notice to users this plugin is being anonymously tracked.
-      this.#log.info('The API gathers anonymous analytics to detect potential bugs or issues. All personally identifiable information redacted. You will see exactly what will be sent out.');
+      this.#log.info('The API gathers anonymous analytics to detect potential bugs or issues. All personally identifiable information will be redacted.');
 
       // If the config specifies that plugin should be paused.
       if (this.#config.mode === 'paused') {
@@ -296,7 +286,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
 
         // Remove all related accessories from Homebridge.
         for (let i = this.accessories.length - 1; i >= 0; i -= 1) {
-          this.removeAccessory(this.accessories[i], 'plugin is being reset');
+          this.removeAccessory(this.accessories[i], 'plugin is in "reset" mode');
         }
 
         this.#log.warn('Plugin finished removing all related accessories from Homebridge.');
@@ -311,6 +301,16 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         // Formula: New Time = Original Time * (1 / Speed).
         this.#constants.intervalTimestamps.synchronize *= (1 / this.#config.speed);
       }
+
+      // Initialize the API instance.
+      this.#instance = new ADTPulse(
+        this.#config,
+        {
+          // If Homebridge debug mode, set "this instance" to debug mode as well.
+          debug: this.#debugMode === true,
+          logger: this.#log,
+        },
+      );
 
       // Start synchronization with the portal.
       this.synchronize();
@@ -497,7 +497,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     const homebridgeVersion = chalk.yellowBright(`v${this.#api.serverVersion}`);
     const nodeVersion = chalk.blueBright(`v${versions.node}`);
     const opensslVersion = chalk.magentaBright(`v${versions.openssl}`);
-    const packageVersion = chalk.greenBright(`v${env.npm_package_version ?? 'unknown'}`);
+    const packageVersion = chalk.greenBright(`v${getPackageVersion()}`);
     const platformPlusArch = chalk.redBright(`${platform} (${arch})`);
 
     this.#log.info([
@@ -857,7 +857,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         serial: gatewayInfo.serialNumber,
         firmware: gatewayInfo.versions.firmware,
         hardware: gatewayInfo.versions.hardware,
-        software: env.npm_package_version ?? 'unknown',
+        software: getPackageVersion(),
         uuid: this.#api.hap.uuid.generate(id),
       });
     }
@@ -878,7 +878,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         serial: 'N/A',
         firmware: null,
         hardware: null,
-        software: env.npm_package_version ?? 'unknown',
+        software: getPackageVersion(),
         uuid: this.#api.hap.uuid.generate(id),
       });
     }
@@ -926,7 +926,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
           serial: null,
           firmware: null,
           hardware: null,
-          software: env.npm_package_version ?? 'unknown',
+          software: getPackageVersion(),
           uuid: this.#api.hap.uuid.generate(id),
         });
       }

@@ -5,8 +5,9 @@ import latestVersion from 'latest-version';
 import _ from 'lodash';
 import { createHash } from 'node:crypto';
 import os from 'node:os';
-import { env } from 'node:process';
 import util from 'node:util';
+
+import packageJson from '../../package.json' assert { type: 'json' };
 
 import { panelStatusNoteItems, panelStatusStateItems, panelStatusStatusItems } from '@/lib/items.js';
 import {
@@ -60,6 +61,7 @@ import type {
   GenerateHashReturns,
   GetAccessoryCategoryDeviceCategory,
   GetAccessoryCategoryReturns,
+  GetPackageVersionReturns,
   GetPluralFormCount,
   GetPluralFormPlural,
   GetPluralFormReturns,
@@ -571,6 +573,17 @@ export function getAccessoryCategory(deviceCategory: GetAccessoryCategoryDeviceC
 }
 
 /**
+ * Get package version.
+ *
+ * @returns {GetPackageVersionReturns}
+ *
+ * @since 1.0.0
+ */
+export function getPackageVersion(): GetPackageVersionReturns {
+  return packageJson.version;
+}
+
+/**
  * Get plural form.
  *
  * @param {GetPluralFormCount}    count    - Count.
@@ -620,7 +633,7 @@ export function isForwardSlashOS(): IsForwardSlashOSReturns {
  * @since 1.0.0
  */
 export async function isPluginOutdated(): IsPluginOutdatedReturns {
-  const currentVersion = env.npm_package_version;
+  const currentVersion = getPackageVersion();
 
   // If we cannot compare version, simply return "not outdated".
   if (currentVersion === undefined) {

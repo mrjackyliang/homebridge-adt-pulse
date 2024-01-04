@@ -19,7 +19,7 @@ import {
   paramNetworkId,
   paramSat,
   requestPathAccessSignIn,
-  requestPathAccessSignInENsPartnerAdt,
+  requestPathAccessSignInEXxPartnerAdt,
   requestPathAccessSignInNetworkIdXxPartnerAdt,
   requestPathAjaxSyncCheckServTXx,
   requestPathKeepAlive,
@@ -169,6 +169,7 @@ export class ADTPulse {
         enabled: internalConfig.testMode?.enabled ?? false,
         isSystemDisarmedBeforeTest: internalConfig.testMode?.isSystemDisarmedBeforeTest ?? false,
       },
+      waitTimeAfterArm: 5000, // 5 seconds.
     };
 
     // Set session information to defaults.
@@ -182,6 +183,28 @@ export class ADTPulse {
       networkId: null,
       portalVersion: null,
     };
+
+    // If the config specifies that plugin should run under reduced speed mode.
+    if (config.speed !== 1) {
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.constructor()', 'warn', `Plugin is now running under ${config.speed}x operational speed. You may see slower device updates`);
+      }
+
+      // Should be flat rate to prevent excessive waiting.
+      switch (config.speed) {
+        case 0.75:
+          this.#internal.waitTimeAfterArm = 6000; // 6 seconds.
+          break;
+        case 0.5:
+          this.#internal.waitTimeAfterArm = 7000; // 7 seconds.
+          break;
+        case 0.25:
+          this.#internal.waitTimeAfterArm = 8000; // 8 seconds.
+          break;
+        default:
+          break;
+      }
+    }
   }
 
   /**
@@ -2702,8 +2725,8 @@ export class ADTPulse {
       // After changing any arm state, the "armState" may be different from when you logged into the portal.
       this.#session.isCleanState = false;
 
-      // Allow the security orb buttons to refresh (usually takes around 4 seconds).
-      await sleep(4000);
+      // Allow the security orb buttons to refresh (usually takes around 5 to 8 seconds).
+      await sleep(this.#internal.waitTimeAfterArm);
 
       // sessions.axiosSummary: Load the summary page.
       sessions.axiosSummary = await this.#session.httpClient.get<unknown>(
@@ -3500,14 +3523,14 @@ export class ADTPulse {
 
     if (
       requestPathAccessSignIn.test(requestPath)
-      || requestPathAccessSignInENsPartnerAdt.test(requestPath)
+      || requestPathAccessSignInEXxPartnerAdt.test(requestPath)
       || requestPathMfaMfaSignInWorkflowChallenge.test(requestPath)
     ) {
       if (this.#internal.debug) {
         const errorMessage = fetchErrorMessage(session);
 
         // Determine if "this instance" was redirected to the sign-in page.
-        if (requestPathAccessSignIn.test(requestPath) || requestPathAccessSignInENsPartnerAdt.test(requestPath)) {
+        if (requestPathAccessSignIn.test(requestPath) || requestPathAccessSignInEXxPartnerAdt.test(requestPath)) {
           debugLog(this.#internal.logger, 'api.ts / ADTPulse.handleLoginFailure()', 'error', 'Either the username or password is incorrect, fingerprint format is invalid, or was signed out due to inactivity');
         }
 

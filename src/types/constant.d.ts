@@ -1,12 +1,4 @@
 /**
- * Plugin config platform.
- *
- * @since 1.0.0
- */
-export type PluginConfigPlatform =
-  'ADTPulse';
-
-/**
  * Plugin device category.
  *
  * @since 1.0.0

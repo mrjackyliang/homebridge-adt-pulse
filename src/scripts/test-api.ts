@@ -221,7 +221,7 @@ class ADTPulseTest {
         'an accidental trigger or if ADT agents/local authorities become involved.',
         '',
         `${chalk.yellowBright('NOTICE')}: The API gathers anonymous analytics to detect potential bugs or issues.`,
-        '        All personally identifiable information redacted. You will see exactly what will be sent out.',
+        '        All personally identifiable information will be redacted.',
         '',
         chalk.yellowBright('Type "I Agree" (without quotes) to fully acknowledge that you have read through'),
         chalk.yellowBright('and understood the instructions, and agree to the disclaimer above ...'),
