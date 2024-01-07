@@ -9,10 +9,12 @@ import { serializeError } from 'serialize-error';
 
 import { ADTPulseAccessory } from '@/lib/accessory.js';
 import { ADTPulse } from '@/lib/api.js';
+import { detectedUnknownSensorsAction } from '@/lib/detect.js';
 import { platformConfig } from '@/lib/schema.js';
 import {
   condenseSensorType,
   findIndexWithValue,
+  generateHash,
   getAccessoryCategory,
   getPackageVersion,
   getPluralForm,
@@ -53,6 +55,7 @@ import type {
   ADTPulsePlatformUnifyDevicesDevices,
   ADTPulsePlatformUnifyDevicesId,
   ADTPulsePlatformUnifyDevicesReturns,
+  ADTPulsePlatformUnknownInformationDispatcherReturns,
   ADTPulsePlatformUpdateAccessoryDevice,
   ADTPulsePlatformUpdateAccessoryReturns,
 } from '@/types/index.d.ts';
@@ -215,6 +218,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         adtKeepAlive: 0, // January 1, 1970, at 00:00:00 UTC.
         adtSyncCheck: 0, // January 1, 1970, at 00:00:00 UTC.
       },
+      reportedHashes: [],
     };
 
     // Parsed Homebridge platform configuration.
@@ -223,6 +227,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     // Check for a valid platform configuration before initializing.
     if (!parsedConfig.success) {
       this.#log.error('Plugin is unable to initialize due to an invalid platform configuration.');
+      this.#log.warn('If you just upgraded from v2 to v3, please update your configuration structure.');
       stackTracer('zod-error', parsedConfig.error.errors);
 
       return;
@@ -289,7 +294,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
           this.removeAccessory(this.accessories[i], 'plugin is in "reset" mode');
         }
 
-        this.#log.warn('Plugin finished removing all related accessories from Homebridge.');
+        this.#log.info('Plugin finished removing all related accessories from Homebridge.');
 
         return;
       }
@@ -385,7 +390,6 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         this.#characteristic,
         this.#api,
         this.#log,
-        this.#debugMode,
       );
     }
 
@@ -446,7 +450,6 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         this.#characteristic,
         this.#api,
         this.#log,
-        this.#debugMode,
       );
     }
 
@@ -819,11 +822,59 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         this.#state.data.sensorsStatus = sensors;
       }
 
+      // Check for unknown sensor actions.
+      await this.unknownInformationDispatcher();
+
       // Consolidate devices first, then update them all.
       await this.unifyDevices();
     } catch (error) {
       this.#log.error('fetchUpdatedInformation() has unexpectedly thrown an error, will continue to fetch.');
       stackTracer('serialize-error', serializeError(error));
+    }
+  }
+
+  /**
+   * ADT Pulse Platform - Unknown information dispatcher.
+   *
+   * @private
+   *
+   * @returns {ADTPulsePlatformUnknownInformationDispatcherReturns}
+   *
+   * @since 1.0.0
+   */
+  private async unknownInformationDispatcher(): ADTPulsePlatformUnknownInformationDispatcherReturns {
+    const { sensorsInfo, sensorsStatus } = this.#state.data;
+
+    const sensors = sensorsInfo.map((sensorInfo, sensorsInfoKey) => {
+      const sensorInfoZone = sensorInfo.zone;
+      const sensorStatusZone = sensorsStatus[sensorsInfoKey].zone;
+      const sensor = {
+        info: sensorInfo,
+        status: sensorsStatus[sensorsInfoKey],
+        type: condenseSensorType(sensorInfo.deviceType),
+      };
+
+      if (sensorInfoZone === sensorStatusZone) {
+        return sensor;
+      }
+
+      // Check if there was a mismatch between the "sensorsInfo" and "sensorsStatus" array.
+      this.#log.error(`Sensor mismatch detected for zones ${sensorInfoZone} and ${sensorStatusZone}. This should not be happening.`);
+      stackTracer('sensor-mismatch', sensor);
+
+      return null;
+    });
+    const dataHash = generateHash(JSON.stringify(sensors));
+    const matchedSensors = sensors.filter((sensor): sensor is NonNullable<typeof sensors[number]> => sensor !== null);
+
+    // If the detector has not reported this event before.
+    if (this.#state.reportedHashes.find((reportedHash) => dataHash === reportedHash) === undefined) {
+      const detectedNew = await detectedUnknownSensorsAction(matchedSensors, this.#log, this.#debugMode);
+
+      // Save this hash so the detector does not detect the same thing multiple times.
+      if (detectedNew) {
+        this.#state.reportedHashes.push(dataHash);
+      }
     }
   }
 
@@ -936,7 +987,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     if (this.#config !== null) {
       const { sensors } = this.#config;
 
-      for (let i = 0; i < this.accessories.length; i += 1) {
+      for (let i = this.accessories.length - 1; i >= 0; i -= 1) {
         const { originalName, type, zone } = this.accessories[i].context;
 
         // If current accessory is a "gateway" or "panel", skip check.

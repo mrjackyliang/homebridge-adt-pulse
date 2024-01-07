@@ -35,6 +35,7 @@ export const platformConfig = z.object({
       z.literal('fire'),
       z.literal('flood'),
       z.literal('glass'),
+      z.literal('heat'),
       z.literal('keypad'),
       z.literal('motion'),
       z.literal('panic'),

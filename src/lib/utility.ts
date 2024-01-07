@@ -4,10 +4,9 @@ import { JSDOM } from 'jsdom';
 import latestVersion from 'latest-version';
 import _ from 'lodash';
 import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
 import os from 'node:os';
 import util from 'node:util';
-
-import packageJson from '../../package.json' assert { type: 'json' };
 
 import { panelStatusNoteItems, panelStatusStateItems, panelStatusStatusItems } from '@/lib/items.js';
 import {
@@ -61,6 +60,7 @@ import type {
   GenerateHashReturns,
   GetAccessoryCategoryDeviceCategory,
   GetAccessoryCategoryReturns,
+  GetDetectReportUrlReturns,
   GetPackageVersionReturns,
   GetPluralFormCount,
   GetPluralFormPlural,
@@ -207,6 +207,9 @@ export function condenseSensorType(sensorType: CondenseSensorTypeSensorType): Co
       break;
     case 'Glass Break Detector':
       condensed = 'glass';
+      break;
+    case 'Heat (Rate-of-Rise) Detector':
+      condensed = 'heat';
       break;
     case 'Keypad/Touchpad':
       condensed = 'keypad';
@@ -573,6 +576,17 @@ export function getAccessoryCategory(deviceCategory: GetAccessoryCategoryDeviceC
 }
 
 /**
+ * Get detect report url.
+ *
+ * @returns {GetDetectReportUrlReturns}
+ *
+ * @since 1.0.0
+ */
+export function getDetectReportUrl(): GetDetectReportUrlReturns {
+  return 'https://n9e2q2s678sbiw13j.ntfy.mrjackyliang.com';
+}
+
+/**
  * Get package version.
  *
  * @returns {GetPackageVersionReturns}
@@ -580,6 +594,9 @@ export function getAccessoryCategory(deviceCategory: GetAccessoryCategoryDeviceC
  * @since 1.0.0
  */
 export function getPackageVersion(): GetPackageVersionReturns {
+  const require = createRequire(import.meta.url);
+  const packageJson = require('../../../package.json'); // Assumes it is running in the "build" folder.
+
   return packageJson.version;
 }
 
@@ -1035,6 +1052,7 @@ export function stackTracer(type: StackTracerType, error: StackTracerError<Stack
   switch (type) {
     case 'api-response':
     case 'detect-content':
+    case 'sensor-mismatch':
     case 'serialize-error':
       stringError = util.inspect(error, {
         showHidden: false,

@@ -48,7 +48,6 @@ export type ApiResponseAction =
   | 'GET_PANEL_STATUS'
   | 'GET_SENSORS_INFORMATION'
   | 'GET_SENSORS_STATUS'
-  | 'IS_PORTAL_ACCESSIBLE'
   | 'LOGIN'
   | 'LOGOUT'
   | 'PERFORM_KEEP_ALIVE'
@@ -87,11 +86,11 @@ export type ApiResponse<Action extends ApiResponseAction, Info extends ApiRespon
   | ApiResponseFail<Action>;
 
 /**
- * Axios response with request.
+ * Axios response nodejs.
  *
  * @since 1.0.0
  */
-export interface AxiosResponseWithRequest<T = any, D = any> extends AxiosResponse<T, D> {
+export interface AxiosResponseNodeJs<T = any, D = any> extends AxiosResponse<T, D> {
   request?: http.ClientRequest;
 }
 
@@ -498,7 +497,7 @@ export type SensorsStatus = SensorStatus[];
  *
  * @since 1.0.0
  */
-export type Sessions<Shape extends Record<string, AxiosResponseWithRequest<unknown, unknown> | JSDOM>> = Shape;
+export type Sessions<Shape extends Record<string, AxiosResponseNodeJs<unknown, unknown> | JSDOM>> = Shape;
 
 /**
  * UUID.

@@ -188,6 +188,12 @@
                   ]
                 },
                 {
+                  "title": "Heat (Rate-of-Rise) Detector",
+                  "enum": [
+                    "heat"
+                  ]
+                },
+                {
                   "title": "Keypad/Touchpad",
                   "enum": [
                     "keypad"

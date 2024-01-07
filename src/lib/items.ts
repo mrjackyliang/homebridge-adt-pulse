@@ -19,6 +19,7 @@ import type {
   PanelStatusStatusItems,
   PanelStatusStatusItemsSensorsOpen,
   PortalVersionItems,
+  SensorActionItems,
   SensorInformationDeviceTypeItems,
   SensorInformationStatusItems,
   SensorStatusIconItems,
@@ -36,6 +37,7 @@ export const condensedSensorTypeItems: CondensedSensorTypeItems = [
   'fire',
   'flood',
   'glass',
+  'heat',
   'keypad',
   'motion',
   'panic',
@@ -261,6 +263,95 @@ export const portalVersionItems: PortalVersionItems = [
 ];
 
 /**
+ * Sensor action items.
+ *
+ * @since 1.0.0
+ */
+export const sensorActionItems: SensorActionItems = [
+  {
+    type: 'co',
+    statuses: [
+      'Okay',
+    ],
+  },
+  {
+    type: 'doorWindow',
+    statuses: [
+      'Closed',
+      'Open',
+    ],
+  },
+  {
+    type: 'fire',
+    statuses: [
+      'Okay',
+    ],
+  },
+  {
+    type: 'flood',
+    statuses: [
+      '',
+    ],
+  },
+  {
+    type: 'glass',
+    statuses: [
+      'Okay',
+    ],
+  },
+  {
+    type: 'heat',
+    statuses: [
+      '',
+    ],
+  },
+  {
+    type: 'keypad',
+    statuses: [
+      '',
+    ],
+  },
+  {
+    type: 'motion',
+    statuses: [
+      'Motion',
+      'No Motion',
+      'Okay',
+    ],
+  },
+  {
+    type: 'panic',
+    statuses: [
+      '',
+    ],
+  },
+  {
+    type: 'shock',
+    statuses: [
+      '',
+    ],
+  },
+  {
+    type: 'supervisory',
+    statuses: [
+      '',
+    ],
+  },
+  {
+    type: 'temperature',
+    statuses: [
+      '',
+    ],
+  },
+  {
+    type: 'unknown',
+    statuses: [
+      '',
+    ],
+  },
+];
+
+/**
  * Sensor information device type items.
  *
  * @since 1.0.0
@@ -272,6 +363,7 @@ export const sensorInformationDeviceTypeItems: SensorInformationDeviceTypeItems 
   'Door Sensor',
   'Fire (Smoke/Heat) Detector',
   'Glass Break Detector',
+  'Heat (Rate-of-Rise) Detector',
   'Keypad/Touchpad',
   'Motion Sensor',
   'Motion Sensor (Notable Events Only)',

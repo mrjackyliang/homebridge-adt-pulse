@@ -15,6 +15,7 @@ import {
   orbSecurityButtonUrlParamsHrefItems,
   panelInformationStatusItems,
   portalVersionItems,
+  sensorActionItems,
   sensorInformationDeviceTypeItems,
   sensorInformationStatusItems,
   sensorStatusIconItems,
@@ -22,6 +23,7 @@ import {
 } from '@/lib/items.js';
 import {
   debugLog,
+  getDetectReportUrl,
   isPluginOutdated,
   removePersonalIdentifiableInformation,
   stackTracer,
@@ -59,10 +61,10 @@ import type {
   DetectedNewSensorsStatusLogger,
   DetectedNewSensorsStatusReturns,
   DetectedNewSensorsStatusSensors,
-  DetectedUnknownAccessoryActionData,
-  DetectedUnknownAccessoryActionDebugMode,
-  DetectedUnknownAccessoryActionLogger,
-  DetectedUnknownAccessoryActionReturns,
+  DetectedUnknownSensorsActionDebugMode,
+  DetectedUnknownSensorsActionLogger,
+  DetectedUnknownSensorsActionReturns,
+  DetectedUnknownSensorsActionSensors,
 } from '@/types/index.d.ts';
 
 /**
@@ -134,11 +136,8 @@ export async function detectedNewDoSubmitHandlers(handlers: DetectedNewDoSubmitH
 
     try {
       await axios.post(
-        'https://fs65kt4c5xf8.ntfy.mrjackyliang.com',
-        [
-          'Please update the plugin as soon as possible.',
-          JSON.stringify(cleanedData, null, 2),
-        ].join('\n\n'),
+        getDetectReportUrl(),
+        JSON.stringify(cleanedData, null, 2),
         {
           family: 4,
           headers: {
@@ -221,11 +220,8 @@ export async function detectedNewGatewayInformation(device: DetectedNewGatewayIn
 
     try {
       await axios.post(
-        'https://fs65kt4c5xf8.ntfy.mrjackyliang.com',
-        [
-          'Please update the plugin as soon as possible.',
-          JSON.stringify(cleanedData, null, 2),
-        ].join('\n\n'),
+        getDetectReportUrl(),
+        JSON.stringify(cleanedData, null, 2),
         {
           family: 4,
           headers: {
@@ -330,11 +326,8 @@ export async function detectedNewOrbSecurityButtons(buttons: DetectedNewOrbSecur
 
     try {
       await axios.post(
-        'https://fs65kt4c5xf8.ntfy.mrjackyliang.com',
-        [
-          'Please update the plugin as soon as possible.',
-          JSON.stringify(cleanedData, null, 2),
-        ].join('\n\n'),
+        getDetectReportUrl(),
+        JSON.stringify(cleanedData, null, 2),
         {
           family: 4,
           headers: {
@@ -417,11 +410,8 @@ export async function detectedNewPanelInformation(device: DetectedNewPanelInform
 
     try {
       await axios.post(
-        'https://fs65kt4c5xf8.ntfy.mrjackyliang.com',
-        [
-          'Please update the plugin as soon as possible.',
-          JSON.stringify(cleanedData, null, 2),
-        ].join('\n\n'),
+        getDetectReportUrl(),
+        JSON.stringify(cleanedData, null, 2),
         {
           family: 4,
           headers: {
@@ -504,11 +494,8 @@ export async function detectedNewPanelStatus(summary: DetectedNewPanelStatusSumm
 
     try {
       await axios.post(
-        'https://fs65kt4c5xf8.ntfy.mrjackyliang.com',
-        [
-          'Please update the plugin as soon as possible.',
-          JSON.stringify(cleanedData, null, 2),
-        ].join('\n\n'),
+        getDetectReportUrl(),
+        JSON.stringify(cleanedData, null, 2),
         {
           family: 4,
           headers: {
@@ -591,11 +578,8 @@ export async function detectedNewPortalVersion(version: DetectedNewPortalVersion
 
     try {
       await axios.post(
-        'https://fs65kt4c5xf8.ntfy.mrjackyliang.com',
-        [
-          'Please update the plugin as soon as possible.',
-          JSON.stringify(cleanedData, null, 2),
-        ].join('\n\n'),
+        getDetectReportUrl(),
+        JSON.stringify(cleanedData, null, 2),
         {
           family: 4,
           headers: {
@@ -681,11 +665,8 @@ export async function detectedNewSensorsInformation(sensors: DetectedNewSensorsI
 
     try {
       await axios.post(
-        'https://fs65kt4c5xf8.ntfy.mrjackyliang.com',
-        [
-          'Please update the plugin as soon as possible.',
-          JSON.stringify(cleanedData, null, 2),
-        ].join('\n\n'),
+        getDetectReportUrl(),
+        JSON.stringify(cleanedData, null, 2),
         {
           family: 4,
           headers: {
@@ -768,11 +749,8 @@ export async function detectedNewSensorsStatus(sensors: DetectedNewSensorsStatus
 
     try {
       await axios.post(
-        'https://fs65kt4c5xf8.ntfy.mrjackyliang.com',
-        [
-          'Please update the plugin as soon as possible.',
-          JSON.stringify(cleanedData, null, 2),
-        ].join('\n\n'),
+        getDetectReportUrl(),
+        JSON.stringify(cleanedData, null, 2),
         {
           family: 4,
           headers: {
@@ -798,82 +776,99 @@ export async function detectedNewSensorsStatus(sensors: DetectedNewSensorsStatus
 }
 
 /**
- * Detected unknown accessory action.
+ * Detected unknown sensors action.
  *
- * @param {DetectedUnknownAccessoryActionData}      data      - Data.
- * @param {DetectedUnknownAccessoryActionLogger}    logger    - Logger.
- * @param {DetectedUnknownAccessoryActionDebugMode} debugMode - Debug mode.
+ * @param {DetectedUnknownSensorsActionSensors}   sensors   - Sensors
+ * @param {DetectedUnknownSensorsActionLogger}    logger    - Logger.
+ * @param {DetectedUnknownSensorsActionDebugMode} debugMode - Debug mode.
  *
- * @returns {DetectedUnknownAccessoryActionReturns}
+ * @returns {DetectedUnknownSensorsActionReturns}
  *
  * @since 1.0.0
  */
-export async function detectedUnknownAccessoryAction(data: DetectedUnknownAccessoryActionData, logger: DetectedUnknownAccessoryActionLogger, debugMode: DetectedUnknownAccessoryActionDebugMode): DetectedUnknownAccessoryActionReturns {
-  const cleanedData = removePersonalIdentifiableInformation(data);
+export async function detectedUnknownSensorsAction(sensors: DetectedUnknownSensorsActionSensors, logger: DetectedUnknownSensorsActionLogger, debugMode: DetectedUnknownSensorsActionDebugMode): DetectedUnknownSensorsActionReturns {
+  const detectedNewActions = sensors.filter((sensor) => {
+    const sensorStatusStatuses = sensor.status.statuses;
+    const sensorType = sensor.type;
 
-  // If outdated, it means plugin may already have support.
-  try {
-    const outdated = await isPluginOutdated();
+    const stringifiedStatuses = sensorStatusStatuses.join(', ');
+    const currentType = sensorActionItems.find((sensorActionItem) => sensorActionItem.type === sensorType);
 
-    if (outdated) {
-      if (logger !== null) {
-        logger.warn('Plugin has detected unknown accessory action. You are running an older plugin version, please update soon.');
-      }
-
-      // This is intentionally duplicated if using Homebridge debug mode.
-      if (debugMode) {
-        debugLog(logger, 'detect.ts / detectedUnknownAccessoryAction()', 'warn', 'Plugin has detected unknown accessory action. You are running an older plugin version, please update soon');
-      }
-
-      // Do not send analytics for users running outdated plugin versions.
+    // Need to start with a list of documented actions for that sensor type.
+    if (currentType === undefined) {
       return false;
     }
-  } catch (error) {
-    if (debugMode === true) {
-      debugLog(logger, 'detect.ts / detectedUnknownAccessoryAction()', 'error', 'Failed to check if plugin is outdated');
-      stackTracer('serialize-error', serializeError(error));
+
+    // If status for that sensor type is documented, no need to continue.
+    return !currentType.statuses.includes(stringifiedStatuses);
+  });
+
+  if (detectedNewActions.length > 0) {
+    const cleanedData = removePersonalIdentifiableInformation(detectedNewActions);
+
+    // If outdated, it means plugin may already have support.
+    try {
+      const outdated = await isPluginOutdated();
+
+      if (outdated) {
+        if (logger !== null) {
+          logger.warn('Plugin has detected unknown sensors action. You are running an older plugin version, please update soon.');
+        }
+
+        // This is intentionally duplicated if using Homebridge debug mode.
+        if (debugMode) {
+          debugLog(logger, 'detect.ts / detectedUnknownSensorsAction()', 'warn', 'Plugin has detected unknown sensors action. You are running an older plugin version, please update soon');
+        }
+
+        // Do not send analytics for users running outdated plugin versions.
+        return false;
+      }
+    } catch (error) {
+      if (debugMode === true) {
+        debugLog(logger, 'detect.ts / detectedUnknownSensorsAction()', 'error', 'Failed to check if plugin is outdated');
+        stackTracer('serialize-error', serializeError(error));
+      }
+
+      // Try to check if plugin is outdated later on.
+      return false;
     }
 
-    // Try to check if plugin is outdated later on.
-    return false;
-  }
+    if (logger !== null) {
+      logger.warn('Plugin has detected unknown sensors action. Notifying plugin author about this discovery ...');
+    }
 
-  if (logger !== null) {
-    logger.warn('Plugin has detected unknown accessory action. Notifying plugin author about this discovery ...');
-  }
+    // This is intentionally duplicated if using Homebridge debug mode.
+    if (debugMode) {
+      debugLog(logger, 'detect.ts / detectedUnknownSensorsAction()', 'warn', 'Plugin has detected unknown sensors action. Notifying plugin author about this discovery');
+    }
 
-  // This is intentionally duplicated if using Homebridge debug mode.
-  if (debugMode) {
-    debugLog(logger, 'detect.ts / detectedUnknownAccessoryAction()', 'warn', 'Plugin has detected unknown accessory action. Notifying plugin author about this discovery');
-  }
+    // Show content being sent to author.
+    stackTracer('detect-content', cleanedData);
 
-  // Show content being sent to author.
-  stackTracer('detect-content', cleanedData);
-
-  try {
-    await axios.post(
-      'https://fs65kt4c5xf8.ntfy.mrjackyliang.com',
-      [
-        'Please update the plugin as soon as possible.',
+    try {
+      await axios.post(
+        getDetectReportUrl(),
         JSON.stringify(cleanedData, null, 2),
-      ].join('\n\n'),
-      {
-        family: 4,
-        headers: {
-          'User-Agent': 'homebridge-adt-pulse',
-          'X-Title': 'Detected unknown accessory action',
+        {
+          family: 4,
+          headers: {
+            'User-Agent': 'homebridge-adt-pulse',
+            'X-Title': 'Detected unknown sensors action',
+          },
         },
-      },
-    );
+      );
 
-    return true;
-  } catch (error) {
-    if (debugMode === true) {
-      debugLog(logger, 'detect.ts / detectedUnknownAccessoryAction()', 'error', 'Failed to notify plugin author about the unknown accessory action');
-      stackTracer('serialize-error', serializeError(error));
+      return true;
+    } catch (error) {
+      if (debugMode === true) {
+        debugLog(logger, 'detect.ts / detectedUnknownSensorsAction()', 'error', 'Failed to notify plugin author about the unknown sensors action');
+        stackTracer('serialize-error', serializeError(error));
+      }
+
+      // Try to send information to author later.
+      return false;
     }
-
-    // Try to send information to author later.
-    return false;
   }
+
+  return false;
 }

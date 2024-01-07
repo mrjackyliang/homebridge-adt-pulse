@@ -87,7 +87,6 @@ import type {
   ADTPulseHandleLoginFailureSession,
   ADTPulseInternal,
   ADTPulseIsAuthenticatedReturns,
-  ADTPulseIsPortalAccessibleReturns,
   ADTPulseLoginPortalVersion,
   ADTPulseLoginReturns,
   ADTPulseLoginSessions,
@@ -222,17 +221,7 @@ export class ADTPulse {
     }
 
     try {
-      const internet = await this.isPortalAccessible();
       const sessions: ADTPulseLoginSessions = {};
-
-      // Check if portal is accessible.
-      if (!internet.success) {
-        return {
-          action: 'LOGIN',
-          success: false,
-          info: internet.info,
-        };
-      }
 
       // Check if "this instance" has already authenticated.
       if (this.isAuthenticated()) {
@@ -539,17 +528,7 @@ export class ADTPulse {
     }
 
     try {
-      const internet = await this.isPortalAccessible();
       const sessions: ADTPulseLogoutSessions = {};
-
-      // Check if portal is accessible.
-      if (!internet.success) {
-        return {
-          action: 'LOGOUT',
-          success: false,
-          info: internet.info,
-        };
-      }
 
       // Check if "this instance" has already de-authenticated.
       if (!this.isAuthenticated()) {
@@ -701,17 +680,7 @@ export class ADTPulse {
     }
 
     try {
-      const internet = await this.isPortalAccessible();
       const sessions: ADTPulseGetGatewayInformationSessions = {};
-
-      // Check if portal is accessible.
-      if (!internet.success) {
-        return {
-          action: 'GET_GATEWAY_INFORMATION',
-          success: false,
-          info: internet.info,
-        };
-      }
 
       // sessions.axiosSystemGateway: Load the system gateway page.
       sessions.axiosSystemGateway = await this.#session.httpClient.get<unknown>(
@@ -937,17 +906,7 @@ export class ADTPulse {
     }
 
     try {
-      const internet = await this.isPortalAccessible();
       const sessions: ADTPulseGetPanelInformationSessions = {};
-
-      // Check if portal is accessible.
-      if (!internet.success) {
-        return {
-          action: 'GET_PANEL_INFORMATION',
-          success: false,
-          info: internet.info,
-        };
-      }
 
       // sessions.axiosSystemDeviceId1: Load the system device id 1 page.
       sessions.axiosSystemDeviceId1 = await this.#session.httpClient.get<unknown>(
@@ -1145,17 +1104,7 @@ export class ADTPulse {
     }
 
     try {
-      const internet = await this.isPortalAccessible();
       const sessions: ADTPulseGetPanelStatusSessions = {};
-
-      // Check if portal is accessible.
-      if (!internet.success) {
-        return {
-          action: 'GET_PANEL_STATUS',
-          success: false,
-          info: internet.info,
-        };
-      }
 
       // sessions.axiosSummary: Load the summary page.
       sessions.axiosSummary = await this.#session.httpClient.get<unknown>(
@@ -1418,17 +1367,7 @@ export class ADTPulse {
     }
 
     try {
-      const internet = await this.isPortalAccessible();
       const sessions: ADTPulseSetPanelStatusSessions = {};
-
-      // Check if portal is accessible.
-      if (!internet.success) {
-        return {
-          action: 'SET_PANEL_STATUS',
-          success: false,
-          info: internet.info,
-        };
-      }
 
       // sessions.axiosSummary: Load the summary page.
       sessions.axiosSummary = await this.#session.httpClient.get<unknown>(
@@ -1809,17 +1748,7 @@ export class ADTPulse {
     }
 
     try {
-      const internet = await this.isPortalAccessible();
       const sessions: ADTPulseGetSensorsInformationSessions = {};
-
-      // Check if portal is accessible.
-      if (!internet.success) {
-        return {
-          action: 'GET_SENSORS_INFORMATION',
-          success: false,
-          info: internet.info,
-        };
-      }
 
       // sessions.axiosSystem: Load the system page.
       sessions.axiosSystem = await this.#session.httpClient.get<unknown>(
@@ -1946,6 +1875,7 @@ export class ADTPulse {
        *             'Door Sensor'
        *             'Fire (Smoke/Heat) Detector'
        *             'Glass Break Detector'
+       *             'Heat (Rate-of-Rise) Detector'
        *             'Keypad/Touchpad'
        *             'Motion Sensor'
        *             'Motion Sensor (Notable Events Only)'
@@ -2009,17 +1939,7 @@ export class ADTPulse {
     }
 
     try {
-      const internet = await this.isPortalAccessible();
       const sessions: ADTPulseGetSensorsStatusSessions = {};
-
-      // Check if portal is accessible.
-      if (!internet.success) {
-        return {
-          action: 'GET_SENSORS_STATUS',
-          success: false,
-          info: internet.info,
-        };
-      }
 
       // sessions.axiosSummary: Load the summary page.
       sessions.axiosSummary = await this.#session.httpClient.get<unknown>(
@@ -2255,17 +2175,7 @@ export class ADTPulse {
     }
 
     try {
-      const internet = await this.isPortalAccessible();
       const sessions: ADTPulsePerformSyncCheckSessions = {};
-
-      // Check if portal is accessible.
-      if (!internet.success) {
-        return {
-          action: 'PERFORM_SYNC_CHECK',
-          success: false,
-          info: internet.info,
-        };
-      }
 
       // sessions.axiosSyncCheck: Load the sync check page.
       sessions.axiosSyncCheck = await this.#session.httpClient.get<unknown>(
@@ -2411,17 +2321,7 @@ export class ADTPulse {
     }
 
     try {
-      const internet = await this.isPortalAccessible();
       const sessions: ADTPulsePerformKeepAliveSessions = {};
-
-      // Check if portal is accessible.
-      if (!internet.success) {
-        return {
-          action: 'PERFORM_KEEP_ALIVE',
-          success: false,
-          info: internet.info,
-        };
-      }
 
       // sessions.axiosKeepAlive: Load the keep alive page.
       sessions.axiosKeepAlive = await this.#session.httpClient.post<unknown>(
@@ -2567,17 +2467,7 @@ export class ADTPulse {
     }
 
     try {
-      const internet = await this.isPortalAccessible();
       const sessions: ADTPulseArmDisarmHandlerSessions = {};
-
-      // Check if portal is accessible.
-      if (!internet.success) {
-        return {
-          action: 'ARM_DISARM_HANDLER',
-          success: false,
-          info: internet.info,
-        };
-      }
 
       // Build an "application/x-www-form-urlencoded" form for use with arming and disarming.
       const armDisarmForm = new URLSearchParams();
@@ -2993,17 +2883,7 @@ export class ADTPulse {
     }
 
     try {
-      const internet = await this.isPortalAccessible();
       const sessions: ADTPulseForceArmHandlerSessions = {};
-
-      // Check if portal is accessible.
-      if (!internet.success) {
-        return {
-          action: 'FORCE_ARM_HANDLER',
-          success: false,
-          info: internet.info,
-        };
-      }
 
       // Make sure we are able to use JSDOM on the response data.
       if (typeof response.data !== 'string') {
@@ -3340,70 +3220,6 @@ export class ADTPulse {
   }
 
   /**
-   * ADT Pulse - Is portal accessible.
-   *
-   * @private
-   *
-   * @returns {ADTPulseIsPortalAccessibleReturns}
-   *
-   * @since 1.0.0
-   */
-  private async isPortalAccessible(): ADTPulseIsPortalAccessibleReturns {
-    let errorObject;
-
-    if (this.#internal.debug) {
-      debugLog(this.#internal.logger, 'api.ts / ADTPulse.isPortalAccessible()', 'info', `Attempting to check if "${this.#internal.baseUrl}" is accessible`);
-    }
-
-    try {
-      // Send request using a new instance to prevent cookie jar cross-contamination.
-      const response = await axios.head(
-        this.#internal.baseUrl,
-        this.getRequestConfig(),
-      );
-
-      if (response.status !== 200 || response.statusText !== 'OK') {
-        if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.isPortalAccessible()', 'error', `The portal at "${this.#internal.baseUrl}" is not accessible`);
-        }
-
-        return {
-          action: 'IS_PORTAL_ACCESSIBLE',
-          success: false,
-          info: {
-            message: `The portal at "${this.#internal.baseUrl}" is not accessible`,
-          },
-        };
-      }
-
-      if (this.#internal.debug) {
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.isPortalAccessible()', 'success', `Successfully checked if "${this.#internal.baseUrl}" is accessible`);
-      }
-
-      return {
-        action: 'IS_PORTAL_ACCESSIBLE',
-        success: true,
-        info: null,
-      };
-    } catch (error) {
-      errorObject = serializeError(error);
-    }
-
-    if (this.#internal.debug) {
-      debugLog(this.#internal.logger, 'api.ts / ADTPulse.isPortalAccessible()', 'error', 'Method encountered an error during execution');
-      stackTracer('serialize-error', errorObject);
-    }
-
-    return {
-      action: 'IS_PORTAL_ACCESSIBLE',
-      success: false,
-      info: {
-        error: errorObject,
-      },
-    };
-  }
-
-  /**
    * ADT Pulse - New information dispatcher.
    *
    * @param {ADTPulseNewInformationDispatcherType} type - Type.
@@ -3477,8 +3293,10 @@ export class ADTPulse {
         Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
         'Accept-Encoding': 'gzip, deflate, br',
         'Accept-Language': 'en-US,en;q=0.9',
+        'Cache-Control': 'no-cache',
         Connection: 'keep-alive',
         Host: `${this.#credentials.subdomain}.adtpulse.com`,
+        Pragma: 'no-cache',
         'Sec-Fetch-Dest': 'document',
         'Sec-Fetch-Mode': 'navigate',
         'Sec-Fetch-Site': 'none',
