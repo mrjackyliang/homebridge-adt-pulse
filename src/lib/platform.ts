@@ -845,27 +845,25 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
   private async unknownInformationDispatcher(): ADTPulsePlatformUnknownInformationDispatcherReturns {
     const { sensorsInfo, sensorsStatus } = this.#state.data;
 
-    const sensors = sensorsInfo.map((sensorInfo, sensorsInfoKey) => {
-      const sensorInfoZone = sensorInfo.zone;
-      const sensorStatusZone = sensorsStatus[sensorsInfoKey].zone;
-      const sensor = {
-        info: sensorInfo,
-        status: sensorsStatus[sensorsInfoKey],
-        type: condenseSensorType(sensorInfo.deviceType),
-      };
+    // Check if there was a mismatch between the "sensorsInfo" and "sensorsStatus" array.
+    if (sensorsInfo.length !== sensorsStatus.length) {
+      this.#log.error('It seems like there is a mis-match between the sensors information and sensors status. This should not be happening.');
+      stackTracer('sensor-mismatch', {
+        sensorsInfo,
+        sensorsStatus,
+      });
 
-      if (sensorInfoZone === sensorStatusZone) {
-        return sensor;
-      }
+      // Stop here until this is resolved.
+      return;
+    }
 
-      // Check if there was a mismatch between the "sensorsInfo" and "sensorsStatus" array.
-      this.#log.error(`Sensor mismatch detected for zones ${sensorInfoZone} and ${sensorStatusZone}. This should not be happening.`);
-      stackTracer('sensor-mismatch', sensor);
-
-      return null;
-    });
-    const dataHash = generateHash(JSON.stringify(sensors));
+    const sensors = sensorsInfo.map((sensorInfo, sensorsInfoKey) => ({
+      info: sensorInfo,
+      status: sensorsStatus[sensorsInfoKey],
+      type: condenseSensorType(sensorInfo.deviceType),
+    }));
     const matchedSensors = sensors.filter((sensor): sensor is NonNullable<typeof sensors[number]> => sensor !== null);
+    const dataHash = generateHash(JSON.stringify(sensors));
 
     // If the detector has not reported this event before.
     if (this.#state.reportedHashes.find((reportedHash) => dataHash === reportedHash) === undefined) {

@@ -222,6 +222,9 @@ export function condenseSensorType(sensorType: CondenseSensorTypeSensorType): Co
     case 'Silent Panic Button/Pendant':
       condensed = 'panic';
       break;
+    case 'Wireless Remote':
+      condensed = 'remote';
+      break;
     case 'Shock Sensor':
       condensed = 'shock';
       break;
@@ -765,7 +768,7 @@ export function parseOrbSensors(elements: ParseOrbSensorsElements): ParseOrbSens
       const zoneText = zone.textContent;
       const statusText = status.textContent;
 
-      if (canvasIcon !== null && nameText !== null && zoneText !== null && statusText !== null) {
+      if (canvasIcon !== null && nameText !== null && zoneText !== null && zoneText.startsWith('Zone') && statusText !== null) {
         const cleanedIcon = clearWhitespace(canvasIcon) as ParseOrbSensorsCleanedIcon;
         const cleanedName = clearWhitespace(nameText);
         const cleanedZone = Number(clearWhitespace(zoneText).replace(textOrbSensorZone, '$2'));

@@ -41,6 +41,7 @@ export const condensedSensorTypeItems: CondensedSensorTypeItems = [
   'keypad',
   'motion',
   'panic',
+  'remote',
   'shock',
   'supervisory',
   'temperature',
@@ -277,6 +278,7 @@ export const sensorActionItems: SensorActionItems = [
   {
     type: 'doorWindow',
     statuses: [
+      'Bypassed, Open',
       'Closed',
       'Open',
     ],
@@ -321,6 +323,12 @@ export const sensorActionItems: SensorActionItems = [
   },
   {
     type: 'panic',
+    statuses: [
+      '',
+    ],
+  },
+  {
+    type: 'remote',
     statuses: [
       '',
     ],
@@ -374,6 +382,7 @@ export const sensorInformationDeviceTypeItems: SensorInformationDeviceTypeItems 
   'Unknown Device Type',
   'Water/Flood Sensor',
   'Window Sensor',
+  'Wireless Remote',
 ];
 
 /**
@@ -382,6 +391,7 @@ export const sensorInformationDeviceTypeItems: SensorInformationDeviceTypeItems 
  * @since 1.0.0
  */
 export const sensorInformationStatusItems: SensorInformationStatusItems = [
+  'Installing',
   'Offline',
   'Online',
   'Status Unknown',
@@ -394,6 +404,7 @@ export const sensorInformationStatusItems: SensorInformationStatusItems = [
  */
 export const sensorStatusIconItems: SensorStatusIconItems = [
   'devStatAlarm',
+  'devStatInstalling',
   'devStatLowBatt',
   'devStatMotion',
   'devStatOffline',
@@ -412,6 +423,7 @@ export const sensorStatusStatusItems: SensorStatusStatusItems = [
   'ALARM',
   'Bypassed',
   'Closed',
+  'Installing',
   'Low Battery',
   'Motion',
   'No Motion',

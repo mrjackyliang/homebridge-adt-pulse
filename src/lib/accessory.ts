@@ -188,6 +188,9 @@ export class ADTPulseAccessory {
       case 'panic':
         this.#services.Primary = this.#accessory.getService(service.OccupancySensor) ?? this.#accessory.addService(service.OccupancySensor);
         break;
+      case 'remote':
+        this.#services.Primary = this.#accessory.getService(service.OccupancySensor) ?? this.#accessory.addService(service.OccupancySensor);
+        break;
       case 'shock':
         this.#services.Primary = this.#accessory.getService(service.OccupancySensor) ?? this.#accessory.addService(service.OccupancySensor);
         break;
@@ -224,7 +227,10 @@ export class ADTPulseAccessory {
           .updateValue(this.getPanelStatus('current', context));
 
         this.#services.Primary.getCharacteristic(this.#characteristic.SecuritySystemTargetState)
-          .updateValue(this.getPanelStatus('target', context))
+          .updateValue(this.getPanelStatus('target', context));
+
+        // Keep the
+        this.#services.Primary.getCharacteristic(this.#characteristic.SecuritySystemTargetState)
           .onSet((value) => this.setPanelStatus(value, context));
         break;
       default:
@@ -266,6 +272,10 @@ export class ADTPulseAccessory {
           .updateValue(this.getSensorStatus('status', context));
         break;
       case 'panic':
+        this.#services.Primary.getCharacteristic(this.#characteristic.OccupancyDetected)
+          .updateValue(this.getSensorStatus('status', context));
+        break;
+      case 'remote':
         this.#services.Primary.getCharacteristic(this.#characteristic.OccupancyDetected)
           .updateValue(this.getSensorStatus('status', context));
         break;
@@ -319,6 +329,7 @@ export class ADTPulseAccessory {
       case 'keypad':
       case 'motion':
       case 'panic':
+      case 'remote':
       case 'shock':
       case 'supervisory':
       case 'temperature':
@@ -478,6 +489,9 @@ export class ADTPulseAccessory {
         }
         break;
       case 'panic':
+        // TODO: Nothing done here yet.
+        break;
+      case 'remote':
         // TODO: Nothing done here yet.
         break;
       case 'shock':

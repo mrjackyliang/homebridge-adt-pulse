@@ -48,6 +48,7 @@ export type PluginDeviceSensorType =
   | 'keypad'
   | 'motion'
   | 'panic'
+  | 'remote'
   | 'shock'
   | 'supervisory'
   | 'temperature'
@@ -90,7 +91,8 @@ export type PortalDevicePanelStatus =
  * @since 1.0.0
  */
 export type PortalDeviceSensorStatus =
-  'Offline'
+  'Installing'
+  | 'Offline'
   | 'Online'
   | 'Status Unknown';
 
@@ -288,7 +290,8 @@ export type PortalSensorDeviceType =
   | 'Temperature Sensor'
   | 'Unknown Device Type'
   | 'Water/Flood Sensor'
-  | 'Window Sensor';
+  | 'Window Sensor'
+  | 'Wireless Remote';
 
 /**
  * Portal sensor status icon.
@@ -297,6 +300,7 @@ export type PortalSensorDeviceType =
  */
 export type PortalSensorStatusIcon =
   'devStatAlarm'
+  | 'devStatInstalling'
   | 'devStatLowBatt'
   | 'devStatMotion'
   | 'devStatOffline'
@@ -314,6 +318,7 @@ export type PortalSensorStatusText =
   'ALARM'
   | 'Bypassed'
   | 'Closed'
+  | 'Installing'
   | 'Low Battery'
   | 'Motion'
   | 'No Motion'

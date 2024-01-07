@@ -1886,8 +1886,10 @@ export class ADTPulse {
        *             'Unknown Device Type'
        *             'Water/Flood Sensor'
        *             'Window Sensor'
+       *             'Wireless Remote'
        *
-       * status: 'Offline'
+       * status: 'Installing'
+       *         'Offline'
        *         'Online'
        *         'Status Unknown'
        *
@@ -2106,6 +2108,7 @@ export class ADTPulse {
        * PATENT: https://patents.google.com/patent/US20170070361A1/en
        *
        * icon: 'devStatAlarm'
+       *       'devStatInstalling'
        *       'devStatLowBatt'
        *       'devStatMotion'
        *       'devStatOffline'
@@ -2117,6 +2120,7 @@ export class ADTPulse {
        * status: 'ALARM'
        *         'Bypassed'
        *         'Closed'
+       *         'Installing'
        *         'Low Battery'
        *         'Motion'
        *         'No Motion'

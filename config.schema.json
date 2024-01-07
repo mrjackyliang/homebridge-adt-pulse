@@ -212,6 +212,12 @@
                   ]
                 },
                 {
+                  "title": "Wireless Remote",
+                  "enum": [
+                    "remote"
+                  ]
+                },
+                {
                   "title": "Shock Sensor",
                   "enum": [
                     "shock"

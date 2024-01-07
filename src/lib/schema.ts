@@ -39,6 +39,7 @@ export const platformConfig = z.object({
       z.literal('keypad'),
       z.literal('motion'),
       z.literal('panic'),
+      z.literal('remote'),
       z.literal('shock'),
       z.literal('supervisory'),
       z.literal('temperature'),

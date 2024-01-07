@@ -72,10 +72,11 @@ This plugin can expose these devices (in read-only mode) based on your configura
 7. `keypad` - Keypad/Touchpad
 8. `motion` - Motion Sensor __::__ Motion Sensor (Notable Events Only)
 9. `panic` - Audible Panic Button/Pendant __::__ Silent Panic Button/Pendant
-10. `shock` - Shock Sensor
-11. `supervisory` - System/Supervisory
-12. `temperature` - Temperature Sensor
-13. `unknown` - Unknown Device Type
+10. `remote` - Wireless Remote
+11. `shock` - Shock Sensor
+12. `supervisory` - System/Supervisory
+13. `temperature` - Temperature Sensor
+14. `unknown` - Unknown Device Type
 
 Due to implementation complexity and platform instability, all Z-Wave accessories connected to the ADT Pulse gateway will not be planned for development or be supported overall. Consider purchasing the [Hubitat Hub](https://hubitat.com) for a seamless setup experience, or read about the [Home Assistant Z-Wave](https://www.home-assistant.io/integrations/zwave_js/) integration.
 
