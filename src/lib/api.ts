@@ -1860,7 +1860,7 @@ export class ADTPulse {
        *
        * @since 1.0.0
        */
-      const jsdomSystemSensorsTable = sessions.jsdomSystem.window.document.querySelectorAll('#systemContentList tr[onclick^="goToUrl(\'device.jsp?id="]');
+      const jsdomSystemSensorsTable = sessions.jsdomSystem.window.document.querySelectorAll('#systemContentList tr[class^=\'p_row\'] tr.p_listRow');
       const parsedSensorsTable = parseSensorsTable(jsdomSystemSensorsTable);
 
       /**
@@ -1869,24 +1869,18 @@ export class ADTPulse {
        * NOTICE: Parts NOT SHOWN below will NOT be tracked, documented, or tested.
        * PATENT: https://patents.google.com/patent/US20170070361A1/en
        *
-       * deviceType: 'Audible Panic Button/Pendant'
-       *             'Carbon Monoxide Detector'
+       * deviceType: 'Carbon Monoxide Detector'
        *             'Door/Window Sensor'
        *             'Door Sensor'
        *             'Fire (Smoke/Heat) Detector'
        *             'Glass Break Detector'
        *             'Heat (Rate-of-Rise) Detector'
-       *             'Keypad/Touchpad'
        *             'Motion Sensor'
        *             'Motion Sensor (Notable Events Only)'
        *             'Shock Sensor'
-       *             'Silent Panic Button/Pendant'
-       *             'System/Supervisory'
        *             'Temperature Sensor'
-       *             'Unknown Device Type'
        *             'Water/Flood Sensor'
        *             'Window Sensor'
-       *             'Wireless Remote'
        *
        * status: 'Installing'
        *         'Offline'

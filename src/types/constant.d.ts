@@ -45,14 +45,9 @@ export type PluginDeviceSensorType =
   | 'flood'
   | 'glass'
   | 'heat'
-  | 'keypad'
   | 'motion'
-  | 'panic'
-  | 'remote'
   | 'shock'
-  | 'supervisory'
-  | 'temperature'
-  | 'unknown';
+  | 'temperature';
 
 /**
  * Plugin log level.
@@ -274,24 +269,18 @@ export type PortalPanelStatusSensorsOpen =
  * @since 1.0.0
  */
 export type PortalSensorDeviceType =
-  'Audible Panic Button/Pendant'
-  | 'Carbon Monoxide Detector'
+  'Carbon Monoxide Detector'
   | 'Door/Window Sensor'
   | 'Door Sensor'
   | 'Fire (Smoke/Heat) Detector'
   | 'Glass Break Detector'
   | 'Heat (Rate-of-Rise) Detector'
-  | 'Keypad/Touchpad'
   | 'Motion Sensor'
   | 'Motion Sensor (Notable Events Only)'
   | 'Shock Sensor'
-  | 'Silent Panic Button/Pendant'
-  | 'System/Supervisory'
   | 'Temperature Sensor'
-  | 'Unknown Device Type'
   | 'Water/Flood Sensor'
-  | 'Window Sensor'
-  | 'Wireless Remote';
+  | 'Window Sensor';
 
 /**
  * Portal sensor status icon.

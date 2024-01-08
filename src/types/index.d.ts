@@ -308,7 +308,7 @@ export type ADTPulseInternal = {
   baseUrl: ADTPulseInternalBaseUrl;
   debug: ADTPulseInternalDebug;
   logger: ADTPulseInternalLogger;
-  reportedHashes: ADTPulseInternalReportedHashes,
+  reportedHashes: ADTPulseInternalReportedHashes;
   testMode: ADTPulseInternalTestMode;
   waitTimeAfterArm: ADTPulseInternalWaitTimeAfterArm;
 };
@@ -416,7 +416,7 @@ export type ADTPulsePerformSyncCheckReturnsInfo = {
 export type ADTPulsePerformSyncCheckReturns = Promise<ApiResponse<'PERFORM_SYNC_CHECK', ADTPulsePerformSyncCheckReturnsInfo>>;
 
 export type ADTPulsePerformSyncCheckSessions = Sessions<{
-  axiosSyncCheck?: AxiosResponseNodeJs<unknown>,
+  axiosSyncCheck?: AxiosResponseNodeJs<unknown>;
 }>;
 
 /**
@@ -444,7 +444,7 @@ export type ADTPulseSessionNetworkId = NetworkId | null;
 export type ADTPulseSessionPortalVersion = PortalVersion | null;
 
 export type ADTPulseSession = {
-  backupSatCode: ADTPulseSessionBackupSatCode,
+  backupSatCode: ADTPulseSessionBackupSatCode;
   httpClient: ADTPulseSessionHttpClient;
   isAuthenticated: ADTPulseSessionIsAuthenticated;
   isCleanState: ADTPulseSessionIsCleanState;
@@ -765,7 +765,7 @@ export type ADTPulsePlatformStateActivityIsSyncing = boolean;
 export type ADTPulsePlatformStateActivity = {
   isAdtKeepingAlive: ADTPulsePlatformStateActivityIsAdtKeepingAlive;
   isAdtSyncChecking: ADTPulsePlatformStateActivityIsAdtSyncChecking;
-  isLoggingIn: ADTPulsePlatformStateActivityIsLoggingIn,
+  isLoggingIn: ADTPulsePlatformStateActivityIsLoggingIn;
   isSyncing: ADTPulsePlatformStateActivityIsSyncing;
 };
 

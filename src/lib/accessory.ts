@@ -179,29 +179,14 @@ export class ADTPulseAccessory {
       case 'heat':
         this.#services.Primary = this.#accessory.getService(service.OccupancySensor) ?? this.#accessory.addService(service.OccupancySensor);
         break;
-      case 'keypad':
-        this.#services.Primary = this.#accessory.getService(service.OccupancySensor) ?? this.#accessory.addService(service.OccupancySensor);
-        break;
       case 'motion':
         this.#services.Primary = this.#accessory.getService(service.MotionSensor) ?? this.#accessory.addService(service.MotionSensor);
-        break;
-      case 'panic':
-        this.#services.Primary = this.#accessory.getService(service.OccupancySensor) ?? this.#accessory.addService(service.OccupancySensor);
-        break;
-      case 'remote':
-        this.#services.Primary = this.#accessory.getService(service.OccupancySensor) ?? this.#accessory.addService(service.OccupancySensor);
         break;
       case 'shock':
         this.#services.Primary = this.#accessory.getService(service.OccupancySensor) ?? this.#accessory.addService(service.OccupancySensor);
         break;
-      case 'supervisory':
-        this.#services.Primary = this.#accessory.getService(service.OccupancySensor) ?? this.#accessory.addService(service.OccupancySensor);
-        break;
       case 'temperature':
         this.#services.Primary = this.#accessory.getService(service.TemperatureSensor) ?? this.#accessory.addService(service.TemperatureSensor);
-        break;
-      case 'unknown':
-        this.#services.Primary = this.#accessory.getService(service.OccupancySensor) ?? this.#accessory.addService(service.OccupancySensor);
         break;
       default:
         break;
@@ -263,36 +248,16 @@ export class ADTPulseAccessory {
         this.#services.Primary.getCharacteristic(this.#characteristic.OccupancyDetected)
           .updateValue(this.getSensorStatus('status', context));
         break;
-      case 'keypad':
-        this.#services.Primary.getCharacteristic(this.#characteristic.OccupancyDetected)
-          .updateValue(this.getSensorStatus('status', context));
-        break;
       case 'motion':
         this.#services.Primary.getCharacteristic(this.#characteristic.MotionDetected)
-          .updateValue(this.getSensorStatus('status', context));
-        break;
-      case 'panic':
-        this.#services.Primary.getCharacteristic(this.#characteristic.OccupancyDetected)
-          .updateValue(this.getSensorStatus('status', context));
-        break;
-      case 'remote':
-        this.#services.Primary.getCharacteristic(this.#characteristic.OccupancyDetected)
           .updateValue(this.getSensorStatus('status', context));
         break;
       case 'shock':
         this.#services.Primary.getCharacteristic(this.#characteristic.OccupancyDetected)
           .updateValue(this.getSensorStatus('status', context));
         break;
-      case 'supervisory':
-        this.#services.Primary.getCharacteristic(this.#characteristic.OccupancyDetected)
-          .updateValue(this.getSensorStatus('status', context));
-        break;
       case 'temperature':
         this.#services.Primary.getCharacteristic(this.#characteristic.CurrentTemperature)
-          .updateValue(this.getSensorStatus('status', context));
-        break;
-      case 'unknown':
-        this.#services.Primary.getCharacteristic(this.#characteristic.OccupancyDetected)
           .updateValue(this.getSensorStatus('status', context));
         break;
       default:
@@ -326,14 +291,9 @@ export class ADTPulseAccessory {
       case 'flood':
       case 'glass':
       case 'heat':
-      case 'keypad':
       case 'motion':
-      case 'panic':
-      case 'remote':
       case 'shock':
-      case 'supervisory':
       case 'temperature':
-      case 'unknown':
         this.#services.Primary.getCharacteristic(this.#characteristic.StatusActive)
           .updateValue(this.getSensorStatus('active', context));
 
@@ -476,9 +436,6 @@ export class ADTPulseAccessory {
       case 'heat':
         // TODO: Nothing done here yet.
         break;
-      case 'keypad':
-        // TODO: Nothing done here yet.
-        break;
       case 'motion':
         if (statuses.includes('No Motion') || statuses.includes('Okay')) {
           return false;
@@ -488,22 +445,10 @@ export class ADTPulseAccessory {
           return true;
         }
         break;
-      case 'panic':
-        // TODO: Nothing done here yet.
-        break;
-      case 'remote':
-        // TODO: Nothing done here yet.
-        break;
       case 'shock':
         // TODO: Nothing done here yet.
         break;
-      case 'supervisory':
-        // TODO: Nothing done here yet.
-        break;
       case 'temperature':
-        // TODO: Nothing done here yet.
-        break;
-      case 'unknown':
         // TODO: Nothing done here yet.
         break;
       default:

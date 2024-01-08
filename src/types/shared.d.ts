@@ -59,9 +59,9 @@ export type ApiResponseSuccessSuccess = true;
 export type ApiResponseSuccessInfo = object | null;
 
 export type ApiResponseSuccess<Action extends ApiResponseAction, Info extends ApiResponseSuccessInfo> = {
-  action: Action,
-  success: ApiResponseSuccessSuccess,
-  info: Info,
+  action: Action;
+  success: ApiResponseSuccessSuccess;
+  info: Info;
 };
 
 export type ApiResponseFailSuccess = false;
@@ -71,14 +71,14 @@ export type ApiResponseFailInfoError = ErrorObject;
 export type ApiResponseFailInfoMessage = string;
 
 export type ApiResponseFailInfo = {
-  error?: ApiResponseFailInfoError,
+  error?: ApiResponseFailInfoError;
   message?: ApiResponseFailInfoMessage;
 };
 
 export type ApiResponseFail<Action extends ApiResponseAction> = {
-  action: Action,
-  success: ApiResponseFailSuccess,
-  info: ApiResponseFailInfo,
+  action: Action;
+  success: ApiResponseFailSuccess;
+  info: ApiResponseFailInfo;
 };
 
 export type ApiResponse<Action extends ApiResponseAction, Info extends ApiResponseSuccessInfo> =
@@ -344,7 +344,7 @@ export type OrbSecurityButtonReadyUrlParams = {
 };
 
 export type OrbSecurityButtonReady = {
-  buttonDisabled: OrbSecurityButtonReadyButtonDisabled,
+  buttonDisabled: OrbSecurityButtonReadyButtonDisabled;
   buttonIndex: OrbSecurityButtonReadyButtonIndex;
   buttonText: OrbSecurityButtonReadyButtonText;
   changeAccessCode: OrbSecurityButtonReadyChangeAccessCode;
@@ -359,7 +359,7 @@ export type OrbSecurityButtonPendingButtonDisabled = true;
 export type OrbSecurityButtonPendingButtonText = PortalPanelArmButtonLoadingText | null;
 
 export type OrbSecurityButtonPending = {
-  buttonDisabled: OrbSecurityButtonPendingButtonDisabled,
+  buttonDisabled: OrbSecurityButtonPendingButtonDisabled;
   buttonText: OrbSecurityButtonPendingButtonText;
 };
 
@@ -413,17 +413,14 @@ export type PanelStatusNote = PortalPanelNote;
 
 export type PanelStatusNotes = PanelStatusNote[];
 
-export type PanelStatusRawDataCleanedNode = string;
-
-export type PanelStatusRawDataRawNode = string;
+export type PanelStatusRawDataNode = string;
 
 export type PanelStatusRawDataUnknownPiece = string;
 
 export type PanelStatusRawDataUnknownPieces = PanelStatusRawDataUnknownPiece[];
 
 export type PanelStatusRawData = {
-  cleanedNode: PanelStatusRawDataCleanedNode;
-  rawNode: PanelStatusRawDataRawNode;
+  node: PanelStatusRawDataNode;
   unknownPieces: PanelStatusRawDataUnknownPieces;
 };
 

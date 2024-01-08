@@ -211,31 +211,15 @@ export function condenseSensorType(sensorType: CondenseSensorTypeSensorType): Co
     case 'Heat (Rate-of-Rise) Detector':
       condensed = 'heat';
       break;
-    case 'Keypad/Touchpad':
-      condensed = 'keypad';
-      break;
     case 'Motion Sensor':
     case 'Motion Sensor (Notable Events Only)':
       condensed = 'motion';
       break;
-    case 'Audible Panic Button/Pendant':
-    case 'Silent Panic Button/Pendant':
-      condensed = 'panic';
-      break;
-    case 'Wireless Remote':
-      condensed = 'remote';
-      break;
     case 'Shock Sensor':
       condensed = 'shock';
       break;
-    case 'System/Supervisory':
-      condensed = 'supervisory';
-      break;
     case 'Temperature Sensor':
       condensed = 'temperature';
-      break;
-    case 'Unknown Device Type':
-      condensed = 'unknown';
       break;
     default:
       break;
@@ -803,8 +787,7 @@ export function parseOrbTextSummary(element: ParseOrbTextSummaryElement): ParseO
       panelStatuses: [],
       panelNotes: [],
       rawData: {
-        cleanedNode: '',
-        rawNode: '',
+        node: '',
         unknownPieces: [],
       },
     };
@@ -817,8 +800,7 @@ export function parseOrbTextSummary(element: ParseOrbTextSummaryElement): ParseO
     panelStatuses: [],
     panelNotes: [],
     rawData: {
-      cleanedNode,
-      rawNode: element.textContent,
+      node: cleanedNode,
       unknownPieces: [],
     },
   };
@@ -929,25 +911,36 @@ export function parseOrbSecurityButtons(elements: ParseOrbSecurityButtonsElement
 export function parseSensorsTable(elements: ParseOrbSensorsTableElements): ParseOrbSensorsTableReturns {
   const sensors: ParseOrbSensorsTableSensors = [];
 
+  let atSensorsSection = false;
+
   elements.forEach((element) => {
-    const onclick = element.getAttribute('onclick');
-    const icon = element.querySelector('td:nth-child(1) canvas');
-    const name = element.querySelector('td:nth-child(2) a');
-    const zone = element.querySelector('td:nth-child(3)');
-    const deviceType = element.querySelector('td:nth-child(5)');
+    const elementCount = element.childElementCount;
+    const title = element.querySelector('td.p_listRow h2.p_boldNormalText');
 
-    if (onclick !== null && icon !== null && name !== null && zone !== null && deviceType !== null) {
-      const deviceId = onclick.replace(functionGoToUrl, '$1');
-      const iconTitle = icon.getAttribute('title');
-      const nameText = name.textContent;
-      const zoneText = zone.textContent;
-      const deviceTypeText = deviceType.textContent;
+    // If we are looking at a row that is a sensor.
+    if (atSensorsSection) {
+      // This is a blank row, and it means we are done fetching all sensors.
+      if (title === null && elementCount === 1) {
+        atSensorsSection = false;
 
-      if (iconTitle !== null && nameText !== null && zoneText !== null && deviceTypeText !== null) {
-        // If the row does not have a zone, it is NOT a sensor.
-        const isSensor = clearWhitespace(zoneText) !== '';
+        // Don't proceed further.
+        return;
+      }
 
-        if (isSensor) {
+      const onclick = element.getAttribute('onclick');
+      const icon = element.querySelector('td:nth-child(1) canvas');
+      const name = element.querySelector('td:nth-child(2) a');
+      const zone = element.querySelector('td:nth-child(3)');
+      const deviceType = element.querySelector('td:nth-child(5)');
+
+      if (onclick !== null && icon !== null && name !== null && zone !== null && deviceType !== null) {
+        const deviceId = onclick.replace(functionGoToUrl, '$1');
+        const iconTitle = icon.getAttribute('title');
+        const nameText = name.textContent;
+        const zoneText = zone.textContent;
+        const deviceTypeText = deviceType.textContent;
+
+        if (iconTitle !== null && nameText !== null && zoneText !== null && deviceTypeText !== null) {
           const cleanedDeviceId = Number(clearWhitespace(deviceId));
           const cleanedDeviceType = clearWhitespace(deviceTypeText) as ParseOrbSensorsTableDeviceType;
           const cleanedName = clearWhitespace(nameText);
@@ -961,6 +954,22 @@ export function parseSensorsTable(elements: ParseOrbSensorsTableElements): Parse
             status: cleanedStatus,
             zone: cleanedZone,
           });
+        }
+      }
+    }
+
+    // If we are looking at a row that isn't a sensor.
+    if (!atSensorsSection) {
+      // This is a title row, and on the next row, we begin capturing sensors information.
+      if (title !== null && elementCount === 1) {
+        const titleText = title.textContent;
+
+        if (titleText !== null) {
+          const cleanedTitle = clearWhitespace(titleText);
+
+          if (cleanedTitle === 'Sensors') {
+            atSensorsSection = true;
+          }
         }
       }
     }

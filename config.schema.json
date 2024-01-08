@@ -194,27 +194,9 @@
                   ]
                 },
                 {
-                  "title": "Keypad/Touchpad",
-                  "enum": [
-                    "keypad"
-                  ]
-                },
-                {
                   "title": "Motion Sensor :: Motion Sensor (Notable Events Only)",
                   "enum": [
                     "motion"
-                  ]
-                },
-                {
-                  "title": "Audible Panic Button/Pendant :: Silent Panic Button/Pendant",
-                  "enum": [
-                    "panic"
-                  ]
-                },
-                {
-                  "title": "Wireless Remote",
-                  "enum": [
-                    "remote"
                   ]
                 },
                 {
@@ -224,21 +206,9 @@
                   ]
                 },
                 {
-                  "title": "System/Supervisory",
-                  "enum": [
-                    "supervisory"
-                  ]
-                },
-                {
                   "title": "Temperature Sensor",
                   "enum": [
                     "temperature"
-                  ]
-                },
-                {
-                  "title": "Unknown Device Type",
-                  "enum": [
-                    "unknown"
                   ]
                 }
               ]

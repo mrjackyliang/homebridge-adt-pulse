@@ -38,14 +38,9 @@ export const condensedSensorTypeItems: CondensedSensorTypeItems = [
   'flood',
   'glass',
   'heat',
-  'keypad',
   'motion',
-  'panic',
-  'remote',
   'shock',
-  'supervisory',
   'temperature',
-  'unknown',
 ];
 
 /**
@@ -308,29 +303,11 @@ export const sensorActionItems: SensorActionItems = [
     ],
   },
   {
-    type: 'keypad',
-    statuses: [
-      '',
-    ],
-  },
-  {
     type: 'motion',
     statuses: [
       'Motion',
       'No Motion',
       'Okay',
-    ],
-  },
-  {
-    type: 'panic',
-    statuses: [
-      '',
-    ],
-  },
-  {
-    type: 'remote',
-    statuses: [
-      '',
     ],
   },
   {
@@ -340,19 +317,7 @@ export const sensorActionItems: SensorActionItems = [
     ],
   },
   {
-    type: 'supervisory',
-    statuses: [
-      '',
-    ],
-  },
-  {
     type: 'temperature',
-    statuses: [
-      '',
-    ],
-  },
-  {
-    type: 'unknown',
     statuses: [
       '',
     ],
@@ -365,24 +330,18 @@ export const sensorActionItems: SensorActionItems = [
  * @since 1.0.0
  */
 export const sensorInformationDeviceTypeItems: SensorInformationDeviceTypeItems = [
-  'Audible Panic Button/Pendant',
   'Carbon Monoxide Detector',
   'Door/Window Sensor',
   'Door Sensor',
   'Fire (Smoke/Heat) Detector',
   'Glass Break Detector',
   'Heat (Rate-of-Rise) Detector',
-  'Keypad/Touchpad',
   'Motion Sensor',
   'Motion Sensor (Notable Events Only)',
   'Shock Sensor',
-  'Silent Panic Button/Pendant',
-  'System/Supervisory',
   'Temperature Sensor',
-  'Unknown Device Type',
   'Water/Flood Sensor',
   'Window Sensor',
-  'Wireless Remote',
 ];
 
 /**
