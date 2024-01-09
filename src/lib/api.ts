@@ -168,7 +168,7 @@ export class ADTPulse {
         enabled: internalConfig.testMode?.enabled ?? false,
         isSystemDisarmedBeforeTest: internalConfig.testMode?.isSystemDisarmedBeforeTest ?? false,
       },
-      waitTimeAfterArm: 5000, // 5 seconds.
+      waitTimeAfterArm: 6000, // 6 seconds.
     };
 
     // Set session information to defaults.
@@ -192,13 +192,13 @@ export class ADTPulse {
       // Should be flat rate to prevent excessive waiting.
       switch (config.speed) {
         case 0.75:
-          this.#internal.waitTimeAfterArm = 6000; // 6 seconds.
-          break;
-        case 0.5:
           this.#internal.waitTimeAfterArm = 7000; // 7 seconds.
           break;
-        case 0.25:
+        case 0.5:
           this.#internal.waitTimeAfterArm = 8000; // 8 seconds.
+          break;
+        case 0.25:
+          this.#internal.waitTimeAfterArm = 9000; // 9 seconds.
           break;
         default:
           break;
@@ -2613,7 +2613,7 @@ export class ADTPulse {
       // After changing any arm state, the "armState" may be different from when you logged into the portal.
       this.#session.isCleanState = false;
 
-      // Allow the security orb buttons to refresh (usually takes around 5 to 8 seconds).
+      // Allow the security orb buttons to refresh (usually takes around 6 to 9 seconds).
       await sleep(this.#internal.waitTimeAfterArm);
 
       // sessions.axiosSummary: Load the summary page.

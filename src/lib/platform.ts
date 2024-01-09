@@ -25,7 +25,7 @@ import type {
   ADTPulsePlatformAccessories,
   ADTPulsePlatformAddAccessoryDevice,
   ADTPulsePlatformAddAccessoryReturns,
-  ADTPulsePlatformAddAccessoryTypedNewAccessory,
+  ADTPulsePlatformAddAccessoryTypedAccessory,
   ADTPulsePlatformApi,
   ADTPulsePlatformCharacteristic,
   ADTPulsePlatformConfig,
@@ -73,7 +73,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
    *
    * @since 1.0.0
    */
-  accessories: ADTPulsePlatformAccessories;
+  #accessories: ADTPulsePlatformAccessories;
 
   /**
    * ADT Pulse Platform - Api.
@@ -175,7 +175,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
    * @since 1.0.0
    */
   constructor(log: ADTPulsePlatformConstructorLog, config: ADTPulsePlatformConstructorConfig, api: ADTPulsePlatformConstructorApi) {
-    this.accessories = [];
+    this.#accessories = [];
     this.#api = api;
     this.#characteristic = api.hap.Characteristic;
     this.#config = null;
@@ -290,8 +290,8 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         this.#log.warn('Plugin is now removing all related accessories from Homebridge ...');
 
         // Remove all related accessories from Homebridge.
-        for (let i = this.accessories.length - 1; i >= 0; i -= 1) {
-          this.removeAccessory(this.accessories[i], 'plugin is in "reset" mode');
+        for (let i = this.#accessories.length - 1; i >= 0; i -= 1) {
+          this.removeAccessory(this.#accessories[i], 'plugin is in "reset" mode');
         }
 
         this.#log.info('Plugin finished removing all related accessories from Homebridge.');
@@ -335,7 +335,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     this.#log.info(`Configuring cached accessory for ${chalk.underline(accessory.context.name)} (id: ${accessory.context.id}, uuid: ${accessory.context.uuid}) ...`);
 
     // Add the restored accessory to the accessories cache.
-    this.accessories.push(accessory);
+    this.#accessories.push(accessory);
   }
 
   /**
@@ -348,7 +348,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
    * @since 1.0.0
    */
   addAccessory(device: ADTPulsePlatformAddAccessoryDevice): ADTPulsePlatformAddAccessoryReturns {
-    const accessoryIndex = this.accessories.findIndex((accessory) => device.uuid === accessory.context.uuid);
+    const accessoryIndex = this.#accessories.findIndex((accessory) => device.uuid === accessory.context.uuid);
 
     // Prevent adding duplicate accessory.
     if (accessoryIndex >= 0) {
@@ -375,13 +375,12 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     newAccessory.context = device;
 
     // Let TypeScript know that the context now exists. This creates additional runtime.
-    const typedAccessory = newAccessory as ADTPulsePlatformAddAccessoryTypedNewAccessory;
+    const typedAccessory = newAccessory as ADTPulsePlatformAddAccessoryTypedAccessory;
 
     this.#log.info(`Adding ${chalk.underline(typedAccessory.context.name)} (id: ${typedAccessory.context.id}, uuid: ${typedAccessory.context.uuid}) accessory ...`);
 
     // Create the handler for the new accessory if it does not exist.
     if (this.#handlers[device.id] === undefined) {
-      // All arguments are passed by reference.
       this.#handlers[device.id] = new ADTPulseAccessory(
         typedAccessory,
         this.#state,
@@ -393,8 +392,11 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
       );
     }
 
+    // Force the accessory status to refresh.
+    this.#handlers[device.id].updater();
+
     // Save the new accessory into the accessories cache.
-    this.accessories.push(typedAccessory);
+    this.#accessories.push(typedAccessory);
 
     this.#api.registerPlatformAccessories(
       'homebridge-adt-pulse',
@@ -414,7 +416,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
    */
   updateAccessory(device: ADTPulsePlatformUpdateAccessoryDevice): ADTPulsePlatformUpdateAccessoryReturns {
     const { index, value } = findIndexWithValue(
-      this.accessories,
+      this.#accessories,
       (accessory) => device.uuid === accessory.context.uuid,
     );
 
@@ -441,7 +443,6 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
 
     // Create the handler for the existing accessory if it does not exist.
     if (this.#handlers[device.id] === undefined) {
-      // All arguments are passed by reference.
       this.#handlers[device.id] = new ADTPulseAccessory(
         value,
         this.#state,
@@ -453,8 +454,11 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
       );
     }
 
+    // Force the accessory status to refresh.
+    this.#handlers[device.id].updater();
+
     // Update the existing accessory in the accessories cache.
-    this.accessories[index] = value;
+    this.#accessories[index] = value;
 
     this.#api.updatePlatformAccessories(
       [value],
@@ -478,7 +482,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     this.#log.debug(`${chalk.underline(accessory.context.name)} (id: ${accessory.context.id}, uuid: ${accessory.context.uuid}) is removed because ${reason}.`);
 
     // Keep only the accessories in the cache that is not the accessory being removed.
-    this.accessories = this.accessories.filter((existingAccessory) => existingAccessory.context.uuid !== accessory.context.uuid);
+    this.#accessories = this.#accessories.filter((existingAccessory) => existingAccessory.context.uuid !== accessory.context.uuid);
 
     this.#api.unregisterPlatformAccessories(
       'homebridge-adt-pulse',
@@ -985,8 +989,8 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     if (this.#config !== null) {
       const { sensors } = this.#config;
 
-      for (let i = this.accessories.length - 1; i >= 0; i -= 1) {
-        const { originalName, type, zone } = this.accessories[i].context;
+      for (let i = this.#accessories.length - 1; i >= 0; i -= 1) {
+        const { originalName, type, zone } = this.#accessories[i].context;
 
         // If current accessory is a "gateway" or "panel", skip check.
         if (type === 'gateway' || type === 'panel') {
@@ -995,7 +999,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
 
         // If current accessory is not listed in the "sensors" config, remove it.
         if (!sensors.some((sensor) => originalName === sensor.adtName && zone !== null && zone === sensor.adtZone)) {
-          this.removeAccessory(this.accessories[i], 'accessory is missing in config');
+          this.removeAccessory(this.#accessories[i], 'accessory is missing in config');
         }
       }
     }
@@ -1017,7 +1021,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
    */
   private async pollAccessories(devices: ADTPulsePlatformPollAccessoriesDevices): ADTPulsePlatformPollAccessoriesReturns {
     for (let i = 0; i < devices.length; i += 1) {
-      const accessoryIndex = this.accessories.findIndex((accessory) => devices[i].uuid === accessory.context.uuid);
+      const accessoryIndex = this.#accessories.findIndex((accessory) => devices[i].uuid === accessory.context.uuid);
 
       // Update the device if accessory is cached, otherwise add it as a new device.
       if (accessoryIndex >= 0) {

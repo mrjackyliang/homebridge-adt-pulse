@@ -268,38 +268,43 @@ export const sensorActionItems: SensorActionItems = [
     type: 'co',
     statuses: [
       'Okay',
+      'Unknown',
     ],
   },
   {
     type: 'doorWindow',
     statuses: [
+      'Bypassed, Closed',
       'Bypassed, Open',
       'Closed',
       'Open',
+      'Unknown',
     ],
   },
   {
     type: 'fire',
     statuses: [
       'Okay',
+      'Unknown',
     ],
   },
   {
     type: 'flood',
     statuses: [
-      '',
+      'Okay',
     ],
   },
   {
     type: 'glass',
     statuses: [
       'Okay',
+      'Unknown',
     ],
   },
   {
     type: 'heat',
     statuses: [
-      '',
+      'Okay',
     ],
   },
   {
@@ -308,6 +313,7 @@ export const sensorActionItems: SensorActionItems = [
       'Motion',
       'No Motion',
       'Okay',
+      'Unknown',
     ],
   },
   {
@@ -319,7 +325,7 @@ export const sensorActionItems: SensorActionItems = [
   {
     type: 'temperature',
     statuses: [
-      '',
+      'Okay',
     ],
   },
 ];

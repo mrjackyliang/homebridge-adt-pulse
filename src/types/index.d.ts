@@ -486,8 +486,6 @@ export type ADTPulseAccessoryAccessory = PlatformAccessory<Device>;
 /**
  * ADT Pulse Accessory - Api.
  *
- * @private
- *
  * @since 1.0.0
  */
 export type ADTPulseAccessoryApi = API;
@@ -523,11 +521,13 @@ export type ADTPulseAccessoryConstructorLog = Logger;
  *
  * @since 1.0.0
  */
+export type ADTPulseAccessoryGetPanelStatusCaller = 'constructor' | 'updater';
+
 export type ADTPulseAccessoryGetPanelStatusMode = 'alarmType' | 'current' | 'fault' | 'tamper' | 'target';
 
-export type ADTPulseAccessoryGetPanelStatusContext = Device;
-
-export type ADTPulseAccessoryGetPanelStatusReturns = Error | HapStatusError | Nullable<CharacteristicValue>;
+export type ADTPulseAccessoryGetPanelStatusReturns<Caller extends ADTPulseAccessoryGetPanelStatusCaller> =
+  Caller extends 'updater' ? HapStatusError | Error | Nullable<CharacteristicValue>
+    : Nullable<CharacteristicValue>;
 
 /**
  * ADT Pulse Accessory - Set panel status.
@@ -536,8 +536,6 @@ export type ADTPulseAccessoryGetPanelStatusReturns = Error | HapStatusError | Nu
  */
 export type ADTPulseAccessorySetPanelStatusArm = CharacteristicValue;
 
-export type ADTPulseAccessorySetPanelStatusContext = Device;
-
 export type ADTPulseAccessorySetPanelStatusReturns = Promise<void>;
 
 /**
@@ -545,16 +543,16 @@ export type ADTPulseAccessorySetPanelStatusReturns = Promise<void>;
  *
  * @since 1.0.0
  */
+export type ADTPulseAccessoryGetSensorStatusCaller = 'constructor' | 'updater';
+
 export type ADTPulseAccessoryGetSensorStatusMode = 'active' | 'fault' | 'lowBattery' | 'status' | 'tamper';
 
-export type ADTPulseAccessoryGetSensorStatusContext = Device;
-
-export type ADTPulseAccessoryGetSensorStatusReturns = HapStatusError | Nullable<CharacteristicValue>;
+export type ADTPulseAccessoryGetSensorStatusReturns<Caller extends ADTPulseAccessoryGetSensorStatusCaller> =
+  Caller extends 'updater' ? HapStatusError | Error | Nullable<CharacteristicValue>
+    : Nullable<CharacteristicValue>;
 
 /**
  * ADT Pulse Accessory - Instance.
- *
- * @private
  *
  * @since 1.0.0
  */
@@ -572,9 +570,7 @@ export type ADTPulseAccessoryLog = Logger;
  *
  * @since 1.0.0
  */
-export type ADTPulseAccessoryServices = {
-  [key: string]: Service | undefined;
-};
+export type ADTPulseAccessoryServices = Record<string, Service | undefined>;
 
 /**
  * ADT Pulse Accessory - State.
@@ -582,6 +578,13 @@ export type ADTPulseAccessoryServices = {
  * @since 1.0.0
  */
 export type ADTPulseAccessoryState = ADTPulsePlatformState;
+
+/**
+ * ADT Pulse Accessory - Updater.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseAccessoryUpdaterReturns = void;
 
 /**
  * ADT Pulse Platform.
@@ -608,7 +611,7 @@ export type ADTPulsePlatformAddAccessoryDevice = Device;
 
 export type ADTPulsePlatformAddAccessoryReturns = void;
 
-export type ADTPulsePlatformAddAccessoryTypedNewAccessory = PlatformAccessory<Device>;
+export type ADTPulsePlatformAddAccessoryTypedAccessory = PlatformAccessory<Device>;
 
 /**
  * ADT Pulse Platform - Api.
@@ -697,9 +700,7 @@ export type ADTPulsePlatformFetchUpdatedInformationReturns = Promise<void>;
  *
  * @since 1.0.0
  */
-export type ADTPulsePlatformHandlers = {
-  [key: string]: ADTPulseAccessory;
-};
+export type ADTPulsePlatformHandlers = Record<string, ADTPulseAccessory>;
 
 /**
  * ADT Pulse Platform - Instance.
@@ -1254,13 +1255,9 @@ export type FetchTableCellsIncrementFrom = number;
 
 export type FetchTableCellsIncrementTo = number;
 
-export type FetchTableCellsReturns = {
-  [key: string]: string[];
-};
+export type FetchTableCellsReturns = Record<string, string[]>;
 
-export type FetchTableCellsMatched = {
-  [key: string]: string[];
-};
+export type FetchTableCellsMatched = Record<string, string[]>;
 
 /**
  * Find index with value.
@@ -1598,9 +1595,7 @@ export type PortalVersionItems = PortalVersionItem[];
  *
  * @since 1.0.0
  */
-export type RemovePersonalIdentifiableInformationModifiedObject = {
-  [key: string]: unknown;
-};
+export type RemovePersonalIdentifiableInformationModifiedObject = Record<string, unknown>;
 
 export type RemovePersonalIdentifiableInformationData = RemovePersonalIdentifiableInformationModifiedObject | RemovePersonalIdentifiableInformationModifiedObject[];
 
