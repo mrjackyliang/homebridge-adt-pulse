@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import _ from 'lodash';
 import {
   arch,
   argv,
@@ -9,7 +10,8 @@ import { serializeError } from 'serialize-error';
 
 import { ADTPulseAccessory } from '@/lib/accessory.js';
 import { ADTPulse } from '@/lib/api.js';
-import { detectedUnknownSensorsAction } from '@/lib/detect.js';
+import { detectedSensorCountMismatch, detectedUnknownSensorsAction } from '@/lib/detect.js';
+import { textOrbTextSummarySections } from '@/lib/regex.js';
 import { platformConfig } from '@/lib/schema.js';
 import {
   condenseSensorType,
@@ -40,6 +42,9 @@ import type {
   ADTPulsePlatformHandlers,
   ADTPulsePlatformInstance,
   ADTPulsePlatformLog,
+  ADTPulsePlatformLogStatusChangesNewCache,
+  ADTPulsePlatformLogStatusChangesOldCache,
+  ADTPulsePlatformLogStatusChangesReturns,
   ADTPulsePlatformPlugin,
   ADTPulsePlatformPollAccessoriesDevices,
   ADTPulsePlatformPollAccessoriesReturns,
@@ -181,7 +186,8 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     this.#config = null;
     this.#constants = {
       intervalTimestamps: {
-        adtKeepAlive: 538000, // 8.9666666667 minutes.
+        adtKeepAlive: 538000, // 8 minutes, 58 seconds.
+        adtSessionMax: 19368000, // 5 hours, 22 minutes, 48 seconds.
         adtSyncCheck: 3000, // 3 seconds.
         suspendSyncing: 1800000, // 30 minutes.
         synchronize: 1000, // 1 second.
@@ -216,6 +222,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
       },
       lastRunOn: {
         adtKeepAlive: 0, // January 1, 1970, at 00:00:00 UTC.
+        adtLastLogin: 0, // January 1, 1970, at 00:00:00 UTC.
         adtSyncCheck: 0, // January 1, 1970, at 00:00:00 UTC.
       },
       reportedHashes: [],
@@ -541,8 +548,15 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
 
       // Attempt to synchronize.
       try {
+        let currentTimestamp = Date.now();
+
         // ACTIVITY: Start sync.
         this.#state.activity.isSyncing = true;
+
+        // If login session has become stale, force a session reset.
+        if ((currentTimestamp - this.#state.lastRunOn.adtLastLogin) >= this.#constants.intervalTimestamps.adtSessionMax) {
+          this.#instance.resetSession();
+        }
 
         // Perform login action if "this instance" is not authenticated.
         if (!this.#instance.isAuthenticated()) {
@@ -555,10 +569,11 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
 
             // If login was successful.
             if (login.success) {
-              const currentTimestamp = Date.now();
+              currentTimestamp = Date.now();
 
               // Update timing for the sync protocols, so they can pace themselves.
               this.#state.lastRunOn.adtKeepAlive = currentTimestamp;
+              this.#state.lastRunOn.adtLastLogin = currentTimestamp;
               this.#state.lastRunOn.adtSyncCheck = currentTimestamp;
             }
 
@@ -600,7 +615,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         }
 
         // Get the current timestamp.
-        const currentTimestamp = Date.now();
+        currentTimestamp = Date.now();
 
         // Run the keep alive request if time has reached. Do not await, they shall run at their own pace.
         if (currentTimestamp - this.#state.lastRunOn.adtKeepAlive >= this.#constants.intervalTimestamps.adtKeepAlive) {
@@ -776,6 +791,8 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
       return;
     }
 
+    const cachedState = _.clone(this.#state.data);
+
     try {
       // Fetch all the panel and sensor information.
       const requests = await Promise.all([
@@ -826,6 +843,9 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         this.#state.data.sensorsStatus = sensors;
       }
 
+      // Check if device statuses have changed.
+      await this.logStatusChanges(cachedState, this.#state.data);
+
       // Check for unknown sensor actions.
       await this.unknownInformationDispatcher();
 
@@ -834,6 +854,106 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     } catch (error) {
       this.#log.error('fetchUpdatedInformation() has unexpectedly thrown an error, will continue to fetch.');
       stackTracer('serialize-error', serializeError(error));
+    }
+  }
+
+  /**
+   * ADT Pulse Platform - Log status changes.
+   *
+   * @param {ADTPulsePlatformLogStatusChangesOldCache} oldCache - Old cache.
+   * @param {ADTPulsePlatformLogStatusChangesNewCache} newCache - New cache.
+   *
+   * @private
+   *
+   * @returns {ADTPulsePlatformLogStatusChangesReturns}
+   *
+   * @since 1.0.0
+   */
+  private async logStatusChanges(oldCache: ADTPulsePlatformLogStatusChangesOldCache, newCache: ADTPulsePlatformLogStatusChangesNewCache): ADTPulsePlatformLogStatusChangesReturns {
+    // Fetch gateway device status.
+    if (oldCache.gatewayInfo !== null && newCache.gatewayInfo !== null) {
+      const oldStatus = oldCache.gatewayInfo.status;
+      const newStatus = newCache.gatewayInfo.status;
+
+      if (oldStatus !== newStatus && oldStatus !== null && newStatus !== null) {
+        this.#log.info(`${chalk.underline('ADT Pulse Gateway')} status changed (old: "${oldStatus}", new: "${newStatus}").`);
+      }
+    }
+
+    // Fetch the panel device status.
+    if (oldCache.panelInfo !== null && newCache.panelInfo !== null) {
+      const oldStatus = oldCache.panelInfo.status;
+      const newStatus = newCache.panelInfo.status;
+
+      if (oldStatus !== newStatus && oldStatus !== null && newStatus !== null) {
+        this.#log.info(`${chalk.underline('Security Panel')} status changed (old: "${oldStatus}", new: "${newStatus}").`);
+      }
+    }
+
+    // Fetch the sensors device status.
+    if (
+      this.#config !== null
+      && this.#config.sensors.length > 0
+      && oldCache.sensorsInfo.length !== 0
+      && newCache.sensorsInfo !== null
+    ) {
+      if (oldCache.sensorsInfo.length === newCache.sensorsInfo.length) {
+        for (let i = 0; i < oldCache.sensorsInfo.length; i += 1) {
+          const { name, zone } = oldCache.sensorsInfo[i];
+          const configuredSensor = this.#config.sensors.find((sensor) => sensor.adtName === name && sensor.adtZone === zone);
+          const oldStatus = oldCache.sensorsInfo[i].status;
+          const newStatus = newCache.sensorsInfo[i].status;
+
+          if (configuredSensor !== undefined && oldStatus !== newStatus) {
+            this.#log.info(`${chalk.underline(configuredSensor.name)} status changed (old: "${oldStatus}", new: "${newStatus}").`);
+          }
+        }
+      } else {
+        this.#log.warn('Changes to sensors device status cannot be determined due to length inconsistencies.');
+        stackTracer('log-status-changes', {
+          old: oldCache.sensorsInfo,
+          new: newCache.sensorsInfo,
+        });
+      }
+    }
+
+    // Fetch the panel device state.
+    if (oldCache.panelStatus !== null && newCache.panelStatus !== null) {
+      const oldStatus = oldCache.panelStatus.rawData.node;
+      const newStatus = newCache.panelStatus.rawData.node;
+      const splitOldStatus = oldStatus.split(textOrbTextSummarySections).filter(Boolean).join(' / ');
+      const splitNewStatus = newStatus.split(textOrbTextSummarySections).filter(Boolean).join(' / ');
+
+      if (oldStatus !== newStatus) {
+        this.#log.info(`${chalk.underline('Security Panel')} state changed (old: "${splitOldStatus}", new: "${splitNewStatus}").`);
+      }
+    }
+
+    // Fetch the sensors device state.
+    if (
+      this.#config !== null
+      && this.#config.sensors.length > 0
+      && oldCache.sensorsStatus.length !== 0
+      && newCache.sensorsStatus !== null
+    ) {
+      if (oldCache.sensorsStatus.length === newCache.sensorsStatus.length) {
+        for (let i = 0; i < oldCache.sensorsStatus.length; i += 1) {
+          const { name, zone } = oldCache.sensorsStatus[i];
+          const configuredSensor = this.#config.sensors.find((sensor) => sensor.adtName === name && sensor.adtZone === zone);
+          const oldStatus = oldCache.sensorsStatus[i].statuses.join(', ');
+          const newStatus = newCache.sensorsStatus[i].statuses.join(', ');
+
+          if (configuredSensor !== undefined && oldStatus !== newStatus) {
+            this.#log.info(`${chalk.underline(configuredSensor.name)} state changed (old: "${oldStatus}", new: "${newStatus}").`);
+          }
+        }
+      } else {
+        this.#log.warn('Changes to sensors device state cannot be determined due to length inconsistencies.');
+        stackTracer('log-status-changes', {
+          old: oldCache.sensorsStatus,
+          new: newCache.sensorsStatus,
+        });
+      }
     }
   }
 
@@ -851,16 +971,27 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
 
     // Check if there was a mismatch between the "sensorsInfo" and "sensorsStatus" array.
     if (sensorsInfo.length !== sensorsStatus.length) {
-      this.#log.error('It seems like there is a mis-match between the sensors information and sensors status. This should not be happening.');
-      stackTracer('sensor-mismatch', {
+      const data = {
         sensorsInfo,
         sensorsStatus,
-      });
+      };
+      const dataHash = generateHash(`${JSON.stringify(data)}`);
+
+      // If the detector has not reported this event before.
+      if (this.#state.reportedHashes.find((reportedHash) => dataHash === reportedHash) === undefined) {
+        const detectedNew = await detectedSensorCountMismatch(data, this.#log, this.#debugMode);
+
+        // Save this hash so the detector does not detect the same thing multiple times.
+        if (detectedNew) {
+          this.#state.reportedHashes.push(dataHash);
+        }
+      }
 
       // Stop here until this is resolved.
       return;
     }
 
+    // Generate an array of matching "sensorInfo" and "sensorStatus" with the device type.
     const sensors = sensorsInfo.map((sensorInfo, sensorsInfoKey) => ({
       info: sensorInfo,
       status: sensorsStatus[sensorsInfoKey],

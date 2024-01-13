@@ -1,11 +1,6 @@
 ADT Pulse for Homebridge
 =========================
 
-### ⚠️ Please Install the Beta Version ⚠️
-This plugin is completely re-written from the ground up (supports v27.0.0-140), and I would love everyone on board! Please install the beta version, so I can quickly get a faster and more stable version to you!
-
-Please bear with me, as the beta version is being actively developed and tested. If you see any unusual or annoying bugs, please comment on this [GitHub issue](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/124).
-
 [![NPM Package](https://img.shields.io/npm/v/homebridge-adt-pulse?style=flat-square&logo=npm&logoColor=%23ffffff&color=%23b25da6)](https://www.npmjs.com/package/homebridge-adt-pulse)
 [![NPM Downloads](https://img.shields.io/npm/dt/homebridge-adt-pulse?style=flat-square&logo=npm&logoColor=%23ffffff&color=%236688c3)](https://www.npmjs.com/package/homebridge-adt-pulse)
 [![GitHub License](https://img.shields.io/github/license/mrjackyliang/homebridge-adt-pulse?style=flat-square&logo=googledocs&logoColor=%23ffffff&color=%2348a56a)](https://github.com/mrjackyliang/homebridge-adt-pulse/blob/main/LICENSE)
@@ -71,7 +66,8 @@ This plugin can expose these devices (in read-only mode) based on your configura
 6. `heat` - Heat (Rate-of-Rise) Detector
 7. `motion` - Motion Sensor __::__ Motion Sensor (Notable Events Only)
 8. `shock` - Shock Sensor
-9. `temperature` - Temperature Sensor
+9. `supervisory` - System/Supervisory
+10. `temperature` - Temperature Sensor
 
 Due to implementation complexity and platform instability, all Z-Wave accessories connected to the ADT Pulse gateway will not be planned for development or be supported overall. Consider purchasing the [Hubitat Hub](https://hubitat.com) for a seamless setup experience, or read about the [Home Assistant Z-Wave](https://www.home-assistant.io/integrations/zwave_js/) integration.
 
@@ -161,6 +157,14 @@ Previously, there was a setting to allow users to switch the plugin to debug mod
 Consumers would enable debug mode, but forget to also enable Homebridge debug mode, causing contributors to not be able to effectively resolve bug reports.
 
 To improve this, debug mode is now activated __ONLY when debug mode is enabled on Homebridge__ itself. This approach promotes isolation (logs can be separated for each bridge) and helps enhance the troubleshooting experience in case any issues arise.
+
+## Temperature Sensors in HAP Protocol
+The Temperature Sensor (`temperature`) functions differently compared to standard contact sensors when it comes to processing sensor statuses.
+
+In contrast to typical contact sensors that convey open or closed status, the temperature sensor exposed in the Home app (utilizing the HAP protocol) operates with temperature values. To accommodate this difference, the accessory converts these binary states into corresponding temperature degrees:
+- Cold temperatures are represented as __0°C__.
+- Normal temperatures are indicated as __20°C__.
+- Hot temperatures are reflected as __40°C__.
 
 ## Support for HOOBS
 Please note that HOOBS may use an outdated configuration UI. This issue that was reported by me, remains unresolved by the HOOBS team. For additional details, refer to this [GitHub issue](https://github.com/hoobs-org/HOOBS/issues/1873).

@@ -61,6 +61,10 @@ import type {
   DetectedNewSensorsStatusLogger,
   DetectedNewSensorsStatusReturns,
   DetectedNewSensorsStatusSensors,
+  DetectedSensorCountMismatchData,
+  DetectedSensorCountMismatchDebugMode,
+  DetectedSensorCountMismatchLogger,
+  DetectedSensorCountMismatchReturns,
   DetectedUnknownSensorsActionDebugMode,
   DetectedUnknownSensorsActionLogger,
   DetectedUnknownSensorsActionReturns,
@@ -133,6 +137,11 @@ export async function detectedNewDoSubmitHandlers(handlers: DetectedNewDoSubmitH
 
     // Show content being sent to author.
     stackTracer('detect-content', cleanedData);
+
+    // Reminder for users that keep restarting Homebridge because they see warnings.
+    if (logger !== null) {
+      logger.warn('This message will NOT go away by restarting Homebridge. An update MUST become available first. Please be patient, thank you.');
+    }
 
     try {
       await axios.post(
@@ -217,6 +226,11 @@ export async function detectedNewGatewayInformation(device: DetectedNewGatewayIn
 
     // Show content being sent to author.
     stackTracer('detect-content', cleanedData);
+
+    // Reminder for users that keep restarting Homebridge because they see warnings.
+    if (logger !== null) {
+      logger.warn('This message will NOT go away by restarting Homebridge. An update MUST become available first. Please be patient, thank you.');
+    }
 
     try {
       await axios.post(
@@ -324,6 +338,11 @@ export async function detectedNewOrbSecurityButtons(buttons: DetectedNewOrbSecur
     // Show content being sent to author.
     stackTracer('detect-content', cleanedData);
 
+    // Reminder for users that keep restarting Homebridge because they see warnings.
+    if (logger !== null) {
+      logger.warn('This message will NOT go away by restarting Homebridge. An update MUST become available first. Please be patient, thank you.');
+    }
+
     try {
       await axios.post(
         getDetectReportUrl(),
@@ -407,6 +426,11 @@ export async function detectedNewPanelInformation(device: DetectedNewPanelInform
 
     // Show content being sent to author.
     stackTracer('detect-content', cleanedData);
+
+    // Reminder for users that keep restarting Homebridge because they see warnings.
+    if (logger !== null) {
+      logger.warn('This message will NOT go away by restarting Homebridge. An update MUST become available first. Please be patient, thank you.');
+    }
 
     try {
       await axios.post(
@@ -492,6 +516,11 @@ export async function detectedNewPanelStatus(summary: DetectedNewPanelStatusSumm
     // Show content being sent to author.
     stackTracer('detect-content', cleanedData);
 
+    // Reminder for users that keep restarting Homebridge because they see warnings.
+    if (logger !== null) {
+      logger.warn('This message will NOT go away by restarting Homebridge. An update MUST become available first. Please be patient, thank you.');
+    }
+
     try {
       await axios.post(
         getDetectReportUrl(),
@@ -575,6 +604,11 @@ export async function detectedNewPortalVersion(version: DetectedNewPortalVersion
 
     // Show content being sent to author.
     stackTracer('detect-content', cleanedData);
+
+    // Reminder for users that keep restarting Homebridge because they see warnings.
+    if (logger !== null) {
+      logger.warn('This message will NOT go away by restarting Homebridge. An update MUST become available first. Please be patient, thank you.');
+    }
 
     try {
       await axios.post(
@@ -663,6 +697,11 @@ export async function detectedNewSensorsInformation(sensors: DetectedNewSensorsI
     // Show content being sent to author.
     stackTracer('detect-content', cleanedData);
 
+    // Reminder for users that keep restarting Homebridge because they see warnings.
+    if (logger !== null) {
+      logger.warn('This message will NOT go away by restarting Homebridge. An update MUST become available first. Please be patient, thank you.');
+    }
+
     try {
       await axios.post(
         getDetectReportUrl(),
@@ -747,6 +786,11 @@ export async function detectedNewSensorsStatus(sensors: DetectedNewSensorsStatus
     // Show content being sent to author.
     stackTracer('detect-content', cleanedData);
 
+    // Reminder for users that keep restarting Homebridge because they see warnings.
+    if (logger !== null) {
+      logger.warn('This message will NOT go away by restarting Homebridge. An update MUST become available first. Please be patient, thank you.');
+    }
+
     try {
       await axios.post(
         getDetectReportUrl(),
@@ -776,9 +820,98 @@ export async function detectedNewSensorsStatus(sensors: DetectedNewSensorsStatus
 }
 
 /**
+ * Detected sensor count mismatch.
+ *
+ * @param {DetectedSensorCountMismatchData}      data      - Data.
+ * @param {DetectedSensorCountMismatchLogger}    logger    - Logger.
+ * @param {DetectedSensorCountMismatchDebugMode} debugMode - Debug mode.
+ *
+ * @returns {DetectedSensorCountMismatchReturns}
+ *
+ * @since 1.0.0
+ */
+export async function detectedSensorCountMismatch(data: DetectedSensorCountMismatchData, logger: DetectedSensorCountMismatchLogger, debugMode: DetectedSensorCountMismatchDebugMode): DetectedSensorCountMismatchReturns {
+  const detectedCountMismatch = data.sensorsInfo.length !== data.sensorsStatus.length;
+
+  if (detectedCountMismatch) {
+    const cleanedData = removePersonalIdentifiableInformation(data);
+
+    // If outdated, it means plugin may already have support.
+    try {
+      const outdated = await isPluginOutdated();
+
+      if (outdated) {
+        if (logger !== null) {
+          logger.warn('Plugin has detected a sensor count mismatch. You are running an older plugin version, please update soon.');
+        }
+
+        // This is intentionally duplicated if using Homebridge debug mode.
+        if (debugMode) {
+          debugLog(logger, 'detect.ts / detectedSensorCountMismatch()', 'warn', 'Plugin has detected a sensor count mismatch. You are running an older plugin version, please update soon');
+        }
+
+        // Do not send analytics for users running outdated plugin versions.
+        return false;
+      }
+    } catch (error) {
+      if (debugMode === true) {
+        debugLog(logger, 'detect.ts / detectedSensorCountMismatch()', 'error', 'Failed to check if plugin is outdated');
+        stackTracer('serialize-error', serializeError(error));
+      }
+
+      // Try to check if plugin is outdated later on.
+      return false;
+    }
+
+    if (logger !== null) {
+      logger.warn('Plugin has detected a sensor count mismatch. Notifying plugin author about this discovery ...');
+    }
+
+    // This is intentionally duplicated if using Homebridge debug mode.
+    if (debugMode) {
+      debugLog(logger, 'detect.ts / detectedSensorCountMismatch()', 'warn', 'Plugin has detected a sensor count mismatch. Notifying plugin author about this discovery');
+    }
+
+    // Show content being sent to author.
+    stackTracer('detect-content', cleanedData);
+
+    // Reminder for users that keep restarting Homebridge because they see warnings.
+    if (logger !== null) {
+      logger.warn('This message will NOT go away by restarting Homebridge. An update MUST become available first. Please be patient, thank you.');
+    }
+
+    try {
+      await axios.post(
+        getDetectReportUrl(),
+        JSON.stringify(cleanedData, null, 2),
+        {
+          family: 4,
+          headers: {
+            'User-Agent': 'homebridge-adt-pulse',
+            'X-Title': 'Detected a sensor count mismatch',
+          },
+        },
+      );
+
+      return true;
+    } catch (error) {
+      if (debugMode === true) {
+        debugLog(logger, 'detect.ts / detectedSensorCountMismatch()', 'error', 'Failed to notify plugin author about the sensor count mismatch');
+        stackTracer('serialize-error', serializeError(error));
+      }
+
+      // Try to send information to author later.
+      return false;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Detected unknown sensors action.
  *
- * @param {DetectedUnknownSensorsActionSensors}   sensors   - Sensors
+ * @param {DetectedUnknownSensorsActionSensors}   sensors   - Sensors.
  * @param {DetectedUnknownSensorsActionLogger}    logger    - Logger.
  * @param {DetectedUnknownSensorsActionDebugMode} debugMode - Debug mode.
  *
@@ -844,6 +977,11 @@ export async function detectedUnknownSensorsAction(sensors: DetectedUnknownSenso
 
     // Show content being sent to author.
     stackTracer('detect-content', cleanedData);
+
+    // Reminder for users that keep restarting Homebridge because they see warnings.
+    if (logger !== null) {
+      logger.warn('This message will NOT go away by restarting Homebridge. An update MUST become available first. Please be patient, thank you.');
+    }
 
     try {
       await axios.post(

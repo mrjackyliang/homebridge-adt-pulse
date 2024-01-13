@@ -441,7 +441,7 @@ export type PortalVersionContent = {
 };
 
 /**
- * Sensors information.
+ * Sensor information.
  *
  * @since 1.0.0
  */
@@ -463,10 +463,8 @@ export type SensorInformation = {
   zone: SensorInformationZone;
 };
 
-export type SensorsInformation = SensorInformation[];
-
 /**
- * Sensors status.
+ * Sensor status.
  *
  * @since 1.0.0
  */
@@ -486,8 +484,6 @@ export type SensorStatus = {
   statuses: SensorStatusStatuses;
   zone: SensorStatusZone;
 };
-
-export type SensorsStatus = SensorStatus[];
 
 /**
  * Sessions.

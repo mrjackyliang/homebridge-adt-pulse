@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 
 import { condensedSensorTypeItems } from '@/lib/items.js';
-import { condensePanelStates, stackTracer } from '@/lib/utility.js';
+import { condensePanelStates, isPanelAlarmActive, stackTracer } from '@/lib/utility.js';
 import type {
   ADTPulseAccessoryAccessory,
   ADTPulseAccessoryApi,
@@ -13,10 +13,8 @@ import type {
   ADTPulseAccessoryConstructorLog,
   ADTPulseAccessoryConstructorService,
   ADTPulseAccessoryConstructorState,
-  ADTPulseAccessoryGetPanelStatusCaller,
   ADTPulseAccessoryGetPanelStatusMode,
   ADTPulseAccessoryGetPanelStatusReturns,
-  ADTPulseAccessoryGetSensorStatusCaller,
   ADTPulseAccessoryGetSensorStatusMode,
   ADTPulseAccessoryGetSensorStatusReturns,
   ADTPulseAccessoryInstance,
@@ -25,6 +23,7 @@ import type {
   ADTPulseAccessorySetPanelStatusArm,
   ADTPulseAccessorySetPanelStatusReturns,
   ADTPulseAccessoryState,
+  ADTPulseAccessoryStatus,
   ADTPulseAccessoryUpdaterReturns,
 } from '@/types/index.d.ts';
 
@@ -98,6 +97,15 @@ export class ADTPulseAccessory {
   #state: ADTPulseAccessoryState;
 
   /**
+   * ADT Pulse Accessory - Status.
+   *
+   * @private
+   *
+   * @since 1.0.0
+   */
+  #status: ADTPulseAccessoryStatus;
+
+  /**
    * ADT Pulse Accessory - Constructor.
    *
    * @param {ADTPulseAccessoryConstructorAccessory}      accessory      - Accessory.
@@ -118,19 +126,21 @@ export class ADTPulseAccessory {
     this.#log = log;
     this.#services = {};
     this.#state = state;
+    this.#status = {
+      isBusy: false,
+      setValue: null,
+    };
 
     const { context } = this.#accessory;
     const {
       firmware,
       hardware,
-      id,
       manufacturer,
       model,
       name,
       serial,
       software,
       type,
-      uuid,
     } = context;
 
     // Set the "AccessoryInformation" service.
@@ -185,143 +195,11 @@ export class ADTPulseAccessory {
       case 'shock':
         this.#services.Primary = this.#accessory.getService(service.OccupancySensor) ?? this.#accessory.addService(service.OccupancySensor);
         break;
+      case 'supervisory':
+        this.#services.Primary = this.#accessory.getService(service.OccupancySensor) ?? this.#accessory.addService(service.OccupancySensor);
+        break;
       case 'temperature':
         this.#services.Primary = this.#accessory.getService(service.TemperatureSensor) ?? this.#accessory.addService(service.TemperatureSensor);
-        break;
-      default:
-        break;
-    }
-
-    // Check for missing services.
-    if (this.#services.Primary === undefined) {
-      // The "gateway" accessory does not need to be initialized further.
-      if (type !== 'gateway') {
-        this.#log.error(`Failed to initialize ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory because the primary service does not exist ...`);
-      }
-
-      return;
-    }
-
-    // Set the characteristics associated with the gateway/panel (required).
-    switch (type) {
-      case 'gateway':
-        // No supported characteristic available.
-        break;
-      case 'panel':
-        this.#services.Primary.getCharacteristic(this.#characteristic.SecuritySystemCurrentState)
-          .onGet(() => this.getPanelStatus('constructor', 'current'))
-          .updateValue(this.getPanelStatus('updater', 'current'));
-
-        this.#services.Primary.getCharacteristic(this.#characteristic.SecuritySystemTargetState)
-          .onGet(() => this.getPanelStatus('constructor', 'target'))
-          .updateValue(this.getPanelStatus('updater', 'target'));
-
-        this.#services.Primary.getCharacteristic(this.#characteristic.SecuritySystemTargetState)
-          .onSet(async (value) => this.setPanelStatus(value));
-        break;
-      default:
-        break;
-    }
-
-    // Set the characteristics associated with the gateway/panel (optional).
-    switch (type) {
-      case 'gateway':
-        // No supported characteristic available.
-        break;
-      case 'panel':
-        this.#services.Primary.getCharacteristic(this.#characteristic.SecuritySystemAlarmType)
-          .onGet(() => this.getPanelStatus('constructor', 'alarmType'))
-          .updateValue(this.getPanelStatus('updater', 'alarmType'));
-
-        this.#services.Primary.getCharacteristic(this.#characteristic.StatusFault)
-          .onGet(() => this.getPanelStatus('constructor', 'fault'))
-          .updateValue(this.getPanelStatus('updater', 'fault'));
-
-        this.#services.Primary.getCharacteristic(this.#characteristic.StatusTampered)
-          .onGet(() => this.getPanelStatus('constructor', 'tamper'))
-          .updateValue(this.getPanelStatus('updater', 'tamper'));
-        break;
-      default:
-        break;
-    }
-
-    // Set the characteristics associated with the sensor (required).
-    switch (type) {
-      case 'co':
-        this.#services.Primary.getCharacteristic(this.#characteristic.CarbonMonoxideDetected)
-          .onGet(() => this.getSensorStatus('constructor', 'status'))
-          .updateValue(this.getSensorStatus('updater', 'status'));
-        break;
-      case 'doorWindow':
-        this.#services.Primary.getCharacteristic(this.#characteristic.ContactSensorState)
-          .onGet(() => this.getSensorStatus('constructor', 'status'))
-          .updateValue(this.getSensorStatus('updater', 'status'));
-        break;
-      case 'fire':
-        this.#services.Primary.getCharacteristic(this.#characteristic.SmokeDetected)
-          .onGet(() => this.getSensorStatus('constructor', 'status'))
-          .updateValue(this.getSensorStatus('updater', 'status'));
-        break;
-      case 'flood':
-        this.#services.Primary.getCharacteristic(this.#characteristic.LeakDetected)
-          .onGet(() => this.getSensorStatus('constructor', 'status'))
-          .updateValue(this.getSensorStatus('updater', 'status'));
-        break;
-      case 'glass':
-        this.#services.Primary.getCharacteristic(this.#characteristic.OccupancyDetected)
-          .onGet(() => this.getSensorStatus('constructor', 'status'))
-          .updateValue(this.getSensorStatus('updater', 'status'));
-        break;
-      case 'heat':
-        this.#services.Primary.getCharacteristic(this.#characteristic.OccupancyDetected)
-          .onGet(() => this.getSensorStatus('constructor', 'status'))
-          .updateValue(this.getSensorStatus('updater', 'status'));
-        break;
-      case 'motion':
-        this.#services.Primary.getCharacteristic(this.#characteristic.MotionDetected)
-          .onGet(() => this.getSensorStatus('constructor', 'status'))
-          .updateValue(this.getSensorStatus('updater', 'status'));
-        break;
-      case 'shock':
-        this.#services.Primary.getCharacteristic(this.#characteristic.OccupancyDetected)
-          .onGet(() => this.getSensorStatus('constructor', 'status'))
-          .updateValue(this.getSensorStatus('updater', 'status'));
-        break;
-      case 'temperature':
-        this.#services.Primary.getCharacteristic(this.#characteristic.CurrentTemperature)
-          .onGet(() => this.getSensorStatus('constructor', 'status'))
-          .updateValue(this.getSensorStatus('updater', 'status'));
-        break;
-      default:
-        break;
-    }
-
-    // Set the characteristics associated with the sensor (optional).
-    switch (type) {
-      case 'co':
-      case 'doorWindow':
-      case 'fire':
-      case 'flood':
-      case 'glass':
-      case 'heat':
-      case 'motion':
-      case 'shock':
-      case 'temperature':
-        this.#services.Primary.getCharacteristic(this.#characteristic.StatusActive)
-          .onGet(() => this.getSensorStatus('constructor', 'active'))
-          .updateValue(this.getSensorStatus('updater', 'active'));
-
-        this.#services.Primary.getCharacteristic(this.#characteristic.StatusFault)
-          .onGet(() => this.getSensorStatus('constructor', 'fault'))
-          .updateValue(this.getSensorStatus('updater', 'fault'));
-
-        this.#services.Primary.getCharacteristic(this.#characteristic.StatusLowBattery)
-          .onGet(() => this.getSensorStatus('constructor', 'lowBattery'))
-          .updateValue(this.getSensorStatus('updater', 'lowBattery'));
-
-        this.#services.Primary.getCharacteristic(this.#characteristic.StatusTampered)
-          .onGet(() => this.getSensorStatus('constructor', 'tamper'))
-          .updateValue(this.getSensorStatus('updater', 'tamper'));
         break;
       default:
         break;
@@ -361,14 +239,13 @@ export class ADTPulseAccessory {
         break;
       case 'panel':
         this.#services.Primary.getCharacteristic(this.#characteristic.SecuritySystemCurrentState)
-          .updateValue(this.getPanelStatus('updater', 'current'));
+          .updateValue(this.getPanelStatus('current'));
 
         this.#services.Primary.getCharacteristic(this.#characteristic.SecuritySystemTargetState)
-          .updateValue(this.getPanelStatus('updater', 'target'));
+          .updateValue(this.getPanelStatus('target'));
 
-        // TODO testing.
-        this.#services.Primary.updateCharacteristic(this.#characteristic.SecuritySystemCurrentState, this.getPanelStatus('constructor', 'current'));
-        this.#services.Primary.updateCharacteristic(this.#characteristic.SecuritySystemTargetState, this.getPanelStatus('constructor', 'target'));
+        this.#services.Primary.getCharacteristic(this.#characteristic.SecuritySystemTargetState)
+          .onSet(async (value) => this.setPanelStatus(value));
         break;
       default:
         break;
@@ -381,18 +258,13 @@ export class ADTPulseAccessory {
         break;
       case 'panel':
         this.#services.Primary.getCharacteristic(this.#characteristic.SecuritySystemAlarmType)
-          .updateValue(this.getPanelStatus('updater', 'alarmType'));
+          .updateValue(this.getPanelStatus('alarmType'));
 
         this.#services.Primary.getCharacteristic(this.#characteristic.StatusFault)
-          .updateValue(this.getPanelStatus('updater', 'fault'));
+          .updateValue(this.getPanelStatus('fault'));
 
         this.#services.Primary.getCharacteristic(this.#characteristic.StatusTampered)
-          .updateValue(this.getPanelStatus('updater', 'tamper'));
-
-        // TODO testing.
-        this.#services.Primary.updateCharacteristic(this.#characteristic.SecuritySystemAlarmType, this.getPanelStatus('constructor', 'alarmType'));
-        this.#services.Primary.updateCharacteristic(this.#characteristic.StatusFault, this.getPanelStatus('constructor', 'fault'));
-        this.#services.Primary.updateCharacteristic(this.#characteristic.StatusTampered, this.getPanelStatus('constructor', 'tamper'));
+          .updateValue(this.getPanelStatus('tamper'));
         break;
       default:
         break;
@@ -402,65 +274,43 @@ export class ADTPulseAccessory {
     switch (type) {
       case 'co':
         this.#services.Primary.getCharacteristic(this.#characteristic.CarbonMonoxideDetected)
-          .updateValue(this.getSensorStatus('updater', 'status'));
-
-        this.#services.Primary.updateCharacteristic(this.#characteristic.CarbonMonoxideDetected, this.getSensorStatus('constructor', 'status'));
+          .updateValue(this.getSensorStatus('status'));
         break;
       case 'doorWindow':
         this.#services.Primary.getCharacteristic(this.#characteristic.ContactSensorState)
-          .updateValue(this.getSensorStatus('updater', 'status'));
-
-        // TODO testing.
-        this.#services.Primary.updateCharacteristic(this.#characteristic.ContactSensorState, this.getSensorStatus('constructor', 'status'));
+          .updateValue(this.getSensorStatus('status'));
         break;
       case 'fire':
         this.#services.Primary.getCharacteristic(this.#characteristic.SmokeDetected)
-          .updateValue(this.getSensorStatus('updater', 'status'));
-
-        // TODO testing.
-        this.#services.Primary.updateCharacteristic(this.#characteristic.SmokeDetected, this.getSensorStatus('constructor', 'status'));
+          .updateValue(this.getSensorStatus('status'));
         break;
       case 'flood':
         this.#services.Primary.getCharacteristic(this.#characteristic.LeakDetected)
-          .updateValue(this.getSensorStatus('updater', 'status'));
-
-        // TODO testing.
-        this.#services.Primary.updateCharacteristic(this.#characteristic.LeakDetected, this.getSensorStatus('constructor', 'status'));
+          .updateValue(this.getSensorStatus('status'));
         break;
       case 'glass':
         this.#services.Primary.getCharacteristic(this.#characteristic.OccupancyDetected)
-          .updateValue(this.getSensorStatus('updater', 'status'));
-
-        // TODO testing.
-        this.#services.Primary.updateCharacteristic(this.#characteristic.OccupancyDetected, this.getSensorStatus('constructor', 'status'));
+          .updateValue(this.getSensorStatus('status'));
         break;
       case 'heat':
         this.#services.Primary.getCharacteristic(this.#characteristic.OccupancyDetected)
-          .updateValue(this.getSensorStatus('updater', 'status'));
-
-        // TODO testing.
-        this.#services.Primary.updateCharacteristic(this.#characteristic.OccupancyDetected, this.getSensorStatus('constructor', 'status'));
+          .updateValue(this.getSensorStatus('status'));
         break;
       case 'motion':
         this.#services.Primary.getCharacteristic(this.#characteristic.MotionDetected)
-          .updateValue(this.getSensorStatus('updater', 'status'));
-
-        // TODO testing.
-        this.#services.Primary.updateCharacteristic(this.#characteristic.MotionDetected, this.getSensorStatus('constructor', 'status'));
+          .updateValue(this.getSensorStatus('status'));
         break;
       case 'shock':
         this.#services.Primary.getCharacteristic(this.#characteristic.OccupancyDetected)
-          .updateValue(this.getSensorStatus('updater', 'status'));
-
-        // TODO testing.
-        this.#services.Primary.updateCharacteristic(this.#characteristic.OccupancyDetected, this.getSensorStatus('constructor', 'status'));
+          .updateValue(this.getSensorStatus('status'));
+        break;
+      case 'supervisory':
+        this.#services.Primary.getCharacteristic(this.#characteristic.OccupancyDetected)
+          .updateValue(this.getSensorStatus('status'));
         break;
       case 'temperature':
         this.#services.Primary.getCharacteristic(this.#characteristic.CurrentTemperature)
-          .updateValue(this.getSensorStatus('updater', 'status'));
-
-        // TODO testing.
-        this.#services.Primary.updateCharacteristic(this.#characteristic.CurrentTemperature, this.getSensorStatus('constructor', 'status'));
+          .updateValue(this.getSensorStatus('status'));
         break;
       default:
         break;
@@ -476,24 +326,19 @@ export class ADTPulseAccessory {
       case 'heat':
       case 'motion':
       case 'shock':
+      case 'supervisory':
       case 'temperature':
         this.#services.Primary.getCharacteristic(this.#characteristic.StatusActive)
-          .updateValue(this.getSensorStatus('updater', 'active'));
+          .updateValue(this.getSensorStatus('active'));
 
         this.#services.Primary.getCharacteristic(this.#characteristic.StatusFault)
-          .updateValue(this.getSensorStatus('updater', 'fault'));
+          .updateValue(this.getSensorStatus('fault'));
 
         this.#services.Primary.getCharacteristic(this.#characteristic.StatusLowBattery)
-          .updateValue(this.getSensorStatus('updater', 'lowBattery'));
+          .updateValue(this.getSensorStatus('lowBattery'));
 
         this.#services.Primary.getCharacteristic(this.#characteristic.StatusTampered)
-          .updateValue(this.getSensorStatus('updater', 'tamper'));
-
-        // TODO testing.
-        this.#services.Primary.updateCharacteristic(this.#characteristic.StatusActive, this.getSensorStatus('constructor', 'active'));
-        this.#services.Primary.updateCharacteristic(this.#characteristic.StatusFault, this.getSensorStatus('constructor', 'fault'));
-        this.#services.Primary.updateCharacteristic(this.#characteristic.StatusLowBattery, this.getSensorStatus('constructor', 'lowBattery'));
-        this.#services.Primary.updateCharacteristic(this.#characteristic.StatusTampered, this.getSensorStatus('constructor', 'tamper'));
+          .updateValue(this.getSensorStatus('tamper'));
         break;
       default:
         break;
@@ -503,8 +348,7 @@ export class ADTPulseAccessory {
   /**
    * ADT Pulse Accessory - Get sensor status.
    *
-   * @param {ADTPulseAccessoryGetSensorStatusCaller} caller - Caller.
-   * @param {ADTPulseAccessoryGetSensorStatusMode}   mode   - Mode.
+   * @param {ADTPulseAccessoryGetSensorStatusMode} mode - Mode.
    *
    * @private
    *
@@ -512,7 +356,7 @@ export class ADTPulseAccessory {
    *
    * @since 1.0.0
    */
-  private getSensorStatus<Caller extends ADTPulseAccessoryGetSensorStatusCaller>(caller: Caller, mode: ADTPulseAccessoryGetSensorStatusMode): ADTPulseAccessoryGetSensorStatusReturns<Caller> {
+  private getSensorStatus(mode: ADTPulseAccessoryGetSensorStatusMode): ADTPulseAccessoryGetSensorStatusReturns {
     const { context } = this.#accessory;
     const {
       id,
@@ -525,7 +369,7 @@ export class ADTPulseAccessory {
 
     const matchedSensorStatus = this.#state.data.sensorsStatus.find((sensorStatus) => originalName === sensorStatus.name && zone !== null && sensorStatus.zone === zone);
 
-    let hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.SUCCESS);
+    let hapStatus;
 
     // If sensor is not found or sensor type is not supported.
     if (
@@ -538,13 +382,7 @@ export class ADTPulseAccessory {
 
       this.#log.error(`Attempted to get sensor status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but sensor is not found or sensor type is not supported.`);
 
-      // The error message is either thrown or returned depending on the caller.
-      switch (caller) {
-        case 'updater':
-          return hapStatus as ADTPulseAccessoryGetSensorStatusReturns<Caller>;
-        default:
-          throw hapStatus;
-      }
+      return hapStatus;
     }
 
     const { icon, statuses } = matchedSensorStatus;
@@ -552,18 +390,22 @@ export class ADTPulseAccessory {
     // Find the state for "Status Active" (optional characteristic).
     if (mode === 'active') {
       // If status or icon does not include these, the sensor is active.
-      return !statuses.includes('Offline')
+      return (
+        !statuses.includes('Offline')
         && !statuses.includes('Unknown')
         && icon !== 'devStatOffline'
-        && icon !== 'devStatUnknown';
+        && icon !== 'devStatUnknown'
+      );
     }
 
     // Find the state for "Status Fault" (optional characteristic).
     if (mode === 'fault') {
       // If status or icon includes these, the sensor has a fault.
       if (
-        statuses.includes('Bypassed')
+        statuses.includes('ALARM')
+        || statuses.includes('Bypassed')
         || statuses.includes('Trouble')
+        || icon === 'devStatAlarm'
       ) {
         return this.#characteristic.StatusFault.GENERAL_FAULT;
       }
@@ -596,8 +438,8 @@ export class ADTPulseAccessory {
 
     // Find the state for the sensor (required characteristic).
     switch (type) {
-      case 'co':
-        if (statuses.includes('Tripped')) { // TODO Not in sensor action items.
+      case 'co': // TODO Not fully tested.
+        if (statuses.includes('Tripped')) {
           return this.#characteristic.CarbonMonoxideDetected.CO_LEVELS_ABNORMAL;
         }
 
@@ -606,7 +448,7 @@ export class ADTPulseAccessory {
         }
         break;
       case 'doorWindow':
-        if (statuses.includes('Open')) {
+        if (statuses.includes('ALARM') || statuses.includes('Open')) {
           return this.#characteristic.ContactSensorState.CONTACT_NOT_DETECTED;
         }
 
@@ -615,17 +457,21 @@ export class ADTPulseAccessory {
         }
         break;
       case 'fire':
+        if (statuses.includes('ALARM') || statuses.includes('Tripped')) {
+          return this.#characteristic.SmokeDetected.SMOKE_DETECTED;
+        }
+
         if (statuses.includes('Okay')) {
           return this.#characteristic.SmokeDetected.SMOKE_NOT_DETECTED;
         }
         break;
-      case 'flood':
+      case 'flood': // TODO Not fully tested.
         if (statuses.includes('Okay')) {
           return this.#characteristic.LeakDetected.LEAK_NOT_DETECTED;
         }
         break;
       case 'glass':
-        if (statuses.includes('Tripped')) { // TODO Not in sensor action items.
+        if (statuses.includes('ALARM') || statuses.includes('Tripped')) {
           return this.#characteristic.OccupancyDetected.OCCUPANCY_DETECTED;
         }
 
@@ -633,34 +479,40 @@ export class ADTPulseAccessory {
           return this.#characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED;
         }
         break;
-      case 'heat':
+      case 'heat': // TODO Not fully tested.
         if (statuses.includes('Okay')) {
           return this.#characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED;
         }
         break;
       case 'motion':
+        if (statuses.includes('ALARM') || statuses.includes('Motion')) {
+          return true;
+        }
+
         if (statuses.includes('No Motion') || statuses.includes('Okay')) {
           return false;
         }
-
-        if (statuses.includes('Motion')) {
-          return true;
-        }
         break;
-      case 'shock':
-        // TODO: Nothing done here yet.
+      case 'shock': // TODO Not fully tested.
         break;
-      case 'temperature':
+      case 'supervisory': // TODO Not fully tested.
+        break;
+      case 'temperature': // TODO Not fully tested.
         /**
-         * Since there isn't a binary way to represent temperature
-         * sensors, because sensors from ADT do not show
-         * exact temperatures and this service doesn't support showing
-         * it that way, we can represent this using Celsius.
+         * Since sensors from ADT do not show exact temperatures
+         * the way how it likes and HomeKit does not support showing statuses
+         * in a binary way, we will convert them to Celsius instead.
          *
          * - If temperature is cold, we represent it with 0.
          * - If temperature is normal, we represent it with 20.
          * - If temperature is hot, we represent it with 40.
+         *
+         * @since 1.0.0
          */
+        if (statuses.includes('ALARM') || statuses.includes('Tripped')) {
+          return 0;
+        }
+
         if (statuses.includes('Okay')) {
           return 20;
         }
@@ -675,33 +527,21 @@ export class ADTPulseAccessory {
 
       this.#log.warn(`Attempted to get sensor status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but sensor is currently "Offline" or "Unknown".`);
 
-      // The error message is either thrown or returned depending on the caller.
-      switch (caller) {
-        case 'updater':
-          return hapStatus as ADTPulseAccessoryGetSensorStatusReturns<Caller>;
-        default:
-          throw hapStatus;
-      }
+      return hapStatus;
     }
 
+    // Attempted to get sensor status, but actions have not been implemented yet.
     hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.INVALID_VALUE_IN_REQUEST);
 
     this.#log.warn(`Attempted to get sensor status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but actions have not been implemented yet.`);
 
-    // The error message is either thrown or returned depending on the caller.
-    switch (caller) {
-      case 'updater':
-        return hapStatus as ADTPulseAccessoryGetSensorStatusReturns<Caller>;
-      default:
-        throw hapStatus;
-    }
+    return hapStatus;
   }
 
   /**
    * ADT Pulse Accessory - Get panel status.
    *
-   * @param {ADTPulseAccessoryGetPanelStatusCaller} caller - Caller.
-   * @param {ADTPulseAccessoryGetPanelStatusMode}   mode   - Mode.
+   * @param {ADTPulseAccessoryGetPanelStatusMode} mode - Mode.
    *
    * @private
    *
@@ -709,7 +549,7 @@ export class ADTPulseAccessory {
    *
    * @since 1.0.0
    */
-  private getPanelStatus<Caller extends ADTPulseAccessoryGetPanelStatusCaller>(caller: Caller, mode: ADTPulseAccessoryGetPanelStatusMode): ADTPulseAccessoryGetPanelStatusReturns<Caller> {
+  private getPanelStatus(mode: ADTPulseAccessoryGetPanelStatusMode): ADTPulseAccessoryGetPanelStatusReturns {
     const { context } = this.#accessory;
     const {
       id,
@@ -718,7 +558,7 @@ export class ADTPulseAccessory {
       uuid,
     } = context;
 
-    let hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.SUCCESS);
+    let hapStatus;
 
     // If device is not a security panel.
     if (type !== 'panel') {
@@ -726,13 +566,7 @@ export class ADTPulseAccessory {
 
       this.#log.error(`Attempted to get panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but device is not a security panel.`);
 
-      // The error message is either thrown or returned depending on the caller.
-      switch (caller) {
-        case 'updater':
-          return hapStatus as ADTPulseAccessoryGetSensorStatusReturns<Caller>;
-        default:
-          throw hapStatus;
-      }
+      return hapStatus;
     }
 
     // If panel status has not been retrieved yet.
@@ -745,26 +579,14 @@ export class ADTPulseAccessory {
 
       this.#log.debug(`Attempted to get panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but panel status has not been retrieved yet.`);
 
-      // The error message is either thrown or returned depending on the caller.
-      switch (caller) {
-        case 'updater':
-          return hapStatus as ADTPulseAccessoryGetSensorStatusReturns<Caller>;
-        default:
-          throw hapStatus;
-      }
+      return hapStatus;
     }
 
     const { panelStates, panelStatuses } = this.#state.data.panelStatus;
 
     // Find the state for "Security System Alarm Type" (optional characteristic).
     if (mode === 'alarmType') {
-      if (
-        panelStatuses.includes('BURGLARY ALARM')
-        || panelStatuses.includes('Carbon Monoxide Alarm')
-        || panelStatuses.includes('FIRE ALARM')
-        || panelStatuses.includes('Uncleared Alarm')
-        || panelStatuses.includes('WATER ALARM')
-      ) {
+      if (isPanelAlarmActive(panelStatuses)) {
         return 1;
       }
 
@@ -782,24 +604,30 @@ export class ADTPulseAccessory {
 
     // Find the state for "Status Tampered" (optional characteristic).
     if (mode === 'tamper') {
-      // TODO: Not enough statuses currently to determine whether system is tampered or not.
+      if (panelStatuses.includes('Sensor Problem') || panelStatuses.includes('Sensor Problems')) {
+        return this.#characteristic.StatusTampered.TAMPERED;
+      }
+
       return this.#characteristic.StatusTampered.NOT_TAMPERED;
     }
 
-    // Find the current state for the panel (required characteristic).
+    /**
+     * Find the current state for the panel (required characteristic).
+     *
+     * Notes:
+     * - If system is busy setting the state, HomeKit will receive the state user has set to before it becomes "set".
+     *
+     * @since 1.0.0
+     */
     switch (true) {
-      case mode === 'current' && panelStatuses.includes('BURGLARY ALARM'):
-      case mode === 'current' && panelStatuses.includes('Carbon Monoxide Alarm'):
-      case mode === 'current' && panelStatuses.includes('FIRE ALARM'):
-      case mode === 'current' && panelStatuses.includes('Uncleared Alarm'):
-      case mode === 'current' && panelStatuses.includes('WATER ALARM'):
-        // TODO: Try to test Smoke or CO alarm while status is Disarmed and see if I'm able to disarm the system in Home app.
-        // TODO: If I cannot disarm, then I can only include BURGLARY ALARM in here.
+      case mode === 'current' && isPanelAlarmActive(panelStatuses):
         return this.#characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
-      case mode === 'current' && panelStates.includes('Armed Away'):
-        return this.#characteristic.SecuritySystemCurrentState.AWAY_ARM;
+      case mode === 'current' && this.#status.isBusy && this.#status.setValue !== null:
+        return this.#status.setValue;
       case mode === 'current' && panelStates.includes('Armed Stay'):
         return this.#characteristic.SecuritySystemCurrentState.STAY_ARM;
+      case mode === 'current' && panelStates.includes('Armed Away'):
+        return this.#characteristic.SecuritySystemCurrentState.AWAY_ARM;
       case mode === 'current' && panelStates.includes('Armed Night'):
         return this.#characteristic.SecuritySystemCurrentState.NIGHT_ARM;
       case mode === 'current' && panelStates.includes('Disarmed'):
@@ -808,12 +636,24 @@ export class ADTPulseAccessory {
         break;
     }
 
-    // Find the target state for the panel (required characteristic).
+    /**
+     * // Find the target state for the panel (required characteristic).
+     *
+     * Notes:
+     * - If system is in an alarm state, HomeKit will receive a "STAY_ARM" state so the user can disarm from Home app.
+     * - If system is busy setting the state, HomeKit will receive the state user has set to before it becomes "set".
+     *
+     * @since 1.0.0
+     */
     switch (true) {
-      case mode === 'target' && panelStates.includes('Armed Away'):
-        return this.#characteristic.SecuritySystemTargetState.AWAY_ARM;
+      case mode === 'target' && panelStates.includes('Disarmed') && isPanelAlarmActive(panelStatuses):
+        return this.#characteristic.SecuritySystemTargetState.STAY_ARM;
+      case mode === 'target' && this.#status.isBusy && this.#status.setValue !== null:
+        return this.#status.setValue;
       case mode === 'target' && panelStates.includes('Armed Stay'):
         return this.#characteristic.SecuritySystemTargetState.STAY_ARM;
+      case mode === 'target' && panelStates.includes('Armed Away'):
+        return this.#characteristic.SecuritySystemTargetState.AWAY_ARM;
       case mode === 'target' && panelStates.includes('Armed Night'):
         return this.#characteristic.SecuritySystemTargetState.NIGHT_ARM;
       case mode === 'target' && panelStates.includes('Disarmed'):
@@ -828,26 +668,15 @@ export class ADTPulseAccessory {
 
       this.#log.warn(`Attempted to get panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but panel state is "Status Unavailable".`);
 
-      // The error message is either thrown or returned depending on the caller.
-      switch (caller) {
-        case 'updater':
-          return hapStatus as ADTPulseAccessoryGetSensorStatusReturns<Caller>;
-        default:
-          throw hapStatus;
-      }
+      return hapStatus;
     }
 
+    // Attempted to get panel status, but actions have not been implemented yet.
     hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
 
     this.#log.warn(`Attempted to get panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but actions have not been implemented yet.`);
 
-    // The error message is either thrown or returned depending on the caller.
-    switch (caller) {
-      case 'updater':
-        return hapStatus as ADTPulseAccessoryGetSensorStatusReturns<Caller>;
-      default:
-        throw hapStatus;
-    }
+    return hapStatus;
   }
 
   /**
@@ -870,6 +699,7 @@ export class ADTPulseAccessory {
       uuid,
     } = context;
 
+    let hapStatus;
     let result = {
       success: false,
     };
@@ -877,62 +707,95 @@ export class ADTPulseAccessory {
 
     // If device is not a security panel.
     if (type !== 'panel') {
+      hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.INVALID_VALUE_IN_REQUEST);
+
       this.#log.error(`Attempted to set panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but device is not a security panel.`);
 
-      throw new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.INVALID_VALUE_IN_REQUEST);
+      throw hapStatus;
     }
 
     // If panel status has not been retrieved yet.
     if (this.#state.data.panelStatus === null || this.#state.data.panelStatus.panelStates.length === 0) {
+      hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.RESOURCE_BUSY);
+
       this.#log.warn(`Attempted to set panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but panel status has not been retrieved yet.`);
 
-      throw new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.RESOURCE_BUSY);
+      throw hapStatus;
     }
 
     const { panelStates } = this.#state.data.panelStatus;
 
-    const armFrom = condensePanelStates(panelStates);
+    const armFrom = condensePanelStates(this.#characteristic, panelStates);
+    const isAlarmActive = isPanelAlarmActive(this.#state.data.panelStatus.panelStatuses);
 
     // If panel status cannot be found or most likely "Status Unavailable".
     if (armFrom === undefined) {
+      hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.RESOURCE_BUSY);
+
       this.#log.warn(`Attempted to set panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but panel status cannot be found or most likely "Status Unavailable".`);
 
-      throw new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.RESOURCE_BUSY);
+      throw hapStatus;
     }
 
-    // Set the panel status.
-    switch (arm) {
-      case this.#characteristic.SecuritySystemTargetState.STAY_ARM:
-        result = await this.#instance.setPanelStatus(armFrom, 'stay');
-        break;
-      case this.#characteristic.SecuritySystemTargetState.AWAY_ARM:
-        result = await this.#instance.setPanelStatus(armFrom, 'away');
-        break;
-      case this.#characteristic.SecuritySystemTargetState.NIGHT_ARM:
-        result = await this.#instance.setPanelStatus(armFrom, 'night');
-        break;
-      case this.#characteristic.SecuritySystemTargetState.DISARM:
-        result = await this.#instance.setPanelStatus(armFrom, 'off');
-        break;
-      default:
-        unknownArmValue = true;
-        break;
-    }
+    // If user is not setting to the current arm state (e.g. off to off) or if trying to turn off alarm.
+    if (
+      armFrom.characteristicValue !== arm
+      || (
+        armFrom.armValue === 'off'
+        && arm === this.#characteristic.SecuritySystemTargetState.DISARM
+        && isAlarmActive
+      )
+    ) {
+      // Set this accessory status to "busy" before arming. For "panelCurrentValue"
+      this.#status = {
+        isBusy: true,
+        setValue: arm,
+      };
 
-    // If request has unknown arm value.
-    if (unknownArmValue) {
-      this.#log.error(`Attempted to set panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but request has unknown arm value.`);
+      // Set the panel status.
+      switch (arm) {
+        case this.#characteristic.SecuritySystemTargetState.STAY_ARM:
+          result = await this.#instance.setPanelStatus(armFrom.armValue, 'stay', isAlarmActive);
+          break;
+        case this.#characteristic.SecuritySystemTargetState.AWAY_ARM:
+          result = await this.#instance.setPanelStatus(armFrom.armValue, 'away', isAlarmActive);
+          break;
+        case this.#characteristic.SecuritySystemTargetState.NIGHT_ARM:
+          result = await this.#instance.setPanelStatus(armFrom.armValue, 'night', isAlarmActive);
+          break;
+        case this.#characteristic.SecuritySystemTargetState.DISARM:
+          result = await this.#instance.setPanelStatus(armFrom.armValue, 'off', isAlarmActive);
+          break;
+        default:
+          unknownArmValue = true;
+          break;
+      }
 
-      throw new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.INVALID_VALUE_IN_REQUEST);
-    }
+      // Set this accessory status to "idle" after arming (6 to 9 seconds).
+      this.#status = {
+        isBusy: false,
+        setValue: null,
+      };
 
-    // If request was not successful.
-    if (!result.success) {
-      this.#log.error(`Attempted to set panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but request was not successful.`);
+      // If request has unknown arm value.
+      if (unknownArmValue) {
+        hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.INVALID_VALUE_IN_REQUEST);
 
-      stackTracer('api-response', result);
+        this.#log.error(`Attempted to set panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but request has unknown arm value.`);
 
-      throw new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.OPERATION_TIMED_OUT);
+        throw hapStatus;
+      }
+
+      // If request was not successful.
+      if (!result.success) {
+        hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.OPERATION_TIMED_OUT);
+
+        this.#log.error(`Attempted to set panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but request was not successful.`);
+
+        stackTracer('api-response', result);
+
+        throw hapStatus;
+      }
     }
   }
 }

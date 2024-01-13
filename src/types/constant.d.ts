@@ -47,6 +47,7 @@ export type PluginDeviceSensorType =
   | 'heat'
   | 'motion'
   | 'shock'
+  | 'supervisory'
   | 'temperature';
 
 /**
@@ -278,6 +279,7 @@ export type PortalSensorDeviceType =
   | 'Motion Sensor'
   | 'Motion Sensor (Notable Events Only)'
   | 'Shock Sensor'
+  | 'System/Supervisory'
   | 'Temperature Sensor'
   | 'Water/Flood Sensor'
   | 'Window Sensor';

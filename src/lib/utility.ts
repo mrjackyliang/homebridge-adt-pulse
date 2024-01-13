@@ -26,6 +26,7 @@ import type {
   ClearHtmlLineBreakReturns,
   ClearWhitespaceData,
   ClearWhitespaceReturns,
+  CondensePanelStatesCharacteristic,
   CondensePanelStatesCondensed,
   CondensePanelStatesPanelStates,
   CondensePanelStatesReturns,
@@ -56,6 +57,12 @@ import type {
   FindNullKeysReturns,
   GenerateDynatracePCHeaderValueMode,
   GenerateDynatracePCHeaderValueReturns,
+  GenerateFakeReadyButtonsButtons,
+  GenerateFakeReadyButtonsDisplayedButtons,
+  GenerateFakeReadyButtonsIsCleanState,
+  GenerateFakeReadyButtonsOptions,
+  GenerateFakeReadyButtonsReadyButtons,
+  GenerateFakeReadyButtonsReturns,
   GenerateHashData,
   GenerateHashReturns,
   GetAccessoryCategoryDeviceCategory,
@@ -67,6 +74,8 @@ import type {
   GetPluralFormReturns,
   GetPluralFormSingular,
   IsForwardSlashOSReturns,
+  IsPanelAlarmActivePanelStatuses,
+  IsPanelAlarmActiveReturns,
   IsPluginOutdatedReturns,
   IsPortalSyncCodeSyncCode,
   IsPortalSyncCodeVerifiedSyncCode,
@@ -147,28 +156,41 @@ export function clearWhitespace(data: ClearWhitespaceData): ClearWhitespaceRetur
 /**
  * Condense panel states.
  *
- * @param {CondensePanelStatesPanelStates} panelStates - Panel states.
+ * @param {CondensePanelStatesCharacteristic} characteristic - Characteristic.
+ * @param {CondensePanelStatesPanelStates}    panelStates    - Panel states.
  *
  * @returns {CondensePanelStatesReturns}
  *
  * @since 1.0.0
  */
-export function condensePanelStates(panelStates: CondensePanelStatesPanelStates): CondensePanelStatesReturns {
+export function condensePanelStates(characteristic: CondensePanelStatesCharacteristic, panelStates: CondensePanelStatesPanelStates): CondensePanelStatesReturns {
   let condensed: CondensePanelStatesCondensed;
 
   // Only detect panel states used for arming/disarming system.
   switch (true) {
     case panelStates.includes('Armed Away'):
-      condensed = 'away';
+      condensed = {
+        armValue: 'away',
+        characteristicValue: characteristic.SecuritySystemTargetState.AWAY_ARM,
+      };
       break;
     case panelStates.includes('Armed Night'):
-      condensed = 'night';
+      condensed = {
+        armValue: 'night',
+        characteristicValue: characteristic.SecuritySystemTargetState.NIGHT_ARM,
+      };
       break;
     case panelStates.includes('Armed Stay'):
-      condensed = 'stay';
+      condensed = {
+        armValue: 'stay',
+        characteristicValue: characteristic.SecuritySystemTargetState.STAY_ARM,
+      };
       break;
     case panelStates.includes('Disarmed'):
-      condensed = 'off';
+      condensed = {
+        armValue: 'off',
+        characteristicValue: characteristic.SecuritySystemTargetState.DISARM,
+      };
       break;
     default:
       break;
@@ -217,6 +239,9 @@ export function condenseSensorType(sensorType: CondenseSensorTypeSensorType): Co
       break;
     case 'Shock Sensor':
       condensed = 'shock';
+      break;
+    case 'System/Supervisory':
+      condensed = 'supervisory';
       break;
     case 'Temperature Sensor':
       condensed = 'temperature';
@@ -526,6 +551,133 @@ export function generateDynatracePCHeaderValue(mode: GenerateDynatracePCHeaderVa
 }
 
 /**
+ * Generate fake ready buttons.
+ *
+ * @param {GenerateFakeReadyButtonsButtons}      buttons      - Buttons.
+ * @param {GenerateFakeReadyButtonsIsCleanState} isCleanState - Is clean state.
+ * @param {GenerateFakeReadyButtonsOptions}      options      - Options.
+ *
+ * @returns {GenerateFakeReadyButtonsReturns}
+ *
+ * @since 1.0.0
+ */
+export function generateFakeReadyButtons(buttons: GenerateFakeReadyButtonsButtons, isCleanState: GenerateFakeReadyButtonsIsCleanState, options: GenerateFakeReadyButtonsOptions): GenerateFakeReadyButtonsReturns {
+  const readyButtons: GenerateFakeReadyButtonsReadyButtons = [];
+
+  // If the button is a "Disarming" button, generate the three arm buttons.
+  if (buttons.length === 1 && buttons[0].buttonText === 'Disarming') {
+    const displayedButtons: GenerateFakeReadyButtonsDisplayedButtons = [
+      {
+        buttonText: 'Arm Away',
+        loadingText: 'Arming Away',
+        arm: 'away',
+      },
+      {
+        buttonText: 'Arm Stay',
+        loadingText: 'Arming Stay',
+        arm: 'stay',
+      },
+      {
+        buttonText: 'Arm Night',
+        loadingText: 'Arming Night',
+        arm: 'night',
+      },
+    ];
+
+    displayedButtons.forEach((displayedButton, displayedButtonIndex) => {
+      readyButtons.push({
+        buttonId: `security_button_${displayedButtonIndex}`,
+        buttonDisabled: false,
+        buttonIndex: displayedButtonIndex,
+        buttonText: displayedButton.buttonText,
+        changeAccessCode: false,
+        loadingText: displayedButton.loadingText,
+        relativeUrl: options.relativeUrl,
+        totalButtons: buttons.length,
+        urlParams: {
+          arm: displayedButton.arm,
+          armState: (isCleanState) ? 'off' : 'disarmed',
+          href: options.href,
+          sat: options.sat,
+        },
+      });
+    });
+
+    return readyButtons;
+  }
+
+  buttons.forEach((button, buttonIndex) => {
+    // If button is already a "ready button", copy the button and skip processing.
+    if (!button.buttonDisabled) {
+      readyButtons.push(button);
+
+      return;
+    }
+
+    switch (button.buttonText) {
+      case 'Arming Away':
+        readyButtons.push({
+          buttonId: button.buttonId,
+          buttonDisabled: false,
+          buttonIndex,
+          buttonText: 'Disarm',
+          changeAccessCode: false,
+          loadingText: 'Disarming',
+          relativeUrl: options.relativeUrl,
+          totalButtons: buttons.length,
+          urlParams: {
+            arm: 'off',
+            armState: (isCleanState) ? 'away' : 'away',
+            href: options.href,
+            sat: options.sat,
+          },
+        });
+        break;
+      case 'Arming Night':
+        readyButtons.push({
+          buttonId: button.buttonId,
+          buttonDisabled: false,
+          buttonIndex,
+          buttonText: 'Disarm',
+          changeAccessCode: false,
+          loadingText: 'Disarming',
+          relativeUrl: options.relativeUrl,
+          totalButtons: buttons.length,
+          urlParams: {
+            arm: 'off',
+            armState: (isCleanState) ? 'night' : 'night+stay',
+            href: options.href,
+            sat: options.sat,
+          },
+        });
+        break;
+      case 'Arming Stay':
+        readyButtons.push({
+          buttonId: button.buttonId,
+          buttonDisabled: false,
+          buttonIndex,
+          buttonText: 'Disarm',
+          changeAccessCode: false,
+          loadingText: 'Disarming',
+          relativeUrl: options.relativeUrl,
+          totalButtons: buttons.length,
+          urlParams: {
+            arm: 'off',
+            armState: (isCleanState) ? 'stay' : 'stay',
+            href: options.href,
+            sat: options.sat,
+          },
+        });
+        break;
+      default:
+        break;
+    }
+  });
+
+  return readyButtons;
+}
+
+/**
  * Generate hash.
  *
  * @param {GenerateHashData} data - Data.
@@ -627,6 +779,27 @@ export function isForwardSlashOS(): IsForwardSlashOSReturns {
     'sunos',
     'netbsd',
   ].includes(currentOS);
+}
+
+/**
+ * Is panel alarm active.
+ *
+ * @param {IsPanelAlarmActivePanelStatuses} panelStatuses - Panel statuses.
+ *
+ * @returns {IsPanelAlarmActiveReturns}
+ *
+ * @since 1.0.0
+ */
+export function isPanelAlarmActive(panelStatuses: IsPanelAlarmActivePanelStatuses): IsPanelAlarmActiveReturns {
+  return (
+    panelStatuses.includes('BURGLARY ALARM')
+    || panelStatuses.includes('Carbon Monoxide Alarm')
+    || panelStatuses.includes('FIRE ALARM')
+    || panelStatuses.includes('Sensor Problem')
+    || panelStatuses.includes('Sensor Problems')
+    || panelStatuses.includes('Uncleared Alarm')
+    || panelStatuses.includes('WATER ALARM')
+  );
 }
 
 /**
@@ -1064,7 +1237,8 @@ export function stackTracer(type: StackTracerType, error: StackTracerError<Stack
   switch (type) {
     case 'api-response':
     case 'detect-content':
-    case 'sensor-mismatch':
+    case 'fake-ready-buttons':
+    case 'log-status-changes':
     case 'serialize-error':
       stringError = util.inspect(error, {
         showHidden: false,

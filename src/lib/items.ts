@@ -40,6 +40,7 @@ export const condensedSensorTypeItems: CondensedSensorTypeItems = [
   'heat',
   'motion',
   'shock',
+  'supervisory',
   'temperature',
 ];
 
@@ -274,16 +275,25 @@ export const sensorActionItems: SensorActionItems = [
   {
     type: 'doorWindow',
     statuses: [
+      'ALARM, Closed',
+      'ALARM, Open',
       'Bypassed, Closed',
       'Bypassed, Open',
       'Closed',
+      'Low Battery, Closed',
+      'Low Battery, Open',
       'Open',
+      'Trouble, Closed',
+      'Trouble, Open',
       'Unknown',
     ],
   },
   {
     type: 'fire',
     statuses: [
+      'ALARM, Okay',
+      'ALARM, Tripped',
+      'Low Battery, Okay',
       'Okay',
       'Unknown',
     ],
@@ -297,7 +307,9 @@ export const sensorActionItems: SensorActionItems = [
   {
     type: 'glass',
     statuses: [
+      'ALARM, Okay',
       'Okay',
+      'Tripped',
       'Unknown',
     ],
   },
@@ -310,6 +322,7 @@ export const sensorActionItems: SensorActionItems = [
   {
     type: 'motion',
     statuses: [
+      'ALARM, Motion',
       'Motion',
       'No Motion',
       'Okay',
@@ -323,8 +336,16 @@ export const sensorActionItems: SensorActionItems = [
     ],
   },
   {
+    type: 'supervisory',
+    statuses: [
+      '',
+    ],
+  },
+  {
     type: 'temperature',
     statuses: [
+      'ALARM, Okay',
+      'ALARM, Tripped',
       'Okay',
     ],
   },
@@ -345,6 +366,7 @@ export const sensorInformationDeviceTypeItems: SensorInformationDeviceTypeItems 
   'Motion Sensor',
   'Motion Sensor (Notable Events Only)',
   'Shock Sensor',
+  'System/Supervisory',
   'Temperature Sensor',
   'Water/Flood Sensor',
   'Window Sensor',

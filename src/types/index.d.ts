@@ -66,10 +66,9 @@ import type {
   PanelInformation,
   PanelStatus,
   PanelStatusStates,
+  PanelStatusStatuses,
   PortalVersionContent,
   SensorInformation,
-  SensorsInformation,
-  SensorsStatus,
   SensorStatus,
   Sessions,
   UUID,
@@ -89,6 +88,8 @@ export type ADTPulseArmDisarmHandlerArmState = PortalPanelArmStateClean | Portal
 export type ADTPulseArmDisarmHandlerArm = PortalPanelArmValue;
 
 export type ADTPulseArmDisarmHandlerSat = UUID;
+
+export type ADTPulseArmDisarmHandlerIsAlarmActive = boolean;
 
 export type ADTPulseArmDisarmHandlerReturnsInfoForceArmRequired = boolean;
 
@@ -236,7 +237,9 @@ export type ADTPulseGetRequestConfigDefaultConfig = AxiosRequestConfig;
  *
  * @since 1.0.0
  */
-export type ADTPulseGetSensorsInformationReturnsInfoSensors = SensorsInformation;
+export type ADTPulseGetSensorsInformationReturnsInfoSensor = SensorInformation;
+
+export type ADTPulseGetSensorsInformationReturnsInfoSensors = ADTPulseGetSensorsInformationReturnsInfoSensor[];
 
 export type ADTPulseGetSensorsInformationReturnsInfo = {
   sensors: ADTPulseGetSensorsInformationReturnsInfoSensors;
@@ -254,7 +257,9 @@ export type ADTPulseGetSensorsInformationSessions = Sessions<{
  *
  * @since 1.0.0
  */
-export type ADTPulseGetSensorsStatusReturnsInfoSensors = SensorsStatus;
+export type ADTPulseGetSensorsStatusReturnsInfoSensor = SensorStatus;
+
+export type ADTPulseGetSensorsStatusReturnsInfoSensors = ADTPulseGetSensorsStatusReturnsInfoSensor[];
 
 export type ADTPulseGetSensorsStatusReturnsInfo = {
   sensors: ADTPulseGetSensorsStatusReturnsInfoSensors;
@@ -383,8 +388,8 @@ export type ADTPulseNewInformationDispatcherData<Type extends ADTPulseNewInforma
         : Type extends 'panel-information' ? PanelInformation
           : Type extends 'panel-status' ? PanelStatus
             : Type extends 'portal-version' ? PortalVersionContent
-              : Type extends 'sensors-information' ? SensorsInformation
-                : Type extends 'sensors-status' ? SensorsStatus
+              : Type extends 'sensors-information' ? SensorInformation[]
+                : Type extends 'sensors-status' ? SensorStatus[]
                   : never;
 
 export type ADTPulseNewInformationDispatcherReturns = Promise<void>;
@@ -461,6 +466,8 @@ export type ADTPulseSetPanelStatusArmFrom = PortalPanelArmValue;
 
 export type ADTPulseSetPanelStatusArmTo = PortalPanelArmValue;
 
+export type ADTPulseSetPanelStatusIsAlarmActive = boolean | undefined;
+
 export type ADTPulseSetPanelStatusReturnsInfoForceArmRequired = boolean;
 
 export type ADTPulseSetPanelStatusReturnsInfo = {
@@ -521,13 +528,9 @@ export type ADTPulseAccessoryConstructorLog = Logger;
  *
  * @since 1.0.0
  */
-export type ADTPulseAccessoryGetPanelStatusCaller = 'constructor' | 'updater';
-
 export type ADTPulseAccessoryGetPanelStatusMode = 'alarmType' | 'current' | 'fault' | 'tamper' | 'target';
 
-export type ADTPulseAccessoryGetPanelStatusReturns<Caller extends ADTPulseAccessoryGetPanelStatusCaller> =
-  Caller extends 'updater' ? HapStatusError | Error | Nullable<CharacteristicValue>
-    : Nullable<CharacteristicValue>;
+export type ADTPulseAccessoryGetPanelStatusReturns = HapStatusError | Error | Nullable<CharacteristicValue>;
 
 /**
  * ADT Pulse Accessory - Set panel status.
@@ -543,13 +546,9 @@ export type ADTPulseAccessorySetPanelStatusReturns = Promise<void>;
  *
  * @since 1.0.0
  */
-export type ADTPulseAccessoryGetSensorStatusCaller = 'constructor' | 'updater';
-
 export type ADTPulseAccessoryGetSensorStatusMode = 'active' | 'fault' | 'lowBattery' | 'status' | 'tamper';
 
-export type ADTPulseAccessoryGetSensorStatusReturns<Caller extends ADTPulseAccessoryGetSensorStatusCaller> =
-  Caller extends 'updater' ? HapStatusError | Error | Nullable<CharacteristicValue>
-    : Nullable<CharacteristicValue>;
+export type ADTPulseAccessoryGetSensorStatusReturns = HapStatusError | Error | Nullable<CharacteristicValue>;
 
 /**
  * ADT Pulse Accessory - Instance.
@@ -578,6 +577,20 @@ export type ADTPulseAccessoryServices = Record<string, Service | undefined>;
  * @since 1.0.0
  */
 export type ADTPulseAccessoryState = ADTPulsePlatformState;
+
+/**
+ * ADT Pulse Accessory - Status.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseAccessoryStatusIsBusy = boolean;
+
+export type ADTPulseAccessoryStatusSetValue = Nullable<CharacteristicValue>;
+
+export type ADTPulseAccessoryStatus = {
+  isBusy: ADTPulseAccessoryStatusIsBusy;
+  setValue: ADTPulseAccessoryStatusSetValue;
+};
 
 /**
  * ADT Pulse Accessory - Updater.
@@ -650,6 +663,8 @@ export type ADTPulsePlatformConfigureAccessoryReturns = void;
  */
 export type ADTPulsePlatformConstantsTimestampsAdtKeepAlive = number;
 
+export type ADTPulsePlatformConstantsTimestampsAdtSessionMax = number;
+
 export type ADTPulsePlatformConstantsTimestampsAdtSyncCheck = number;
 
 export type ADTPulsePlatformConstantsTimestampsSuspendSyncing = number;
@@ -658,6 +673,7 @@ export type ADTPulsePlatformConstantsTimestampsSynchronize = number;
 
 export type ADTPulsePlatformConstantsTimestamps = {
   adtKeepAlive: ADTPulsePlatformConstantsTimestampsAdtKeepAlive;
+  adtSessionMax: ADTPulsePlatformConstantsTimestampsAdtSessionMax;
   adtSyncCheck: ADTPulsePlatformConstantsTimestampsAdtSyncCheck;
   suspendSyncing: ADTPulsePlatformConstantsTimestampsSuspendSyncing;
   synchronize: ADTPulsePlatformConstantsTimestampsSynchronize;
@@ -715,6 +731,17 @@ export type ADTPulsePlatformInstance = ADTPulse | null;
  * @since 1.0.0
  */
 export type ADTPulsePlatformLog = Logger;
+
+/**
+ * ADT Pulse Platform - Log status changes.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulsePlatformLogStatusChangesOldCache = ADTPulsePlatformStateData;
+
+export type ADTPulsePlatformLogStatusChangesNewCache = ADTPulsePlatformStateData;
+
+export type ADTPulsePlatformLogStatusChangesReturns = Promise<void>;
 
 /**
  * ADT Pulse Platform - Poll accessories.
@@ -776,9 +803,13 @@ export type ADTPulsePlatformStateDataPanelInfo = PanelInformation | null;
 
 export type ADTPulsePlatformStateDataPanelStatus = PanelStatus | null;
 
-export type ADTPulsePlatformStateDataSensorsInfo = SensorsInformation;
+export type ADTPulsePlatformStateDataSensorInfo = SensorInformation;
 
-export type ADTPulsePlatformStateDataSensorsStatus = SensorsStatus;
+export type ADTPulsePlatformStateDataSensorsInfo = ADTPulsePlatformStateDataSensorInfo[];
+
+export type ADTPulsePlatformStateDataSensorStatus = SensorStatus;
+
+export type ADTPulsePlatformStateDataSensorsStatus = ADTPulsePlatformStateDataSensorStatus[];
 
 export type ADTPulsePlatformStateDataSyncCode = PortalSyncCode;
 
@@ -805,10 +836,13 @@ export type ADTPulsePlatformStateIntervals = {
 
 export type ADTPulsePlatformStateLastRunOnAdtKeepAlive = number;
 
+export type ADTPulsePlatformStateLastRunOnAdtLastLogin = number;
+
 export type ADTPulsePlatformStateLastRunOnAdtSyncCheck = number;
 
 export type ADTPulsePlatformStateLastRunOn = {
   adtKeepAlive: ADTPulsePlatformStateLastRunOnAdtKeepAlive;
+  adtLastLogin: ADTPulsePlatformStateLastRunOnAdtLastLogin;
   adtSyncCheck: ADTPulsePlatformStateLastRunOnAdtSyncCheck;
 };
 
@@ -1016,11 +1050,27 @@ export type ClearWhitespaceReturns = string;
  *
  * @since 1.0.0
  */
+export type CondensePanelStatesCharacteristic = typeof Characteristic;
+
 export type CondensePanelStatesPanelStates = PanelStatusStates;
 
-export type CondensePanelStatesReturns = PortalPanelArmValue | undefined;
+export type CondensePanelStatesReturnsArmValue = PortalPanelArmValue;
 
-export type CondensePanelStatesCondensed = PortalPanelArmValue | undefined;
+export type CondensePanelStatesReturnsCharacteristicValue = CharacteristicValue;
+
+export type CondensePanelStatesReturns = {
+  armValue: CondensePanelStatesReturnsArmValue;
+  characteristicValue: CondensePanelStatesReturnsCharacteristicValue;
+} | undefined;
+
+export type CondensePanelStatesCondensedArmValue = PortalPanelArmValue;
+
+export type CondensePanelStatesCondensedCharacteristicValue = CharacteristicValue;
+
+export type CondensePanelStatesCondensed = {
+  armValue: CondensePanelStatesCondensedArmValue;
+  characteristicValue: CondensePanelStatesCondensedCharacteristicValue;
+} | undefined;
 
 /**
  * Condensed sensor type items.
@@ -1140,7 +1190,9 @@ export type DetectedNewPortalVersionReturns = Promise<boolean>;
  *
  * @since 1.0.0
  */
-export type DetectedNewSensorsInformationSensors = SensorsInformation;
+export type DetectedNewSensorsInformationSensor = SensorInformation;
+
+export type DetectedNewSensorsInformationSensors = DetectedNewSensorsInformationSensor[];
 
 export type DetectedNewSensorsInformationLogger = Logger | null;
 
@@ -1153,13 +1205,39 @@ export type DetectedNewSensorsInformationReturns = Promise<boolean>;
  *
  * @since 1.0.0
  */
-export type DetectedNewSensorsStatusSensors = SensorsStatus;
+export type DetectedNewSensorsStatusSensor = SensorStatus;
+
+export type DetectedNewSensorsStatusSensors = DetectedNewSensorsStatusSensor[];
 
 export type DetectedNewSensorsStatusLogger = Logger | null;
 
 export type DetectedNewSensorsStatusDebugMode = boolean | null;
 
 export type DetectedNewSensorsStatusReturns = Promise<boolean>;
+
+/**
+ * Detected sensor count mismatch.
+ *
+ * @since 1.0.0
+ */
+export type DetectedSensorCountMismatchDataSensorInfo = SensorInformation;
+
+export type DetectedSensorCountMismatchDataSensorsInfo = DetectedSensorCountMismatchDataSensorInfo[];
+
+export type DetectedSensorCountMismatchDataSensorStatus = SensorStatus;
+
+export type DetectedSensorCountMismatchDataSensorsStatus = DetectedSensorCountMismatchDataSensorStatus[];
+
+export type DetectedSensorCountMismatchData = {
+  sensorsInfo: DetectedSensorCountMismatchDataSensorsInfo;
+  sensorsStatus: DetectedSensorCountMismatchDataSensorsStatus;
+};
+
+export type DetectedSensorCountMismatchLogger = Logger | null;
+
+export type DetectedSensorCountMismatchDebugMode = boolean | null;
+
+export type DetectedSensorCountMismatchReturns = Promise<boolean>;
 
 /**
  * Detected unknown sensors action.
@@ -1309,6 +1387,45 @@ export type GenerateDynatracePCHeaderValueMode = 'keep-alive' | 'force-arm';
 export type GenerateDynatracePCHeaderValueReturns = string;
 
 /**
+ * Generate fake ready buttons.
+ *
+ * @since 1.0.0
+ */
+export type GenerateFakeReadyButtonsButtons = OrbSecurityButtons;
+
+export type GenerateFakeReadyButtonsIsCleanState = ADTPulseSessionIsCleanState;
+
+export type GenerateFakeReadyButtonsOptionsRelativeUrl = PortalPanelArmButtonRelativeUrl;
+
+export type GenerateFakeReadyButtonsOptionsHref = PortalPanelArmButtonHref;
+
+export type GenerateFakeReadyButtonsOptionsSat = UUID;
+
+export type GenerateFakeReadyButtonsOptions = {
+  relativeUrl: GenerateFakeReadyButtonsOptionsRelativeUrl;
+  href: GenerateFakeReadyButtonsOptionsHref;
+  sat: GenerateFakeReadyButtonsOptionsSat;
+};
+
+export type GenerateFakeReadyButtonsReturns = (OrbSecurityButtonBase & OrbSecurityButtonReady)[];
+
+export type GenerateFakeReadyButtonsReadyButtons = (OrbSecurityButtonBase & OrbSecurityButtonReady)[];
+
+export type GenerateFakeReadyButtonsDisplayedButtonButtonText = PortalPanelArmButtonText;
+
+export type GenerateFakeReadyButtonsDisplayedButtonLoadingText = PortalPanelArmButtonLoadingText;
+
+export type GenerateFakeReadyButtonsDisplayedButtonArm = PortalPanelArmValue;
+
+export type GenerateFakeReadyButtonsDisplayedButton = {
+  buttonText: GenerateFakeReadyButtonsDisplayedButtonButtonText;
+  loadingText: GenerateFakeReadyButtonsDisplayedButtonLoadingText;
+  arm: GenerateFakeReadyButtonsDisplayedButtonArm;
+};
+
+export type GenerateFakeReadyButtonsDisplayedButtons = GenerateFakeReadyButtonsDisplayedButton[];
+
+/**
  * Generate hash.
  *
  * @since 1.0.0
@@ -1368,6 +1485,15 @@ export type InitializeReturns = void;
  * @since 1.0.0
  */
 export type IsForwardSlashOSReturns = boolean;
+
+/**
+ * Is panel alarm active.
+ *
+ * @since 1.0.0
+ */
+export type IsPanelAlarmActivePanelStatuses = PanelStatusStatuses;
+
+export type IsPanelAlarmActiveReturns = boolean;
 
 /**
  * Is plugin outdated.
@@ -1512,9 +1638,9 @@ export type ParseDoSubmitHandlersUrlParamsArm = Exclude<PortalPanelArmValue, 'of
  */
 export type ParseOrbSensorsElements = NodeListOf<Element>;
 
-export type ParseOrbSensorsReturns = SensorsStatus;
+export type ParseOrbSensorsReturns = SensorStatus[];
 
-export type ParseOrbSensorsSensors = SensorsStatus;
+export type ParseOrbSensorsSensors = SensorStatus[];
 
 export type ParseOrbSensorsCleanedIcon = PortalSensorStatusIcon;
 
@@ -1573,9 +1699,9 @@ export type ParseOrbSecurityButtonsArm = PortalPanelArmValue;
  */
 export type ParseOrbSensorsTableElements = NodeListOf<Element>;
 
-export type ParseOrbSensorsTableReturns = SensorsInformation;
+export type ParseOrbSensorsTableReturns = SensorInformation[];
 
-export type ParseOrbSensorsTableSensors = SensorsInformation;
+export type ParseOrbSensorsTableSensors = SensorInformation[];
 
 export type ParseOrbSensorsTableDeviceType = PortalSensorDeviceType;
 
@@ -1673,14 +1799,15 @@ export type SleepReturns = Promise<void>;
  *
  * @since 1.0.0
  */
-export type StackTracerType = 'api-response' | 'detect-content' | 'sensor-mismatch' | 'serialize-error' | 'zod-error';
+export type StackTracerType = 'api-response' | 'detect-content' | 'fake-ready-buttons' | 'log-status-changes' | 'serialize-error' | 'zod-error';
 
 export type StackTracerError<Type extends StackTracerType> =
   Type extends 'api-response' ? ApiResponseFail<any>
-    : Type extends 'detect-content' ? object
-      : Type extends 'sensor-mismatch' ? object
-        : Type extends 'serialize-error' ? ErrorObject
-          : Type extends 'zod-error' ? z.ZodIssue[]
-            : never;
+    : Type extends 'detect-content' ? Record<string, unknown> | Record<string, unknown>[]
+      : Type extends 'fake-ready-buttons' ? { before: OrbSecurityButtons; after: OrbSecurityButtonBase & OrbSecurityButtonReady; }
+        : Type extends 'log-status-changes' ? { old: SensorInformation[], new: SensorInformation[] }
+          : Type extends 'serialize-error' ? ErrorObject
+            : Type extends 'zod-error' ? z.ZodIssue[]
+              : never;
 
 export type StackTracerReturns = void;
