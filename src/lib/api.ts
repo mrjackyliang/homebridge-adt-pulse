@@ -52,14 +52,10 @@ import {
   stackTracer,
 } from '@/lib/utility.js';
 import type {
-  ADTPulseArmDisarmHandlerArm,
-  ADTPulseArmDisarmHandlerArmState,
-  ADTPulseArmDisarmHandlerHref,
   ADTPulseArmDisarmHandlerIsAlarmActive,
+  ADTPulseArmDisarmHandlerOptions,
   ADTPulseArmDisarmHandlerReadyButton,
-  ADTPulseArmDisarmHandlerRelativeUrl,
   ADTPulseArmDisarmHandlerReturns,
-  ADTPulseArmDisarmHandlerSat,
   ADTPulseArmDisarmHandlerSessions,
   ADTPulseConstructorConfig,
   ADTPulseConstructorInternalConfig,
@@ -179,6 +175,7 @@ export class ADTPulse {
       backupSatCode: null,
       httpClient: wrapper(axios.create({
         jar: new CookieJar(),
+        validateStatus: () => true,
       })),
       isAuthenticated: false,
       isCleanState: true,
@@ -1355,12 +1352,13 @@ export class ADTPulse {
       };
     }
 
+    // Meant for REPL mode, since it doesn't type check during runtime.
     if (typeof isAlarmActive !== 'boolean') {
       return {
         action: 'SET_PANEL_STATUS',
         success: false,
         info: {
-          message: 'You must specify if the system\'s alarm is currently sounding (true) or not (false)',
+          message: 'You must specify if the system\'s alarm is currently ringing (true) or not (false)',
         },
       };
     }
@@ -1398,10 +1396,15 @@ export class ADTPulse {
       };
     }
 
+    // If alarm is currently ringing.
+    if (this.#internal.debug && isAlarmActive) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'warn', `Alarm is currently ringing and arm state is being changed from "${armFrom}" to "${armTo}"`);
+    }
+
     try {
       const sessions: ADTPulseSetPanelStatusSessions = {};
 
-      let isAlarmStillActive = isAlarmActive;
+      let isAlarmCurrentlyActive = isAlarmActive;
 
       // sessions.axiosSummary: Load the summary page.
       sessions.axiosSummary = await this.#session.httpClient.get<unknown>(
@@ -1613,14 +1616,14 @@ export class ADTPulse {
       // If arming tasks become stuck, but no backup sat code was available, return an error.
       if (readyButtons.length === 0 && this.#session.backupSatCode === null) {
         if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'error', 'No security buttons were found and replacement failed');
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'error', 'No security buttons were found and replacement failed because no backup sat code exists');
         }
 
         return {
           action: 'SET_PANEL_STATUS',
           success: false,
           info: {
-            message: 'No security buttons were found and replacement failed',
+            message: 'No security buttons were found and replacement failed because no backup sat code exists',
           },
         };
       }
@@ -1664,16 +1667,18 @@ export class ADTPulse {
         this.#internal.testMode.isSystemDisarmedBeforeTest = true;
       }
 
-      // If current arm state is not truly "disarmed" or alarm is still active, disarm it first.
-      while (isAlarmStillActive || !['off', 'disarmed'].includes(readyButtons[0].urlParams.armState)) {
+      // If current arm state is not truly "disarmed" or alarm is currently active, disarm it first.
+      while (isAlarmCurrentlyActive || !['off', 'disarmed'].includes(readyButtons[0].urlParams.armState)) {
         // Accessing index 0 is guaranteed, because of the check above.
         const armDisarmResponse = await this.armDisarmHandler(
-          readyButtons[0].relativeUrl,
-          readyButtons[0].urlParams.href,
-          readyButtons[0].urlParams.armState,
-          'off',
-          readyButtons[0].urlParams.sat,
-          isAlarmStillActive,
+          isAlarmCurrentlyActive,
+          {
+            relativeUrl: readyButtons[0].relativeUrl,
+            href: readyButtons[0].urlParams.href,
+            armState: readyButtons[0].urlParams.armState,
+            arm: 'off',
+            sat: readyButtons[0].urlParams.sat,
+          },
         );
 
         if (!armDisarmResponse.success) {
@@ -1707,7 +1712,9 @@ export class ADTPulse {
         readyButtons = armDisarmResponse.info.readyButtons;
 
         // At this point, the alarm should stop ringing, and state should be "Uncleared Alarm".
-        isAlarmStillActive = false;
+        if (isAlarmCurrentlyActive) {
+          isAlarmCurrentlyActive = false;
+        }
       }
 
       // Track if force arming was required.
@@ -1717,12 +1724,14 @@ export class ADTPulse {
       if (armTo !== 'off') {
         // Accessing index 0 is guaranteed, because of the check above.
         const armDisarmResponse = await this.armDisarmHandler(
-          readyButtons[0].relativeUrl,
-          readyButtons[0].urlParams.href,
-          readyButtons[0].urlParams.armState,
-          armTo,
-          readyButtons[0].urlParams.sat,
-          false, // Alarm should not be active at this point.
+          false, // At this point, alarm should not be active.
+          {
+            relativeUrl: readyButtons[0].relativeUrl,
+            href: readyButtons[0].urlParams.href,
+            armState: readyButtons[0].urlParams.armState, // At this point, "armState" should be "off" or "disarmed".
+            arm: armTo,
+            sat: readyButtons[0].urlParams.sat,
+          },
         );
 
         if (!armDisarmResponse.success) {
@@ -2469,6 +2478,7 @@ export class ADTPulse {
       backupSatCode: null,
       httpClient: wrapper(axios.create({
         jar: new CookieJar(),
+        validateStatus: () => true,
       })),
       isAuthenticated: false,
       isCleanState: true,
@@ -2480,12 +2490,8 @@ export class ADTPulse {
   /**
    * ADT Pulse - Arm disarm handler.
    *
-   * @param {ADTPulseArmDisarmHandlerRelativeUrl}   relativeUrl   - Relative url.
-   * @param {ADTPulseArmDisarmHandlerHref}          href          - Href.
-   * @param {ADTPulseArmDisarmHandlerArmState}      armState      - Arm state.
-   * @param {ADTPulseArmDisarmHandlerArm}           arm           - Arm.
-   * @param {ADTPulseArmDisarmHandlerSat}           sat           - Sat.
    * @param {ADTPulseArmDisarmHandlerIsAlarmActive} isAlarmActive - Is alarm active.
+   * @param {ADTPulseArmDisarmHandlerOptions}       options       - Options.
    *
    * @private
    *
@@ -2493,44 +2499,44 @@ export class ADTPulse {
    *
    * @since 1.0.0
    */
-  private async armDisarmHandler(relativeUrl: ADTPulseArmDisarmHandlerRelativeUrl, href: ADTPulseArmDisarmHandlerHref, armState: ADTPulseArmDisarmHandlerArmState, arm: ADTPulseArmDisarmHandlerArm, sat: ADTPulseArmDisarmHandlerSat, isAlarmActive: ADTPulseArmDisarmHandlerIsAlarmActive): ADTPulseArmDisarmHandlerReturns {
+  private async armDisarmHandler(isAlarmActive: ADTPulseArmDisarmHandlerIsAlarmActive, options: ADTPulseArmDisarmHandlerOptions): ADTPulseArmDisarmHandlerReturns {
     let errorObject;
 
     if (this.#internal.debug) {
-      debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'info', `Attempting to update arm state from "${armState}" to "${arm}" on "${this.#internal.baseUrl}"`);
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'info', `Attempting to update arm state from "${options.armState}" to "${options.arm}" on "${this.#internal.baseUrl}"`);
     }
 
     // If system is being set to the current arm state (e.g. disarmed to off) and alarm is not active.
     if (
       (
-        armState === 'away'
-        && arm === 'away'
+        options.armState === 'away'
+        && options.arm === 'away'
       )
       || (
-        armState === 'night'
-        && arm === 'night'
+        options.armState === 'night'
+        && options.arm === 'night'
       )
       || (
-        armState === 'night+stay'
-        && arm === 'night'
+        options.armState === 'night+stay'
+        && options.arm === 'night'
       )
       || (
-        armState === 'stay'
-        && arm === 'stay'
+        options.armState === 'stay'
+        && options.arm === 'stay'
       )
       || (
-        armState === 'disarmed'
-        && arm === 'off'
+        options.armState === 'disarmed'
+        && options.arm === 'off'
         && !isAlarmActive
       )
       || (
-        armState === 'off'
-        && arm === 'off'
+        options.armState === 'off'
+        && options.arm === 'off'
         && !isAlarmActive
       )
     ) {
       if (this.#internal.debug) {
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'info', `No need to change arm state from "${armState}" to "${arm}" due to its equivalence`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'info', `No need to change arm state from "${options.armState}" to "${options.arm}" due to its equivalence`);
       }
 
       return {
@@ -2548,10 +2554,10 @@ export class ADTPulse {
 
       // Build an "application/x-www-form-urlencoded" form for use with arming and disarming.
       const armDisarmForm = new URLSearchParams();
-      armDisarmForm.append('href', href);
-      armDisarmForm.append('armstate', armState);
-      armDisarmForm.append('arm', arm);
-      armDisarmForm.append('sat', sat);
+      armDisarmForm.append('href', options.href);
+      armDisarmForm.append('armstate', options.armState);
+      armDisarmForm.append('arm', options.arm);
+      armDisarmForm.append('sat', options.sat);
 
       // sessions.axiosSetArmMode: Emulate an arm state update request.
       sessions.axiosSetArmMode = await this.#session.httpClient.post<unknown>(
@@ -2609,7 +2615,7 @@ export class ADTPulse {
          *
          * @since 1.0.0
          */
-        `${this.#internal.baseUrl}/myhome/${this.#session.portalVersion}/${relativeUrl}`,
+        `${this.#internal.baseUrl}/myhome/${this.#session.portalVersion}/${options.relativeUrl}`,
         armDisarmForm,
         this.getRequestConfig({
           headers: {
@@ -2670,9 +2676,9 @@ export class ADTPulse {
       let forceArmRequired = false;
 
       // No need to force arm if system is not being set to arm.
-      if (arm !== 'off') {
+      if (options.arm !== 'off') {
         // Passing the force arming task to the handler.
-        const forceArmResponse = await this.forceArmHandler(sessions.axiosSetArmMode, relativeUrl);
+        const forceArmResponse = await this.forceArmHandler(sessions.axiosSetArmMode, options.relativeUrl);
 
         if (!forceArmResponse.success) {
           if (this.#internal.debug) {
@@ -2887,9 +2893,9 @@ export class ADTPulse {
       // Generate "fake" ready buttons if arming tasks become stuck.
       if (readyButtons.length === 0) {
         readyButtons = generateFakeReadyButtons(parsedOrbSecurityButtons, this.#session.isCleanState, {
-          relativeUrl,
-          href,
-          sat,
+          relativeUrl: options.relativeUrl,
+          href: options.href,
+          sat: options.sat,
         });
 
         if (this.#internal.debug) {
@@ -2902,7 +2908,7 @@ export class ADTPulse {
       }
 
       if (this.#internal.debug) {
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'success', `Successfully updated arm state from "${armState}" to "${arm}" on "${this.#internal.baseUrl}"`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'success', `Successfully updated arm state from "${options.armState}" to "${options.arm}" on "${this.#internal.baseUrl}"`);
       }
 
       return {
@@ -3376,7 +3382,6 @@ export class ADTPulse {
         'sec-ch-ua-platform': '"macOS"',
       },
       timeout: 15000, // 15 seconds.
-      validateStatus: undefined,
     };
 
     if (extraConfig === undefined) {

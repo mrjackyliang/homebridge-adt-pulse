@@ -162,9 +162,8 @@ To improve this, debug mode is now activated __ONLY when debug mode is enabled o
 The Temperature Sensor (`temperature`) functions differently compared to standard contact sensors when it comes to processing sensor statuses.
 
 In contrast to typical contact sensors that convey open or closed status, the temperature sensor exposed in the Home app (utilizing the HAP protocol) operates with temperature values. To accommodate this difference, the accessory converts these binary states into corresponding temperature degrees:
-- Cold temperatures are represented as __0°C__.
-- Normal temperatures are indicated as __20°C__.
-- Hot temperatures are reflected as __40°C__.
+- Normal temperatures are represented as __0°C__.
+- Abnormal temperatures are represented as __100°C__.
 
 ## Support for HOOBS
 Please note that HOOBS may use an outdated configuration UI. This issue that was reported by me, remains unresolved by the HOOBS team. For additional details, refer to this [GitHub issue](https://github.com/hoobs-org/HOOBS/issues/1873).
@@ -234,6 +233,9 @@ If you find value in the ongoing development of this plugin and wish to express 
 
 Moreover, I extend a special acknowledgment and heartfelt gratitude to the following individuals:
 - [@kevinmhickey](https://github.com/kevinmhickey) - For the inspiration to build a better script used in `v1.0.0` through `v2.2.0`.
-- [@Danimal4326](https://github.com/Danimal4326) - For successfully identifying the solution for ADT Pulse's 2-factor authentication.
+- [@Danimal4326](https://github.com/Danimal4326) - For successfully identifying the solution for ADT Pulse's 2-factor authentication and for contributions toward the successful development of `v3.0.0`.
+- [@sapireli](https://github.com/sapireli) - For contributions toward the successful development of `v3.0.0`.
+- [@hapinstance](https://github.com/hapinstance) - For contributions toward the successful development of `v3.0.0`.
+- [@thcooley](https://github.com/thcooley) - For contributions toward the successful development of `v3.0.0`.
 
-Their contributions have significantly enhanced the functionality and reliability of this plugin.
+Their contributions and time spent have significantly enhanced the functionality and reliability of this plugin.

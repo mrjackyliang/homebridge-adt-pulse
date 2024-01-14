@@ -248,7 +248,7 @@ class ADTPulseRepl {
       `    {string}                           ${chalk.magentaBright('fingerprint')}   - The fingerprint for logging in to ADT Pulse portal`,
       `    {'arm' | 'night' | 'off' | 'stay'} ${chalk.magentaBright('armFrom')}       - Specify the current system arm state`,
       `    {'arm' | 'night' | 'off' | 'stay'} ${chalk.magentaBright('armTo')}         - Specify the arm state you would like to set`,
-      `    {boolean}                          ${chalk.magentaBright('isAlarmActive')} - If the alarm system is sounding`,
+      `    {boolean}                          ${chalk.magentaBright('isAlarmActive')} - If the alarm system is ringing`,
       '',
       chalk.bold('Before you use the API, set the instance using this command:'),
       `    ${chalk.yellowBright(`repl.setInstance(${chalk.magentaBright('subdomain')}, ${chalk.magentaBright('username')}, ${chalk.magentaBright('password')}, ${chalk.magentaBright('fingerprint')});`)}`,

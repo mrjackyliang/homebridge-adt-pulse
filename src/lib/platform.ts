@@ -187,7 +187,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     this.#constants = {
       intervalTimestamps: {
         adtKeepAlive: 538000, // 8 minutes, 58 seconds.
-        adtSessionMax: 19368000, // 5 hours, 22 minutes, 48 seconds.
+        adtSessionLifespan: 19368000, // 5 hours, 22 minutes, 48 seconds.
         adtSyncCheck: 3000, // 3 seconds.
         suspendSyncing: 1800000, // 30 minutes.
         synchronize: 1000, // 1 second.
@@ -553,8 +553,13 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         // ACTIVITY: Start sync.
         this.#state.activity.isSyncing = true;
 
-        // If login session has become stale, force a session reset.
-        if ((currentTimestamp - this.#state.lastRunOn.adtLastLogin) >= this.#constants.intervalTimestamps.adtSessionMax) {
+        // If login session has become stale and not receiving the latest updates, force a session reset.
+        if (
+          currentTimestamp - this.#state.lastRunOn.adtLastLogin >= this.#constants.intervalTimestamps.adtSessionLifespan
+          && this.#state.lastRunOn.adtLastLogin !== 0
+        ) {
+          this.#log.debug('Login session has exceeded its lifespan. Resetting the login session now ...');
+
           this.#instance.resetSession();
         }
 
@@ -618,12 +623,22 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         currentTimestamp = Date.now();
 
         // Run the keep alive request if time has reached. Do not await, they shall run at their own pace.
-        if (currentTimestamp - this.#state.lastRunOn.adtKeepAlive >= this.#constants.intervalTimestamps.adtKeepAlive) {
+        if (
+          currentTimestamp - this.#state.lastRunOn.adtKeepAlive >= this.#constants.intervalTimestamps.adtKeepAlive
+          && !this.#state.activity.isAdtKeepingAlive
+        ) {
+          this.#log.debug('Login session has exceeded its inactivity limit. Initiating a keep alive request now ...');
+
           this.synchronizeKeepAlive();
         }
 
         // Run the sync check request if time has reached. Do not await, they shall run at their own pace.
-        if (currentTimestamp - this.#state.lastRunOn.adtSyncCheck >= this.#constants.intervalTimestamps.adtSyncCheck) {
+        if (
+          currentTimestamp - this.#state.lastRunOn.adtSyncCheck >= this.#constants.intervalTimestamps.adtSyncCheck
+          && !this.#state.activity.isAdtSyncChecking
+        ) {
+          this.#log.debug('Login session has exceeded its device stale limit. Running a sync check request now ...');
+
           this.synchronizeSyncCheck();
         }
       } catch (error) {
@@ -727,7 +742,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
 
           // If new sync code is different from the cached sync code.
           if (syncCheck.info.syncCode !== this.#state.data.syncCode) {
-            this.#log.debug(`Panel and sensor data is outdated (cached: ${this.#state.data.syncCode}, fetched: ${syncCheck.info.syncCode}). Preparing to retrieve the latest panel and sensor data ...`);
+            this.#log.debug(`Panel and sensor data is outdated (cached: ${this.#state.data.syncCode}, fetched: ${syncCheck.info.syncCode}). Retrieving the latest data ...`);
 
             // Cache the sync code.
             this.#state.data.syncCode = syncCheck.info.syncCode;
@@ -735,25 +750,26 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
             // Request new data from the portal. Should be awaited.
             await this.fetchUpdatedInformation();
           } else {
-            this.#log.debug(`Panel and sensor data is up to date (cached: ${this.#state.data.syncCode}, fetched: ${syncCheck.info.syncCode}).`);
+            this.#log.debug(`Panel and sensor data is up to date (cached: ${this.#state.data.syncCode}, fetched: ${syncCheck.info.syncCode}). No need to retrieve the latest data.`);
           }
         }
 
         // If sync checking was not successful.
         if (!syncCheck.success) {
           const { error } = syncCheck.info;
-          const { message } = error ?? {};
+          const { code } = error ?? {};
 
           // Determine if the message is related to a minor connection issue.
-          if (message !== undefined) {
-            switch (true) {
-              case message.includes('ECONNABORTED'):
+          if (code !== undefined) {
+            switch (code) {
+              case 'ECONNABORTED':
                 this.#log.debug('Sync checking attempt has failed because the connection timed out. Trying again later.');
                 break;
-              case message.includes('ECONNRESET'):
+              case 'ECONNRESET':
                 this.#log.debug('Sync checking attempt has failed because the connection was reset. Trying again later.');
                 break;
               default:
+                this.#log.debug(`Sync checking attempt has failed because the response code was "${code}". Trying again later.`);
                 break;
             }
           } else {
@@ -893,7 +909,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     // Fetch the sensors device status.
     if (
       this.#config !== null
-      && this.#config.sensors.length > 0
+      && this.#config.sensors.length > 0 // Only show status changed if user configured sensors.
       && oldCache.sensorsInfo.length !== 0
       && newCache.sensorsInfo !== null
     ) {
@@ -932,7 +948,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     // Fetch the sensors device state.
     if (
       this.#config !== null
-      && this.#config.sensors.length > 0
+      && this.#config.sensors.length > 0 // Only show status changed if user configured sensors.
       && oldCache.sensorsStatus.length !== 0
       && newCache.sensorsStatus !== null
     ) {
@@ -1048,10 +1064,11 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
 
     // Add security panel as an accessory.
     if (panelInfo !== null) {
-      const id = 'adt-device-1';
+      const idPanel = 'adt-device-1';
+      const idSwitch = 'adt-device-1-switch';
 
       devices.push({
-        id,
+        id: idPanel,
         name: 'Security Panel',
         originalName: 'Security Panel',
         type: 'panel',
@@ -1063,7 +1080,24 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         firmware: null,
         hardware: null,
         software: getPackageVersion(),
-        uuid: this.#api.hap.uuid.generate(id),
+        uuid: this.#api.hap.uuid.generate(idPanel),
+      });
+
+      // A separate switch designed to turn off ringing alarm while in "Disarmed" state.
+      devices.push({
+        id: idSwitch,
+        name: 'Alarm Ringing',
+        originalName: 'Alarm Ringing',
+        type: 'panelSwitch',
+        zone: null,
+        category: 'SWITCH',
+        manufacturer: 'ADT Pulse for Homebridge',
+        model: 'N/A',
+        serial: 'N/A',
+        firmware: null,
+        hardware: null,
+        software: getPackageVersion(),
+        uuid: this.#api.hap.uuid.generate(idSwitch),
       });
     }
 
@@ -1123,8 +1157,8 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
       for (let i = this.#accessories.length - 1; i >= 0; i -= 1) {
         const { originalName, type, zone } = this.#accessories[i].context;
 
-        // If current accessory is a "gateway" or "panel", skip check.
-        if (type === 'gateway' || type === 'panel') {
+        // If current accessory is a "gateway", "panel", or "panelSwitch", skip check.
+        if (type === 'gateway' || type === 'panel' || type === 'panelSwitch') {
           continue;
         }
 

@@ -7,7 +7,8 @@ export type PluginDeviceCategory =
   'ALARM_SYSTEM'
   | 'OTHER'
   | 'SECURITY_SYSTEM'
-  | 'SENSOR';
+  | 'SENSOR'
+  | 'SWITCH';
 
 /**
  * Plugin device gateway type.
@@ -23,7 +24,8 @@ export type PluginDeviceGatewayType =
  * @since 1.0.0
  */
 export type PluginDeviceId =
-  `adt-device-${number}`;
+  `adt-device-${number}`
+  | `adt-device-${number}-${string}`;
 
 /**
  * Plugin device panel type.
@@ -31,7 +33,8 @@ export type PluginDeviceId =
  * @since 1.0.0
  */
 export type PluginDevicePanelType =
-  'panel';
+  'panel'
+  | 'panelSwitch';
 
 /**
  * Plugin device sensor type.

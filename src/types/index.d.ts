@@ -79,17 +79,25 @@ import type {
  *
  * @since 1.0.0
  */
-export type ADTPulseArmDisarmHandlerRelativeUrl = PortalPanelArmButtonRelativeUrl;
-
-export type ADTPulseArmDisarmHandlerHref = PortalPanelArmButtonHref;
-
-export type ADTPulseArmDisarmHandlerArmState = PortalPanelArmStateClean | PortalPanelArmStateDirty;
-
-export type ADTPulseArmDisarmHandlerArm = PortalPanelArmValue;
-
-export type ADTPulseArmDisarmHandlerSat = UUID;
-
 export type ADTPulseArmDisarmHandlerIsAlarmActive = boolean;
+
+export type ADTPulseArmDisarmHandlerOptionsRelativeUrl = PortalPanelArmButtonRelativeUrl;
+
+export type ADTPulseArmDisarmHandlerOptionsHref = PortalPanelArmButtonHref;
+
+export type ADTPulseArmDisarmHandlerOptionsArmState = PortalPanelArmStateClean | PortalPanelArmStateDirty;
+
+export type ADTPulseArmDisarmHandlerOptionsArm = PortalPanelArmValue;
+
+export type ADTPulseArmDisarmHandlerOptionsSat = UUID;
+
+export type ADTPulseArmDisarmHandlerOptions = {
+  relativeUrl: ADTPulseArmDisarmHandlerOptionsRelativeUrl;
+  href: ADTPulseArmDisarmHandlerOptionsHref;
+  armState: ADTPulseArmDisarmHandlerOptionsArmState;
+  arm: ADTPulseArmDisarmHandlerOptionsArm;
+  sat: ADTPulseArmDisarmHandlerOptionsSat;
+};
 
 export type ADTPulseArmDisarmHandlerReturnsInfoForceArmRequired = boolean;
 
@@ -466,7 +474,7 @@ export type ADTPulseSetPanelStatusArmFrom = PortalPanelArmValue;
 
 export type ADTPulseSetPanelStatusArmTo = PortalPanelArmValue;
 
-export type ADTPulseSetPanelStatusIsAlarmActive = boolean | undefined;
+export type ADTPulseSetPanelStatusIsAlarmActive = boolean;
 
 export type ADTPulseSetPanelStatusReturnsInfoForceArmRequired = boolean;
 
@@ -489,6 +497,26 @@ export type ADTPulseSetPanelStatusReadyButton = OrbSecurityButtonBase & OrbSecur
  * @since 1.0.0
  */
 export type ADTPulseAccessoryAccessory = PlatformAccessory<Device>;
+
+/**
+ * ADT Pulse Accessory - Activity.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseAccessoryActivityIsBusy = boolean;
+
+export type ADTPulseAccessoryActivitySetCurrentValue = Nullable<CharacteristicValue>;
+
+export type ADTPulseAccessoryActivitySetTargetValue = Nullable<CharacteristicValue>;
+
+export type ADTPulseAccessoryActivitySetValue = Nullable<CharacteristicValue>;
+
+export type ADTPulseAccessoryActivity = {
+  isBusy: ADTPulseAccessoryActivityIsBusy;
+  setCurrentValue: ADTPulseAccessoryActivitySetCurrentValue;
+  setTargetValue: ADTPulseAccessoryActivitySetTargetValue;
+  setValue: ADTPulseAccessoryActivitySetValue;
+};
 
 /**
  * ADT Pulse Accessory - Api.
@@ -533,13 +561,11 @@ export type ADTPulseAccessoryGetPanelStatusMode = 'alarmType' | 'current' | 'fau
 export type ADTPulseAccessoryGetPanelStatusReturns = HapStatusError | Error | Nullable<CharacteristicValue>;
 
 /**
- * ADT Pulse Accessory - Set panel status.
+ * ADT Pulse Accessory - Get panel switch status.
  *
  * @since 1.0.0
  */
-export type ADTPulseAccessorySetPanelStatusArm = CharacteristicValue;
-
-export type ADTPulseAccessorySetPanelStatusReturns = Promise<void>;
+export type ADTPulseAccessoryGetPanelSwitchStatusReturns = HapStatusError | Error | Nullable<CharacteristicValue>;
 
 /**
  * ADT Pulse Accessory - Get sensor status.
@@ -549,6 +575,24 @@ export type ADTPulseAccessorySetPanelStatusReturns = Promise<void>;
 export type ADTPulseAccessoryGetSensorStatusMode = 'active' | 'fault' | 'lowBattery' | 'status' | 'tamper';
 
 export type ADTPulseAccessoryGetSensorStatusReturns = HapStatusError | Error | Nullable<CharacteristicValue>;
+
+/**
+ * ADT Pulse Accessory - Set panel status.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseAccessorySetPanelStatusArm = CharacteristicValue;
+
+export type ADTPulseAccessorySetPanelStatusReturns = Promise<void>;
+
+/**
+ * ADT Pulse Accessory - Set panel switch status.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseAccessorySetPanelSwitchStatusOn = CharacteristicValue;
+
+export type ADTPulseAccessorySetPanelSwitchStatusReturns = Promise<void>;
 
 /**
  * ADT Pulse Accessory - Instance.
@@ -577,20 +621,6 @@ export type ADTPulseAccessoryServices = Record<string, Service | undefined>;
  * @since 1.0.0
  */
 export type ADTPulseAccessoryState = ADTPulsePlatformState;
-
-/**
- * ADT Pulse Accessory - Status.
- *
- * @since 1.0.0
- */
-export type ADTPulseAccessoryStatusIsBusy = boolean;
-
-export type ADTPulseAccessoryStatusSetValue = Nullable<CharacteristicValue>;
-
-export type ADTPulseAccessoryStatus = {
-  isBusy: ADTPulseAccessoryStatusIsBusy;
-  setValue: ADTPulseAccessoryStatusSetValue;
-};
 
 /**
  * ADT Pulse Accessory - Updater.
@@ -663,7 +693,7 @@ export type ADTPulsePlatformConfigureAccessoryReturns = void;
  */
 export type ADTPulsePlatformConstantsTimestampsAdtKeepAlive = number;
 
-export type ADTPulsePlatformConstantsTimestampsAdtSessionMax = number;
+export type ADTPulsePlatformConstantsTimestampsAdtSessionLifespan = number;
 
 export type ADTPulsePlatformConstantsTimestampsAdtSyncCheck = number;
 
@@ -673,7 +703,7 @@ export type ADTPulsePlatformConstantsTimestampsSynchronize = number;
 
 export type ADTPulsePlatformConstantsTimestamps = {
   adtKeepAlive: ADTPulsePlatformConstantsTimestampsAdtKeepAlive;
-  adtSessionMax: ADTPulsePlatformConstantsTimestampsAdtSessionMax;
+  adtSessionLifespan: ADTPulsePlatformConstantsTimestampsAdtSessionLifespan;
   adtSyncCheck: ADTPulsePlatformConstantsTimestampsAdtSyncCheck;
   suspendSyncing: ADTPulsePlatformConstantsTimestampsSuspendSyncing;
   synchronize: ADTPulsePlatformConstantsTimestampsSynchronize;
@@ -1054,18 +1084,18 @@ export type CondensePanelStatesCharacteristic = typeof Characteristic;
 
 export type CondensePanelStatesPanelStates = PanelStatusStates;
 
-export type CondensePanelStatesReturnsArmValue = PortalPanelArmValue;
-
-export type CondensePanelStatesReturnsCharacteristicValue = CharacteristicValue;
-
-export type CondensePanelStatesReturns = {
-  armValue: CondensePanelStatesReturnsArmValue;
-  characteristicValue: CondensePanelStatesReturnsCharacteristicValue;
-} | undefined;
+export type CondensePanelStatesReturns = CondensePanelStatesCondensed;
 
 export type CondensePanelStatesCondensedArmValue = PortalPanelArmValue;
 
-export type CondensePanelStatesCondensedCharacteristicValue = CharacteristicValue;
+export type CondensePanelStatesCondensedCharacteristicValueCurrent = CharacteristicValue;
+
+export type CondensePanelStatesCondensedCharacteristicValueTarget = CharacteristicValue;
+
+export type CondensePanelStatesCondensedCharacteristicValue = {
+  current: CondensePanelStatesCondensedCharacteristicValueCurrent;
+  target: CondensePanelStatesCondensedCharacteristicValueTarget;
+};
 
 export type CondensePanelStatesCondensed = {
   armValue: CondensePanelStatesCondensedArmValue;
@@ -1091,6 +1121,19 @@ export type CondenseSensorTypeSensorType = PortalSensorDeviceType;
 export type CondenseSensorTypeReturns = PluginDeviceSensorType | undefined;
 
 export type CondenseSensorTypeCondensed = PluginDeviceSensorType | undefined;
+
+/**
+ * Convert panel characteristic value.
+ *
+ * @since 1.0.0
+ */
+export type ConvertPanelCharacteristicValueMode = 'current-to-target' | 'target-to-current';
+
+export type ConvertPanelCharacteristicValueCharacteristic = typeof Characteristic;
+
+export type ConvertPanelCharacteristicValueValue = CharacteristicValue;
+
+export type ConvertPanelCharacteristicValueReturns = CharacteristicValue | undefined;
 
 /**
  * Debug log.

@@ -1,9 +1,15 @@
 import chalk from 'chalk';
 
 import { condensedSensorTypeItems } from '@/lib/items.js';
-import { condensePanelStates, isPanelAlarmActive, stackTracer } from '@/lib/utility.js';
+import {
+  condensePanelStates,
+  convertPanelCharacteristicValue,
+  isPanelAlarmActive,
+  stackTracer,
+} from '@/lib/utility.js';
 import type {
   ADTPulseAccessoryAccessory,
+  ADTPulseAccessoryActivity,
   ADTPulseAccessoryApi,
   ADTPulseAccessoryCharacteristic,
   ADTPulseAccessoryConstructorAccessory,
@@ -15,6 +21,7 @@ import type {
   ADTPulseAccessoryConstructorState,
   ADTPulseAccessoryGetPanelStatusMode,
   ADTPulseAccessoryGetPanelStatusReturns,
+  ADTPulseAccessoryGetPanelSwitchStatusReturns,
   ADTPulseAccessoryGetSensorStatusMode,
   ADTPulseAccessoryGetSensorStatusReturns,
   ADTPulseAccessoryInstance,
@@ -22,8 +29,9 @@ import type {
   ADTPulseAccessoryServices,
   ADTPulseAccessorySetPanelStatusArm,
   ADTPulseAccessorySetPanelStatusReturns,
+  ADTPulseAccessorySetPanelSwitchStatusOn,
+  ADTPulseAccessorySetPanelSwitchStatusReturns,
   ADTPulseAccessoryState,
-  ADTPulseAccessoryStatus,
   ADTPulseAccessoryUpdaterReturns,
 } from '@/types/index.d.ts';
 
@@ -43,6 +51,15 @@ export class ADTPulseAccessory {
   readonly #accessory: ADTPulseAccessoryAccessory;
 
   /**
+   * ADT Pulse Accessory - Activity.
+   *
+   * @private
+   *
+   * @since 1.0.0
+   */
+  #activity: ADTPulseAccessoryActivity;
+
+  /**
    * ADT Pulse Accessory - Api.
    *
    * @private
@@ -58,7 +75,7 @@ export class ADTPulseAccessory {
    *
    * @since 1.0.0
    */
-  #characteristic: ADTPulseAccessoryCharacteristic;
+  readonly #characteristic: ADTPulseAccessoryCharacteristic;
 
   /**
    * ADT Pulse Accessory - Instance.
@@ -97,15 +114,6 @@ export class ADTPulseAccessory {
   #state: ADTPulseAccessoryState;
 
   /**
-   * ADT Pulse Accessory - Status.
-   *
-   * @private
-   *
-   * @since 1.0.0
-   */
-  #status: ADTPulseAccessoryStatus;
-
-  /**
    * ADT Pulse Accessory - Constructor.
    *
    * @param {ADTPulseAccessoryConstructorAccessory}      accessory      - Accessory.
@@ -120,16 +128,18 @@ export class ADTPulseAccessory {
    */
   public constructor(accessory: ADTPulseAccessoryConstructorAccessory, state: ADTPulseAccessoryConstructorState, instance: ADTPulseAccessoryConstructorInstance, service: ADTPulseAccessoryConstructorService, characteristic: ADTPulseAccessoryConstructorCharacteristic, api: ADTPulseAccessoryConstructorApi, log: ADTPulseAccessoryConstructorLog) {
     this.#accessory = accessory;
+    this.#activity = {
+      isBusy: false,
+      setCurrentValue: null,
+      setTargetValue: null,
+      setValue: null,
+    };
     this.#api = api;
     this.#characteristic = characteristic;
     this.#instance = instance;
     this.#log = log;
     this.#services = {};
     this.#state = state;
-    this.#status = {
-      isBusy: false,
-      setValue: null,
-    };
 
     const { context } = this.#accessory;
     const {
@@ -164,6 +174,9 @@ export class ADTPulseAccessory {
         break;
       case 'panel':
         this.#services.Primary = this.#accessory.getService(service.SecuritySystem) ?? this.#accessory.addService(service.SecuritySystem);
+        break;
+      case 'panelSwitch':
+        this.#services.Primary = this.#accessory.getService(service.Switch) ?? this.#accessory.addService(service.Switch);
         break;
       default:
         break;
@@ -247,6 +260,13 @@ export class ADTPulseAccessory {
         this.#services.Primary.getCharacteristic(this.#characteristic.SecuritySystemTargetState)
           .onSet(async (value) => this.setPanelStatus(value));
         break;
+      case 'panelSwitch':
+        this.#services.Primary.getCharacteristic(this.#characteristic.On)
+          .updateValue(this.getPanelSwitchStatus());
+
+        this.#services.Primary.getCharacteristic(this.#characteristic.On)
+          .onSet(async (value) => this.setPanelSwitchStatus(value));
+        break;
       default:
         break;
     }
@@ -265,6 +285,9 @@ export class ADTPulseAccessory {
 
         this.#services.Primary.getCharacteristic(this.#characteristic.StatusTampered)
           .updateValue(this.getPanelStatus('tamper'));
+        break;
+      case 'panelSwitch':
+        // No optional services I'm interested in.
         break;
       default:
         break;
@@ -376,6 +399,7 @@ export class ADTPulseAccessory {
       matchedSensorStatus === undefined
       || type === 'gateway'
       || type === 'panel'
+      || type === 'panelSwitch'
       || !condensedSensorTypeItems.includes(type)
     ) {
       hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.RESOURCE_DOES_NOT_EXIST);
@@ -404,7 +428,6 @@ export class ADTPulseAccessory {
       if (
         statuses.includes('ALARM')
         || statuses.includes('Bypassed')
-        || statuses.includes('Trouble')
         || icon === 'devStatAlarm'
       ) {
         return this.#characteristic.StatusFault.GENERAL_FAULT;
@@ -428,8 +451,11 @@ export class ADTPulseAccessory {
 
     // Find the state for "Status Tampered" (optional characteristic).
     if (mode === 'tamper') {
-      // If status or icon includes these, the sensor was tampered.
-      if (icon === 'devStatTamper') {
+      // If status or icon includes these, the sensor is tampered.
+      if (
+        statuses.includes('Trouble')
+        || icon === 'devStatTamper'
+      ) {
         return this.#characteristic.StatusTampered.TAMPERED;
       }
 
@@ -438,8 +464,9 @@ export class ADTPulseAccessory {
 
     // Find the state for the sensor (required characteristic).
     switch (type) {
-      case 'co': // TODO Not fully tested.
-        if (statuses.includes('Tripped')) {
+      // TODO Device type needs to be manually tested and confirmed first.
+      case 'co':
+        if (statuses.includes('ALARM') || statuses.includes('Tripped')) {
           return this.#characteristic.CarbonMonoxideDetected.CO_LEVELS_ABNORMAL;
         }
 
@@ -465,7 +492,11 @@ export class ADTPulseAccessory {
           return this.#characteristic.SmokeDetected.SMOKE_NOT_DETECTED;
         }
         break;
-      case 'flood': // TODO Not fully tested.
+      case 'flood':
+        if (statuses.includes('ALARM') || statuses.includes('Tripped')) {
+          return this.#characteristic.LeakDetected.LEAK_DETECTED;
+        }
+
         if (statuses.includes('Okay')) {
           return this.#characteristic.LeakDetected.LEAK_NOT_DETECTED;
         }
@@ -479,7 +510,12 @@ export class ADTPulseAccessory {
           return this.#characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED;
         }
         break;
-      case 'heat': // TODO Not fully tested.
+      // TODO Device type needs to be manually tested and confirmed first.
+      case 'heat':
+        if (statuses.includes('ALARM') || statuses.includes('Tripped')) {
+          return this.#characteristic.OccupancyDetected.OCCUPANCY_DETECTED;
+        }
+
         if (statuses.includes('Okay')) {
           return this.#characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED;
         }
@@ -493,28 +529,30 @@ export class ADTPulseAccessory {
           return false;
         }
         break;
-      case 'shock': // TODO Not fully tested.
+      // TODO Device type needs to be manually tested and confirmed first.
+      case 'shock':
         break;
-      case 'supervisory': // TODO Not fully tested.
+      // TODO Device type needs to be manually tested and confirmed first.
+      case 'supervisory':
         break;
-      case 'temperature': // TODO Not fully tested.
+      // TODO Device type needs to be manually tested and confirmed first.
+      case 'temperature':
         /**
          * Since sensors from ADT do not show exact temperatures
-         * the way how it likes and HomeKit does not support showing statuses
-         * in a binary way, we will convert them to Celsius instead.
+         * and HomeKit does not support showing statuses in a binary way,
+         * we will convert these responses to Celsius instead.
          *
-         * - If temperature is cold, we represent it with 0.
-         * - If temperature is normal, we represent it with 20.
-         * - If temperature is hot, we represent it with 40.
+         * - If temperature is normal, we represent it with 0.
+         * - If temperature is abnormal, we represent it with 100.
          *
          * @since 1.0.0
          */
         if (statuses.includes('ALARM') || statuses.includes('Tripped')) {
-          return 0;
+          return 100;
         }
 
         if (statuses.includes('Okay')) {
-          return 20;
+          return 0;
         }
         break;
       default:
@@ -615,15 +653,15 @@ export class ADTPulseAccessory {
      * Find the current state for the panel (required characteristic).
      *
      * Notes:
-     * - If system is busy setting the state, HomeKit will receive the state user has set to before it becomes "set".
+     * - If system is busy setting the state, HomeKit will receive the state user has set to before it becomes officially "set".
      *
      * @since 1.0.0
      */
     switch (true) {
+      case mode === 'current' && this.#activity.isBusy && this.#activity.setCurrentValue !== null:
+        return this.#activity.setCurrentValue;
       case mode === 'current' && isPanelAlarmActive(panelStatuses):
         return this.#characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
-      case mode === 'current' && this.#status.isBusy && this.#status.setValue !== null:
-        return this.#status.setValue;
       case mode === 'current' && panelStates.includes('Armed Stay'):
         return this.#characteristic.SecuritySystemCurrentState.STAY_ARM;
       case mode === 'current' && panelStates.includes('Armed Away'):
@@ -637,19 +675,16 @@ export class ADTPulseAccessory {
     }
 
     /**
-     * // Find the target state for the panel (required characteristic).
+     * Find the target state for the panel (required characteristic).
      *
      * Notes:
-     * - If system is in an alarm state, HomeKit will receive a "STAY_ARM" state so the user can disarm from Home app.
-     * - If system is busy setting the state, HomeKit will receive the state user has set to before it becomes "set".
+     * - If system is busy setting the state, HomeKit will receive the state user has set to before it becomes officially "set".
      *
      * @since 1.0.0
      */
     switch (true) {
-      case mode === 'target' && panelStates.includes('Disarmed') && isPanelAlarmActive(panelStatuses):
-        return this.#characteristic.SecuritySystemTargetState.STAY_ARM;
-      case mode === 'target' && this.#status.isBusy && this.#status.setValue !== null:
-        return this.#status.setValue;
+      case mode === 'target' && this.#activity.isBusy && this.#activity.setTargetValue !== null:
+        return this.#activity.setTargetValue;
       case mode === 'target' && panelStates.includes('Armed Stay'):
         return this.#characteristic.SecuritySystemTargetState.STAY_ARM;
       case mode === 'target' && panelStates.includes('Armed Away'):
@@ -677,6 +712,45 @@ export class ADTPulseAccessory {
     this.#log.warn(`Attempted to get panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but actions have not been implemented yet.`);
 
     return hapStatus;
+  }
+
+  /**
+   * ADT Pulse Accessory - Get panel switch status.
+   *
+   * @private
+   *
+   * @returns {ADTPulseAccessoryGetPanelSwitchStatusReturns}
+   *
+   * @since 1.0.0
+   */
+  private getPanelSwitchStatus(): ADTPulseAccessoryGetPanelSwitchStatusReturns {
+    const { context } = this.#accessory;
+    const { id, name, uuid } = context;
+
+    let hapStatus;
+
+    // If panel status has not been retrieved yet.
+    if (
+      this.#state.data.panelStatus === null
+      || this.#state.data.panelStatus.panelStates.length === 0
+      || this.#state.data.panelStatus.panelStatuses.length === 0
+    ) {
+      hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.RESOURCE_BUSY);
+
+      this.#log.debug(`Attempted to get panel switch status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but panel switch status has not been retrieved yet.`);
+
+      return hapStatus;
+    }
+
+    const { panelStates, panelStatuses } = this.#state.data.panelStatus;
+
+    // If system is busy setting the state.
+    if (this.#activity.isBusy && this.#activity.setValue !== null) {
+      return this.#activity.setValue;
+    }
+
+    // Only show as "On" if panel is "Disarmed" and alarm is ringing.
+    return panelStates.includes('Disarmed') && isPanelAlarmActive(panelStatuses);
   }
 
   /**
@@ -725,11 +799,11 @@ export class ADTPulseAccessory {
 
     const { panelStates } = this.#state.data.panelStatus;
 
-    const armFrom = condensePanelStates(this.#characteristic, panelStates);
+    const condensedPanelStates = condensePanelStates(this.#characteristic, panelStates);
     const isAlarmActive = isPanelAlarmActive(this.#state.data.panelStatus.panelStatuses);
 
     // If panel status cannot be found or most likely "Status Unavailable".
-    if (armFrom === undefined) {
+    if (condensedPanelStates === undefined) {
       hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.RESOURCE_BUSY);
 
       this.#log.warn(`Attempted to set panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but panel status cannot be found or most likely "Status Unavailable".`);
@@ -737,43 +811,53 @@ export class ADTPulseAccessory {
       throw hapStatus;
     }
 
-    // If user is not setting to the current arm state (e.g. off to off) or if trying to turn off alarm.
     if (
-      armFrom.characteristicValue !== arm
-      || (
-        armFrom.armValue === 'off'
-        && arm === this.#characteristic.SecuritySystemTargetState.DISARM
-        && isAlarmActive
-      )
+      !this.#activity.isBusy // The system isn't busy setting a state.
+      && condensedPanelStates.characteristicValue.target !== arm // If user is not setting to the current arm state (e.g. off to off).
     ) {
-      // Set this accessory status to "busy" before arming. For "panelCurrentValue"
-      this.#status = {
+      const setCurrentValue = convertPanelCharacteristicValue('target-to-current', this.#characteristic, arm);
+
+      // If attempt to convert characteristic value "target" to "current" failed.
+      if (setCurrentValue === undefined) {
+        hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.INVALID_VALUE_IN_REQUEST);
+
+        this.#log.error(`Attempted to set panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but current characteristic value does not exist.`);
+
+        throw hapStatus;
+      }
+
+      // Set accessory activity to "busy" before arming.
+      this.#activity = {
         isBusy: true,
-        setValue: arm,
+        setCurrentValue,
+        setTargetValue: arm,
+        setValue: null,
       };
 
       // Set the panel status.
       switch (arm) {
         case this.#characteristic.SecuritySystemTargetState.STAY_ARM:
-          result = await this.#instance.setPanelStatus(armFrom.armValue, 'stay', isAlarmActive);
+          result = await this.#instance.setPanelStatus(condensedPanelStates.armValue, 'stay', isAlarmActive);
           break;
         case this.#characteristic.SecuritySystemTargetState.AWAY_ARM:
-          result = await this.#instance.setPanelStatus(armFrom.armValue, 'away', isAlarmActive);
+          result = await this.#instance.setPanelStatus(condensedPanelStates.armValue, 'away', isAlarmActive);
           break;
         case this.#characteristic.SecuritySystemTargetState.NIGHT_ARM:
-          result = await this.#instance.setPanelStatus(armFrom.armValue, 'night', isAlarmActive);
+          result = await this.#instance.setPanelStatus(condensedPanelStates.armValue, 'night', isAlarmActive);
           break;
         case this.#characteristic.SecuritySystemTargetState.DISARM:
-          result = await this.#instance.setPanelStatus(armFrom.armValue, 'off', isAlarmActive);
+          result = await this.#instance.setPanelStatus(condensedPanelStates.armValue, 'off', isAlarmActive);
           break;
         default:
           unknownArmValue = true;
           break;
       }
 
-      // Set this accessory status to "idle" after arming (6 to 9 seconds).
-      this.#status = {
+      // Set accessory activity to "not busy" after arming.
+      this.#activity = {
         isBusy: false,
+        setCurrentValue: null,
+        setTargetValue: null,
         setValue: null,
       };
 
@@ -791,6 +875,126 @@ export class ADTPulseAccessory {
         hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.OPERATION_TIMED_OUT);
 
         this.#log.error(`Attempted to set panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but request was not successful.`);
+
+        stackTracer('api-response', result);
+
+        throw hapStatus;
+      }
+    }
+  }
+
+  /**
+   * ADT Pulse Accessory - Set panel switch status.
+   *
+   * @param {ADTPulseAccessorySetPanelSwitchStatusOn} on - On.
+   *
+   * @private
+   *
+   * @returns {ADTPulseAccessorySetPanelStatusReturns}
+   *
+   * @since 1.0.0
+   */
+  private async setPanelSwitchStatus(on: ADTPulseAccessorySetPanelSwitchStatusOn): ADTPulseAccessorySetPanelSwitchStatusReturns {
+    const { context } = this.#accessory;
+    const {
+      id,
+      name,
+      type,
+      uuid,
+    } = context;
+
+    let hapStatus;
+    let result = {
+      success: false,
+    };
+    let unknownArmValue = false;
+
+    // If device is not a panel switch.
+    if (type !== 'panelSwitch') {
+      hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.INVALID_VALUE_IN_REQUEST);
+
+      this.#log.error(`Attempted to set panel switch status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but device is not a panel switch.`);
+
+      throw hapStatus;
+    }
+
+    // If panel status has not been retrieved yet.
+    if (this.#state.data.panelStatus === null || this.#state.data.panelStatus.panelStates.length === 0) {
+      hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.RESOURCE_BUSY);
+
+      this.#log.warn(`Attempted to set panel switch status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but panel status has not been retrieved yet.`);
+
+      throw hapStatus;
+    }
+
+    // If user tries to turn on switch.
+    if (on === true) {
+      hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.SUCCESS);
+
+      this.#log.error(`Attempted to set panel switch status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but switch is only used for turning off ringing alarm while system is "Disarmed".`);
+
+      throw hapStatus;
+    }
+
+    const { panelStates } = this.#state.data.panelStatus;
+
+    const condensedPanelStates = condensePanelStates(this.#characteristic, panelStates);
+    const isAlarmActive = isPanelAlarmActive(this.#state.data.panelStatus.panelStatuses);
+
+    // If panel status cannot be found or most likely "Status Unavailable".
+    if (condensedPanelStates === undefined) {
+      hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.RESOURCE_BUSY);
+
+      this.#log.warn(`Attempted to set panel switch status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but panel status cannot be found or most likely "Status Unavailable".`);
+
+      throw hapStatus;
+    }
+
+    if (
+      !this.#activity.isBusy // The system isn't busy setting a state.
+      && condensedPanelStates.armValue === 'off' // If the system is disarmed.
+      && isAlarmActive // If system alarm is ringing.
+    ) {
+      // Set accessory activity to "busy" before arming.
+      this.#activity = {
+        isBusy: true,
+        setCurrentValue: null,
+        setTargetValue: null,
+        setValue: false,
+      };
+
+      // Set the panel status.
+      switch (on) {
+        case false:
+          result = await this.#instance.setPanelStatus(condensedPanelStates.armValue, 'off', isAlarmActive);
+          break;
+        default:
+          unknownArmValue = true;
+          break;
+      }
+
+      // Set accessory activity to "not busy" after arming.
+      this.#activity = {
+        isBusy: false,
+        setCurrentValue: null,
+        setTargetValue: null,
+        setValue: null,
+      };
+
+      // If request has unknown arm value.
+      if (unknownArmValue) {
+        hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.INVALID_VALUE_IN_REQUEST);
+
+        this.#log.error(`Attempted to set panel switch status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but request has unknown arm value.`);
+
+        throw hapStatus;
+      }
+
+      // If request was not successful.
+      if (!result.success) {
+        hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.OPERATION_TIMED_OUT);
+
+        this.#log.error(`Attempted to set panel switch status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but request was not successful.`);
 
         stackTracer('api-response', result);
 

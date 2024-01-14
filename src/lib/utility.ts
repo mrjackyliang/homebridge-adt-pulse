@@ -33,6 +33,10 @@ import type {
   CondenseSensorTypeCondensed,
   CondenseSensorTypeReturns,
   CondenseSensorTypeSensorType,
+  ConvertPanelCharacteristicValueCharacteristic,
+  ConvertPanelCharacteristicValueMode,
+  ConvertPanelCharacteristicValueReturns,
+  ConvertPanelCharacteristicValueValue,
   DebugLogCaller,
   DebugLogLogger,
   DebugLogMessage,
@@ -171,25 +175,37 @@ export function condensePanelStates(characteristic: CondensePanelStatesCharacter
     case panelStates.includes('Armed Away'):
       condensed = {
         armValue: 'away',
-        characteristicValue: characteristic.SecuritySystemTargetState.AWAY_ARM,
+        characteristicValue: {
+          current: characteristic.SecuritySystemCurrentState.AWAY_ARM,
+          target: characteristic.SecuritySystemTargetState.AWAY_ARM,
+        },
       };
       break;
     case panelStates.includes('Armed Night'):
       condensed = {
         armValue: 'night',
-        characteristicValue: characteristic.SecuritySystemTargetState.NIGHT_ARM,
+        characteristicValue: {
+          current: characteristic.SecuritySystemCurrentState.NIGHT_ARM,
+          target: characteristic.SecuritySystemTargetState.NIGHT_ARM,
+        },
       };
       break;
     case panelStates.includes('Armed Stay'):
       condensed = {
         armValue: 'stay',
-        characteristicValue: characteristic.SecuritySystemTargetState.STAY_ARM,
+        characteristicValue: {
+          current: characteristic.SecuritySystemCurrentState.STAY_ARM,
+          target: characteristic.SecuritySystemTargetState.STAY_ARM,
+        },
       };
       break;
     case panelStates.includes('Disarmed'):
       condensed = {
         armValue: 'off',
-        characteristicValue: characteristic.SecuritySystemTargetState.DISARM,
+        characteristicValue: {
+          current: characteristic.SecuritySystemCurrentState.DISARMED,
+          target: characteristic.SecuritySystemTargetState.DISARM,
+        },
       };
       break;
     default:
@@ -251,6 +267,40 @@ export function condenseSensorType(sensorType: CondenseSensorTypeSensorType): Co
   }
 
   return condensed;
+}
+
+/**
+ * Convert panel characteristic value.
+ *
+ * @param {ConvertPanelCharacteristicValueMode}           mode           - Mode.
+ * @param {ConvertPanelCharacteristicValueCharacteristic} characteristic - Characteristic.
+ * @param {ConvertPanelCharacteristicValueValue}          value          - Value.
+ *
+ * @returns {ConvertPanelCharacteristicValueReturns}
+ *
+ * @since 1.0.0
+ */
+export function convertPanelCharacteristicValue(mode: ConvertPanelCharacteristicValueMode, characteristic: ConvertPanelCharacteristicValueCharacteristic, value: ConvertPanelCharacteristicValueValue): ConvertPanelCharacteristicValueReturns {
+  switch (true) {
+    case mode === 'current-to-target' && value === characteristic.SecuritySystemCurrentState.AWAY_ARM:
+      return characteristic.SecuritySystemTargetState.AWAY_ARM;
+    case mode === 'current-to-target' && value === characteristic.SecuritySystemCurrentState.STAY_ARM:
+      return characteristic.SecuritySystemTargetState.STAY_ARM;
+    case mode === 'current-to-target' && value === characteristic.SecuritySystemCurrentState.NIGHT_ARM:
+      return characteristic.SecuritySystemTargetState.NIGHT_ARM;
+    case mode === 'current-to-target' && value === characteristic.SecuritySystemCurrentState.DISARMED:
+      return characteristic.SecuritySystemTargetState.DISARM;
+    case mode === 'target-to-current' && value === characteristic.SecuritySystemTargetState.AWAY_ARM:
+      return characteristic.SecuritySystemCurrentState.AWAY_ARM;
+    case mode === 'target-to-current' && value === characteristic.SecuritySystemTargetState.STAY_ARM:
+      return characteristic.SecuritySystemCurrentState.STAY_ARM;
+    case mode === 'target-to-current' && value === characteristic.SecuritySystemTargetState.NIGHT_ARM:
+      return characteristic.SecuritySystemCurrentState.NIGHT_ARM;
+    case mode === 'target-to-current' && value === characteristic.SecuritySystemTargetState.DISARM:
+      return characteristic.SecuritySystemCurrentState.DISARMED;
+    default:
+      return undefined;
+  }
 }
 
 /**
@@ -709,6 +759,8 @@ export function getAccessoryCategory(deviceCategory: GetAccessoryCategoryDeviceC
       return Categories.SECURITY_SYSTEM;
     case 'SENSOR':
       return Categories.SENSOR;
+    case 'SWITCH':
+      return Categories.SWITCH;
     default:
       return Categories.OTHER;
   }
