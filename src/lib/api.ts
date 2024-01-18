@@ -6,14 +6,15 @@ import { serializeError } from 'serialize-error';
 import { CookieJar } from 'tough-cookie';
 
 import {
-  detectedNewDoSubmitHandlers,
-  detectedNewGatewayInformation,
-  detectedNewOrbSecurityButtons,
-  detectedNewPanelInformation,
-  detectedNewPanelStatus,
-  detectedNewPortalVersion,
-  detectedNewSensorsInformation,
-  detectedNewSensorsStatus,
+  detectApiDebugParser,
+  detectApiDoSubmitHandlers,
+  detectApiGatewayInformation,
+  detectApiOrbSecurityButtons,
+  detectApiPanelInformation,
+  detectApiPanelStatus,
+  detectApiPortalVersion,
+  detectApiSensorsInformation,
+  detectApiSensorsStatus,
 } from '@/lib/detect.js';
 import {
   paramNetworkId,
@@ -41,6 +42,7 @@ import {
   generateDynatracePCHeaderValue,
   generateFakeReadyButtons,
   generateHash,
+  isEmptyOrbTextSummary,
   isPortalSyncCode,
   parseArmDisarmMessage,
   parseDoSubmitHandlers,
@@ -864,6 +866,20 @@ export class ADTPulse {
        */
       await this.newInformationDispatcher('gateway-information', gatewayInformation);
 
+      // If the parsing function may be parsing data incorrectly.
+      if (Object.keys(fetchedTableCells).length !== 18) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getGatewayInformation()', 'warn', 'The fetchTableCells() function may be parsing the gateway information incorrectly');
+        }
+
+        await this.newInformationDispatcher('debug-parser', {
+          parserName: 'fetchTableCells()',
+          parserReason: 'length does not equal to 18',
+          parserResponse: fetchedTableCells,
+          rawData: sessions.axiosSystemGateway.data,
+        });
+      }
+
       if (this.#internal.debug) {
         debugLog(this.#internal.logger, 'api.ts / ADTPulse.getGatewayInformation()', 'success', `Successfully retrieved gateway information from "${this.#internal.baseUrl}"`);
       }
@@ -1061,6 +1077,20 @@ export class ADTPulse {
        * @since 1.0.0
        */
       await this.newInformationDispatcher('panel-information', panelInformation);
+
+      // If the parsing function may be parsing data incorrectly.
+      if (Object.keys(fetchedTableCells).length !== 5) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelInformation()', 'warn', 'The fetchTableCells() function may be parsing the panel information incorrectly');
+        }
+
+        await this.newInformationDispatcher('debug-parser', {
+          parserName: 'fetchTableCells()',
+          parserReason: 'length does not equal to 5',
+          parserResponse: fetchedTableCells,
+          rawData: sessions.axiosSystemDeviceId1.data,
+        });
+      }
 
       if (this.#internal.debug) {
         debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelInformation()', 'success', `Successfully retrieved panel information from "${this.#internal.baseUrl}"`);
@@ -1276,6 +1306,20 @@ export class ADTPulse {
        * @since 1.0.0
        */
       await this.newInformationDispatcher('panel-status', parsedOrbTextSummary);
+
+      // If the parsing function may be parsing data incorrectly.
+      if (isEmptyOrbTextSummary(parsedOrbTextSummary)) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelStatus()', 'warn', 'The parseOrbTextSummary() function may be parsing sensors information incorrectly');
+        }
+
+        await this.newInformationDispatcher('debug-parser', {
+          parserName: 'parseOrbTextSummary()',
+          parserReason: 'empty response',
+          parserResponse: parsedOrbTextSummary,
+          rawData: sessions.axiosSummary.data,
+        });
+      }
 
       if (this.#internal.debug) {
         debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelStatus()', 'success', `Successfully retrieved panel status from "${this.#internal.baseUrl}"`);
@@ -1592,6 +1636,20 @@ export class ADTPulse {
        * @since 1.0.0
        */
       await this.newInformationDispatcher('orb-security-buttons', parsedOrbSecurityButtons);
+
+      // If the parsing function may be parsing data incorrectly.
+      if (parsedOrbSecurityButtons.length < 1 || parsedOrbSecurityButtons.length > 3) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'warn', 'The parseOrbSecurityButtons() function may be parsing the orb security buttons incorrectly');
+        }
+
+        await this.newInformationDispatcher('debug-parser', {
+          parserName: 'parseOrbSecurityButtons()',
+          parserReason: 'length is not between 1 to 3',
+          parserResponse: parsedOrbSecurityButtons,
+          rawData: sessions.axiosSummary.data,
+        });
+      }
 
       // Only keep all ready (enabled) orb security buttons.
       let readyButtons = parsedOrbSecurityButtons.filter((parsedOrbSecurityButton): parsedOrbSecurityButton is ADTPulseSetPanelStatusReadyButton => !parsedOrbSecurityButton.buttonDisabled);
@@ -1923,7 +1981,6 @@ export class ADTPulse {
        *             'Motion Sensor'
        *             'Motion Sensor (Notable Events Only)'
        *             'Shock Sensor'
-       *             'System/Supervisory'
        *             'Temperature Sensor'
        *             'Water/Flood Sensor'
        *             'Window Sensor'
@@ -1936,6 +1993,20 @@ export class ADTPulse {
        * @since 1.0.0
        */
       await this.newInformationDispatcher('sensors-information', parsedSensorsTable);
+
+      // If the parsing function may be parsing data incorrectly.
+      if (parsedSensorsTable.length < 1) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsInformation()', 'warn', 'The parseSensorsTable() function may be parsing the sensors table incorrectly');
+        }
+
+        await this.newInformationDispatcher('debug-parser', {
+          parserName: 'parseSensorsTable()',
+          parserReason: 'length is not 1 or more',
+          parserResponse: parsedSensorsTable,
+          rawData: sessions.axiosSystem.data,
+        });
+      }
 
       if (this.#internal.debug) {
         debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsInformation()', 'success', `Successfully retrieved sensors information from "${this.#internal.baseUrl}"`);
@@ -2174,6 +2245,20 @@ export class ADTPulse {
        * @since 1.0.0
        */
       await this.newInformationDispatcher('sensors-status', parsedOrbSensors);
+
+      // If the parsing function may be parsing data incorrectly.
+      if (parsedOrbSensors.length < 1) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsStatus()', 'warn', 'The parseOrbSensors() function may be parsing the orb sensors incorrectly');
+        }
+
+        await this.newInformationDispatcher('debug-parser', {
+          parserName: 'parseOrbSensors()',
+          parserReason: 'length is not 1 or more',
+          parserResponse: parsedOrbSensors,
+          rawData: sessions.axiosSummary.data,
+        });
+      }
 
       if (this.#internal.debug) {
         debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsStatus()', 'success', `Successfully retrieved sensors status from "${this.#internal.baseUrl}"`);
@@ -2888,6 +2973,20 @@ export class ADTPulse {
        */
       await this.newInformationDispatcher('orb-security-buttons', parsedOrbSecurityButtons);
 
+      // If the parsing function may be parsing data incorrectly.
+      if (parsedOrbSecurityButtons.length < 1 || parsedOrbSecurityButtons.length > 3) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'warn', 'The parseOrbSecurityButtons() function may be parsing the orb security buttons incorrectly');
+        }
+
+        await this.newInformationDispatcher('debug-parser', {
+          parserName: 'parseOrbSecurityButtons()',
+          parserReason: 'length is not between 1 to 3',
+          parserResponse: parsedOrbSecurityButtons,
+          rawData: sessions.axiosSummary.data,
+        });
+      }
+
       let readyButtons = parsedOrbSecurityButtons.filter((parsedOrbSecurityButton): parsedOrbSecurityButton is ADTPulseArmDisarmHandlerReadyButton => !parsedOrbSecurityButton.buttonDisabled);
 
       // Generate "fake" ready buttons if arming tasks become stuck.
@@ -3049,6 +3148,20 @@ export class ADTPulse {
        * @since 1.0.0
        */
       await this.newInformationDispatcher('do-submit-handlers', parsedDoSubmitHandlers);
+
+      // If the parsing function may be parsing data incorrectly.
+      if (parsedDoSubmitHandlers.length !== 2) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'warn', 'The parseDoSubmitHandlers() function may be parsing the do submit handlers incorrectly');
+        }
+
+        await this.newInformationDispatcher('debug-parser', {
+          parserName: 'parseDoSubmitHandlers()',
+          parserReason: 'length does not equal to 2',
+          parserResponse: parsedDoSubmitHandlers,
+          rawData: response.data,
+        });
+      }
 
       // Check if there are no force arm buttons available.
       if (
@@ -3314,29 +3427,32 @@ export class ADTPulse {
 
       // Determine what information needs to be checked.
       switch (type) {
+        case 'debug-parser':
+          detectedNew = await detectApiDebugParser(data as ADTPulseNewInformationDispatcherData<'debug-parser'>, this.#internal.logger, this.#internal.debug);
+          break;
         case 'do-submit-handlers':
-          detectedNew = await detectedNewDoSubmitHandlers(data as ADTPulseNewInformationDispatcherData<'do-submit-handlers'>, this.#internal.logger, this.#internal.debug);
+          detectedNew = await detectApiDoSubmitHandlers(data as ADTPulseNewInformationDispatcherData<'do-submit-handlers'>, this.#internal.logger, this.#internal.debug);
           break;
         case 'gateway-information':
-          detectedNew = await detectedNewGatewayInformation(data as ADTPulseNewInformationDispatcherData<'gateway-information'>, this.#internal.logger, this.#internal.debug);
+          detectedNew = await detectApiGatewayInformation(data as ADTPulseNewInformationDispatcherData<'gateway-information'>, this.#internal.logger, this.#internal.debug);
           break;
         case 'orb-security-buttons':
-          detectedNew = await detectedNewOrbSecurityButtons(data as ADTPulseNewInformationDispatcherData<'orb-security-buttons'>, this.#internal.logger, this.#internal.debug);
+          detectedNew = await detectApiOrbSecurityButtons(data as ADTPulseNewInformationDispatcherData<'orb-security-buttons'>, this.#internal.logger, this.#internal.debug);
           break;
         case 'panel-information':
-          detectedNew = await detectedNewPanelInformation(data as ADTPulseNewInformationDispatcherData<'panel-information'>, this.#internal.logger, this.#internal.debug);
+          detectedNew = await detectApiPanelInformation(data as ADTPulseNewInformationDispatcherData<'panel-information'>, this.#internal.logger, this.#internal.debug);
           break;
         case 'panel-status':
-          detectedNew = await detectedNewPanelStatus(data as ADTPulseNewInformationDispatcherData<'panel-status'>, this.#internal.logger, this.#internal.debug);
+          detectedNew = await detectApiPanelStatus(data as ADTPulseNewInformationDispatcherData<'panel-status'>, this.#internal.logger, this.#internal.debug);
           break;
         case 'portal-version':
-          detectedNew = await detectedNewPortalVersion(data as ADTPulseNewInformationDispatcherData<'portal-version'>, this.#internal.logger, this.#internal.debug);
+          detectedNew = await detectApiPortalVersion(data as ADTPulseNewInformationDispatcherData<'portal-version'>, this.#internal.logger, this.#internal.debug);
           break;
         case 'sensors-information':
-          detectedNew = await detectedNewSensorsInformation(data as ADTPulseNewInformationDispatcherData<'sensors-information'>, this.#internal.logger, this.#internal.debug);
+          detectedNew = await detectApiSensorsInformation(data as ADTPulseNewInformationDispatcherData<'sensors-information'>, this.#internal.logger, this.#internal.debug);
           break;
         case 'sensors-status':
-          detectedNew = await detectedNewSensorsStatus(data as ADTPulseNewInformationDispatcherData<'sensors-status'>, this.#internal.logger, this.#internal.debug);
+          detectedNew = await detectApiSensorsStatus(data as ADTPulseNewInformationDispatcherData<'sensors-status'>, this.#internal.logger, this.#internal.debug);
           break;
         default:
           break;

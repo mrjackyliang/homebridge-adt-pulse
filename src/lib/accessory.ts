@@ -208,9 +208,6 @@ export class ADTPulseAccessory {
       case 'shock':
         this.#services.Primary = this.#accessory.getService(service.OccupancySensor) ?? this.#accessory.addService(service.OccupancySensor);
         break;
-      case 'supervisory':
-        this.#services.Primary = this.#accessory.getService(service.OccupancySensor) ?? this.#accessory.addService(service.OccupancySensor);
-        break;
       case 'temperature':
         this.#services.Primary = this.#accessory.getService(service.TemperatureSensor) ?? this.#accessory.addService(service.TemperatureSensor);
         break;
@@ -327,10 +324,6 @@ export class ADTPulseAccessory {
         this.#services.Primary.getCharacteristic(this.#characteristic.OccupancyDetected)
           .updateValue(this.getSensorStatus('status'));
         break;
-      case 'supervisory':
-        this.#services.Primary.getCharacteristic(this.#characteristic.OccupancyDetected)
-          .updateValue(this.getSensorStatus('status'));
-        break;
       case 'temperature':
         this.#services.Primary.getCharacteristic(this.#characteristic.CurrentTemperature)
           .updateValue(this.getSensorStatus('status'));
@@ -349,7 +342,6 @@ export class ADTPulseAccessory {
       case 'heat':
       case 'motion':
       case 'shock':
-      case 'supervisory':
       case 'temperature':
         this.#services.Primary.getCharacteristic(this.#characteristic.StatusActive)
           .updateValue(this.getSensorStatus('active'));
@@ -428,6 +420,7 @@ export class ADTPulseAccessory {
       if (
         statuses.includes('ALARM')
         || statuses.includes('Bypassed')
+        || statuses.includes('Trouble')
         || icon === 'devStatAlarm'
       ) {
         return this.#characteristic.StatusFault.GENERAL_FAULT;
@@ -453,7 +446,7 @@ export class ADTPulseAccessory {
     if (mode === 'tamper') {
       // If status or icon includes these, the sensor is tampered.
       if (
-        statuses.includes('Trouble')
+        statuses.includes('Tampered')
         || icon === 'devStatTamper'
       ) {
         return this.#characteristic.StatusTampered.TAMPERED;
@@ -531,9 +524,6 @@ export class ADTPulseAccessory {
         break;
       // TODO Device type needs to be manually tested and confirmed first.
       case 'shock':
-        break;
-      // TODO Device type needs to be manually tested and confirmed first.
-      case 'supervisory':
         break;
       // TODO Device type needs to be manually tested and confirmed first.
       case 'temperature':

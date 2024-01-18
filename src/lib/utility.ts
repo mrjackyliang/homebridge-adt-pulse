@@ -77,6 +77,9 @@ import type {
   GetPluralFormPlural,
   GetPluralFormReturns,
   GetPluralFormSingular,
+  IsEmptyOrbTextSummaryInput,
+  IsEmptyOrbTextSummaryMatch,
+  IsEmptyOrbTextSummaryReturns,
   IsForwardSlashOSReturns,
   IsPanelAlarmActivePanelStatuses,
   IsPanelAlarmActiveReturns,
@@ -255,9 +258,6 @@ export function condenseSensorType(sensorType: CondenseSensorTypeSensorType): Co
       break;
     case 'Shock Sensor':
       condensed = 'shock';
-      break;
-    case 'System/Supervisory':
-      condensed = 'supervisory';
       break;
     case 'Temperature Sensor':
       condensed = 'temperature';
@@ -614,7 +614,7 @@ export function generateDynatracePCHeaderValue(mode: GenerateDynatracePCHeaderVa
 export function generateFakeReadyButtons(buttons: GenerateFakeReadyButtonsButtons, isCleanState: GenerateFakeReadyButtonsIsCleanState, options: GenerateFakeReadyButtonsOptions): GenerateFakeReadyButtonsReturns {
   const readyButtons: GenerateFakeReadyButtonsReadyButtons = [];
 
-  // If the button is a "Disarming" button, generate the three arm buttons.
+  // If the button is a "Disarming" button, generate the two arm buttons.
   if (buttons.length === 1 && buttons[0].buttonText === 'Disarming') {
     const displayedButtons: GenerateFakeReadyButtonsDisplayedButtons = [
       {
@@ -626,11 +626,6 @@ export function generateFakeReadyButtons(buttons: GenerateFakeReadyButtonsButton
         buttonText: 'Arm Stay',
         loadingText: 'Arming Stay',
         arm: 'stay',
-      },
-      {
-        buttonText: 'Arm Night',
-        loadingText: 'Arming Night',
-        arm: 'night',
       },
     ];
 
@@ -774,7 +769,7 @@ export function getAccessoryCategory(deviceCategory: GetAccessoryCategoryDeviceC
  * @since 1.0.0
  */
 export function getDetectReportUrl(): GetDetectReportUrlReturns {
-  return 'https://n9e2q2s678sbiw13j.ntfy.mrjackyliang.com';
+  return 'https://7usev98x5actrwn6qb2m.ntfy.mrjackyliang.com';
 }
 
 /**
@@ -808,6 +803,29 @@ export function getPluralForm(count: GetPluralFormCount, singular: GetPluralForm
   }
 
   return plural;
+}
+
+/**
+ * Is empty orb text summary.
+ *
+ * @param {IsEmptyOrbTextSummaryInput} input - Input.
+ *
+ * @returns {IsEmptyOrbTextSummaryReturns}
+ *
+ * @since 1.0.0
+ */
+export function isEmptyOrbTextSummary(input: IsEmptyOrbTextSummaryInput): IsEmptyOrbTextSummaryReturns {
+  const match: IsEmptyOrbTextSummaryMatch = {
+    panelStates: [],
+    panelStatuses: [],
+    panelNotes: [],
+    rawData: {
+      node: '',
+      unknownPieces: [],
+    },
+  };
+
+  return _.isEqual(match, input);
 }
 
 /**
@@ -1171,6 +1189,11 @@ export function parseSensorsTable(elements: ParseOrbSensorsTableElements): Parse
           const cleanedName = clearWhitespace(nameText);
           const cleanedStatus = clearWhitespace(iconTitle) as ParseOrbSensorsTableStatus;
           const cleanedZone = Number(clearWhitespace(zoneText));
+
+          // These devices are not supported because they do not display a status in the summary page.
+          if (['System/Supervisory'].includes(cleanedDeviceType)) {
+            return;
+          }
 
           sensors.push({
             deviceId: cleanedDeviceId,

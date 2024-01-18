@@ -48,6 +48,9 @@ ij_html_text_wrap = off
 [*.php]
 indent_size = 4
 indent_style = tab
+ij_php_indent_code_in_php_tags = true
+ij_php_method_brace_style = end_of_line
+ij_php_new_line_after_php_opening_tag = true
 
 [{*.markdown,*.md}]
 ij_markdown_max_lines_around_block_elements = 0

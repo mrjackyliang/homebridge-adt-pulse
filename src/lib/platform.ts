@@ -10,7 +10,7 @@ import { serializeError } from 'serialize-error';
 
 import { ADTPulseAccessory } from '@/lib/accessory.js';
 import { ADTPulse } from '@/lib/api.js';
-import { detectedSensorCountMismatch, detectedUnknownSensorsAction } from '@/lib/detect.js';
+import { detectPlatformSensorCountMismatch, detectPlatformUnknownSensorsAction } from '@/lib/detect.js';
 import { textOrbTextSummarySections } from '@/lib/regex.js';
 import { platformConfig } from '@/lib/schema.js';
 import {
@@ -995,7 +995,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
 
       // If the detector has not reported this event before.
       if (this.#state.reportedHashes.find((reportedHash) => dataHash === reportedHash) === undefined) {
-        const detectedNew = await detectedSensorCountMismatch(data, this.#log, this.#debugMode);
+        const detectedNew = await detectPlatformSensorCountMismatch(data, this.#log, this.#debugMode);
 
         // Save this hash so the detector does not detect the same thing multiple times.
         if (detectedNew) {
@@ -1018,7 +1018,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
 
     // If the detector has not reported this event before.
     if (this.#state.reportedHashes.find((reportedHash) => dataHash === reportedHash) === undefined) {
-      const detectedNew = await detectedUnknownSensorsAction(matchedSensors, this.#log, this.#debugMode);
+      const detectedNew = await detectPlatformUnknownSensorsAction(matchedSensors, this.#log, this.#debugMode);
 
       // Save this hash so the detector does not detect the same thing multiple times.
       if (detectedNew) {

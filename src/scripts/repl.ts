@@ -220,9 +220,9 @@ class ADTPulseRepl {
    */
   private static displayHelpHeader(): ADTPulseDisplayHelpHeaderReturns {
     console.info([
-      chalk.cyanBright('########################################################'),
-      chalk.cyanBright('#### ADT Pulse for Homebridge Plugin REPL Help Menu ####'),
-      chalk.cyanBright('########################################################'),
+      chalk.cyanBright('##########################################################'),
+      chalk.cyanBright('####  ADT Pulse for Homebridge Plugin REPL Help Menu  ####'),
+      chalk.cyanBright('##########################################################'),
       '',
       'This is the help menu on how to use this REPL interface. If you have questions on how',
       'to use this, please refer to the documentation using the link below:',
@@ -285,12 +285,12 @@ class ADTPulseRepl {
    */
   private static displayStartupHeader(): ADTPulseDisplayStartupHeaderReturns {
     console.info([
-      chalk.cyanBright('##############################################################'),
-      chalk.cyanBright('####         ADT Pulse for Homebridge Plugin REPL         ####'),
-      chalk.cyanBright('#### https://github.com/mrjackyliang/homebridge-adt-pulse ####'),
-      chalk.cyanBright('####                                                      ####'),
-      chalk.cyanBright('####     Copyright (c) 2023 Jacky Liang. ISC License.     ####'),
-      chalk.cyanBright('##############################################################'),
+      chalk.cyanBright('################################################################'),
+      chalk.cyanBright('####          ADT Pulse for Homebridge Plugin REPL          ####'),
+      chalk.cyanBright('####  https://github.com/mrjackyliang/homebridge-adt-pulse  ####'),
+      chalk.cyanBright('####                                                        ####'),
+      chalk.cyanBright('####             Copyright (c) 2024 Jacky Liang             ####'),
+      chalk.cyanBright('################################################################'),
       '',
       'Welcome to the REPL interface for ADT Pulse for Homebridge. This interface',
       'allows you to interact with the ADT Pulse portal via the included API and is designed',

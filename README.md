@@ -66,8 +66,7 @@ This plugin can expose these devices (in read-only mode) based on your configura
 6. `heat` - Heat (Rate-of-Rise) Detector
 7. `motion` - Motion Sensor __::__ Motion Sensor (Notable Events Only)
 8. `shock` - Shock Sensor
-9. `supervisory` - System/Supervisory
-10. `temperature` - Temperature Sensor
+9. `temperature` - Temperature Sensor
 
 Due to implementation complexity and platform instability, all Z-Wave accessories connected to the ADT Pulse gateway will not be planned for development or be supported overall. Consider purchasing the [Hubitat Hub](https://hubitat.com) for a seamless setup experience, or read about the [Home Assistant Z-Wave](https://www.home-assistant.io/integrations/zwave_js/) integration.
 

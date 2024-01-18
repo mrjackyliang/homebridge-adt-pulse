@@ -57,6 +57,7 @@ import type {
   Device,
   Devices,
   DoSubmitHandlers,
+  FunctionName,
   GatewayInformation,
   InternalConfig,
   NetworkId,
@@ -387,18 +388,19 @@ export type ADTPulseLogoutSessions = Sessions<{
  *
  * @since 1.0.0
  */
-export type ADTPulseNewInformationDispatcherType = 'do-submit-handlers' | 'gateway-information' | 'orb-security-buttons' | 'panel-information' | 'panel-status' | 'portal-version' | 'sensors-information' | 'sensors-status';
+export type ADTPulseNewInformationDispatcherType = 'debug-parser' | 'do-submit-handlers' | 'gateway-information' | 'orb-security-buttons' | 'panel-information' | 'panel-status' | 'portal-version' | 'sensors-information' | 'sensors-status';
 
 export type ADTPulseNewInformationDispatcherData<Type extends ADTPulseNewInformationDispatcherType> =
-  Type extends 'do-submit-handlers' ? DoSubmitHandlers
-    : Type extends 'gateway-information' ? GatewayInformation
-      : Type extends 'orb-security-buttons' ? OrbSecurityButtons
-        : Type extends 'panel-information' ? PanelInformation
-          : Type extends 'panel-status' ? PanelStatus
-            : Type extends 'portal-version' ? PortalVersionContent
-              : Type extends 'sensors-information' ? SensorInformation[]
-                : Type extends 'sensors-status' ? SensorStatus[]
-                  : never;
+  Type extends 'debug-parser' ? { parserName: FunctionName; parserReason: string; parserResponse: object | object[]; rawData: string; }
+    : Type extends 'do-submit-handlers' ? DoSubmitHandlers
+      : Type extends 'gateway-information' ? GatewayInformation
+        : Type extends 'orb-security-buttons' ? OrbSecurityButtons
+          : Type extends 'panel-information' ? PanelInformation
+            : Type extends 'panel-status' ? PanelStatus
+              : Type extends 'portal-version' ? PortalVersionContent
+                : Type extends 'sensors-information' ? SensorInformation[]
+                  : Type extends 'sensors-status' ? SensorStatus[]
+                    : never;
 
 export type ADTPulseNewInformationDispatcherReturns = Promise<void>;
 
@@ -1151,161 +1153,187 @@ export type DebugLogMessage = string;
 export type DebugLogReturns = void;
 
 /**
- * Detected new do submit handlers.
+ * Detect api debug parser.
  *
  * @since 1.0.0
  */
-export type DetectedNewDoSubmitHandlersHandlers = DoSubmitHandlers;
+export type DetectApiDebugParserDataParserName = FunctionName;
 
-export type DetectedNewDoSubmitHandlersLogger = Logger | null;
+export type DetectApiDebugParserDataParserReason = string;
 
-export type DetectedNewDoSubmitHandlersDebugMode = boolean | null;
+export type DetectApiDebugParserDataParserResponse = object | object[];
 
-export type DetectedNewDoSubmitHandlersReturns = Promise<boolean>;
+export type DetectApiDebugParserDataRawData = string;
 
-/**
- * Detected new gateway information.
- *
- * @since 1.0.0
- */
-export type DetectedNewGatewayInformationDevice = GatewayInformation;
-
-export type DetectedNewGatewayInformationLogger = Logger | null;
-
-export type DetectedNewGatewayInformationDebugMode = boolean | null;
-
-export type DetectedNewGatewayInformationReturns = Promise<boolean>;
-
-/**
- * Detected new orb security buttons.
- *
- * @since 1.0.0
- */
-export type DetectedNewOrbSecurityButtonsButtons = OrbSecurityButtons;
-
-export type DetectedNewOrbSecurityButtonsLogger = Logger | null;
-
-export type DetectedNewOrbSecurityButtonsDebugMode = boolean | null;
-
-export type DetectedNewOrbSecurityButtonsReturns = Promise<boolean>;
-
-/**
- * Detected new panel information.
- *
- * @since 1.0.0
- */
-export type DetectedNewPanelInformationDevice = PanelInformation;
-
-export type DetectedNewPanelInformationLogger = Logger | null;
-
-export type DetectedNewPanelInformationDebugMode = boolean | null;
-
-export type DetectedNewPanelInformationReturns = Promise<boolean>;
-
-/**
- * Detected new panel status.
- *
- * @since 1.0.0
- */
-export type DetectedNewPanelStatusSummary = PanelStatus;
-
-export type DetectedNewPanelStatusLogger = Logger | null;
-
-export type DetectedNewPanelStatusDebugMode = boolean | null;
-
-export type DetectedNewPanelStatusReturns = Promise<boolean>;
-
-/**
- * Detected new portal version.
- *
- * @since 1.0.0
- */
-export type DetectedNewPortalVersionVersion = PortalVersionContent;
-
-export type DetectedNewPortalVersionLogger = Logger | null;
-
-export type DetectedNewPortalVersionDebugMode = boolean | null;
-
-export type DetectedNewPortalVersionReturns = Promise<boolean>;
-
-/**
- * Detected new sensors information.
- *
- * @since 1.0.0
- */
-export type DetectedNewSensorsInformationSensor = SensorInformation;
-
-export type DetectedNewSensorsInformationSensors = DetectedNewSensorsInformationSensor[];
-
-export type DetectedNewSensorsInformationLogger = Logger | null;
-
-export type DetectedNewSensorsInformationDebugMode = boolean | null;
-
-export type DetectedNewSensorsInformationReturns = Promise<boolean>;
-
-/**
- * Detected new sensors status.
- *
- * @since 1.0.0
- */
-export type DetectedNewSensorsStatusSensor = SensorStatus;
-
-export type DetectedNewSensorsStatusSensors = DetectedNewSensorsStatusSensor[];
-
-export type DetectedNewSensorsStatusLogger = Logger | null;
-
-export type DetectedNewSensorsStatusDebugMode = boolean | null;
-
-export type DetectedNewSensorsStatusReturns = Promise<boolean>;
-
-/**
- * Detected sensor count mismatch.
- *
- * @since 1.0.0
- */
-export type DetectedSensorCountMismatchDataSensorInfo = SensorInformation;
-
-export type DetectedSensorCountMismatchDataSensorsInfo = DetectedSensorCountMismatchDataSensorInfo[];
-
-export type DetectedSensorCountMismatchDataSensorStatus = SensorStatus;
-
-export type DetectedSensorCountMismatchDataSensorsStatus = DetectedSensorCountMismatchDataSensorStatus[];
-
-export type DetectedSensorCountMismatchData = {
-  sensorsInfo: DetectedSensorCountMismatchDataSensorsInfo;
-  sensorsStatus: DetectedSensorCountMismatchDataSensorsStatus;
+export type DetectApiDebugParserData = {
+  parserName: DetectApiDebugParserDataParserName;
+  parserReason: DetectApiDebugParserDataParserReason;
+  parserResponse: DetectApiDebugParserDataParserResponse;
+  rawData: DetectApiDebugParserDataRawData;
 };
 
-export type DetectedSensorCountMismatchLogger = Logger | null;
+export type DetectApiDebugParserLogger = Logger | null;
 
-export type DetectedSensorCountMismatchDebugMode = boolean | null;
+export type DetectApiDebugParserDebugMode = boolean | null;
 
-export type DetectedSensorCountMismatchReturns = Promise<boolean>;
+export type DetectApiDebugParserReturns = Promise<boolean>;
 
 /**
- * Detected unknown sensors action.
+ * Detect api do submit handlers.
  *
  * @since 1.0.0
  */
-export type DetectedUnknownSensorsActionSensorInfo = SensorInformation;
+export type DetectApiDoSubmitHandlersHandlers = DoSubmitHandlers;
 
-export type DetectedUnknownSensorsActionSensorStatus = SensorStatus;
+export type DetectApiDoSubmitHandlersLogger = Logger | null;
 
-export type DetectedUnknownSensorsActionSensorType = PluginDeviceSensorType | undefined;
+export type DetectApiDoSubmitHandlersDebugMode = boolean | null;
 
-export type DetectedUnknownSensorsActionSensor = {
-  info: DetectedUnknownSensorsActionSensorInfo;
-  status: DetectedUnknownSensorsActionSensorStatus;
-  type: DetectedUnknownSensorsActionSensorType;
+export type DetectApiDoSubmitHandlersReturns = Promise<boolean>;
+
+/**
+ * Detect api gateway information.
+ *
+ * @since 1.0.0
+ */
+export type DetectApiGatewayInformationDevice = GatewayInformation;
+
+export type DetectApiGatewayInformationLogger = Logger | null;
+
+export type DetectApiGatewayInformationDebugMode = boolean | null;
+
+export type DetectApiGatewayInformationReturns = Promise<boolean>;
+
+/**
+ * Detect api orb security buttons.
+ *
+ * @since 1.0.0
+ */
+export type DetectApiOrbSecurityButtonsButtons = OrbSecurityButtons;
+
+export type DetectApiOrbSecurityButtonsLogger = Logger | null;
+
+export type DetectApiOrbSecurityButtonsDebugMode = boolean | null;
+
+export type DetectApiOrbSecurityButtonsReturns = Promise<boolean>;
+
+/**
+ * Detect api panel information.
+ *
+ * @since 1.0.0
+ */
+export type DetectApiPanelInformationDevice = PanelInformation;
+
+export type DetectApiPanelInformationLogger = Logger | null;
+
+export type DetectApiPanelInformationDebugMode = boolean | null;
+
+export type DetectApiPanelInformationReturns = Promise<boolean>;
+
+/**
+ * Detect api panel status.
+ *
+ * @since 1.0.0
+ */
+export type DetectApiPanelStatusSummary = PanelStatus;
+
+export type DetectApiPanelStatusLogger = Logger | null;
+
+export type DetectApiPanelStatusDebugMode = boolean | null;
+
+export type DetectApiPanelStatusReturns = Promise<boolean>;
+
+/**
+ * Detect api portal version.
+ *
+ * @since 1.0.0
+ */
+export type DetectApiPortalVersionVersion = PortalVersionContent;
+
+export type DetectApiPortalVersionLogger = Logger | null;
+
+export type DetectApiPortalVersionDebugMode = boolean | null;
+
+export type DetectApiPortalVersionReturns = Promise<boolean>;
+
+/**
+ * Detect api sensors information.
+ *
+ * @since 1.0.0
+ */
+export type DetectApiSensorsInformationSensor = SensorInformation;
+
+export type DetectApiSensorsInformationSensors = DetectApiSensorsInformationSensor[];
+
+export type DetectApiSensorsInformationLogger = Logger | null;
+
+export type DetectApiSensorsInformationDebugMode = boolean | null;
+
+export type DetectApiSensorsInformationReturns = Promise<boolean>;
+
+/**
+ * Detect api sensors status.
+ *
+ * @since 1.0.0
+ */
+export type DetectApiSensorsStatusSensor = SensorStatus;
+
+export type DetectApiSensorsStatusSensors = DetectApiSensorsStatusSensor[];
+
+export type DetectApiSensorsStatusLogger = Logger | null;
+
+export type DetectApiSensorsStatusDebugMode = boolean | null;
+
+export type DetectApiSensorsStatusReturns = Promise<boolean>;
+
+/**
+ * Detect platform sensor count mismatch.
+ *
+ * @since 1.0.0
+ */
+export type DetectPlatformSensorCountMismatchDataSensorInfo = SensorInformation;
+
+export type DetectPlatformSensorCountMismatchDataSensorsInfo = DetectPlatformSensorCountMismatchDataSensorInfo[];
+
+export type DetectPlatformSensorCountMismatchDataSensorStatus = SensorStatus;
+
+export type DetectPlatformSensorCountMismatchDataSensorsStatus = DetectPlatformSensorCountMismatchDataSensorStatus[];
+
+export type DetectPlatformSensorCountMismatchData = {
+  sensorsInfo: DetectPlatformSensorCountMismatchDataSensorsInfo;
+  sensorsStatus: DetectPlatformSensorCountMismatchDataSensorsStatus;
 };
 
-export type DetectedUnknownSensorsActionSensors = DetectedUnknownSensorsActionSensor[];
+export type DetectPlatformSensorCountMismatchLogger = Logger | null;
 
-export type DetectedUnknownSensorsActionLogger = Logger | null;
+export type DetectPlatformSensorCountMismatchDebugMode = boolean | null;
 
-export type DetectedUnknownSensorsActionDebugMode = boolean | null;
+export type DetectPlatformSensorCountMismatchReturns = Promise<boolean>;
 
-export type DetectedUnknownSensorsActionReturns = Promise<boolean>;
+/**
+ * Detect platform unknown sensors action.
+ *
+ * @since 1.0.0
+ */
+export type DetectPlatformUnknownSensorsActionSensorInfo = SensorInformation;
+
+export type DetectPlatformUnknownSensorsActionSensorStatus = SensorStatus;
+
+export type DetectPlatformUnknownSensorsActionSensorType = PluginDeviceSensorType | undefined;
+
+export type DetectPlatformUnknownSensorsActionSensor = {
+  info: DetectPlatformUnknownSensorsActionSensorInfo;
+  status: DetectPlatformUnknownSensorsActionSensorStatus;
+  type: DetectPlatformUnknownSensorsActionSensorType;
+};
+
+export type DetectPlatformUnknownSensorsActionSensors = DetectPlatformUnknownSensorsActionSensor[];
+
+export type DetectPlatformUnknownSensorsActionLogger = Logger | null;
+
+export type DetectPlatformUnknownSensorsActionDebugMode = boolean | null;
+
+export type DetectPlatformUnknownSensorsActionReturns = Promise<boolean>;
 
 /**
  * Do submit handler relative url items.
@@ -1521,6 +1549,17 @@ export type GetPluralFormReturns = string;
 export type InitializeApi = API;
 
 export type InitializeReturns = void;
+
+/**
+ * Is empty orb text summary.
+ *
+ * @since 1.0.0
+ */
+export type IsEmptyOrbTextSummaryInput = PanelStatus;
+
+export type IsEmptyOrbTextSummaryReturns = boolean;
+
+export type IsEmptyOrbTextSummaryMatch = PanelStatus;
 
 /**
  * Is forward slash os.
@@ -1848,7 +1887,7 @@ export type StackTracerError<Type extends StackTracerType> =
   Type extends 'api-response' ? ApiResponseFail<any>
     : Type extends 'detect-content' ? Record<string, unknown> | Record<string, unknown>[]
       : Type extends 'fake-ready-buttons' ? { before: OrbSecurityButtons; after: OrbSecurityButtonBase & OrbSecurityButtonReady; }
-        : Type extends 'log-status-changes' ? { old: SensorInformation[], new: SensorInformation[] }
+        : Type extends 'log-status-changes' ? { old: SensorInformation[]; new: SensorInformation[]; }
           : Type extends 'serialize-error' ? ErrorObject
             : Type extends 'zod-error' ? z.ZodIssue[]
               : never;

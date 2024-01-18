@@ -206,12 +206,6 @@
                   ]
                 },
                 {
-                  "title": "System/Supervisory",
-                  "enum": [
-                    "supervisory"
-                  ]
-                },
-                {
                   "title": "Temperature Sensor",
                   "enum": [
                     "temperature"

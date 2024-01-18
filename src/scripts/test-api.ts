@@ -203,12 +203,12 @@ class ADTPulseTest {
     });
     const questions = {
       disclaimer: [
-        chalk.cyanBright('##############################################################'),
-        chalk.cyanBright('####         ADT Pulse for Homebridge Plugin Test         ####'),
-        chalk.cyanBright('#### https://github.com/mrjackyliang/homebridge-adt-pulse ####'),
-        chalk.cyanBright('####                                                      ####'),
-        chalk.cyanBright('####     Copyright (c) 2023 Jacky Liang. ISC License.     ####'),
-        chalk.cyanBright('##############################################################'),
+        chalk.cyanBright('################################################################'),
+        chalk.cyanBright('####          ADT Pulse for Homebridge Plugin Test          ####'),
+        chalk.cyanBright('####  https://github.com/mrjackyliang/homebridge-adt-pulse  ####'),
+        chalk.cyanBright('####                                                        ####'),
+        chalk.cyanBright('####             Copyright (c) 2024 Jacky Liang             ####'),
+        chalk.cyanBright('################################################################'),
         'Before you begin, please make sure of the following:',
         '',
         '1. You have the proper authorization to carry out system testing.',

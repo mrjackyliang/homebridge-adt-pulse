@@ -180,6 +180,13 @@ export type DoSubmitHandler = {
 export type DoSubmitHandlers = DoSubmitHandler[];
 
 /**
+ * Function name.
+ *
+ * @since 1.0.0
+ */
+export type FunctionName = `${string}()`;
+
+/**
  * Gateway information.
  *
  * @since 1.0.0
