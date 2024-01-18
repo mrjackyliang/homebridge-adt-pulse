@@ -886,7 +886,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
    * @since 1.0.0
    */
   private async logStatusChanges(oldCache: ADTPulsePlatformLogStatusChangesOldCache, newCache: ADTPulsePlatformLogStatusChangesNewCache): ADTPulsePlatformLogStatusChangesReturns {
-    // Fetch gateway device status.
+    // Fetch gateway information.
     if (oldCache.gatewayInfo !== null && newCache.gatewayInfo !== null) {
       const oldStatus = oldCache.gatewayInfo.status;
       const newStatus = newCache.gatewayInfo.status;
@@ -896,7 +896,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
       }
     }
 
-    // Fetch the panel device status.
+    // Fetch the panel information.
     if (oldCache.panelInfo !== null && newCache.panelInfo !== null) {
       const oldStatus = oldCache.panelInfo.status;
       const newStatus = newCache.panelInfo.status;
@@ -906,7 +906,19 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
       }
     }
 
-    // Fetch the sensors device status.
+    // Fetch the panel status.
+    if (oldCache.panelStatus !== null && newCache.panelStatus !== null) {
+      const oldStatus = oldCache.panelStatus.rawData.node;
+      const newStatus = newCache.panelStatus.rawData.node;
+      const splitOldStatus = oldStatus.split(textOrbTextSummarySections).filter(Boolean).join(' / ');
+      const splitNewStatus = newStatus.split(textOrbTextSummarySections).filter(Boolean).join(' / ');
+
+      if (oldStatus !== newStatus) {
+        this.#log.info(`${chalk.underline('Security Panel')} state changed (old: "${splitOldStatus}", new: "${splitNewStatus}").`);
+      }
+    }
+
+    // Fetch the sensors information.
     if (
       this.#config !== null
       && this.#config.sensors.length > 0 // Only show status changed if user configured sensors.
@@ -925,7 +937,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
           }
         }
       } else {
-        this.#log.warn('Changes to sensors device status cannot be determined due to length inconsistencies.');
+        this.#log.warn('Changes to sensors information cannot be determined due to length inconsistencies.');
         stackTracer('log-status-changes', {
           old: oldCache.sensorsInfo,
           new: newCache.sensorsInfo,
@@ -933,19 +945,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
       }
     }
 
-    // Fetch the panel device state.
-    if (oldCache.panelStatus !== null && newCache.panelStatus !== null) {
-      const oldStatus = oldCache.panelStatus.rawData.node;
-      const newStatus = newCache.panelStatus.rawData.node;
-      const splitOldStatus = oldStatus.split(textOrbTextSummarySections).filter(Boolean).join(' / ');
-      const splitNewStatus = newStatus.split(textOrbTextSummarySections).filter(Boolean).join(' / ');
-
-      if (oldStatus !== newStatus) {
-        this.#log.info(`${chalk.underline('Security Panel')} state changed (old: "${splitOldStatus}", new: "${splitNewStatus}").`);
-      }
-    }
-
-    // Fetch the sensors device state.
+    // Fetch the sensors status.
     if (
       this.#config !== null
       && this.#config.sensors.length > 0 // Only show status changed if user configured sensors.
@@ -964,7 +964,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
           }
         }
       } else {
-        this.#log.warn('Changes to sensors device state cannot be determined due to length inconsistencies.');
+        this.#log.warn('Changes to sensors status cannot be determined due to length inconsistencies.');
         stackTracer('log-status-changes', {
           old: oldCache.sensorsStatus,
           new: newCache.sensorsStatus,
@@ -1044,11 +1044,12 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     // Add gateway as an accessory.
     if (gatewayInfo !== null) {
       const id = 'adt-device-0';
+      const name = gatewayInfo.manufacturer ?? gatewayInfo.model ?? 'ADT Pulse Gateway';
 
       devices.push({
         id,
-        name: 'ADT Pulse Gateway',
-        originalName: 'ADT Pulse Gateway',
+        name: (name.includes('Gateway')) ? name : 'ADT Pulse Gateway',
+        originalName: (name.includes('Gateway')) ? name : 'ADT Pulse Gateway',
         type: 'gateway',
         zone: null,
         category: 'OTHER',

@@ -475,12 +475,13 @@ export function fetchTableCells(nodeElements: FetchTableCellsNodeElements, match
      * - nodes[51].textContent = "12345"
      * - nodes[52].textContent = "67890"
      * - nodes[53].textContent = null
-     * - nodes[54].textContent = "abcdef"
+     * - nodes[54].textContent = ""
+     * - nodes[55].textContent = "abcdef"
      *
      * If your criteria is set to the following settings, the result would be:
      * (match: "Example", incrementFrom: 0, incrementTo: 1) ➜ { "Example": ["Example", "12345"] }
      * (match: "Example", incrementFrom: 1, incrementTo: 3) ➜ { "Example": ["12345", "67890"] }
-     * (match: "Example", incrementFrom: 0, incrementTo: 4) ➜ { "Example": ["Example", "12345", "67890", "abcdef"] }
+     * (match: "Example", incrementFrom: 0, incrementTo: 5) ➜ { "Example": ["Example", "12345", "67890", "abcdef"] }
      *
      * @since 1.0.0
      */
@@ -491,11 +492,17 @@ export function fetchTableCells(nodeElements: FetchTableCellsNodeElements, match
       if (incrementedNode !== null) {
         const incrementedNodeCleaned = clearWhitespace(incrementedNode);
 
-        collectedNodes.push(incrementedNodeCleaned);
+        // If content of "incrementedNode" is not empty.
+        if (incrementedNodeCleaned !== '') {
+          collectedNodes.push(incrementedNodeCleaned);
+        }
       }
     }
 
-    matched[currentNodeCleaned] = collectedNodes;
+    // If the current node is not empty.
+    if (collectedNodes.length > 0) {
+      matched[currentNodeCleaned] = collectedNodes;
+    }
   });
 
   return matched;

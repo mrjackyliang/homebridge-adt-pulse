@@ -867,14 +867,17 @@ export class ADTPulse {
       await this.newInformationDispatcher('gateway-information', gatewayInformation);
 
       // If the parsing function may be parsing data incorrectly.
-      if (Object.keys(fetchedTableCells).length !== 18) {
+      if (
+        Object.keys(fetchedTableCells).length !== 11 // Compact SMA Protocol Gateway / Cellular Mode.
+        && Object.keys(fetchedTableCells).length !== 18 // ADT Pulse Gateway / Broadband Mode.
+      ) {
         if (this.#internal.debug) {
           debugLog(this.#internal.logger, 'api.ts / ADTPulse.getGatewayInformation()', 'warn', 'The fetchTableCells() function may be parsing the gateway information incorrectly');
         }
 
         await this.newInformationDispatcher('debug-parser', {
           parserName: 'fetchTableCells()',
-          parserReason: 'length does not equal to 18',
+          parserReason: 'length does not match 11 or 18',
           parserResponse: fetchedTableCells,
           rawData: sessions.axiosSystemGateway.data,
         });
@@ -1079,14 +1082,17 @@ export class ADTPulse {
       await this.newInformationDispatcher('panel-information', panelInformation);
 
       // If the parsing function may be parsing data incorrectly.
-      if (Object.keys(fetchedTableCells).length !== 5) {
+      if (
+        Object.keys(fetchedTableCells).length !== 4 // Impassa SCW9057.
+        && Object.keys(fetchedTableCells).length !== 5 // Safewatch Pro 3000/3000CN.
+      ) {
         if (this.#internal.debug) {
           debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelInformation()', 'warn', 'The fetchTableCells() function may be parsing the panel information incorrectly');
         }
 
         await this.newInformationDispatcher('debug-parser', {
           parserName: 'fetchTableCells()',
-          parserReason: 'length does not equal to 5',
+          parserReason: 'length does not match 4 or 5',
           parserResponse: fetchedTableCells,
           rawData: sessions.axiosSystemDeviceId1.data,
         });
@@ -3157,7 +3163,7 @@ export class ADTPulse {
 
         await this.newInformationDispatcher('debug-parser', {
           parserName: 'parseDoSubmitHandlers()',
-          parserReason: 'length does not equal to 2',
+          parserReason: 'length does not match 2',
           parserResponse: parsedDoSubmitHandlers,
           rawData: response.data,
         });
