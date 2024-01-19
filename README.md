@@ -56,6 +56,7 @@ While named "ADT Pulse for Homebridge," this Homebridge plugin exclusively accom
 This plugin will expose these devices by default:
 1. ADT Pulse Gateway (`gateway`)
 2. Security Panel (`panel`)
+3. Alarm Ringing Switch (`panelSwitch`)
 
 This plugin can expose these devices (in read-only mode) based on your configuration:
 1. `co` - Carbon Monoxide Detector
@@ -126,7 +127,7 @@ All sensors are now organized within an array of objects, with each object conta
   - Must match the name shown under the "Name" column in the "System" tab when logged into the portal.
 - __ADT Type__ (`adtType`)
   - Must match the type shown under the "Device Type" column in the "System" tab when logged into the portal.
-  - Contingent to the devices shown under the [Supported Devices](#supported-devices) section.
+  - For example, if the type is "Door/Window Sensor", the value should be `doorWindow`. Read the [Supported Devices](#supported-devices) section for more information.
 - __ADT Zone__ (`adtZone`)
   - Must match the zone shown under the "Zone" column in the "System" tab when logged into the portal.
 

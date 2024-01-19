@@ -720,11 +720,7 @@ export class ADTPulseAccessory {
     let hapStatus;
 
     // If panel status has not been retrieved yet.
-    if (
-      this.#state.data.panelStatus === null
-      || this.#state.data.panelStatus.panelStates.length === 0
-      || this.#state.data.panelStatus.panelStatuses.length === 0
-    ) {
+    if (this.#state.data.panelStatus === null || this.#state.data.panelStatus.panelStatuses.length === 0) {
       hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.RESOURCE_BUSY);
 
       this.#log.debug(`Attempted to get panel switch status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but panel switch status has not been retrieved yet.`);
@@ -732,15 +728,15 @@ export class ADTPulseAccessory {
       return hapStatus;
     }
 
-    const { panelStates, panelStatuses } = this.#state.data.panelStatus;
+    const { panelStatuses } = this.#state.data.panelStatus;
 
     // If system is busy setting the state.
     if (this.#activity.isBusy && this.#activity.setValue !== null) {
       return this.#activity.setValue;
     }
 
-    // Only show as "On" if panel is "Disarmed" and alarm is ringing.
-    return panelStates.includes('Disarmed') && isPanelAlarmActive(panelStatuses);
+    // Only show as "On" if alarm is ringing.
+    return isPanelAlarmActive(panelStatuses);
   }
 
   /**
@@ -921,7 +917,7 @@ export class ADTPulseAccessory {
     if (on === true) {
       hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.SUCCESS);
 
-      this.#log.error(`Attempted to set panel switch status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but switch is only used for turning off ringing alarm while system is "Disarmed".`);
+      this.#log.error(`Attempted to set panel switch status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but switch is only used for turning off ringing alarm and clearing alarm.`);
 
       throw hapStatus;
     }
@@ -942,7 +938,6 @@ export class ADTPulseAccessory {
 
     if (
       !this.#activity.isBusy // The system isn't busy setting a state.
-      && condensedPanelStates.armValue === 'off' // If the system is disarmed.
       && isAlarmActive // If system alarm is ringing.
     ) {
       // Set accessory activity to "busy" before arming.

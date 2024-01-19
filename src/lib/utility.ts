@@ -788,7 +788,7 @@ export function getDetectReportUrl(): GetDetectReportUrlReturns {
  */
 export function getPackageVersion(): GetPackageVersionReturns {
   const require = createRequire(import.meta.url);
-  const packageJson = require('../../../package.json'); // Assumes it is running in the "build" folder.
+  const packageJson = require('../../package.json');
 
   return packageJson.version;
 }
