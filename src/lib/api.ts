@@ -869,6 +869,7 @@ export class ADTPulse {
       // If the parsing function may be parsing data incorrectly.
       if (
         Object.keys(fetchedTableCells).length !== 11 // Compact SMA Protocol Gateway / Cellular Mode.
+        && Object.keys(fetchedTableCells).length !== 17 // ADT Pulse Gateway / Broadband Mode / No Router WAN IP Address.
         && Object.keys(fetchedTableCells).length !== 18 // ADT Pulse Gateway / Broadband Mode.
       ) {
         if (this.#internal.debug) {
@@ -3156,14 +3157,17 @@ export class ADTPulse {
       await this.newInformationDispatcher('do-submit-handlers', parsedDoSubmitHandlers);
 
       // If the parsing function may be parsing data incorrectly.
-      if (parsedDoSubmitHandlers.length !== 2) {
+      if (
+        parsedDoSubmitHandlers.length !== 0 // No force arming required.
+        && parsedDoSubmitHandlers.length !== 2 // Force arming required.
+      ) {
         if (this.#internal.debug) {
           debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'warn', 'The parseDoSubmitHandlers() function may be parsing the do submit handlers incorrectly');
         }
 
         await this.newInformationDispatcher('debug-parser', {
           parserName: 'parseDoSubmitHandlers()',
-          parserReason: 'length does not match 2',
+          parserReason: 'length does not match 0 or 2',
           parserResponse: parsedDoSubmitHandlers,
           rawData: response.data,
         });
