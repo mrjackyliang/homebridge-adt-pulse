@@ -12,6 +12,7 @@
     "debug": "homebridge --debug --keep-orphans --plugin-path $(pwd)",
     "build": "npm-run-all --sequential build:*",
     "build:cleanup": "rimraf build",
+    "build:lint": "npx eslint ./src",
     "build:tsc": "tsc --project tsconfig.json",
     "build:fix-paths": "tsconfig-replace-paths --project tsconfig.json",
     "prepare": "npm run build",

@@ -1,14 +1,15 @@
 {
   "compilerOptions": {
+    "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "baseUrl": "./",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "lib": [
-      "esnext"
+      "ESNext"
     ],
     "module": "ESNext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "Bundler",
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
@@ -34,5 +35,8 @@
   },
   "include": [
     "./src"
+  ],
+  "exclude": [
+    "node_modules"
   ]
 }
