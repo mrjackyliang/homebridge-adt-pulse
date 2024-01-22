@@ -958,18 +958,18 @@ export type ADTPulseReplColorLogMessage = string;
 export type ADTPulseReplColorLogReturns = void;
 
 /**
- * ADT Pulse Repl - Display help menu.
- *
- * @since 1.0.0
- */
-export type ADTPulseDisplayHelpMenuReturns = void;
-
-/**
  * ADT Pulse Repl - Display help header.
  *
  * @since 1.0.0
  */
 export type ADTPulseDisplayHelpHeaderReturns = void;
+
+/**
+ * ADT Pulse Repl - Display help menu.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseDisplayHelpMenuReturns = void;
 
 /**
  * ADT Pulse Repl - Display startup header.
@@ -1591,7 +1591,7 @@ export type IsPluginOutdatedReturns = Promise<boolean>;
  */
 export type IsPortalSyncCodeSyncCode = string;
 
-export type IsPortalSyncCodeVerifiedSyncCode = PortalSyncCode;
+export type IsPortalSyncCodeTypeGuard = PortalSyncCode;
 
 /**
  * Orb security button button text items.

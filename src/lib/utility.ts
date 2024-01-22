@@ -85,7 +85,7 @@ import type {
   IsPanelAlarmActiveReturns,
   IsPluginOutdatedReturns,
   IsPortalSyncCodeSyncCode,
-  IsPortalSyncCodeVerifiedSyncCode,
+  IsPortalSyncCodeTypeGuard,
   ParseArmDisarmMessageElement,
   ParseArmDisarmMessageReturns,
   ParseDoSubmitHandlersElements,
@@ -917,7 +917,7 @@ export async function isPluginOutdated(): IsPluginOutdatedReturns {
  *
  * @since 1.0.0
  */
-export function isPortalSyncCode(syncCode: IsPortalSyncCodeSyncCode): syncCode is IsPortalSyncCodeVerifiedSyncCode {
+export function isPortalSyncCode(syncCode: IsPortalSyncCodeSyncCode): syncCode is IsPortalSyncCodeTypeGuard {
   return textSyncCode.test(syncCode);
 }
 
