@@ -233,6 +233,7 @@ If you find value in the ongoing development of this plugin and wish to express 
 
 Moreover, I extend a special acknowledgment and heartfelt gratitude to the following individuals:
 - [@kevinmhickey](https://github.com/kevinmhickey) - For the inspiration to build a better script used in `v1.0.0` through `v2.2.0`.
+- [@rlippmann](https://github.com/rlippmann) - For successfully reverse engineering the browser fingerprinting script for ADT Pulse's 2-factor authentication.
 - [@Danimal4326](https://github.com/Danimal4326) - For successfully identifying the solution for ADT Pulse's 2-factor authentication and for contributions toward the successful development of `v3.0.0`.
 - [@sapireli](https://github.com/sapireli) - For contributions toward the successful development of `v3.0.0`.
 - [@hapinstance](https://github.com/hapinstance) - For contributions toward the successful development of `v3.0.0`.

@@ -15,12 +15,13 @@
     "build:lint": "npx eslint ./src",
     "build:tsc": "tsc --project tsconfig.json",
     "build:fix-paths": "tsconfig-replace-paths --project tsconfig.json",
+    "repl": "node ./build/scripts/repl.js",
+    "test-api": "node ./build/scripts/test-api.js",
     "prepare": "npm run build",
     "prepublishOnly": "npm run build",
-    "publish": "npm publish",
-    "repl": "node ./build/scripts/repl.js",
-    "test-api": "node ./build/scripts/test-api.js"
+    "publish": "npm publish"
   },
+  "types": "",
   "repository": {
     "type": "git",
     "url": "git://github.com/mrjackyliang/homebridge-adt-pulse.git"
