@@ -1249,8 +1249,10 @@ export function removePersonalIdentifiableInformation(data: RemovePersonalIdenti
     'mac',
     'masterCode',
     'sat',
+    'Security Panel Master Code:',
     'serial',
     'serialNumber',
+    'Serial Number:',
     'wanIp',
   ];
 

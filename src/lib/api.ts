@@ -868,7 +868,8 @@ export class ADTPulse {
 
       // If the parsing function may be parsing data incorrectly.
       if (
-        Object.keys(fetchedTableCells).length !== 11 // Compact SMA Protocol Gateway / Cellular Mode.
+        Object.keys(fetchedTableCells).length !== 10 // Lynx/QuickConnect Cellular-Only Gateway / Cellular Mode.
+        && Object.keys(fetchedTableCells).length !== 11 // Compact SMA Protocol Gateway / Cellular Mode.
         && Object.keys(fetchedTableCells).length !== 17 // ADT Pulse Gateway / Broadband Mode / No Router WAN IP Address.
         && Object.keys(fetchedTableCells).length !== 18 // ADT Pulse Gateway / Broadband Mode.
       ) {
