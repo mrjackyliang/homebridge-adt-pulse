@@ -457,7 +457,6 @@ export class ADTPulseAccessory {
 
     // Find the state for the sensor (required characteristic).
     switch (type) {
-      // TODO Device type needs to be manually tested and confirmed first.
       case 'co':
         if (statuses.includes('ALARM') || statuses.includes('Tripped')) {
           return this.#characteristic.CarbonMonoxideDetected.CO_LEVELS_ABNORMAL;

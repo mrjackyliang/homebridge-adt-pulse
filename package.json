@@ -1,7 +1,7 @@
 {
   "name": "homebridge-adt-pulse",
   "displayName": "Homebridge ADT Pulse",
-  "version": "3.0.5",
+  "version": "3.0.6",
   "description": "Homebridge security system platform for ADT Pulse",
   "main": "./build/index.js",
   "exports": "./build/index.js",
@@ -18,8 +18,7 @@
     "repl": "node ./build/scripts/repl.js",
     "test-api": "node ./build/scripts/test-api.js",
     "prepare": "npm run build",
-    "prepublishOnly": "npm run build",
-    "publish": "npm publish"
+    "prepublishOnly": "npm run build"
   },
   "types": "",
   "repository": {

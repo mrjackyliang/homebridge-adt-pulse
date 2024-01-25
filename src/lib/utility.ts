@@ -872,8 +872,8 @@ export function isPanelAlarmActive(panelStatuses: IsPanelAlarmActivePanelStatuse
     panelStatuses.includes('BURGLARY ALARM')
     || panelStatuses.includes('Carbon Monoxide Alarm')
     || panelStatuses.includes('FIRE ALARM')
-    || panelStatuses.includes('Sensor Problem')
-    || panelStatuses.includes('Sensor Problems')
+    || panelStatuses.includes('Sensor Problem') // User must fix the sensor issue before "Triggered" in Home app will go away.
+    || panelStatuses.includes('Sensor Problems') // User must fix the sensor issue before "Triggered" in Home app will go away.
     || panelStatuses.includes('Uncleared Alarm')
     || panelStatuses.includes('WATER ALARM')
   );

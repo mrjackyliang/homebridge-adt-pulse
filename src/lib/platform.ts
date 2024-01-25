@@ -985,8 +985,11 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
   private async unknownInformationDispatcher(): ADTPulsePlatformUnknownInformationDispatcherReturns {
     const { sensorsInfo, sensorsStatus } = this.#state.data;
 
-    // Check if there was a mismatch between the "sensorsInfo" and "sensorsStatus" array.
-    if (sensorsInfo.length !== sensorsStatus.length) {
+    if (
+      sensorsInfo.length !== sensorsStatus.length // Check if there was a mismatch between the "sensorsInfo" and "sensorsStatus" array.
+      && !(sensorsInfo.length === 0 && sensorsStatus.length > 0) // Sometimes devices are slow to fetch sensors information.
+      && !(sensorsInfo.length > 0 && sensorsStatus.length === 0) // Sometimes devices are slow to fetch sensors status.
+    ) {
       const data = {
         sensorsInfo,
         sensorsStatus,
