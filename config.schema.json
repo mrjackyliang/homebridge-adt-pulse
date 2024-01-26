@@ -125,6 +125,19 @@
         ],
         "default": 1
       },
+      "options": {
+        "title": "Advanced Options",
+        "type": "array",
+        "required": true,
+        "description": "Customize the features of this plugin. Please note these advanced options will disable expected functionality. Only enable them if necessary.",
+        "items": {
+          "type": "string",
+          "enum": [
+            "disableAlarmRingingSwitch",
+            "ignoreSensorProblemStatus"
+          ]
+        }
+      },
       "sensors": {
         "title": "Sensors",
         "type": "array",
@@ -248,6 +261,20 @@
             {
               "key": "speed",
               "type": "select"
+            },
+            {
+              "key": "options",
+              "type": "checkboxes",
+              "titleMap": [
+                {
+                  "value": "disableAlarmRingingSwitch",
+                  "name": "Disable \"Alarm Ringing\" switch"
+                },
+                {
+                  "value": "ignoreSensorProblemStatus",
+                  "name": "Ignore Sensor Problem Status"
+                }
+              ]
             }
           ]
         },

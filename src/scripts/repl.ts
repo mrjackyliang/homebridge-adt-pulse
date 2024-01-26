@@ -166,6 +166,7 @@ class ADTPulseRepl {
       fingerprint,
       mode: 'normal',
       speed: 1,
+      options: [],
       sensors: [],
     }, {
       debug: true,

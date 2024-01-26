@@ -535,6 +535,13 @@ export type ADTPulseAccessoryApi = API;
 export type ADTPulseAccessoryCharacteristic = typeof Characteristic;
 
 /**
+ * ADT Pulse Accessory - Config.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseAccessoryConfig = ADTPulsePlatformConfig;
+
+/**
  * ADT Pulse Accessory - Constructor.
  *
  * @since 1.0.0
@@ -542,6 +549,8 @@ export type ADTPulseAccessoryCharacteristic = typeof Characteristic;
 export type ADTPulseAccessoryConstructorAccessory = PlatformAccessory<Device>;
 
 export type ADTPulseAccessoryConstructorState = ADTPulsePlatformState;
+
+export type ADTPulseAccessoryConstructorConfig = ADTPulsePlatformConfig;
 
 export type ADTPulseAccessoryConstructorInstance = ADTPulse;
 
@@ -1574,6 +1583,8 @@ export type IsForwardSlashOSReturns = boolean;
  * @since 1.0.0
  */
 export type IsPanelAlarmActivePanelStatuses = PanelStatusStatuses;
+
+export type IsPanelAlarmActiveIgnoreSensorProblem = boolean;
 
 export type IsPanelAlarmActiveReturns = boolean;
 

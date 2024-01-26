@@ -81,6 +81,7 @@ import type {
   IsEmptyOrbTextSummaryMatch,
   IsEmptyOrbTextSummaryReturns,
   IsForwardSlashOSReturns,
+  IsPanelAlarmActiveIgnoreSensorProblem,
   IsPanelAlarmActivePanelStatuses,
   IsPanelAlarmActiveReturns,
   IsPluginOutdatedReturns,
@@ -861,19 +862,26 @@ export function isForwardSlashOS(): IsForwardSlashOSReturns {
 /**
  * Is panel alarm active.
  *
- * @param {IsPanelAlarmActivePanelStatuses} panelStatuses - Panel statuses.
+ * @param {IsPanelAlarmActivePanelStatuses}       panelStatuses       - Panel statuses.
+ * @param {IsPanelAlarmActiveIgnoreSensorProblem} ignoreSensorProblem - Ignore sensor problem.
  *
  * @returns {IsPanelAlarmActiveReturns}
  *
  * @since 1.0.0
  */
-export function isPanelAlarmActive(panelStatuses: IsPanelAlarmActivePanelStatuses): IsPanelAlarmActiveReturns {
+export function isPanelAlarmActive(panelStatuses: IsPanelAlarmActivePanelStatuses, ignoreSensorProblem: IsPanelAlarmActiveIgnoreSensorProblem): IsPanelAlarmActiveReturns {
   return (
     panelStatuses.includes('BURGLARY ALARM')
     || panelStatuses.includes('Carbon Monoxide Alarm')
     || panelStatuses.includes('FIRE ALARM')
-    || panelStatuses.includes('Sensor Problem') // User must fix the sensor issue before "Triggered" in Home app will go away.
-    || panelStatuses.includes('Sensor Problems') // User must fix the sensor issue before "Triggered" in Home app will go away.
+    || (
+      panelStatuses.includes('Sensor Problem')
+      && !ignoreSensorProblem
+    )
+    || (
+      panelStatuses.includes('Sensor Problems')
+      && !ignoreSensorProblem
+    )
     || panelStatuses.includes('Uncleared Alarm')
     || panelStatuses.includes('WATER ALARM')
   );

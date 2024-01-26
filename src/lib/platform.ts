@@ -234,7 +234,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     // Check for a valid platform configuration before initializing.
     if (!parsedConfig.success) {
       this.#log.error('Plugin is unable to initialize due to an invalid platform configuration.');
-      this.#log.warn('If you just upgraded from v2 to v3, please update your configuration structure.');
+      this.#log.warn('If you just upgraded from v2 to v3 / v3.1, please update your configuration structure.');
       stackTracer('zod-error', parsedConfig.error.errors);
 
       return;
@@ -314,6 +314,16 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         this.#constants.intervalTimestamps.synchronize *= (1 / this.#config.speed);
       }
 
+      // If the config specifies that the plugin should disable the "Alarm Ringing" switch.
+      if (this.#config.options.includes('disableAlarmRingingSwitch')) {
+        this.#log.warn('Plugin accessory for "Alarm Ringing" is disabled. You will NOT be able to silence a ringing alarm when the system is in "Disarmed" mode.');
+      }
+
+      // If the config specifies that the plugin should ignore "Sensor Problem" and "Sensor Problems" statuses.
+      if (this.#config.options.includes('ignoreSensorProblemStatus')) {
+        this.#log.warn('Plugin ignoring "Sensor Problem" and "Sensor Problems" statuses. You will not be able to silence a ringing alarm triggered by a "Sensor Problem" or "Sensor Problems" status.');
+      }
+
       // Initialize the API instance.
       this.#instance = new ADTPulse(
         this.#config,
@@ -391,6 +401,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
       this.#handlers[device.id] = new ADTPulseAccessory(
         typedAccessory,
         this.#state,
+        this.#config,
         this.#instance,
         this.#service,
         this.#characteristic,
@@ -453,6 +464,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
       this.#handlers[device.id] = new ADTPulseAccessory(
         value,
         this.#state,
+        this.#config,
         this.#instance,
         this.#service,
         this.#characteristic,
@@ -1088,21 +1100,23 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
       });
 
       // A separate switch designed to turn off ringing alarm while in "Disarmed" state.
-      devices.push({
-        id: idSwitch,
-        name: 'Alarm Ringing',
-        originalName: 'Alarm Ringing',
-        type: 'panelSwitch',
-        zone: null,
-        category: 'SWITCH',
-        manufacturer: 'ADT Pulse for Homebridge',
-        model: 'N/A',
-        serial: 'N/A',
-        firmware: null,
-        hardware: null,
-        software: getPackageVersion(),
-        uuid: this.#api.hap.uuid.generate(idSwitch),
-      });
+      if (this.#config !== null && !this.#config.options.includes('disableAlarmRingingSwitch')) {
+        devices.push({
+          id: idSwitch,
+          name: 'Alarm Ringing',
+          originalName: 'Alarm Ringing',
+          type: 'panelSwitch',
+          zone: null,
+          category: 'SWITCH',
+          manufacturer: 'ADT Pulse for Homebridge',
+          model: 'N/A',
+          serial: 'N/A',
+          firmware: null,
+          hardware: null,
+          software: getPackageVersion(),
+          uuid: this.#api.hap.uuid.generate(idSwitch),
+        });
+      }
     }
 
     // Add sensors as an accessory.
@@ -1156,10 +1170,15 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
 
     // Check if accessories were removed from config.
     if (this.#config !== null) {
-      const { sensors } = this.#config;
+      const { options, sensors } = this.#config;
 
       for (let i = this.#accessories.length - 1; i >= 0; i -= 1) {
         const { originalName, type, zone } = this.#accessories[i].context;
+
+        // Remove the "panelSwitch" since the user disabled it.
+        if (type === 'panelSwitch' && options.includes('disableAlarmRingingSwitch')) {
+          this.removeAccessory(this.#accessories[i], 'user disabled this feature');
+        }
 
         // If current accessory is a "gateway", "panel", or "panelSwitch", skip check.
         if (type === 'gateway' || type === 'panel' || type === 'panelSwitch') {

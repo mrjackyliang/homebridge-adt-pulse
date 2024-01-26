@@ -32,6 +32,7 @@ Here is an example of how the `config.json` file for this plugin should be confi
       "fingerprint": "VGhpc0lzQVNlY3VyZVBhc3N3b3JkMTIzIQ==",
       "mode": "normal",
       "speed": 1,
+      "options": [],
       "sensors": [
         {
           "name": "Family Room Couch Window 1",
@@ -111,6 +112,20 @@ However, for certain consumer routers, this plugin may induce a network slowdown
 
 If the plugin does not operate under "Normal" mode, a warning will be issued on every startup, and this warning cannot be disabled.
 
+## Specifying Advanced Options
+Each alarm system is uniquely designed, and at times, functionalities may not align with your preferences.
+
+The options provided give you the flexibility to deactivate specific aspects of the plugin; however, please exercise caution, as doing so may result in the loss of expected functionality.
+
+- __To disable the "Alarm Ringing" switch:__
+  - Include the `"disableAlarmRingingSwitch"` value in the `options` array.
+  - ⚠️ Enabling this option will prevent you from being able to silence a ringing alarm when the system is in "Disarmed" mode.
+- __To ignore "Sensor Problem" statuses:__
+  - Include the `"ignoreSensorProblemStatus"` value in the `options` array.
+  - ⚠️ Enabling this option will prevent you from being able to silence a ringing alarm triggered by a "Sensor Problem" or "Sensor Problems" status.
+
+If the `options` array is not empty, a warning will be displayed upon every startup for every enabled option, and this warning cannot be disabled.
+
 ## Specifying the Sensors
 In the past, this plugin would automatically detect sensors and dynamically manage their addition and removal based on its observations.
 
@@ -157,6 +172,24 @@ Previously, there was a setting to allow users to switch the plugin to debug mod
 Consumers would enable debug mode, but forget to also enable Homebridge debug mode, causing contributors to not be able to effectively resolve bug reports.
 
 To improve this, debug mode is now activated __ONLY when debug mode is enabled on Homebridge__ itself. This approach promotes isolation (logs can be separated for each bridge) and helps enhance the troubleshooting experience in case any issues arise.
+
+## API Test and REPL Playground Scripts
+If any unusual occurrences arise, utilize the provided `test-api` or `repl` commands within this plugin to troubleshoot potential issues.
+
+- To confirm if the plugin is communicating with the portal correctly, use the command `npm run test-api`.
+- To access the playground (Read-eval-print loop mode), use the command `npm run repl`.
+
+Ensure you are inside the `node_modules/homebridge-adt-pulse` directory when attempting to access these commands. The location of `node_modules` may vary based on the system you are using:
+- [Raspbian](https://github.com/homebridge/homebridge/wiki/Install-Homebridge-on-Raspbian#configuration-reference)
+- [Debian or Ubuntu Linux](https://github.com/homebridge/homebridge/wiki/Install-Homebridge-on-Debian-or-Ubuntu-Linux#configuration-reference)
+- [Red Hat, CentOS or Fedora Linux](https://github.com/homebridge/homebridge/wiki/Install-Homebridge-on-Red-Hat%2C-CentOS-or-Fedora-Linux#configuration-reference)
+- [Arch Linux](https://github.com/homebridge/homebridge/wiki/Install-Homebridge-on-Arch-Linux#configuration-reference)
+- [macOS](https://github.com/homebridge/homebridge/wiki/Install-Homebridge-on-macOS#configuration-reference)
+- [Windows 10 Using Hyper V](https://github.com/homebridge/homebridge/wiki/Install-Homebridge-on-Windows-10-Using-Hyper-V#configuration-reference)
+- [Docker](https://github.com/homebridge/homebridge/wiki/Install-Homebridge-on-Docker#configuration-reference)
+- [Unraid](https://github.com/homebridge/docker-homebridge/wiki/Homebridge-on-Unraid#configuration-reference)
+- [TrueNAS Scale](https://github.com/homebridge/docker-homebridge/wiki/Homebridge-on-TrueNAS-Scale#configuration-reference)
+- [Synology DSM](https://github.com/homebridge/homebridge/wiki/Install-Homebridge-on-Synology-DSM#configuration-reference)
 
 ## Temperature Sensors in HAP Protocol
 The Temperature Sensor (`temperature`) functions differently compared to standard contact sensors when it comes to processing sensor statuses.

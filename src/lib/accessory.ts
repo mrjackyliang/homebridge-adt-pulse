@@ -12,9 +12,11 @@ import type {
   ADTPulseAccessoryActivity,
   ADTPulseAccessoryApi,
   ADTPulseAccessoryCharacteristic,
+  ADTPulseAccessoryConfig,
   ADTPulseAccessoryConstructorAccessory,
   ADTPulseAccessoryConstructorApi,
   ADTPulseAccessoryConstructorCharacteristic,
+  ADTPulseAccessoryConstructorConfig,
   ADTPulseAccessoryConstructorInstance,
   ADTPulseAccessoryConstructorLog,
   ADTPulseAccessoryConstructorService,
@@ -78,6 +80,15 @@ export class ADTPulseAccessory {
   readonly #characteristic: ADTPulseAccessoryCharacteristic;
 
   /**
+   * ADT Pulse Accessory - Config.
+   *
+   * @private
+   *
+   * @since 1.0.0
+   */
+  #config: ADTPulseAccessoryConfig;
+
+  /**
    * ADT Pulse Accessory - Instance.
    *
    * @private
@@ -118,6 +129,7 @@ export class ADTPulseAccessory {
    *
    * @param {ADTPulseAccessoryConstructorAccessory}      accessory      - Accessory.
    * @param {ADTPulseAccessoryConstructorState}          state          - State.
+   * @param {ADTPulseAccessoryConstructorConfig}         config         - Config.
    * @param {ADTPulseAccessoryConstructorInstance}       instance       - Instance.
    * @param {ADTPulseAccessoryConstructorService}        service        - Service.
    * @param {ADTPulseAccessoryConstructorCharacteristic} characteristic - Characteristic.
@@ -126,7 +138,7 @@ export class ADTPulseAccessory {
    *
    * @since 1.0.0
    */
-  public constructor(accessory: ADTPulseAccessoryConstructorAccessory, state: ADTPulseAccessoryConstructorState, instance: ADTPulseAccessoryConstructorInstance, service: ADTPulseAccessoryConstructorService, characteristic: ADTPulseAccessoryConstructorCharacteristic, api: ADTPulseAccessoryConstructorApi, log: ADTPulseAccessoryConstructorLog) {
+  public constructor(accessory: ADTPulseAccessoryConstructorAccessory, state: ADTPulseAccessoryConstructorState, config: ADTPulseAccessoryConstructorConfig, instance: ADTPulseAccessoryConstructorInstance, service: ADTPulseAccessoryConstructorService, characteristic: ADTPulseAccessoryConstructorCharacteristic, api: ADTPulseAccessoryConstructorApi, log: ADTPulseAccessoryConstructorLog) {
     this.#accessory = accessory;
     this.#activity = {
       isBusy: false,
@@ -136,6 +148,7 @@ export class ADTPulseAccessory {
     };
     this.#api = api;
     this.#characteristic = characteristic;
+    this.#config = config;
     this.#instance = instance;
     this.#log = log;
     this.#services = {};
@@ -613,7 +626,7 @@ export class ADTPulseAccessory {
 
     // Find the state for "Security System Alarm Type" (optional characteristic).
     if (mode === 'alarmType') {
-      if (isPanelAlarmActive(panelStatuses)) {
+      if (isPanelAlarmActive(panelStatuses, this.#config?.options.includes('ignoreSensorProblemStatus') ?? false)) {
         return 1;
       }
 
@@ -649,7 +662,7 @@ export class ADTPulseAccessory {
     switch (true) {
       case mode === 'current' && this.#activity.isBusy && this.#activity.setCurrentValue !== null:
         return this.#activity.setCurrentValue;
-      case mode === 'current' && isPanelAlarmActive(panelStatuses):
+      case mode === 'current' && isPanelAlarmActive(panelStatuses, this.#config?.options.includes('ignoreSensorProblemStatus') ?? false):
         return this.#characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
       case mode === 'current' && panelStates.includes('Armed Stay'):
         return this.#characteristic.SecuritySystemCurrentState.STAY_ARM;
@@ -735,7 +748,7 @@ export class ADTPulseAccessory {
     }
 
     // Only show as "On" if alarm is ringing.
-    return isPanelAlarmActive(panelStatuses);
+    return isPanelAlarmActive(panelStatuses, this.#config?.options.includes('ignoreSensorProblemStatus') ?? false);
   }
 
   /**
@@ -785,7 +798,7 @@ export class ADTPulseAccessory {
     const { panelStates } = this.#state.data.panelStatus;
 
     const condensedPanelStates = condensePanelStates(this.#characteristic, panelStates);
-    const isAlarmActive = isPanelAlarmActive(this.#state.data.panelStatus.panelStatuses);
+    const isAlarmActive = isPanelAlarmActive(this.#state.data.panelStatus.panelStatuses, this.#config?.options.includes('ignoreSensorProblemStatus') ?? false);
 
     // If panel status cannot be found or most likely "Status Unavailable".
     if (condensedPanelStates === undefined) {
@@ -924,7 +937,7 @@ export class ADTPulseAccessory {
     const { panelStates } = this.#state.data.panelStatus;
 
     const condensedPanelStates = condensePanelStates(this.#characteristic, panelStates);
-    const isAlarmActive = isPanelAlarmActive(this.#state.data.panelStatus.panelStatuses);
+    const isAlarmActive = isPanelAlarmActive(this.#state.data.panelStatus.panelStatuses, this.#config?.options.includes('ignoreSensorProblemStatus') ?? false);
 
     // If panel status cannot be found or most likely "Status Unavailable".
     if (condensedPanelStates === undefined) {
