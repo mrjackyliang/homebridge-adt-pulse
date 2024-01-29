@@ -1892,15 +1892,16 @@ export type SleepReturns = Promise<void>;
  *
  * @since 1.0.0
  */
-export type StackTracerType = 'api-response' | 'detect-content' | 'fake-ready-buttons' | 'log-status-changes' | 'serialize-error' | 'zod-error';
+export type StackTracerType = 'api-response' | 'config-content' | 'detect-content' | 'fake-ready-buttons' | 'log-status-changes' | 'serialize-error' | 'zod-error';
 
 export type StackTracerError<Type extends StackTracerType> =
   Type extends 'api-response' ? ApiResponseFail<any>
-    : Type extends 'detect-content' ? Record<string, unknown> | Record<string, unknown>[]
-      : Type extends 'fake-ready-buttons' ? { before: OrbSecurityButtons; after: OrbSecurityButtonBase & OrbSecurityButtonReady; }
-        : Type extends 'log-status-changes' ? { old: SensorInformation[]; new: SensorInformation[]; }
-          : Type extends 'serialize-error' ? ErrorObject
-            : Type extends 'zod-error' ? z.ZodIssue[]
-              : never;
+    : Type extends 'config-content' ? unknown
+      : Type extends 'detect-content' ? Record<string, unknown> | Record<string, unknown>[]
+        : Type extends 'fake-ready-buttons' ? { before: OrbSecurityButtons; after: OrbSecurityButtonBase & OrbSecurityButtonReady; }
+          : Type extends 'log-status-changes' ? { old: SensorInformation[]; new: SensorInformation[]; }
+            : Type extends 'serialize-error' ? ErrorObject
+              : Type extends 'zod-error' ? z.ZodIssue[]
+                : never;
 
 export type StackTracerReturns = void;

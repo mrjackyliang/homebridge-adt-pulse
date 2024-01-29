@@ -866,6 +866,7 @@ export class ADTPulse {
        */
       await this.newInformationDispatcher('gateway-information', gatewayInformation);
 
+      // TODO Need a more permanent way and safer way to determine gateway model.
       // If the parsing function may be parsing data incorrectly.
       if (
         Object.keys(fetchedTableCells).length !== 10 // Lynx/QuickConnect Cellular-Only Gateway / Cellular Mode.
@@ -879,7 +880,7 @@ export class ADTPulse {
 
         await this.newInformationDispatcher('debug-parser', {
           parserName: 'fetchTableCells()',
-          parserReason: 'length does not match 11 or 18',
+          parserReason: 'length does not match 10, 11, 17, and 18',
           parserResponse: fetchedTableCells,
           rawData: sessions.axiosSystemGateway.data,
         });
@@ -939,6 +940,9 @@ export class ADTPulse {
           },
         }),
       );
+
+      // TODO Check for 500 Internal Server Error (add it to every API method).
+      // TODO sessions.axiosSystemDeviceId1.status
 
       // If the "ClientRequest" object does not exist in the Axios response.
       if (typeof sessions.axiosSystemDeviceId1?.request === 'undefined') {
@@ -1083,9 +1087,11 @@ export class ADTPulse {
        */
       await this.newInformationDispatcher('panel-information', panelInformation);
 
+      // TODO Need a more permanent way and safer way to determine panel status.
       // If the parsing function may be parsing data incorrectly.
       if (
-        Object.keys(fetchedTableCells).length !== 4 // Impassa SCW9057.
+        Object.keys(fetchedTableCells).length !== 3 // PowerSeries/PremisePro.
+        && Object.keys(fetchedTableCells).length !== 4 // Impassa SCW9057.
         && Object.keys(fetchedTableCells).length !== 5 // Safewatch Pro 3000/3000CN.
       ) {
         if (this.#internal.debug) {
@@ -1094,7 +1100,7 @@ export class ADTPulse {
 
         await this.newInformationDispatcher('debug-parser', {
           parserName: 'fetchTableCells()',
-          parserReason: 'length does not match 4 or 5',
+          parserReason: 'length does not match 3, 4, and 5',
           parserResponse: fetchedTableCells,
           rawData: sessions.axiosSystemDeviceId1.data,
         });
@@ -3168,7 +3174,7 @@ export class ADTPulse {
 
         await this.newInformationDispatcher('debug-parser', {
           parserName: 'parseDoSubmitHandlers()',
-          parserReason: 'length does not match 0 or 2',
+          parserReason: 'length does not match 0 and 2',
           parserResponse: parsedDoSubmitHandlers,
           rawData: response.data,
         });

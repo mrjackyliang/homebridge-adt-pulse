@@ -314,14 +314,10 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         this.#constants.intervalTimestamps.synchronize *= (1 / this.#config.speed);
       }
 
-      // If the config specifies that the plugin should disable the "Alarm Ringing" switch.
-      if (this.#config.options.includes('disableAlarmRingingSwitch')) {
-        this.#log.warn('Plugin accessory for "Alarm Ringing" is disabled. You will NOT be able to silence a ringing alarm when the system is in "Disarmed" mode.');
-      }
-
-      // If the config specifies that the plugin should ignore "Sensor Problem" and "Sensor Problems" statuses.
-      if (this.#config.options.includes('ignoreSensorProblemStatus')) {
-        this.#log.warn('Plugin ignoring "Sensor Problem" and "Sensor Problems" statuses. You will not be able to silence a ringing alarm triggered by a "Sensor Problem" or "Sensor Problems" status.');
+      // If the config specifies that the plugin should apply the advanced options.
+      if (this.#config.options.length > 0) {
+        this.#log.warn('Plugin will apply the advanced options saved in the configuration. You may see some loss in functionality.');
+        stackTracer('config-content', this.#config.options);
       }
 
       // Initialize the API instance.

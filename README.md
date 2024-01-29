@@ -14,7 +14,7 @@ The API relies on the ADT Pulse Web Portal (powered by Icontrol One, owned by IC
 To use this plugin, here are three simple steps you need to follow:
 1. Run `npm install homebridge-adt-pulse`.
 2. Configure this plugin using this [sample](#configuration) for guidance.
-3. Restart Homebridge and see magic happen!
+3. Restart Homebridge and see the magic happen!
 
 Another option is to search for `adt-pulse` using Onzu's [Homebridge Config UI](https://github.com/oznu/homebridge-config-ui-x). Afterward, you can proceed to configure this plugin through the configuration UI available in the "Plugins" tab.
 
@@ -49,7 +49,7 @@ Here is an example of how the `config.json` file for this plugin should be confi
   ]
 }
 ```
-Ensure that you customize the values of `subdomain`, `username`, `password`, `fingerprint`, and `sensors` to match your specific setup. If you encounter any queries regarding the configuration, refer to the details provided below this section.
+Ensure that you customize the values with the example structure shown above to match your specific setup. If you encounter any queries regarding the configuration, refer to the details provided below this section.
 
 ## Supported Devices
 While named "ADT Pulse for Homebridge," this Homebridge plugin exclusively accommodates only the sensors listed below. It is important to note that this plugin does not serve as a comprehensive substitute for the [official ADT Pulse app](https://www.adt.com/help/faq/adt-pulse/adt-pulse-mobile-app).
@@ -75,8 +75,8 @@ Due to implementation complexity and platform instability, all Z-Wave accessorie
 ## Specifying the Portal Region
 ADT Pulse is available to consumers in either the United States or Canada. To specify your country, use the following settings:
 
-- If you are a United States customer, set the `subdomain` value to `"portal"`.
-- If you are a Canada customer, set the `subdomain` value to `"portal-ca"`.
+- If you are a customer in the United States, set the `subdomain` value to `"portal"`.
+- If you are a customer in Canada, set the `subdomain` value to `"portal-ca"`.
 
 Select the appropriate setting based on your country, as the ability to switch between countries is determined by the ADT region you are subscribed to.
 
@@ -124,14 +124,14 @@ The options provided give you the flexibility to deactivate specific aspects of 
   - Include the `"ignoreSensorProblemStatus"` value in the `options` array.
   - ⚠️ Enabling this option will prevent you from being able to silence a ringing alarm triggered by a "Sensor Problem" or "Sensor Problems" status.
 
-If the `options` array is not empty, a warning will be displayed upon every startup for every enabled option, and this warning cannot be disabled.
+If the `options` array is not empty (e.g. `[]`), a warning will be displayed upon every startup, and this warning cannot be disabled.
 
 ## Specifying the Sensors
 In the past, this plugin would automatically detect sensors and dynamically manage their addition and removal based on its observations.
 
 However, this approach posed challenges. If the plugin failed to detect sensors or encountered portal irregularities, it could unintentionally remove all sensors, resulting in an inadvertent reset.
 
-While a setting was introduced (prior to `v3.0.0`) to prevent the removal of obsolete zones, over time, it felt more like a workaround than a solution.
+While a setting was introduced (before `v3.0.0`) to prevent the removal of obsolete zones, over time, it felt more like a workaround than a solution.
 
 In this updated version of the plugin, I have implemented a new requirement that users must explicitly specify each sensor they wish to integrate into Homebridge.
 
@@ -146,7 +146,7 @@ All sensors are now organized within an array of objects, with each object conta
 - __ADT Zone__ (`adtZone`)
   - Must match the zone shown under the "Zone" column in the "System" tab when logged into the portal.
 
-If you do not find the supported type listed, please note that the plugin will notify me. There's no need to create a separate issue on GitHub, as I am actively working on adding support as soon as I gather sufficient information to determine the statuses displayed on the portal.
+If you do not find the supported type listed, please note that the plugin will notify me. Do not create a separate issue on GitHub. I am actively working on adding support as soon as I gather sufficient information to determine the statuses displayed on the portal.
 
 Your patience is appreciated as I address and incorporate the necessary updates.
 
@@ -159,12 +159,10 @@ If you are concerned about this, please read the instructions below to check the
 2. Tap the dotted circle (`...`) (located on the top right of the screen)
 3. View the sensors that require attention and resolve those issues
 
-If you are using automation, __you acknowledge that this will happen__ and accept the risks for the system not completely arming the system.
+If you have set up automation, __you acknowledge that this will happen__ and accept the risks of the system not completely arming itself.
 
 ## Arm Night Support
 As for ADT Pulse systems, __Arm Night__ is only available for use through the panel itself. Although it is not visible on the Web Portal or the mobile app, you can still place your system in __Arm Night__ mode with this plugin.
-
-__Note:__ A workaround has been implemented to address portal issues preventing the completion of the "Arm Night" action. If you encounter warnings related to this, you can safely disregard them.
 
 ## Debug Mode
 Previously, there was a setting to allow users to switch the plugin to debug mode. Over time, it became apparent that this setting made resolving issues excessively challenging.
@@ -176,8 +174,8 @@ To improve this, debug mode is now activated __ONLY when debug mode is enabled o
 ## API Test and REPL Playground Scripts
 If any unusual occurrences arise, utilize the provided `test-api` or `repl` commands within this plugin to troubleshoot potential issues.
 
-- To confirm if the plugin is communicating with the portal correctly, use the command `npm run test-api`.
-- To access the playground (Read-eval-print loop mode), use the command `npm run repl`.
+- To confirm if the plugin is communicating with the portal correctly, use the `npm run test-api` command.
+- To access the playground (Read-eval-print loop mode), use the `npm run repl` command.
 
 Ensure you are inside the `node_modules/homebridge-adt-pulse` directory when attempting to access these commands. The location of `node_modules` may vary based on the system you are using:
 - [Raspbian](https://github.com/homebridge/homebridge/wiki/Install-Homebridge-on-Raspbian#configuration-reference)
@@ -199,7 +197,7 @@ In contrast to typical contact sensors that convey open or closed status, the te
 - Abnormal temperatures are represented as __100°C__.
 
 ## Support for HOOBS
-Please note that HOOBS may use an outdated configuration UI. This issue that was reported by me, remains unresolved by the HOOBS team. For additional details, refer to this [GitHub issue](https://github.com/hoobs-org/HOOBS/issues/1873).
+Please note that HOOBS may use an outdated configuration UI. This issue that I reported, remains unresolved by the HOOBS team. For additional details, refer to this [GitHub issue](https://github.com/hoobs-org/HOOBS/issues/1873).
 
 In the interim, HOOBS users should manually configure the plugin using the [sample configuration](#configuration) provided above. For those technically inclined, consider replacing the HOOBS software with [Homebridge](https://github.com/homebridge/homebridge/wiki).
 

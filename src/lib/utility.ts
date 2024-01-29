@@ -1206,7 +1206,7 @@ export function parseSensorsTable(elements: ParseOrbSensorsTableElements): Parse
           const cleanedZone = Number(clearWhitespace(zoneText));
 
           // These devices are not supported because they do not display a status in the summary page.
-          if (['System/Supervisory'].includes(cleanedDeviceType)) {
+          if (['System/Supervisory', 'Unknown Device Type'].includes(cleanedDeviceType)) {
             return;
           }
 
@@ -1328,6 +1328,7 @@ export function stackTracer(type: StackTracerType, error: StackTracerError<Stack
 
   switch (type) {
     case 'api-response':
+    case 'config-content':
     case 'detect-content':
     case 'fake-ready-buttons':
     case 'log-status-changes':
