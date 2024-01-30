@@ -24,6 +24,8 @@ body:
           required: true
         - label: I have done my research, and this is __NOT__ a duplicate bug report
           required: true
+        - label: I have read the README file, and this is __NOT__ a support ticket
+          required: true
         - label: I am __NOT__ requesting a new feature
           required: true
         - label: I am using the latest version of the plugin
