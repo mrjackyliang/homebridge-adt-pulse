@@ -1,0 +1,48 @@
+name: Technical Support
+description: Get help with environment-specific deployment, general guidance, and upgrade assistance.
+title: "[Support]: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: Please note technical support requests are granted solely to members who sponsor me or have heavily contributed to this project (will be listed on the bottom of the `README.md` file)
+  - type: markdown
+    attributes:
+      value: Please __fill out the form with as much detail as possible__ to help me resolve your request in a timely fashion. Thank you!
+  - type: markdown
+    attributes:
+      value: ---
+  - type: checkboxes
+    id: pre-check
+    attributes:
+      label: Pre-check confirmation
+      description: Before proceeding further, please confirm the following by checking each box. This confirmation is required. __All boxes MUST be checked; failure to comply will result in your request being closed.__
+      options:
+        - label: I am currently sponsoring you or have heavily contributed to this project.
+          required: true
+        - label: "I have kept the original title prefix, __\"[Support]: \"__"
+          required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Tell me exactly what happened
+      description: Provide a comprehensive description of what you need help with and what is the result you expect from it.
+      placeholder: e.g. When I was doing ..., I expected ... to happen, but I got ... instead.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs relevant to this request
+      description: Copy and paste all logs related to this request. This block will be automatically formatted into code, so __no need for backticks__ or special markup.
+      render: Shell
+    validations:
+      required: true
+  - type: checkboxes
+    id: legal
+    attributes:
+      label: Legal Agreements
+      description: By submitting a new technical support request, you confirm that you have read, understood, and agree to the [Terms of Use](https://www.cbnventures.io/terms/) and [Privacy Policy](https://www.cbnventures.io/privacy/). If you have questions about these policies, feel free to [get in touch](https://www.cbnventures.io/get-in-touch/) with us.
+      options:
+        - label: I agree to the Terms of Use and Privacy Policy
+          required: true
