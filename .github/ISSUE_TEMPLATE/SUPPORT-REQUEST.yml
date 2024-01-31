@@ -1,14 +1,14 @@
 name: Support Request
-description: Get help with environment-specific deployment, general guidance, and upgrade assistance.
+description: Get prioritized help with environment-specific deployment, general guidance, and upgrade assistance.
 title: "[Support]: "
-labels: ["question"]
+labels: [ "question" ]
 body:
   - type: markdown
     attributes:
-      value: Please note technical support requests are granted solely to members who sponsor me or have heavily contributed to this project (will be listed on the bottom of the `README.md` file)
+      value: Please note support requests are __granted solely to members__ who are my sponsors or have heavily contributed to this project (these contributors will be listed at the bottom of the `README.md` file). If you would like to sponsor me, please consider checking out my [GitHub Sponsors](https://github.com/sponsors/mrjackyliang) page.
   - type: markdown
     attributes:
-      value: Please __fill out the form with as much detail as possible__ to help me resolve your request in a timely fashion. Thank you!
+      value: Please __fill out the form with as much detail as possible__ to help us resolve your request in a timely fashion. Thank you!
   - type: markdown
     attributes:
       value: ---
@@ -33,16 +33,14 @@ body:
   - type: textarea
     id: logs
     attributes:
-      label: Logs relevant to this request
-      description: Copy and paste all logs related to this request. This block will be automatically formatted into code, so __no need for backticks__ or special markup.
+      label: Logs relevant to this issue
+      description: If you have any logs, you may copy and paste these logs related to this request here. This block will be automatically formatted into code, so __no need for backticks__ or special markup.
       render: Shell
-    validations:
-      required: true
   - type: checkboxes
     id: legal
     attributes:
       label: Legal Agreements
-      description: By submitting a new technical support request, you confirm that you have read, understood, and agree to the [Terms of Use](https://www.cbnventures.io/terms/) and [Privacy Policy](https://www.cbnventures.io/privacy/). If you have questions about these policies, feel free to [get in touch](https://www.cbnventures.io/get-in-touch/) with us.
+      description: By submitting a new support request, you confirm that you have read, understood, and agree to the [Terms of Use](https://www.cbnventures.io/terms/) and [Privacy Policy](https://www.cbnventures.io/privacy/). If you have questions about these policies, feel free to [get in touch](https://www.cbnventures.io/get-in-touch/) with my team.
       options:
         - label: I agree to the Terms of Use and Privacy Policy
           required: true

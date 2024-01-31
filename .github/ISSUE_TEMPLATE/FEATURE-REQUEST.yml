@@ -1,7 +1,7 @@
 name: Feature Request
 description: Have a new feature in mind? Share your request with us.
 title: "[Feature]: "
-labels: ["enhancement"]
+labels: [ "enhancement" ]
 body:
   - type: markdown
     attributes:
@@ -54,7 +54,7 @@ body:
     id: legal
     attributes:
       label: Legal Agreements
-      description: By submitting a new feature request, you confirm that you have read, understood, and agree to the [Terms of Use](https://www.cbnventures.io/terms/) and [Privacy Policy](https://www.cbnventures.io/privacy/). If you have questions about these policies, feel free to [get in touch](https://www.cbnventures.io/get-in-touch/) with us.
+      description: By submitting a new feature request, you confirm that you have read, understood, and agree to the [Terms of Use](https://www.cbnventures.io/terms/) and [Privacy Policy](https://www.cbnventures.io/privacy/). If you have questions about these policies, feel free to [get in touch](https://www.cbnventures.io/get-in-touch/) with my team.
       options:
         - label: I agree to the Terms of Use and Privacy Policy
           required: true

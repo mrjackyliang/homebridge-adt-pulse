@@ -1,7 +1,7 @@
 name: Bug Report
 description: Found an unexpected issue or problem? Report it here.
 title: "[Bug]: "
-labels: ["bug"]
+labels: [ "bug" ]
 body:
   - type: markdown
     attributes:
@@ -18,15 +18,15 @@ body:
       label: Pre-check confirmation
       description: Before proceeding further, please confirm the following by checking each box. This confirmation is crucial for me to effectively identify and address the bug. __All boxes MUST be checked; failure to comply will result in the immediate closure of this bug report.__
       options:
-        - label: I have provided a descriptive title for the bug I am having
+        - label: I have provided a descriptive title for the bug I am currently having
           required: true
         - label: "I have kept the original title prefix, __\"[Bug]: \"__"
           required: true
-        - label: I have done my research, and this is __NOT__ a duplicate bug report
+        - label: I have read the `README.md` file, and this is __NOT__ a duplicate bug report
           required: true
         - label: I am __NOT__ requesting a new feature
           required: true
-        - label: I have read the __README__, and this is __NOT__ a technical support request
+        - label: I am not requesting help that is related to a support request
           required: true
         - label: I am using the latest version of the plugin
           required: true
@@ -71,18 +71,20 @@ body:
     validations:
       required: true
   - type: textarea
-    id: test-api-logs
+    id: test-api-output
     attributes:
-      label: Log output of the "test-api" command
-      description: From the Homebridge plugin path, most likely will be `/var/lib/homebridge/node_modules`, run this command `cd homebridge-adt-pulse && npm run test-api` and paste in the results below. __Do not include logs from other commands.__ This block will be automatically formatted into code, so __no need for backticks__.
+      label: Output of the "test-api" command
+      description: From your Homebridge plugin path, based on your [installation](https://github.com/mrjackyliang/homebridge-adt-pulse#api-test-and-repl-playground-scripts), find the `node_modules/homebridge-adt-pulse` folder, run this command `npm run test-api`, and paste in the results below. __Do not include information from other commands.__ This block will be automatically formatted into code, so __no need for backticks__.
+      placeholder: Paste the full results of the "test-api" command here. If this is filled with other content (e.g. cannot find command), this bug report will be closed immediately.
       render: Shell
     validations:
       required: true
   - type: textarea
-    id: more-logs
+    id: logs
     attributes:
-      label: More logs relevant to this bug
-      description: Copy and paste all logs related to this bug. __Do not include logs from other plugins.__ This block will be automatically formatted into code, so __no need for backticks__ or special markup.
+      label: Captured logs relevant to this report
+      description: Copy and paste all logs related to this bug. __Do not include logs unrelated to this project.__ This block will be automatically formatted into code, so __no need for backticks__ or special markup.
+      placeholder: Please include logs relevant to this bug report. If this is filled with miscellaneous content (e.g. no logs, cannot find logs), this bug report will be closed immediately.
       render: Shell
     validations:
       required: true
@@ -92,13 +94,13 @@ body:
       label: Post-check confirmation
       description: Before proceeding further, please confirm the following by checking each box. This confirmation is crucial for the consideration of your request. __All boxes MUST be checked; failure to comply will result in your request being closed.__
       options:
-        - label: I have filled in the form __exactly as requested__ and did not attempt to circumvent form validation.
+        - label: I have filled in the form __exactly as requested__ and did not attempt to circumvent form validation
           required: true
   - type: checkboxes
     id: legal
     attributes:
       label: Legal Agreements
-      description: By submitting a new bug report, you confirm that you have read, understood, and agree to the [Terms of Use](https://www.cbnventures.io/terms/) and [Privacy Policy](https://www.cbnventures.io/privacy/). If you have questions about these policies, feel free to [get in touch](https://www.cbnventures.io/get-in-touch/) with us.
+      description: By submitting a new bug report, you confirm that you have read, understood, and agree to the [Terms of Use](https://www.cbnventures.io/terms/) and [Privacy Policy](https://www.cbnventures.io/privacy/). If you have questions about these policies, feel free to [get in touch](https://www.cbnventures.io/get-in-touch/) with my team.
       options:
         - label: I agree to the Terms of Use and Privacy Policy
           required: true
