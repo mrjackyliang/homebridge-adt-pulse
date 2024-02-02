@@ -22,4 +22,4 @@ jobs:
           github-token: ${{ github.token }}
           issue-comment: 'This issue is now locked and considered resolved due to inactivity.'
           issue-inactive-days: '30'
-          issue-lock-reason: 'resolved
+          issue-lock-reason: 'resolved'
