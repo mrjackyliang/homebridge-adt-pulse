@@ -14,7 +14,7 @@ export const platformConfig = z.object({
   ]),
   username: z.string().min(1).max(100),
   password: z.string().min(1).max(300),
-  fingerprint: z.string().min(1).max(5120),
+  fingerprint: z.string().min(1).max(10240),
   mode: z.union([
     z.literal('normal'),
     z.literal('paused'),
