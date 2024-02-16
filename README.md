@@ -145,6 +145,9 @@ All sensors are now organized within an array of objects, with each object conta
   - For example, if the type is "Door/Window Sensor", the value should be `doorWindow`. Read the [Supported Devices](#supported-devices) section for more information.
 - __ADT Zone__ (`adtZone`)
   - Must match the zone shown under the "Zone" column in the "System" tab when logged into the portal.
+  - For compatibility reasons, only devices with zones 1 through 99 are supported.
+
+If you do not wish to add sensors, simply assign an empty array (e.g. `[]`). However, it is advisable to include all supported sensors, as having none does not optimize plugin performance.
 
 If you do not find the supported type listed, please note that the plugin will notify me. Do not create a separate issue on GitHub. I am actively working on adding support as soon as I gather sufficient information to determine the statuses displayed on the portal.
 
@@ -257,7 +260,9 @@ Here is an example of the information I see when the plugin detects unknown stat
   }
 }
 ```
-__Notice:__ If you prefer to prevent this functionality, you can block the URL that the plugin utilizes to notify me. However, it is essential to note that I will not be able to offer assistance or support if you choose to impede the plugin from fulfilling its purpose to the best of its capabilities.
+__Note:__ If you prefer to prevent this functionality, you can block the URL that the plugin utilizes to notify me. However, it is essential to note that I will not be able to offer assistance or support if you choose to impede the plugin from fulfilling its purpose to the best of its capabilities.
+
+__Note 2:__ In certain scenarios, the plugin may identify anomalies while parsing portal data. Such reports may contain raw HTML data (redacted in the logs). To ensure prompt updates, the raw HTML sent to me will remain unfiltered.
 
 ## Credits and Appreciation
 If you find value in the ongoing development of this plugin and wish to express your appreciation, you have the option to become my supporter on [GitHub Sponsors](https://github.com/sponsors/mrjackyliang)!

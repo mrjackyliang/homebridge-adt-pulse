@@ -566,7 +566,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
           currentTimestamp - this.#state.lastRunOn.adtLastLogin >= this.#constants.intervalTimestamps.adtSessionLifespan
           && this.#state.lastRunOn.adtLastLogin !== 0
         ) {
-          this.#log.debug('Login session has exceeded its lifespan. Resetting the login session now ...');
+          this.#log.debug('Login session now requires a reset. Resetting the login session now ...');
 
           this.#instance.resetSession();
         }
@@ -635,7 +635,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
           currentTimestamp - this.#state.lastRunOn.adtKeepAlive >= this.#constants.intervalTimestamps.adtKeepAlive
           && !this.#state.activity.isAdtKeepingAlive
         ) {
-          this.#log.debug('Login session has exceeded its inactivity limit. Initiating a keep alive request now ...');
+          this.#log.debug('Login session now requires a keep alive ping. Initiating a keep alive request now ...');
 
           this.synchronizeKeepAlive();
         }
@@ -645,7 +645,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
           currentTimestamp - this.#state.lastRunOn.adtSyncCheck >= this.#constants.intervalTimestamps.adtSyncCheck
           && !this.#state.activity.isAdtSyncChecking
         ) {
-          this.#log.debug('Login session has exceeded its device stale limit. Running a sync check request now ...');
+          this.#log.debug('Login session now requires a sync check. Running a sync check request now ...');
 
           this.synchronizeSyncCheck();
         }
@@ -697,8 +697,23 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
 
         // If keeping alive was not successful.
         if (!keepAlive.success) {
-          this.#log.error('Keeping alive attempt has failed. Trying again later.');
-          stackTracer('api-response', keepAlive);
+          const { error } = keepAlive.info;
+          const { code } = error ?? {};
+
+          // Determine if the message is related to a minor connection issue.
+          if (code !== undefined) {
+            switch (code) {
+              case 'ECONNABORTED':
+                this.#log.debug('Keeping alive attempt has failed because the connection timed out. Trying again later.');
+                break;
+              default:
+                this.#log.debug(`Keeping alive attempt has failed because the response code was "${code}". Trying again later.`);
+                break;
+            }
+          } else {
+            this.#log.error('Keeping alive attempt has failed. Trying again later.');
+            stackTracer('api-response', keepAlive);
+          }
         }
 
         // Update timestamp for keep alive request, even if request failed.
@@ -1002,7 +1017,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         sensorsInfo,
         sensorsStatus,
       };
-      const dataHash = generateHash(`${JSON.stringify(data)}`);
+      const dataHash = generateHash(data);
 
       // If the detector has not reported this event before.
       if (this.#state.reportedHashes.find((reportedHash) => dataHash === reportedHash) === undefined) {
@@ -1025,7 +1040,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
       type: condenseSensorType(sensorInfo.deviceType),
     }));
     const matchedSensors = sensors.filter((sensor): sensor is NonNullable<typeof sensors[number]> => sensor !== null);
-    const dataHash = generateHash(JSON.stringify(sensors));
+    const dataHash = generateHash(sensors);
 
     // If the detector has not reported this event before.
     if (this.#state.reportedHashes.find((reportedHash) => dataHash === reportedHash) === undefined) {

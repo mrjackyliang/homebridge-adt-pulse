@@ -44,6 +44,6 @@ export const platformConfig = z.object({
       z.literal('shock'),
       z.literal('temperature'),
     ]),
-    adtZone: z.number().min(1).max(999),
+    adtZone: z.number().min(1).max(99),
   })).min(0).max(148),
 });

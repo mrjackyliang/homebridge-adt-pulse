@@ -233,7 +233,7 @@
               "description": "Specify the <strong class=\"font-weight-bold\">exact zone</strong> associated with the sensor you want to add. Double-check the zone to ensure the correct sensor is added.",
               "placeholder": "e.g. 99",
               "minimum": 1,
-              "maximum": 999
+              "maximum": 99
             }
           }
         },

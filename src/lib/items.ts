@@ -1,269 +1,55 @@
 import _ from 'lodash';
 
 import type {
-  CondensedSensorTypeItems,
-  DoSubmitHandlerRelativeUrlItems,
-  DoSubmitHandlerUrlParamsArmItems,
-  DoSubmitHandlerUrlParamsArmStateItems,
-  DoSubmitHandlerUrlParamsHrefItems,
-  GatewayInformationStatusItems,
-  OrbSecurityButtonButtonTextItems,
-  OrbSecurityButtonLoadingTextItems,
-  OrbSecurityButtonRelativeUrlItems,
-  OrbSecurityButtonUrlParamsArmItems,
-  OrbSecurityButtonUrlParamsArmStateItems,
-  OrbSecurityButtonUrlParamsHrefItems,
-  PanelInformationStatusItems,
-  PanelStatusNoteItems,
-  PanelStatusStateItems,
-  PanelStatusStatusItems,
-  PanelStatusStatusItemsSensorsOpen,
-  PortalVersionItems,
-  SensorActionItems,
-  SensorInformationDeviceTypeItems,
-  SensorInformationStatusItems,
-  SensorStatusIconItems,
-  SensorStatusStatusItems,
+  CollectionDoSubmitHandlers,
+  CollectionOrbSecurityButtons,
+  CollectionSensorActions,
+  DeviceGateways,
+  DeviceSecurityPanels,
+  ItemCondensedSensorTypes,
+  ItemDoSubmitHandlerRelativeUrls,
+  ItemDoSubmitHandlerUrlParamsArms,
+  ItemDoSubmitHandlerUrlParamsArmStates,
+  ItemDoSubmitHandlerUrlParamsHrefs,
+  ItemGatewayInformationStatuses,
+  ItemOrbSecurityButtonButtonTexts,
+  ItemOrbSecurityButtonLoadingTexts,
+  ItemOrbSecurityButtonRelativeUrls,
+  ItemOrbSecurityButtonUrlParamsArms,
+  ItemOrbSecurityButtonUrlParamsArmStates,
+  ItemOrbSecurityButtonUrlParamsHrefs,
+  ItemPanelInformationStatuses,
+  ItemPanelStatusNotes,
+  ItemPanelStatusStates,
+  ItemPanelStatusStatuses,
+  ItemPanelStatusStatusesSensorsOpen,
+  ItemPortalVersions,
+  ItemSensorInformationDeviceTypes,
+  ItemSensorInformationStatuses,
+  ItemSensorStatusIcons,
+  ItemSensorStatusStatuses,
 } from '@/types/index.d.ts';
 
 /**
- * Condensed sensor type items.
+ * Collection do submit handlers.
  *
  * @since 1.0.0
  */
-export const condensedSensorTypeItems: CondensedSensorTypeItems = [
-  'co',
-  'doorWindow',
-  'fire',
-  'flood',
-  'glass',
-  'heat',
-  'motion',
-  'shock',
-  'temperature',
-];
+export const collectionDoSubmitHandlers: CollectionDoSubmitHandlers = [];
 
 /**
- * Do submit handler relative url items.
+ * Collection orb security buttons.
  *
  * @since 1.0.0
  */
-export const doSubmitHandlerRelativeUrlItems: DoSubmitHandlerRelativeUrlItems = [
-  '/myhome/16.0.0-131/quickcontrol/serv/RunRRACommand',
-  '/myhome/17.0.0-69/quickcontrol/serv/RunRRACommand',
-  '/myhome/18.0.0-78/quickcontrol/serv/RunRRACommand',
-  '/myhome/19.0.0-89/quickcontrol/serv/RunRRACommand',
-  '/myhome/20.0.0-221/quickcontrol/serv/RunRRACommand',
-  '/myhome/20.0.0-244/quickcontrol/serv/RunRRACommand',
-  '/myhome/21.0.0-344/quickcontrol/serv/RunRRACommand',
-  '/myhome/21.0.0-353/quickcontrol/serv/RunRRACommand',
-  '/myhome/21.0.0-354/quickcontrol/serv/RunRRACommand',
-  '/myhome/22.0.0-233/quickcontrol/serv/RunRRACommand',
-  '/myhome/23.0.0-99/quickcontrol/serv/RunRRACommand',
-  '/myhome/24.0.0-117/quickcontrol/serv/RunRRACommand',
-  '/myhome/25.0.0-21/quickcontrol/serv/RunRRACommand',
-  '/myhome/26.0.0-32/quickcontrol/serv/RunRRACommand',
-  '/myhome/27.0.0-140/quickcontrol/serv/RunRRACommand',
-];
+export const collectionOrbSecurityButtons: CollectionOrbSecurityButtons = [];
 
 /**
- * Do submit handler url params arm items.
+ * Collection sensor actions.
  *
  * @since 1.0.0
  */
-export const doSubmitHandlerUrlParamsArmItems: DoSubmitHandlerUrlParamsArmItems = [
-  'away',
-  'night',
-  'stay',
-];
-
-/**
- * Do submit handler url params arm state items.
- *
- * @since 1.0.0
- */
-export const doSubmitHandlerUrlParamsArmStateItems: DoSubmitHandlerUrlParamsArmStateItems = [
-  'forcearm',
-];
-
-/**
- * Do submit handler url params href items.
- *
- * @since 1.0.0
- */
-export const doSubmitHandlerUrlParamsHrefItems: DoSubmitHandlerUrlParamsHrefItems = [
-  'rest/adt/ui/client/security/setForceArm',
-  'rest/adt/ui/client/security/setCancelProtest',
-];
-
-/**
- * Gateway information status items.
- *
- * @since 1.0.0
- */
-export const gatewayInformationStatusItems: GatewayInformationStatusItems = [
-  'Offline',
-  'Online',
-  'Status Unknown',
-];
-
-/**
- * Orb security button button text items.
- *
- * @since 1.0.0
- */
-export const orbSecurityButtonButtonTextItems: OrbSecurityButtonButtonTextItems = [
-  'Arm Away',
-  'Arm Night',
-  'Arm Stay',
-  'Clear Alarm',
-  'Disarm',
-];
-
-/**
- * Orb security button loading text items.
- *
- * @since 1.0.0
- */
-export const orbSecurityButtonLoadingTextItems: OrbSecurityButtonLoadingTextItems = [
-  'Arming Away',
-  'Arming Night',
-  'Arming Stay',
-  'Disarming',
-];
-
-/**
- * Orb security button relative url items.
- *
- * @since 1.0.0
- */
-export const orbSecurityButtonRelativeUrlItems: OrbSecurityButtonRelativeUrlItems = [
-  'quickcontrol/armDisarm.jsp',
-];
-
-/**
- * Orb security button url params arm items.
- *
- * @since 1.0.0
- */
-export const orbSecurityButtonUrlParamsArmItems: OrbSecurityButtonUrlParamsArmItems = [
-  'away',
-  'night',
-  'off',
-  'stay',
-];
-
-/**
- * Orb security button url params arm state items.
- *
- * @since 1.0.0
- */
-export const orbSecurityButtonUrlParamsArmStateItems: OrbSecurityButtonUrlParamsArmStateItems = [
-  'away',
-  'disarmed',
-  'disarmed_with_alarm',
-  'disarmed+with+alarm',
-  'night',
-  'night+stay',
-  'off',
-  'stay',
-];
-
-/**
- * Orb security button url params href items.
- *
- * @since 1.0.0
- */
-export const orbSecurityButtonUrlParamsHrefItems: OrbSecurityButtonUrlParamsHrefItems = [
-  'rest/adt/ui/client/security/setArmState',
-];
-
-/**
- * Panel information status items.
- *
- * @since 1.0.0
- */
-export const panelInformationStatusItems: PanelInformationStatusItems = [
-  'Offline',
-  'Online',
-  'Status Unknown',
-];
-
-/**
- * Panel status note items.
- *
- * @since 1.0.0
- */
-export const panelStatusNoteItems: PanelStatusNoteItems = [
-  'This may take several minutes',
-];
-
-/**
- * Panel status state items.
- *
- * @since 1.0.0
- */
-export const panelStatusStateItems: PanelStatusStateItems = [
-  'Armed Away',
-  'Armed Night',
-  'Armed Stay',
-  'Disarmed',
-  'No Entry Delay',
-  'Status Unavailable',
-];
-
-/**
- * Panel status status items.
- *
- * @since 1.0.0
- */
-export const panelStatusStatusItems: PanelStatusStatusItems = [
-  '1 Sensor Open',
-  ..._.range(148).map((_value, index) => `${index + 1} Sensors Open` as PanelStatusStatusItemsSensorsOpen),
-  'All Quiet',
-  'BURGLARY ALARM',
-  'Carbon Monoxide Alarm',
-  'FIRE ALARM',
-  'Motion',
-  'Sensor Bypassed',
-  'Sensor Problem',
-  'Sensor Problems',
-  'Sensors Bypassed',
-  'Sensors Tripped',
-  'Sensor Tripped',
-  'Uncleared Alarm',
-  'WATER ALARM',
-];
-
-/**
- * Portal version items.
- *
- * @since 1.0.0
- */
-export const portalVersionItems: PortalVersionItems = [
-  '16.0.0-131',
-  '17.0.0-69',
-  '18.0.0-78',
-  '19.0.0-89',
-  '20.0.0-221',
-  '20.0.0-244',
-  '21.0.0-344',
-  '21.0.0-353',
-  '21.0.0-354',
-  '22.0.0-233',
-  '23.0.0-99',
-  '24.0.0-117',
-  '25.0.0-21',
-  '26.0.0-32',
-  '27.0.0-140',
-];
-
-/**
- * Sensor action items.
- *
- * @since 1.0.0
- */
-export const sensorActionItems: SensorActionItems = [
+export const collectionSensorActions: CollectionSensorActions = [
   {
     type: 'co',
     statuses: [
@@ -432,11 +218,274 @@ export const sensorActionItems: SensorActionItems = [
 ];
 
 /**
- * Sensor information device type items.
+ * Device gateways.
  *
  * @since 1.0.0
  */
-export const sensorInformationDeviceTypeItems: SensorInformationDeviceTypeItems = [
+export const deviceGateways: DeviceGateways = [
+  {
+    broadbandConnectionStatus: 'Active',
+    cellularConnectionStatus: 'N/A',
+    cellularSignalStrength: 'N/A',
+    firmwareVersion: '24.0.0-9',
+    hardwareVersion: 'HW=2, BL=1.1.9, PL=9.4.0.32.5, SKU=PGZNG1-1ADNAS',
+    manufacturer: 'ADT Pulse Gateway',
+    model: 'PGZNG1',
+    primaryConnectionType: 'Broadband',
+  },
+];
+
+/**
+ * Device security panels.
+ *
+ * @since 1.0.0
+ */
+export const deviceSecurityPanels: DeviceSecurityPanels = [
+  {
+    emergencyKeys: 'Button: Fire Alarm (Zone 95) Button: Audible Panic Alarm (Zone 99)',
+    manufacturerProvider: 'ADT',
+    typeModel: 'Security Panel - Safewatch Pro 3000/3000CN',
+  },
+];
+
+/**
+ * Item condensed sensor types.
+ *
+ * @since 1.0.0
+ */
+export const itemCondensedSensorTypes: ItemCondensedSensorTypes = [
+  'co',
+  'doorWindow',
+  'fire',
+  'flood',
+  'glass',
+  'heat',
+  'motion',
+  'shock',
+  'temperature',
+];
+
+/**
+ * Item do submit handler relative urls.
+ *
+ * @since 1.0.0
+ */
+export const itemDoSubmitHandlerRelativeUrls: ItemDoSubmitHandlerRelativeUrls = [
+  '/myhome/16.0.0-131/quickcontrol/serv/RunRRACommand',
+  '/myhome/17.0.0-69/quickcontrol/serv/RunRRACommand',
+  '/myhome/18.0.0-78/quickcontrol/serv/RunRRACommand',
+  '/myhome/19.0.0-89/quickcontrol/serv/RunRRACommand',
+  '/myhome/20.0.0-221/quickcontrol/serv/RunRRACommand',
+  '/myhome/20.0.0-244/quickcontrol/serv/RunRRACommand',
+  '/myhome/21.0.0-344/quickcontrol/serv/RunRRACommand',
+  '/myhome/21.0.0-353/quickcontrol/serv/RunRRACommand',
+  '/myhome/21.0.0-354/quickcontrol/serv/RunRRACommand',
+  '/myhome/22.0.0-233/quickcontrol/serv/RunRRACommand',
+  '/myhome/23.0.0-99/quickcontrol/serv/RunRRACommand',
+  '/myhome/24.0.0-117/quickcontrol/serv/RunRRACommand',
+  '/myhome/25.0.0-21/quickcontrol/serv/RunRRACommand',
+  '/myhome/26.0.0-32/quickcontrol/serv/RunRRACommand',
+  '/myhome/27.0.0-140/quickcontrol/serv/RunRRACommand',
+];
+
+/**
+ * Item do submit handler url params arm states.
+ *
+ * @since 1.0.0
+ */
+export const itemDoSubmitHandlerUrlParamsArmStates: ItemDoSubmitHandlerUrlParamsArmStates = [
+  'forcearm',
+];
+
+/**
+ * Item do submit handler url params arms.
+ *
+ * @since 1.0.0
+ */
+export const itemDoSubmitHandlerUrlParamsArms: ItemDoSubmitHandlerUrlParamsArms = [
+  'away',
+  'night',
+  'stay',
+];
+
+/**
+ * Item do submit handler url params hrefs.
+ *
+ * @since 1.0.0
+ */
+export const itemDoSubmitHandlerUrlParamsHrefs: ItemDoSubmitHandlerUrlParamsHrefs = [
+  'rest/adt/ui/client/security/setForceArm',
+  'rest/adt/ui/client/security/setCancelProtest',
+];
+
+/**
+ * Item gateway information statuses.
+ *
+ * @since 1.0.0
+ */
+export const itemGatewayInformationStatuses: ItemGatewayInformationStatuses = [
+  'Offline',
+  'Online',
+  'Status Unknown',
+];
+
+/**
+ * Item orb security button button texts.
+ *
+ * @since 1.0.0
+ */
+export const itemOrbSecurityButtonButtonTexts: ItemOrbSecurityButtonButtonTexts = [
+  'Arm Away',
+  'Arm Night',
+  'Arm Stay',
+  'Clear Alarm',
+  'Disarm',
+];
+
+/**
+ * Item orb security button loading texts.
+ *
+ * @since 1.0.0
+ */
+export const itemOrbSecurityButtonLoadingTexts: ItemOrbSecurityButtonLoadingTexts = [
+  'Arming Away',
+  'Arming Night',
+  'Arming Stay',
+  'Disarming',
+];
+
+/**
+ * Item orb security button relative urls.
+ *
+ * @since 1.0.0
+ */
+export const itemOrbSecurityButtonRelativeUrls: ItemOrbSecurityButtonRelativeUrls = [
+  'quickcontrol/armDisarm.jsp',
+];
+
+/**
+ * Item orb security button url params arm states.
+ *
+ * @since 1.0.0
+ */
+export const itemOrbSecurityButtonUrlParamsArmStates: ItemOrbSecurityButtonUrlParamsArmStates = [
+  'away',
+  'disarmed',
+  'disarmed_with_alarm',
+  'disarmed+with+alarm',
+  'night',
+  'night+stay',
+  'off',
+  'stay',
+];
+
+/**
+ * Item orb security button url params arms.
+ *
+ * @since 1.0.0
+ */
+export const itemOrbSecurityButtonUrlParamsArms: ItemOrbSecurityButtonUrlParamsArms = [
+  'away',
+  'night',
+  'off',
+  'stay',
+];
+
+/**
+ * Item orb security button url params hrefs.
+ *
+ * @since 1.0.0
+ */
+export const itemOrbSecurityButtonUrlParamsHrefs: ItemOrbSecurityButtonUrlParamsHrefs = [
+  'rest/adt/ui/client/security/setArmState',
+];
+
+/**
+ * Item panel information statuses.
+ *
+ * @since 1.0.0
+ */
+export const itemPanelInformationStatuses: ItemPanelInformationStatuses = [
+  'Offline',
+  'Online',
+  'Status Unknown',
+];
+
+/**
+ * Item panel status notes.
+ *
+ * @since 1.0.0
+ */
+export const itemPanelStatusNotes: ItemPanelStatusNotes = [
+  'This may take several minutes',
+];
+
+/**
+ * Item panel status states.
+ *
+ * @since 1.0.0
+ */
+export const itemPanelStatusStates: ItemPanelStatusStates = [
+  'Armed Away',
+  'Armed Night',
+  'Armed Stay',
+  'Disarmed',
+  'No Entry Delay',
+  'Status Unavailable',
+];
+
+/**
+ * Item panel status statuses.
+ *
+ * @since 1.0.0
+ */
+export const itemPanelStatusStatuses: ItemPanelStatusStatuses = [
+  '1 Sensor Open',
+  ..._.range(148).map((_value, index) => `${index + 1} Sensors Open` as ItemPanelStatusStatusesSensorsOpen),
+  'All Quiet',
+  'BURGLARY ALARM',
+  'Carbon Monoxide Alarm',
+  'FIRE ALARM',
+  'Motion',
+  'Sensor Bypassed',
+  'Sensor Problem',
+  'Sensor Problems',
+  'Sensors Bypassed',
+  'Sensors Tripped',
+  'Sensor Tripped',
+  'Uncleared Alarm',
+  'WATER ALARM',
+];
+
+/**
+ * Item portal versions.
+ *
+ * @since 1.0.0
+ */
+export const itemPortalVersions: ItemPortalVersions = [
+  '16.0.0-131',
+  '17.0.0-69',
+  '18.0.0-78',
+  '19.0.0-89',
+  '20.0.0-221',
+  '20.0.0-244',
+  '21.0.0-344',
+  '21.0.0-353',
+  '21.0.0-354',
+  '22.0.0-233',
+  '23.0.0-99',
+  '24.0.0-117',
+  '25.0.0-21',
+  '26.0.0-32',
+  '27.0.0-140',
+];
+
+/**
+ * Item sensor information device types.
+ *
+ * @since 1.0.0
+ */
+export const itemSensorInformationDeviceTypes: ItemSensorInformationDeviceTypes = [
   'Carbon Monoxide Detector',
   'Door/Window Sensor',
   'Door Sensor',
@@ -452,11 +501,11 @@ export const sensorInformationDeviceTypeItems: SensorInformationDeviceTypeItems 
 ];
 
 /**
- * Sensor information status items.
+ * Item sensor information statuses.
  *
  * @since 1.0.0
  */
-export const sensorInformationStatusItems: SensorInformationStatusItems = [
+export const itemSensorInformationStatuses: ItemSensorInformationStatuses = [
   'Installing',
   'Offline',
   'Online',
@@ -464,11 +513,11 @@ export const sensorInformationStatusItems: SensorInformationStatusItems = [
 ];
 
 /**
- * Sensor status icon items.
+ * Item sensor status icons.
  *
  * @since 1.0.0
  */
-export const sensorStatusIconItems: SensorStatusIconItems = [
+export const itemSensorStatusIcons: ItemSensorStatusIcons = [
   'devStatAlarm',
   'devStatInstalling',
   'devStatLowBatt',
@@ -481,11 +530,11 @@ export const sensorStatusIconItems: SensorStatusIconItems = [
 ];
 
 /**
- * Sensor status status items.
+ * Item sensor status statuses.
  *
  * @since 1.0.0
  */
-export const sensorStatusStatusItems: SensorStatusStatusItems = [
+export const itemSensorStatusStatuses: ItemSensorStatusStatuses = [
   'ALARM',
   'Bypassed',
   'Closed',
@@ -496,6 +545,7 @@ export const sensorStatusStatusItems: SensorStatusStatusItems = [
   'Offline',
   'Okay',
   'Open',
+  'Tampered',
   'Tripped',
   'Trouble',
   'Unknown',

@@ -1,30 +1,36 @@
 import axios from 'axios';
+import _ from 'lodash';
 import { serializeError } from 'serialize-error';
 
 import {
-  doSubmitHandlerRelativeUrlItems,
-  doSubmitHandlerUrlParamsArmItems,
-  doSubmitHandlerUrlParamsArmStateItems,
-  doSubmitHandlerUrlParamsHrefItems,
-  gatewayInformationStatusItems,
-  orbSecurityButtonButtonTextItems,
-  orbSecurityButtonLoadingTextItems,
-  orbSecurityButtonRelativeUrlItems,
-  orbSecurityButtonUrlParamsArmItems,
-  orbSecurityButtonUrlParamsArmStateItems,
-  orbSecurityButtonUrlParamsHrefItems,
-  panelInformationStatusItems,
-  portalVersionItems,
-  sensorActionItems,
-  sensorInformationDeviceTypeItems,
-  sensorInformationStatusItems,
-  sensorStatusIconItems,
-  sensorStatusStatusItems,
+  collectionSensorActions,
+  itemDoSubmitHandlerRelativeUrls,
+  itemDoSubmitHandlerUrlParamsArms,
+  itemDoSubmitHandlerUrlParamsArmStates,
+  itemDoSubmitHandlerUrlParamsHrefs,
+  itemGatewayInformationStatuses,
+  itemOrbSecurityButtonButtonTexts,
+  itemOrbSecurityButtonLoadingTexts,
+  itemOrbSecurityButtonRelativeUrls,
+  itemOrbSecurityButtonUrlParamsArms,
+  itemOrbSecurityButtonUrlParamsArmStates,
+  itemOrbSecurityButtonUrlParamsHrefs,
+  itemPanelInformationStatuses,
+  itemPortalVersions,
+  itemSensorInformationDeviceTypes,
+  itemSensorInformationStatuses,
+  itemSensorStatusIcons,
+  itemSensorStatusStatuses,
 } from '@/lib/items.js';
 import {
   debugLog,
   getDetectReportUrl,
+  isEmptyOrbTextSummary,
   isPluginOutdated,
+  isUnknownDoSubmitHandlerCollection,
+  isUnknownGatewayDevice,
+  isUnknownOrbSecurityButtonCollection,
+  isUnknownPanelDevice,
   removePersonalIdentifiableInformation,
   stackTracer,
 } from '@/lib/utility.js';
@@ -87,77 +93,94 @@ import type {
  * @since 1.0.0
  */
 export async function detectApiDebugParser(data: DetectApiDebugParserData, logger: DetectApiDebugParserLogger, debugMode: DetectApiDebugParserDebugMode): DetectApiDebugParserReturns {
-  // Unfortunately, modifying "data.rawData", which may include PII, would cause more unnecessary complexity since it is raw HTML data.
-  const cleanedData = removePersonalIdentifiableInformation(data);
+  const armDisarmHandlerAnomaly = data.method === 'armDisarmHandler' && isUnknownOrbSecurityButtonCollection(data.response);
+  const forceArmHandlerAnomaly = data.method === 'forceArmHandler' && isUnknownDoSubmitHandlerCollection(data.response);
+  const getGatewayInformationAnomaly = data.method === 'getGatewayInformation' && isUnknownGatewayDevice(data.response);
+  const getPanelInformationAnomaly = data.method === 'getPanelInformation' && isUnknownPanelDevice(data.response);
+  const getPanelStatusAnomaly = data.method === 'getPanelStatus' && isEmptyOrbTextSummary(data.response);
+  const getSensorsInformationAnomaly = data.method === 'getSensorsInformation' && data.response.length < 1;
+  const getSensorsStatusAnomaly = data.method === 'getSensorsStatus' && data.response.length < 1;
+  const setPanelStatusAnomaly = data.method === 'setPanelStatus' && isUnknownOrbSecurityButtonCollection(data.response);
 
-  // If outdated, it means plugin may already have support.
-  try {
-    const outdated = await isPluginOutdated();
+  if (
+    armDisarmHandlerAnomaly
+    || forceArmHandlerAnomaly
+    || getGatewayInformationAnomaly
+    || getPanelInformationAnomaly
+    || getPanelStatusAnomaly
+    || getSensorsInformationAnomaly
+    || getSensorsStatusAnomaly
+    || setPanelStatusAnomaly
+  ) {
+    // Unfortunately, modifying "data.rawHtml", which may include PII, would cause more unnecessary complexity.
+    const cleanedData = removePersonalIdentifiableInformation(data);
+    const loggedData = _.omit(cleanedData, ['rawHtml']);
 
-    if (outdated) {
-      if (logger !== null) {
-        logger.warn(`Plugin has detected a parser anomaly for "${data.parserName}" due to ${data.parserReason}. You are running an older plugin version, please update soon.`);
+    // If outdated, it means plugin may already have support.
+    try {
+      const outdated = await isPluginOutdated();
+
+      if (outdated) {
+        if (logger !== null) {
+          logger.warn(`Plugin has detected a parser anomaly for "${data.method}". You are running an older plugin version, please update soon.`);
+        }
+
+        // This is intentionally duplicated if using Homebridge debug mode.
+        if (debugMode) {
+          debugLog(logger, 'detect.ts / detectApiDebugParser()', 'warn', `Plugin has detected a parser anomaly for "${data.method}". You are running an older plugin version, please update soon`);
+        }
+
+        // Do not send analytics for users running outdated plugin versions.
+        return false;
+      }
+    } catch (error) {
+      if (debugMode === true) {
+        debugLog(logger, 'detect.ts / detectApiDebugParser()', 'error', 'Failed to check if plugin is outdated');
+        stackTracer('serialize-error', serializeError(error));
       }
 
-      // This is intentionally duplicated if using Homebridge debug mode.
-      if (debugMode) {
-        debugLog(logger, 'detect.ts / detectApiDebugParser()', 'warn', `Plugin has detected a parser anomaly for "${data.parserName}" due to ${data.parserReason}. You are running an older plugin version, please update soon`);
-      }
-
-      // Do not send analytics for users running outdated plugin versions.
+      // Try to check if plugin is outdated later on.
       return false;
     }
-  } catch (error) {
-    if (debugMode === true) {
-      debugLog(logger, 'detect.ts / detectApiDebugParser()', 'error', 'Failed to check if plugin is outdated');
-      stackTracer('serialize-error', serializeError(error));
+
+    if (logger !== null) {
+      logger.warn(`Plugin has detected a parser anomaly for "${data.method}". Notifying plugin author about this discovery ...`);
     }
 
-    // Try to check if plugin is outdated later on.
-    return false;
-  }
+    // This is intentionally duplicated if using Homebridge debug mode.
+    if (debugMode) {
+      debugLog(logger, 'detect.ts / detectApiDebugParser()', 'warn', `Plugin has detected a parser anomaly for "${data.method}". Notifying plugin author about this discovery`);
+    }
 
-  if (logger !== null) {
-    logger.warn(`Plugin has detected a parser anomaly for "${data.parserName}" due to ${data.parserReason}. Notifying plugin author about this discovery ...`);
-  }
+    // Show content being sent to author except for "data.rawHtml".
+    stackTracer('detect-content', loggedData);
 
-  // This is intentionally duplicated if using Homebridge debug mode.
-  if (debugMode) {
-    debugLog(logger, 'detect.ts / detectApiDebugParser()', 'warn', `Plugin has detected a parser anomaly for "${data.parserName}" due to ${data.parserReason}. Notifying plugin author about this discovery`);
-  }
-
-  // Show content being sent to author.
-  stackTracer('detect-content', cleanedData);
-
-  // This reminder should show after displaying content being sent, since sometimes the code can fill the screen.
-  if (logger !== null) {
-    logger.warn('For transparency, the section of code you see above will be sent to the author directly. Rest assured, your privacy is prioritized.');
-    logger.warn('This message will NOT go away by restarting Homebridge. An update MUST become available first. Please be patient, thank you!');
-  }
-
-  try {
-    await axios.post(
-      getDetectReportUrl(),
-      JSON.stringify(cleanedData, null, 2),
-      {
-        family: 4,
-        headers: {
-          'User-Agent': 'homebridge-adt-pulse',
-          'X-Title': `Detected a parser anomaly for "${data.parserName}" due to ${data.parserReason}`,
+    try {
+      await axios.post(
+        getDetectReportUrl(),
+        JSON.stringify(cleanedData, null, 2),
+        {
+          family: 4,
+          headers: {
+            'User-Agent': 'homebridge-adt-pulse',
+            'X-Title': `Detected a parser anomaly for "${data.method}"`,
+          },
         },
-      },
-    );
+      );
 
-    return true;
-  } catch (error) {
-    if (debugMode === true) {
-      debugLog(logger, 'detect.ts / detectApiDebugParser()', 'error', `Failed to notify plugin author about the parser anomaly for "${data.parserName}" due to ${data.parserReason}`);
-      stackTracer('serialize-error', serializeError(error));
+      return true;
+    } catch (error) {
+      if (debugMode === true) {
+        debugLog(logger, 'detect.ts / detectApiDebugParser()', 'error', `Failed to notify plugin author about the parser anomaly for "${data.method}"`);
+        stackTracer('serialize-error', serializeError(error));
+      }
+
+      // Try to send information to author later.
+      return false;
     }
-
-    // Try to send information to author later.
-    return false;
   }
+
+  return false;
 }
 
 /**
@@ -173,16 +196,16 @@ export async function detectApiDebugParser(data: DetectApiDebugParserData, logge
  */
 export async function detectApiDoSubmitHandlers(handlers: DetectApiDoSubmitHandlersHandlers, logger: DetectApiDoSubmitHandlersLogger, debugMode: DetectApiDoSubmitHandlersDebugMode): DetectApiDoSubmitHandlersReturns {
   const detectedNewHandlers = handlers.filter((handler) => (
-    !doSubmitHandlerRelativeUrlItems.includes(handler.relativeUrl)
+    !itemDoSubmitHandlerRelativeUrls.includes(handler.relativeUrl)
     || (
       handler.urlParams.arm !== null
-      && !doSubmitHandlerUrlParamsArmItems.includes(handler.urlParams.arm)
+      && !itemDoSubmitHandlerUrlParamsArms.includes(handler.urlParams.arm)
     )
     || (
       handler.urlParams.armState !== null
-      && !doSubmitHandlerUrlParamsArmStateItems.includes(handler.urlParams.armState)
+      && !itemDoSubmitHandlerUrlParamsArmStates.includes(handler.urlParams.armState)
     )
-    || !doSubmitHandlerUrlParamsHrefItems.includes(handler.urlParams.href)
+    || !itemDoSubmitHandlerUrlParamsHrefs.includes(handler.urlParams.href)
   ));
 
   if (detectedNewHandlers.length > 0) {
@@ -227,12 +250,6 @@ export async function detectApiDoSubmitHandlers(handlers: DetectApiDoSubmitHandl
     // Show content being sent to author.
     stackTracer('detect-content', cleanedData);
 
-    // This reminder should show after displaying content being sent, since sometimes the code can fill the screen.
-    if (logger !== null) {
-      logger.warn('For transparency, the section of code you see above will be sent to the author directly. Rest assured, your privacy is prioritized.');
-      logger.warn('This message will NOT go away by restarting Homebridge. An update MUST become available first. Please be patient, thank you!');
-    }
-
     try {
       await axios.post(
         getDetectReportUrl(),
@@ -273,7 +290,7 @@ export async function detectApiDoSubmitHandlers(handlers: DetectApiDoSubmitHandl
  * @since 1.0.0
  */
 export async function detectApiGatewayInformation(device: DetectApiGatewayInformationDevice, logger: DetectApiGatewayInformationLogger, debugMode: DetectApiGatewayInformationDebugMode): DetectApiGatewayInformationReturns {
-  const detectedNewStatus = (device.status !== null && !gatewayInformationStatusItems.includes(device.status));
+  const detectedNewStatus = (device.status !== null && !itemGatewayInformationStatuses.includes(device.status));
 
   if (detectedNewStatus) {
     const cleanedData = removePersonalIdentifiableInformation(device);
@@ -316,12 +333,6 @@ export async function detectApiGatewayInformation(device: DetectApiGatewayInform
 
     // Show content being sent to author.
     stackTracer('detect-content', cleanedData);
-
-    // This reminder should show after displaying content being sent, since sometimes the code can fill the screen.
-    if (logger !== null) {
-      logger.warn('For transparency, the section of code you see above will be sent to the author directly. Rest assured, your privacy is prioritized.');
-      logger.warn('This message will NOT go away by restarting Homebridge. An update MUST become available first. Please be patient, thank you!');
-    }
 
     try {
       await axios.post(
@@ -369,20 +380,20 @@ export async function detectApiOrbSecurityButtons(buttons: DetectApiOrbSecurityB
       && (
         (
           button.buttonText !== null
-          && !orbSecurityButtonButtonTextItems.includes(button.buttonText)
+          && !itemOrbSecurityButtonButtonTexts.includes(button.buttonText)
         )
-        || !orbSecurityButtonLoadingTextItems.includes(button.loadingText)
-        || !orbSecurityButtonRelativeUrlItems.includes(button.relativeUrl)
-        || !orbSecurityButtonUrlParamsArmItems.includes(button.urlParams.arm)
-        || !orbSecurityButtonUrlParamsArmStateItems.includes(button.urlParams.armState)
-        || !orbSecurityButtonUrlParamsHrefItems.includes(button.urlParams.href)
+        || !itemOrbSecurityButtonLoadingTexts.includes(button.loadingText)
+        || !itemOrbSecurityButtonRelativeUrls.includes(button.relativeUrl)
+        || !itemOrbSecurityButtonUrlParamsArms.includes(button.urlParams.arm)
+        || !itemOrbSecurityButtonUrlParamsArmStates.includes(button.urlParams.armState)
+        || !itemOrbSecurityButtonUrlParamsHrefs.includes(button.urlParams.href)
       )
     )
     || (
       button.buttonDisabled
       && (
         button.buttonText !== null
-        && !orbSecurityButtonLoadingTextItems.includes(button.buttonText)
+        && !itemOrbSecurityButtonLoadingTexts.includes(button.buttonText)
       )
     )
   ));
@@ -429,12 +440,6 @@ export async function detectApiOrbSecurityButtons(buttons: DetectApiOrbSecurityB
     // Show content being sent to author.
     stackTracer('detect-content', cleanedData);
 
-    // This reminder should show after displaying content being sent, since sometimes the code can fill the screen.
-    if (logger !== null) {
-      logger.warn('For transparency, the section of code you see above will be sent to the author directly. Rest assured, your privacy is prioritized.');
-      logger.warn('This message will NOT go away by restarting Homebridge. An update MUST become available first. Please be patient, thank you!');
-    }
-
     try {
       await axios.post(
         getDetectReportUrl(),
@@ -475,7 +480,7 @@ export async function detectApiOrbSecurityButtons(buttons: DetectApiOrbSecurityB
  * @since 1.0.0
  */
 export async function detectApiPanelInformation(device: DetectApiPanelInformationDevice, logger: DetectApiPanelInformationLogger, debugMode: DetectApiPanelInformationDebugMode): DetectApiPanelInformationReturns {
-  const detectedNewStatus = (device.status !== null && !panelInformationStatusItems.includes(device.status));
+  const detectedNewStatus = (device.status !== null && !itemPanelInformationStatuses.includes(device.status));
 
   if (detectedNewStatus) {
     const cleanedData = removePersonalIdentifiableInformation(device);
@@ -518,12 +523,6 @@ export async function detectApiPanelInformation(device: DetectApiPanelInformatio
 
     // Show content being sent to author.
     stackTracer('detect-content', cleanedData);
-
-    // This reminder should show after displaying content being sent, since sometimes the code can fill the screen.
-    if (logger !== null) {
-      logger.warn('For transparency, the section of code you see above will be sent to the author directly. Rest assured, your privacy is prioritized.');
-      logger.warn('This message will NOT go away by restarting Homebridge. An update MUST become available first. Please be patient, thank you!');
-    }
 
     try {
       await axios.post(
@@ -609,12 +608,6 @@ export async function detectApiPanelStatus(summary: DetectApiPanelStatusSummary,
     // Show content being sent to author.
     stackTracer('detect-content', cleanedData);
 
-    // This reminder should show after displaying content being sent, since sometimes the code can fill the screen.
-    if (logger !== null) {
-      logger.warn('For transparency, the section of code you see above will be sent to the author directly. Rest assured, your privacy is prioritized.');
-      logger.warn('This message will NOT go away by restarting Homebridge. An update MUST become available first. Please be patient, thank you!');
-    }
-
     try {
       await axios.post(
         getDetectReportUrl(),
@@ -655,7 +648,7 @@ export async function detectApiPanelStatus(summary: DetectApiPanelStatusSummary,
  * @since 1.0.0
  */
 export async function detectApiPortalVersion(version: DetectApiPortalVersionVersion, logger: DetectApiPortalVersionLogger, debugMode: DetectApiPortalVersionDebugMode): DetectApiPortalVersionReturns {
-  const detectedNewVersion = (version.version !== null && !portalVersionItems.includes(version.version));
+  const detectedNewVersion = (version.version !== null && !itemPortalVersions.includes(version.version));
 
   if (detectedNewVersion) {
     const cleanedData = removePersonalIdentifiableInformation(version);
@@ -699,12 +692,6 @@ export async function detectApiPortalVersion(version: DetectApiPortalVersionVers
     // Show content being sent to author.
     stackTracer('detect-content', cleanedData);
 
-    // This reminder should show after displaying content being sent, since sometimes the code can fill the screen.
-    if (logger !== null) {
-      logger.warn('For transparency, the section of code you see above will be sent to the author directly. Rest assured, your privacy is prioritized.');
-      logger.warn('This message will NOT go away by restarting Homebridge. An update MUST become available first. Please be patient, thank you!');
-    }
-
     try {
       await axios.post(
         getDetectReportUrl(),
@@ -746,8 +733,8 @@ export async function detectApiPortalVersion(version: DetectApiPortalVersionVers
  */
 export async function detectApiSensorsInformation(sensors: DetectApiSensorsInformationSensors, logger: DetectApiSensorsInformationLogger, debugMode: DetectApiSensorsInformationDebugMode): DetectApiSensorsInformationReturns {
   const detectedNewInformation = sensors.filter((sensor) => (
-    !sensorInformationDeviceTypeItems.includes(sensor.deviceType)
-    || !sensorInformationStatusItems.includes(sensor.status)
+    !itemSensorInformationDeviceTypes.includes(sensor.deviceType)
+    || !itemSensorInformationStatuses.includes(sensor.status)
   ));
 
   if (detectedNewInformation.length > 0) {
@@ -792,12 +779,6 @@ export async function detectApiSensorsInformation(sensors: DetectApiSensorsInfor
     // Show content being sent to author.
     stackTracer('detect-content', cleanedData);
 
-    // This reminder should show after displaying content being sent, since sometimes the code can fill the screen.
-    if (logger !== null) {
-      logger.warn('For transparency, the section of code you see above will be sent to the author directly. Rest assured, your privacy is prioritized.');
-      logger.warn('This message will NOT go away by restarting Homebridge. An update MUST become available first. Please be patient, thank you!');
-    }
-
     try {
       await axios.post(
         getDetectReportUrl(),
@@ -838,7 +819,7 @@ export async function detectApiSensorsInformation(sensors: DetectApiSensorsInfor
  * @since 1.0.0
  */
 export async function detectApiSensorsStatus(sensors: DetectApiSensorsStatusSensors, logger: DetectApiSensorsStatusLogger, debugMode: DetectApiSensorsStatusDebugMode): DetectApiSensorsStatusReturns {
-  const detectedNewStatuses = sensors.filter((sensor) => !sensorStatusIconItems.includes(sensor.icon) || sensor.statuses.some((sensorStatus) => !sensorStatusStatusItems.includes(sensorStatus)));
+  const detectedNewStatuses = sensors.filter((sensor) => !itemSensorStatusIcons.includes(sensor.icon) || sensor.statuses.some((sensorStatus) => !itemSensorStatusStatuses.includes(sensorStatus)));
 
   if (detectedNewStatuses.length > 0) {
     const cleanedData = removePersonalIdentifiableInformation(detectedNewStatuses);
@@ -881,12 +862,6 @@ export async function detectApiSensorsStatus(sensors: DetectApiSensorsStatusSens
 
     // Show content being sent to author.
     stackTracer('detect-content', cleanedData);
-
-    // This reminder should show after displaying content being sent, since sometimes the code can fill the screen.
-    if (logger !== null) {
-      logger.warn('For transparency, the section of code you see above will be sent to the author directly. Rest assured, your privacy is prioritized.');
-      logger.warn('This message will NOT go away by restarting Homebridge. An update MUST become available first. Please be patient, thank you!');
-    }
 
     try {
       await axios.post(
@@ -972,12 +947,6 @@ export async function detectPlatformSensorCountMismatch(data: DetectPlatformSens
     // Show content being sent to author.
     stackTracer('detect-content', cleanedData);
 
-    // This reminder should show after displaying content being sent, since sometimes the code can fill the screen.
-    if (logger !== null) {
-      logger.warn('For transparency, the section of code you see above will be sent to the author directly. Rest assured, your privacy is prioritized.');
-      logger.warn('This message will NOT go away by restarting Homebridge. An update MUST become available first. Please be patient, thank you!');
-    }
-
     try {
       await axios.post(
         getDetectReportUrl(),
@@ -1023,7 +992,7 @@ export async function detectPlatformUnknownSensorsAction(sensors: DetectPlatform
     const sensorType = sensor.type;
 
     const stringifiedStatuses = sensorStatusStatuses.join(', ');
-    const currentType = sensorActionItems.find((sensorActionItem) => sensorActionItem.type === sensorType);
+    const currentType = collectionSensorActions.find((collectionSensorAction) => collectionSensorAction.type === sensorType);
 
     // Need to start with a list of documented actions for that sensor type.
     if (currentType === undefined) {
@@ -1075,12 +1044,6 @@ export async function detectPlatformUnknownSensorsAction(sensors: DetectPlatform
 
     // Show content being sent to author.
     stackTracer('detect-content', cleanedData);
-
-    // This reminder should show after displaying content being sent, since sometimes the code can fill the screen.
-    if (logger !== null) {
-      logger.warn('For transparency, the section of code you see above will be sent to the author directly. Rest assured, your privacy is prioritized.');
-      logger.warn('This message will NOT go away by restarting Homebridge. An update MUST become available first. Please be patient, thank you!');
-    }
 
     try {
       await axios.post(

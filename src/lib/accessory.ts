@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 
-import { condensedSensorTypeItems } from '@/lib/items.js';
+import { itemCondensedSensorTypes } from '@/lib/items.js';
 import {
   condensePanelStates,
   convertPanelCharacteristicValue,
@@ -405,7 +405,7 @@ export class ADTPulseAccessory {
       || type === 'gateway'
       || type === 'panel'
       || type === 'panelSwitch'
-      || !condensedSensorTypeItems.includes(type)
+      || !itemCondensedSensorTypes.includes(type)
     ) {
       hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.RESOURCE_DOES_NOT_EXIST);
 

@@ -102,6 +102,48 @@ export interface AxiosResponseNodeJs<T = any, D = any> extends AxiosResponse<T, 
 export type Config = z.infer<typeof platformConfig>;
 
 /**
+ * Debug parser.
+ *
+ * @since 1.0.0
+ */
+export type DebugParserMethod = 'armDisarmHandler' | 'forceArmHandler' | 'getGatewayInformation' | 'getPanelInformation' | 'getPanelStatus' | 'getSensorsInformation' | 'getSensorsStatus' | 'setPanelStatus';
+
+export type DebugParserResponseArmDisarmHandler = OrbSecurityButtons;
+
+export type DebugParserResponseForceArmHandler = DoSubmitHandlers;
+
+export type DebugParserResponseGetGatewayInformation = Record<string, string[]>;
+
+export type DebugParserResponseGetPanelInformation = Record<string, string[]>;
+
+export type DebugParserResponseGetPanelStatus = PanelStatus;
+
+export type DebugParserResponseGetSensorsInformation = SensorInformation[];
+
+export type DebugParserResponseGetSensorsStatus = SensorStatus[];
+
+export type DebugParserResponseSetPanelStatus = OrbSecurityButtons;
+
+export type DebugParserResponse = {
+  armDisarmHandler: DebugParserResponseArmDisarmHandler;
+  forceArmHandler: DebugParserResponseForceArmHandler;
+  getGatewayInformation: DebugParserResponseGetGatewayInformation;
+  getPanelInformation: DebugParserResponseGetPanelInformation;
+  getPanelStatus: DebugParserResponseGetPanelStatus;
+  getSensorsInformation: DebugParserResponseGetSensorsInformation;
+  getSensorsStatus: DebugParserResponseGetSensorsStatus;
+  setPanelStatus: DebugParserResponseSetPanelStatus;
+};
+
+export type DebugParserRawHtml = string;
+
+export type DebugParser<Method extends DebugParserMethod> = {
+  method: Method;
+  response: DebugParserResponse[Method];
+  rawHtml: DebugParserRawHtml;
+};
+
+/**
  * Devices.
  *
  * @since 1.0.0
@@ -178,13 +220,6 @@ export type DoSubmitHandler = {
 };
 
 export type DoSubmitHandlers = DoSubmitHandler[];
-
-/**
- * Function name.
- *
- * @since 1.0.0
- */
-export type FunctionName = `${string}()`;
 
 /**
  * Gateway information.

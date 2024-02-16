@@ -42,7 +42,6 @@ import {
   generateDynatracePCHeaderValue,
   generateFakeReadyButtons,
   generateHash,
-  isEmptyOrbTextSummary,
   isPortalSyncCode,
   parseArmDisarmMessage,
   parseDoSubmitHandlers,
@@ -866,25 +865,12 @@ export class ADTPulse {
        */
       await this.newInformationDispatcher('gateway-information', gatewayInformation);
 
-      // TODO Need a more permanent way and safer way to determine gateway model.
-      // If the parsing function may be parsing data incorrectly.
-      if (
-        Object.keys(fetchedTableCells).length !== 10 // Lynx/QuickConnect Cellular-Only Gateway / Cellular Mode.
-        && Object.keys(fetchedTableCells).length !== 11 // Compact SMA Protocol Gateway / Cellular Mode.
-        && Object.keys(fetchedTableCells).length !== 17 // ADT Pulse Gateway / Broadband Mode / No Router WAN IP Address.
-        && Object.keys(fetchedTableCells).length !== 18 // ADT Pulse Gateway / Broadband Mode.
-      ) {
-        if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getGatewayInformation()', 'warn', 'The fetchTableCells() function may be parsing the gateway information incorrectly');
-        }
-
-        await this.newInformationDispatcher('debug-parser', {
-          parserName: 'fetchTableCells()',
-          parserReason: 'length does not match 10, 11, 17, and 18',
-          parserResponse: fetchedTableCells,
-          rawData: sessions.axiosSystemGateway.data,
-        });
-      }
+      // Check if the parsing function is parsing data incorrectly.
+      await this.newInformationDispatcher('debug-parser', {
+        method: 'getGatewayInformation',
+        response: fetchedTableCells,
+        rawHtml: sessions.axiosSystemGateway.data,
+      });
 
       if (this.#internal.debug) {
         debugLog(this.#internal.logger, 'api.ts / ADTPulse.getGatewayInformation()', 'success', `Successfully retrieved gateway information from "${this.#internal.baseUrl}"`);
@@ -940,9 +926,6 @@ export class ADTPulse {
           },
         }),
       );
-
-      // TODO Check for 500 Internal Server Error (add it to every API method).
-      // TODO sessions.axiosSystemDeviceId1.status
 
       // If the "ClientRequest" object does not exist in the Axios response.
       if (typeof sessions.axiosSystemDeviceId1?.request === 'undefined') {
@@ -1087,24 +1070,12 @@ export class ADTPulse {
        */
       await this.newInformationDispatcher('panel-information', panelInformation);
 
-      // TODO Need a more permanent way and safer way to determine panel status.
-      // If the parsing function may be parsing data incorrectly.
-      if (
-        Object.keys(fetchedTableCells).length !== 3 // PowerSeries/PremisePro.
-        && Object.keys(fetchedTableCells).length !== 4 // Impassa SCW9057.
-        && Object.keys(fetchedTableCells).length !== 5 // Safewatch Pro 3000/3000CN.
-      ) {
-        if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelInformation()', 'warn', 'The fetchTableCells() function may be parsing the panel information incorrectly');
-        }
-
-        await this.newInformationDispatcher('debug-parser', {
-          parserName: 'fetchTableCells()',
-          parserReason: 'length does not match 3, 4, and 5',
-          parserResponse: fetchedTableCells,
-          rawData: sessions.axiosSystemDeviceId1.data,
-        });
-      }
+      // Check if the parsing function is parsing data incorrectly.
+      await this.newInformationDispatcher('debug-parser', {
+        method: 'getPanelInformation',
+        response: fetchedTableCells,
+        rawHtml: sessions.axiosSystemDeviceId1.data,
+      });
 
       if (this.#internal.debug) {
         debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelInformation()', 'success', `Successfully retrieved panel information from "${this.#internal.baseUrl}"`);
@@ -1321,19 +1292,12 @@ export class ADTPulse {
        */
       await this.newInformationDispatcher('panel-status', parsedOrbTextSummary);
 
-      // If the parsing function may be parsing data incorrectly.
-      if (isEmptyOrbTextSummary(parsedOrbTextSummary)) {
-        if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelStatus()', 'warn', 'The parseOrbTextSummary() function may be parsing sensors information incorrectly');
-        }
-
-        await this.newInformationDispatcher('debug-parser', {
-          parserName: 'parseOrbTextSummary()',
-          parserReason: 'empty response',
-          parserResponse: parsedOrbTextSummary,
-          rawData: sessions.axiosSummary.data,
-        });
-      }
+      // Check if the parsing function is parsing data incorrectly.
+      await this.newInformationDispatcher('debug-parser', {
+        method: 'getPanelStatus',
+        response: parsedOrbTextSummary,
+        rawHtml: sessions.axiosSummary.data,
+      });
 
       if (this.#internal.debug) {
         debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelStatus()', 'success', `Successfully retrieved panel status from "${this.#internal.baseUrl}"`);
@@ -1651,19 +1615,12 @@ export class ADTPulse {
        */
       await this.newInformationDispatcher('orb-security-buttons', parsedOrbSecurityButtons);
 
-      // If the parsing function may be parsing data incorrectly.
-      if (parsedOrbSecurityButtons.length < 1 || parsedOrbSecurityButtons.length > 3) {
-        if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'warn', 'The parseOrbSecurityButtons() function may be parsing the orb security buttons incorrectly');
-        }
-
-        await this.newInformationDispatcher('debug-parser', {
-          parserName: 'parseOrbSecurityButtons()',
-          parserReason: 'length is not between 1 to 3',
-          parserResponse: parsedOrbSecurityButtons,
-          rawData: sessions.axiosSummary.data,
-        });
-      }
+      // Check if the parsing function is parsing data incorrectly.
+      await this.newInformationDispatcher('debug-parser', {
+        method: 'setPanelStatus',
+        response: parsedOrbSecurityButtons,
+        rawHtml: sessions.axiosSummary.data,
+      });
 
       // Only keep all ready (enabled) orb security buttons.
       let readyButtons = parsedOrbSecurityButtons.filter((parsedOrbSecurityButton): parsedOrbSecurityButton is ADTPulseSetPanelStatusReadyButton => !parsedOrbSecurityButton.buttonDisabled);
@@ -2008,19 +1965,12 @@ export class ADTPulse {
        */
       await this.newInformationDispatcher('sensors-information', parsedSensorsTable);
 
-      // If the parsing function may be parsing data incorrectly.
-      if (parsedSensorsTable.length < 1) {
-        if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsInformation()', 'warn', 'The parseSensorsTable() function may be parsing the sensors table incorrectly');
-        }
-
-        await this.newInformationDispatcher('debug-parser', {
-          parserName: 'parseSensorsTable()',
-          parserReason: 'length is not 1 or more',
-          parserResponse: parsedSensorsTable,
-          rawData: sessions.axiosSystem.data,
-        });
-      }
+      // Check if the parsing function is parsing data incorrectly.
+      await this.newInformationDispatcher('debug-parser', {
+        method: 'getSensorsInformation',
+        response: parsedSensorsTable,
+        rawHtml: sessions.axiosSystem.data,
+      });
 
       if (this.#internal.debug) {
         debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsInformation()', 'success', `Successfully retrieved sensors information from "${this.#internal.baseUrl}"`);
@@ -2260,19 +2210,12 @@ export class ADTPulse {
        */
       await this.newInformationDispatcher('sensors-status', parsedOrbSensors);
 
-      // If the parsing function may be parsing data incorrectly.
-      if (parsedOrbSensors.length < 1) {
-        if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsStatus()', 'warn', 'The parseOrbSensors() function may be parsing the orb sensors incorrectly');
-        }
-
-        await this.newInformationDispatcher('debug-parser', {
-          parserName: 'parseOrbSensors()',
-          parserReason: 'length is not 1 or more',
-          parserResponse: parsedOrbSensors,
-          rawData: sessions.axiosSummary.data,
-        });
-      }
+      // Check if the parsing function is parsing data incorrectly.
+      await this.newInformationDispatcher('debug-parser', {
+        method: 'getSensorsStatus',
+        response: parsedOrbSensors,
+        rawHtml: sessions.axiosSummary.data,
+      });
 
       if (this.#internal.debug) {
         debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsStatus()', 'success', `Successfully retrieved sensors status from "${this.#internal.baseUrl}"`);
@@ -2987,19 +2930,12 @@ export class ADTPulse {
        */
       await this.newInformationDispatcher('orb-security-buttons', parsedOrbSecurityButtons);
 
-      // If the parsing function may be parsing data incorrectly.
-      if (parsedOrbSecurityButtons.length < 1 || parsedOrbSecurityButtons.length > 3) {
-        if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'warn', 'The parseOrbSecurityButtons() function may be parsing the orb security buttons incorrectly');
-        }
-
-        await this.newInformationDispatcher('debug-parser', {
-          parserName: 'parseOrbSecurityButtons()',
-          parserReason: 'length is not between 1 to 3',
-          parserResponse: parsedOrbSecurityButtons,
-          rawData: sessions.axiosSummary.data,
-        });
-      }
+      // Check if the parsing function is parsing data incorrectly.
+      await this.newInformationDispatcher('debug-parser', {
+        method: 'armDisarmHandler',
+        response: parsedOrbSecurityButtons,
+        rawHtml: sessions.axiosSummary.data,
+      });
 
       let readyButtons = parsedOrbSecurityButtons.filter((parsedOrbSecurityButton): parsedOrbSecurityButton is ADTPulseArmDisarmHandlerReadyButton => !parsedOrbSecurityButton.buttonDisabled);
 
@@ -3163,22 +3099,12 @@ export class ADTPulse {
        */
       await this.newInformationDispatcher('do-submit-handlers', parsedDoSubmitHandlers);
 
-      // If the parsing function may be parsing data incorrectly.
-      if (
-        parsedDoSubmitHandlers.length !== 0 // No force arming required.
-        && parsedDoSubmitHandlers.length !== 2 // Force arming required.
-      ) {
-        if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'warn', 'The parseDoSubmitHandlers() function may be parsing the do submit handlers incorrectly');
-        }
-
-        await this.newInformationDispatcher('debug-parser', {
-          parserName: 'parseDoSubmitHandlers()',
-          parserReason: 'length does not match 0 and 2',
-          parserResponse: parsedDoSubmitHandlers,
-          rawData: response.data,
-        });
-      }
+      // Check if the parsing function is parsing data incorrectly.
+      await this.newInformationDispatcher('debug-parser', {
+        method: 'forceArmHandler',
+        response: parsedDoSubmitHandlers,
+        rawHtml: response.data,
+      });
 
       // Check if there are no force arm buttons available.
       if (
@@ -3436,7 +3362,7 @@ export class ADTPulse {
    * @since 1.0.0
    */
   private async newInformationDispatcher(type: ADTPulseNewInformationDispatcherType, data: ADTPulseNewInformationDispatcherData<ADTPulseNewInformationDispatcherType>): ADTPulseNewInformationDispatcherReturns {
-    const dataHash = generateHash(`${type}: ${JSON.stringify(data)}`);
+    const dataHash = generateHash(data);
 
     // If the detector has not reported this event before.
     if (this.#internal.reportedHashes.find((reportedHash) => dataHash === reportedHash) === undefined) {

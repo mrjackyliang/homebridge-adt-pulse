@@ -8,7 +8,15 @@ import { createRequire } from 'node:module';
 import os from 'node:os';
 import util from 'node:util';
 
-import { panelStatusNoteItems, panelStatusStateItems, panelStatusStatusItems } from '@/lib/items.js';
+import {
+  collectionDoSubmitHandlers,
+  collectionOrbSecurityButtons,
+  deviceGateways,
+  deviceSecurityPanels,
+  itemPanelStatusNotes,
+  itemPanelStatusStates,
+  itemPanelStatusStatuses,
+} from '@/lib/items.js';
 import {
   characterBackslashForwardSlash,
   characterHtmlLineBreak,
@@ -87,6 +95,14 @@ import type {
   IsPluginOutdatedReturns,
   IsPortalSyncCodeSyncCode,
   IsPortalSyncCodeTypeGuard,
+  IsUnknownDoSubmitHandlerCollectionHandlers,
+  IsUnknownDoSubmitHandlerCollectionReturns,
+  IsUnknownGatewayDeviceGateway,
+  IsUnknownGatewayDeviceReturns,
+  IsUnknownOrbSecurityButtonCollectionButtons,
+  IsUnknownOrbSecurityButtonCollectionReturns,
+  IsUnknownPanelDevicePanel,
+  IsUnknownPanelDeviceReturns,
   ParseArmDisarmMessageElement,
   ParseArmDisarmMessageReturns,
   ParseDoSubmitHandlersElements,
@@ -740,7 +756,31 @@ export function generateFakeReadyButtons(buttons: GenerateFakeReadyButtonsButton
  * @since 1.0.0
  */
 export function generateHash(data: GenerateHashData): GenerateHashReturns {
-  return createHash('sha512').update(data).digest('hex');
+  const staticData = _.omit(data, [
+    'masterCode',
+    'network.broadband.ip',
+    'network.broadband.mac',
+    'network.device.ip',
+    'network.device.mac',
+    'network.router.lanIp',
+    'network.router.wanIp',
+    'rawHtml',
+    'response.Broadband LAN IP Address:',
+    'response.Broadband LAN MAC:',
+    'response.Device LAN IP Address:',
+    'response.Device LAN MAC:',
+    'response.Last Update:',
+    'response.Next Update:',
+    'response.Router LAN IP Address:',
+    'response.Router WAN IP Address:',
+    'response.Security Panel Master Code:',
+    'response.Serial Number:',
+    'serialNumber',
+    'update.last',
+    'update.next',
+  ]);
+
+  return createHash('sha512').update(JSON.stringify(staticData)).digest('hex');
 }
 
 /**
@@ -930,6 +970,85 @@ export function isPortalSyncCode(syncCode: IsPortalSyncCodeSyncCode): syncCode i
 }
 
 /**
+ * Is unknown do submit handler collection.
+ *
+ * @param {IsUnknownDoSubmitHandlerCollectionHandlers} handlers - Handlers.
+ *
+ * @returns {IsUnknownDoSubmitHandlerCollectionReturns}
+ *
+ * @since 1.0.0
+ */
+export function isUnknownDoSubmitHandlerCollection(handlers: IsUnknownDoSubmitHandlerCollectionHandlers): IsUnknownDoSubmitHandlerCollectionReturns {
+  const currentHandlerCollection = handlers.map((handler) => ({
+    href: handler.urlParams.href,
+  }));
+
+  return !collectionDoSubmitHandlers.some((collectionDoSubmitHandler) => _.isEqual(collectionDoSubmitHandler, currentHandlerCollection));
+}
+
+/**
+ * Is unknown gateway device.
+ *
+ * @param {IsUnknownGatewayDeviceGateway} gateway - Gateway.
+ *
+ * @returns {IsUnknownGatewayDeviceReturns}
+ *
+ * @since 1.0.0
+ */
+export function isUnknownGatewayDevice(gateway: IsUnknownGatewayDeviceGateway): IsUnknownGatewayDeviceReturns {
+  const currentGateway = {
+    broadbandConnectionStatus: _.get(gateway, ['Broadband Connection Status:', 0], null),
+    cellularConnectionStatus: _.get(gateway, ['Cellular Connection Status:', 0], null),
+    cellularSignalStrength: _.get(gateway, ['Cellular Signal Strength:', 0], null),
+    firmwareVersion: _.get(gateway, ['Firmware Version:', 0], null),
+    hardwareVersion: _.get(gateway, ['Hardware Version:', 0], null),
+    manufacturer: _.get(gateway, ['Manufacturer:', 0], null),
+    model: _.get(gateway, ['Model:', 0], null),
+    primaryConnectionType: _.get(gateway, ['Primary Connection Type:', 0], null),
+  };
+
+  return !deviceGateways.some((deviceGateway) => _.isEqual(deviceGateway, currentGateway));
+}
+
+/**
+ * Is unknown orb security button collection.
+ *
+ * @param {IsUnknownOrbSecurityButtonCollectionButtons} buttons - Buttons.
+ *
+ * @returns {IsUnknownOrbSecurityButtonCollectionReturns}
+ *
+ * @since 1.0.0
+ */
+export function isUnknownOrbSecurityButtonCollection(buttons: IsUnknownOrbSecurityButtonCollectionButtons): IsUnknownOrbSecurityButtonCollectionReturns {
+  const currentButtonCollection = buttons.map((button) => ({
+    buttonDisabled: button.buttonDisabled,
+    buttonText: button.buttonText,
+    loadingText: ('loadingText' in button) ? button.loadingText : null,
+  }));
+
+  return !collectionOrbSecurityButtons.some((collectionOrbSecurityButton) => _.isEqual(collectionOrbSecurityButton, currentButtonCollection));
+}
+
+/**
+ * Is unknown panel device.
+ *
+ * @param {IsUnknownPanelDevicePanel} panel - Panel.
+ *
+ * @returns {IsUnknownPanelDeviceReturns}
+ *
+ * @since 1.0.0
+ */
+export function isUnknownPanelDevice(panel: IsUnknownPanelDevicePanel): IsUnknownPanelDeviceReturns {
+  const currentPanel = {
+    emergencyKeys: _.get(panel, ['Emergency Keys:', 0], null),
+    manufacturerProvider: _.get(panel, ['Manufacturer/Provider:', 0], null),
+    typeModel: _.get(panel, ['Type/Model:', 0], null),
+  };
+
+  return !deviceSecurityPanels.some((deviceSecurityPanel) => _.isEqual(deviceSecurityPanel, currentPanel));
+}
+
+/**
  * Parse arm disarm message.
  *
  * @param {ParseArmDisarmMessageElement} element - Element.
@@ -1016,6 +1135,17 @@ export function parseOrbSensors(elements: ParseOrbSensorsElements): ParseOrbSens
         const cleanedZone = Number(clearWhitespace(zoneText).replace(textOrbSensorZone, '$2'));
         const cleanedStatuses = clearWhitespace(statusText).split(', ') as ParseOrbSensorsCleanedStatuses;
 
+        /**
+         * Only support sensors with zones between 1 and 99
+         * because anything above Zone 99 is mostly a rogue sensor
+         * like "KEYPAD #1".
+         *
+         * @since 1.0.0
+         */
+        if (cleanedZone < 1 || cleanedZone > 99) {
+          return;
+        }
+
         sensors.push({
           icon: cleanedIcon,
           name: cleanedName,
@@ -1068,13 +1198,13 @@ export function parseOrbTextSummary(element: ParseOrbTextSummaryElement): ParseO
     for (let j = 0; j < rawSections[i].length; j += 1) {
       // Don't forget, we are matching arrays against strings here; "rawSections[i][j]" is a string not an array.
       switch (true) {
-        case panelStatusStateItems.includes(<ParseOrbTextSummaryStateItem>rawSections[i][j]):
+        case itemPanelStatusStates.includes(<ParseOrbTextSummaryStateItem>rawSections[i][j]):
           finalParsed.panelStates.push(<ParseOrbTextSummaryStateItem>rawSections[i][j]);
           break;
-        case panelStatusStatusItems.includes(<ParseOrbTextSummaryStatusItem>rawSections[i][j]):
+        case itemPanelStatusStatuses.includes(<ParseOrbTextSummaryStatusItem>rawSections[i][j]):
           finalParsed.panelStatuses.push(<ParseOrbTextSummaryStatusItem>rawSections[i][j]);
           break;
-        case panelStatusNoteItems.includes(<ParseOrbTextSummaryNoteItem>rawSections[i][j]):
+        case itemPanelStatusNotes.includes(<ParseOrbTextSummaryNoteItem>rawSections[i][j]):
           finalParsed.panelNotes.push(<ParseOrbTextSummaryNoteItem>rawSections[i][j]);
           break;
         default:
@@ -1252,10 +1382,16 @@ export function parseSensorsTable(elements: ParseOrbSensorsTableElements): Parse
  */
 export function removePersonalIdentifiableInformation(data: RemovePersonalIdentifiableInformationData): RemovePersonalIdentifiableInformationReturns {
   const redactedKeys = [
+    'Broadband LAN IP Address:',
+    'Broadband LAN MAC:',
+    'Device LAN IP Address:',
+    'Device LAN MAC:',
     'ip',
     'lanIp',
     'mac',
     'masterCode',
+    'Router LAN IP Address:',
+    'Router WAN IP Address:',
     'sat',
     'Security Panel Master Code:',
     'serial',
