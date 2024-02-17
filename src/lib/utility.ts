@@ -1387,9 +1387,13 @@ export function removePersonalIdentifiableInformation(data: RemovePersonalIdenti
     'Device LAN IP Address:',
     'Device LAN MAC:',
     'ip',
+    'Last Update:',
     'lanIp',
+    'last',
     'mac',
     'masterCode',
+    'Next Update:',
+    'next',
     'Router LAN IP Address:',
     'Router WAN IP Address:',
     'sat',
@@ -1399,6 +1403,7 @@ export function removePersonalIdentifiableInformation(data: RemovePersonalIdenti
     'Serial Number:',
     'wanIp',
   ];
+  const replacementText = '*** REDACTED FOR PRIVACY ***';
 
   /**
    * Remove personal identifiable information - Replace value.
@@ -1423,10 +1428,14 @@ export function removePersonalIdentifiableInformation(data: RemovePersonalIdenti
             return replaceValue(item);
           }
 
+          if (redactedKeys.includes(key)) {
+            return replacementText;
+          }
+
           return item;
         });
       } else if (redactedKeys.includes(key)) {
-        modifiedObject[key] = '*** REDACTED FOR PRIVACY ***';
+        modifiedObject[key] = replacementText;
       } else {
         modifiedObject[key] = value;
       }

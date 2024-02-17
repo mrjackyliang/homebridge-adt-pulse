@@ -227,13 +227,13 @@ Here is an example of the information I see when the plugin detects unknown stat
 ```json
 {
   "communication": {
-    "broadbandConnectionStatus": "Unavailable",
+    "broadbandConnectionStatus": "Active",
     "cellularConnectionStatus": "N/A",
     "cellularSignalStrength": "N/A",
     "primaryConnectionType": "Broadband"
   },
   "manufacturer": "ADT Pulse Gateway",
-  "model": "XYZ",
+  "model": "PGZNG1",
   "network": {
     "broadband": {
       "ip": "*** REDACTED FOR PRIVACY ***",
@@ -251,12 +251,12 @@ Here is an example of the information I see when the plugin detects unknown stat
   "serialNumber": "*** REDACTED FOR PRIVACY ***",
   "status": "Online",
   "update": {
-    "last": "Yesterday 12:00 PM",
-    "next": "Today 12:00 PM"
+    "last": "*** REDACTED FOR PRIVACY ***",
+    "next": "*** REDACTED FOR PRIVACY ***"
   },
   "versions": {
-    "firmware": "1.0.0",
-    "hardware": "1.0.0"
+    "firmware": "1.0.0-9",
+    "hardware": "HW=2, BL=1.0.0, PL=1.0.0, SKU=12345"
   }
 }
 ```

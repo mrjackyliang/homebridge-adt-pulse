@@ -276,9 +276,19 @@ export const deviceGateways: DeviceGateways = [
     cellularSignalStrength: 'N/A',
     firmwareVersion: '27.0.0-140',
     hardwareVersion: 'HW=02_CSMAP, BL=NA, PL=27.0.0-140',
-    manufacturer: '',
+    manufacturer: null,
     model: 'Compact SMA Protocol Gateway',
     primaryConnectionType: 'Cellular',
+  },
+  {
+    broadbandConnectionStatus: 'Active',
+    cellularConnectionStatus: 'N/A',
+    cellularSignalStrength: 'N/A',
+    firmwareVersion: '24.0.0-9',
+    hardwareVersion: 'HW=0002, BL=UBOOT 2009.08-svn99, PL=5.5.0-5, SKU=TSSC-NA-NONE-01',
+    manufacturer: 'ADT',
+    model: 'TSSC Lifestyle Module',
+    primaryConnectionType: 'Broadband',
   },
 ];
 
@@ -289,6 +299,16 @@ export const deviceGateways: DeviceGateways = [
  */
 export const deviceSecurityPanels: DeviceSecurityPanels = [
   {
+    emergencyKeys: 'Button: Fire Alarm (Zone 995) Button: Audible Panic Alarm (Zone 999)',
+    manufacturerProvider: 'ADT',
+    typeModel: 'TSSC Life Safety Module',
+  },
+  {
+    emergencyKeys: null,
+    manufacturerProvider: 'DSC',
+    typeModel: 'Security Panel - Impassa SCW9057',
+  },
+  {
     emergencyKeys: 'Button: Fire Alarm (Zone 95) Button: Audible Panic Alarm (Zone 99)',
     manufacturerProvider: 'ADT',
     typeModel: 'Security Panel - Safewatch Pro 3000/3000CN',
@@ -297,11 +317,6 @@ export const deviceSecurityPanels: DeviceSecurityPanels = [
     emergencyKeys: 'Button: Fire Alarm (Zone 95) Button: Personal Emergency (Zone 96) Button: Audible Panic Alarm (Zone 99)',
     manufacturerProvider: 'ADT',
     typeModel: 'Security Panel - Safewatch Pro 3000/3000CN',
-  },
-  {
-    emergencyKeys: null,
-    manufacturerProvider: 'DSC',
-    typeModel: 'Security Panel - Impassa SCW9057',
   },
 ];
 
