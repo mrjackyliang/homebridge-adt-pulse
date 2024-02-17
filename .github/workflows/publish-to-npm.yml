@@ -1,0 +1,24 @@
+name: "Publish to npm"
+
+run-name: "Publishing ${{ github.event.release.tag_name }} to npm"
+
+on:
+  release:
+    types: ["published"]
+
+permissions:
+  {}
+
+jobs:
+  publish-to-npm:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/checkout@v4"
+      - uses: "actions/setup-node@v4"
+        with:
+          node-version-file: "package.json"
+          registry-url: "https://registry.npmjs.org"
+      - run: npm install
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: "${{ secrets.NODE_AUTH_TOKEN }}"
