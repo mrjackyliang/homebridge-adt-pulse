@@ -1068,6 +1068,15 @@ export type ADTPulseTestSelectedPlatform = Config | undefined;
 export type ADTPulseTestStartTestReturns = Promise<void>;
 
 /**
+ * ADT Pulse Test - Zod parse response.
+ *
+ * @private
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseTestZodParseResponse = z.SafeParseReturnType<any, any> | undefined;
+
+/**
  * Clear html line break.
  *
  * @since 1.0.0

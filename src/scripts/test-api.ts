@@ -8,7 +8,7 @@ import util from 'node:util';
 
 import { ADTPulse } from '@/lib/api.js';
 import { platformConfig } from '@/lib/schema.js';
-import { debugLog, isForwardSlashOS } from '@/lib/utility.js';
+import { debugLog, isForwardSlashOS, stackTracer } from '@/lib/utility.js';
 import type {
   ADTPulseTestAskQuestionMode,
   ADTPulseTestAskQuestionReturns,
@@ -20,6 +20,7 @@ import type {
   ADTPulseTestSelectedConfigLocation,
   ADTPulseTestSelectedPlatform,
   ADTPulseTestStartTestReturns,
+  ADTPulseTestZodParseResponse,
 } from '@/types/index.d.ts';
 
 /**
@@ -45,6 +46,15 @@ class ADTPulseTest {
    * @since 1.0.0
    */
   #selectedPlatform: ADTPulseTestSelectedPlatform;
+
+  /**
+   * ADT Pulse Test - Zod parse response.
+   *
+   * @private
+   *
+   * @since 1.0.0
+   */
+  #zodParseResponse: ADTPulseTestZodParseResponse;
 
   /**
    * ADT Pulse Test - Start test.
@@ -163,6 +173,9 @@ class ADTPulseTest {
         if (adtPlatform !== undefined) {
           const validAdtPlatform = platformConfig.safeParse(adtPlatform);
 
+          // Set this to the instance in case "zod" parse failed.
+          this.#zodParseResponse = validAdtPlatform;
+
           if (validAdtPlatform.success) {
             this.#selectedConfigLocation = possibleLocations[i];
             this.#selectedPlatform = validAdtPlatform.data;
@@ -176,6 +189,12 @@ class ADTPulseTest {
 
     if (this.#selectedConfigLocation === undefined || this.#selectedPlatform === undefined) {
       debugLog(null, 'test-api.ts', 'error', 'Unable to find a parsable Homebridge config file with a validated "ADTPulse" platform');
+
+      if (this.#zodParseResponse !== undefined) {
+        debugLog(null, 'test-api.ts', 'warn', 'If you just upgraded from "v2 to v3" or from "v3 to v3.1", please update your configuration');
+        debugLog(null, 'test-api.ts', 'warn', 'Carefully observe the error below. The answer you are looking for is there');
+        stackTracer('zod-error', this.#zodParseResponse);
+      }
 
       return false;
     }
