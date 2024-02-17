@@ -270,6 +270,16 @@ export const deviceGateways: DeviceGateways = [
     model: 'PGZNG1',
     primaryConnectionType: 'Broadband',
   },
+  {
+    broadbandConnectionStatus: null,
+    cellularConnectionStatus: 'Active',
+    cellularSignalStrength: 'N/A',
+    firmwareVersion: '27.0.0-140',
+    hardwareVersion: 'HW=02_CSMAP, BL=NA, PL=27.0.0-140',
+    manufacturer: '',
+    model: 'Compact SMA Protocol Gateway',
+    primaryConnectionType: 'Cellular',
+  },
 ];
 
 /**
@@ -287,6 +297,11 @@ export const deviceSecurityPanels: DeviceSecurityPanels = [
     emergencyKeys: 'Button: Fire Alarm (Zone 95) Button: Personal Emergency (Zone 96) Button: Audible Panic Alarm (Zone 99)',
     manufacturerProvider: 'ADT',
     typeModel: 'Security Panel - Safewatch Pro 3000/3000CN',
+  },
+  {
+    emergencyKeys: null,
+    manufacturerProvider: 'DSC',
+    typeModel: 'Security Panel - Impassa SCW9057',
   },
 ];
 

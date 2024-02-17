@@ -1418,7 +1418,13 @@ export function removePersonalIdentifiableInformation(data: RemovePersonalIdenti
       if (_.isPlainObject(value)) {
         modifiedObject[key] = replaceValue(value as RemovePersonalIdentifiableInformationModifiedObject);
       } else if (Array.isArray(value)) {
-        modifiedObject[key] = value.map(replaceValue);
+        modifiedObject[key] = value.map((item) => {
+          if (_.isPlainObject(item)) {
+            return replaceValue(item);
+          }
+
+          return item;
+        });
       } else if (redactedKeys.includes(key)) {
         modifiedObject[key] = '*** REDACTED FOR PRIVACY ***';
       } else {
