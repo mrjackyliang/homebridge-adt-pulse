@@ -304,6 +304,11 @@ export const deviceSecurityPanels: DeviceSecurityPanels = [
     typeModel: 'TSSC Life Safety Module',
   },
   {
+    emergencyKeys: 'Button: Fire Alarm (Zone 995) Button: Personal Emergency (Zone 996) Button: Audible Panic Alarm (Zone 999)',
+    manufacturerProvider: 'ADT',
+    typeModel: 'TSSC Life Safety Module',
+  },
+  {
     emergencyKeys: null,
     manufacturerProvider: 'DSC',
     typeModel: 'Security Panel - Impassa SCW9057',
