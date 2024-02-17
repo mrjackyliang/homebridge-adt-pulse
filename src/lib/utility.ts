@@ -1417,6 +1417,8 @@ export function removePersonalIdentifiableInformation(data: RemovePersonalIdenti
 
       if (_.isPlainObject(value)) {
         modifiedObject[key] = replaceValue(value as RemovePersonalIdentifiableInformationModifiedObject);
+      } else if (Array.isArray(value)) {
+        modifiedObject[key] = value.map(replaceValue);
       } else if (redactedKeys.includes(key)) {
         modifiedObject[key] = '*** REDACTED FOR PRIVACY ***';
       } else {

@@ -35,14 +35,51 @@ import type {
  *
  * @since 1.0.0
  */
-export const collectionDoSubmitHandlers: CollectionDoSubmitHandlers = [];
+export const collectionDoSubmitHandlers: CollectionDoSubmitHandlers = [
+  [],
+  [
+    {
+      href: 'rest/adt/ui/client/security/setForceArm',
+    },
+    {
+      href: 'rest/adt/ui/client/security/setCancelProtest',
+    },
+  ],
+];
 
 /**
  * Collection orb security buttons.
  *
  * @since 1.0.0
  */
-export const collectionOrbSecurityButtons: CollectionOrbSecurityButtons = [];
+export const collectionOrbSecurityButtons: CollectionOrbSecurityButtons = [
+  [
+    {
+      buttonDisabled: false,
+      buttonText: 'Arm Away',
+      loadingText: 'Arming Away',
+    },
+    {
+      buttonDisabled: false,
+      buttonText: 'Arm Stay',
+      loadingText: 'Arming Stay',
+    },
+  ],
+  [
+    {
+      buttonDisabled: false,
+      buttonText: 'Disarm',
+      loadingText: 'Disarming',
+    },
+  ],
+  [
+    {
+      buttonDisabled: true,
+      buttonText: 'Arming Night',
+      loadingText: null,
+    },
+  ],
+];
 
 /**
  * Collection sensor actions.
@@ -243,6 +280,11 @@ export const deviceGateways: DeviceGateways = [
 export const deviceSecurityPanels: DeviceSecurityPanels = [
   {
     emergencyKeys: 'Button: Fire Alarm (Zone 95) Button: Audible Panic Alarm (Zone 99)',
+    manufacturerProvider: 'ADT',
+    typeModel: 'Security Panel - Safewatch Pro 3000/3000CN',
+  },
+  {
+    emergencyKeys: 'Button: Fire Alarm (Zone 95) Button: Personal Emergency (Zone 96) Button: Audible Panic Alarm (Zone 99)',
     manufacturerProvider: 'ADT',
     typeModel: 'Security Panel - Safewatch Pro 3000/3000CN',
   },

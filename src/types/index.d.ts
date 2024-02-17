@@ -1109,7 +1109,7 @@ export type CollectionOrbSecurityButtonButtonButtonDisabled = boolean;
 
 export type CollectionOrbSecurityButtonButtonButtonText = PortalPanelArmButtonText | PortalPanelArmButtonLoadingText;
 
-export type CollectionOrbSecurityButtonButtonLoadingText = PortalPanelArmButtonLoadingText;
+export type CollectionOrbSecurityButtonButtonLoadingText = PortalPanelArmButtonLoadingText | null;
 
 export type CollectionOrbSecurityButtonButton = {
   buttonDisabled: CollectionOrbSecurityButtonButtonButtonDisabled;
