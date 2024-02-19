@@ -36,15 +36,21 @@ import type {
  * @since 1.0.0
  */
 export const collectionDoSubmitHandlers: CollectionDoSubmitHandlers = [
-  [],
-  [
-    {
-      href: 'rest/adt/ui/client/security/setForceArm',
-    },
-    {
-      href: 'rest/adt/ui/client/security/setCancelProtest',
-    },
-  ],
+  {
+    description: 'Force arm required',
+    handlers: [
+      {
+        href: 'rest/adt/ui/client/security/setForceArm',
+      },
+      {
+        href: 'rest/adt/ui/client/security/setCancelProtest',
+      },
+    ],
+  },
+  {
+    description: 'No force arm required',
+    handlers: [],
+  },
 ];
 
 /**
@@ -53,70 +59,95 @@ export const collectionDoSubmitHandlers: CollectionDoSubmitHandlers = [
  * @since 1.0.0
  */
 export const collectionOrbSecurityButtons: CollectionOrbSecurityButtons = [
-  [
-    {
-      buttonDisabled: false,
-      buttonText: 'Arm Away',
-      loadingText: 'Arming Away',
-    },
-    {
-      buttonDisabled: false,
-      buttonText: 'Arm Stay',
-      loadingText: 'Arming Stay',
-    },
-  ],
-  [
-    {
-      buttonDisabled: false,
-      buttonText: 'Disarm',
-      loadingText: 'Disarming',
-    },
-  ],
-  [
-    {
-      buttonDisabled: true,
-      buttonText: 'Disarming',
-      loadingText: null,
-    },
-  ],
-  [
-    {
-      buttonDisabled: true,
-      buttonText: 'Arming Away',
-      loadingText: null,
-    },
-  ],
-  [
-    {
-      buttonDisabled: true,
-      buttonText: 'Arming Stay',
-      loadingText: null,
-    },
-  ],
-  [
-    {
-      buttonDisabled: true,
-      buttonText: 'Arming Night',
-      loadingText: null,
-    },
-  ],
-  [
-    {
-      buttonDisabled: false,
-      buttonText: 'Disarm',
-      loadingText: 'Disarming',
-    },
-    {
-      buttonDisabled: false,
-      buttonText: 'Arm Away',
-      loadingText: 'Arming Away',
-    },
-    {
-      buttonDisabled: false,
-      buttonText: 'Arm Stay',
-      loadingText: 'Arming Stay',
-    },
-  ],
+  {
+    description: 'System disarmed / Normal',
+    buttons: [
+      {
+        buttonDisabled: false,
+        buttonText: 'Arm Away',
+        loadingText: 'Arming Away',
+      },
+      {
+        buttonDisabled: false,
+        buttonText: 'Arm Stay',
+        loadingText: 'Arming Stay',
+      },
+    ],
+  },
+  {
+    description: 'System disarmed / Unresolved sensor problem',
+    buttons: [
+      {
+        buttonDisabled: false,
+        buttonText: 'Disarm',
+        loadingText: 'Disarming',
+      },
+      {
+        buttonDisabled: false,
+        buttonText: 'Arm Away',
+        loadingText: 'Arming Away',
+      },
+      {
+        buttonDisabled: false,
+        buttonText: 'Arm Stay',
+        loadingText: 'Arming Stay',
+      },
+    ],
+  },
+  {
+    description: 'System armed',
+    buttons: [
+      {
+        buttonDisabled: false,
+        buttonText: 'Disarm',
+        loadingText: 'Disarming',
+      },
+    ],
+  },
+  {
+    description: 'System busy / Disarming',
+    buttons: [
+      {
+        buttonDisabled: true,
+        buttonText: 'Disarming',
+        loadingText: null,
+      },
+    ],
+  },
+  {
+    description: 'System busy / Arming Away',
+    buttons: [
+      {
+        buttonDisabled: true,
+        buttonText: 'Arming Away',
+        loadingText: null,
+      },
+    ],
+  },
+  {
+    description: 'System busy / Arming Stay',
+    buttons: [
+      {
+        buttonDisabled: true,
+        buttonText: 'Arming Stay',
+        loadingText: null,
+      },
+    ],
+  },
+  {
+    description: 'System busy / Arming Night',
+    buttons: [
+      {
+        buttonDisabled: true,
+        buttonText: 'Arming Night',
+        loadingText: null,
+      },
+    ],
+  },
+  {
+    description: 'System unavailable',
+    buttons: [],
+  },
 ];
 
 /**
@@ -299,54 +330,82 @@ export const collectionSensorActions: CollectionSensorActions = [
  */
 export const deviceGateways: DeviceGateways = [
   {
-    broadbandConnectionStatus: 'Active',
-    cellularConnectionStatus: 'N/A',
-    cellularSignalStrength: 'N/A',
-    firmwareVersion: '24.0.0-9',
-    hardwareVersion: 'HW=1, BL=1.1.9, PL=9.4.0.32.5, SKU=PGZNG1-1ADNAS',
-    manufacturer: 'ADT Pulse Gateway',
-    model: 'PGZNG1',
-    primaryConnectionType: 'Broadband',
+    description: 'ADT Pulse Gateway PGZNG1 / HW 1 / Broadband Active',
+    gateway: {
+      broadbandConnectionStatus: 'Active',
+      cellularConnectionStatus: 'N/A',
+      cellularSignalStrength: 'N/A',
+      firmwareVersion: '24.0.0-9',
+      hardwareVersion: 'HW=1, BL=1.1.9, PL=9.4.0.32.5, SKU=PGZNG1-1ADNAS',
+      manufacturer: 'ADT Pulse Gateway',
+      model: 'PGZNG1',
+      primaryConnectionType: 'Broadband',
+    },
   },
   {
-    broadbandConnectionStatus: 'Active',
-    cellularConnectionStatus: 'N/A',
-    cellularSignalStrength: 'N/A',
-    firmwareVersion: '24.0.0-9',
-    hardwareVersion: 'HW=2, BL=1.1.9, PL=9.4.0.32.5, SKU=PGZNG1-1ADNAS',
-    manufacturer: 'ADT Pulse Gateway',
-    model: 'PGZNG1',
-    primaryConnectionType: 'Broadband',
+    description: 'ADT Pulse Gateway PGZNG1 / HW 2 / Broadband Active',
+    gateway: {
+      broadbandConnectionStatus: 'Active',
+      cellularConnectionStatus: 'N/A',
+      cellularSignalStrength: 'N/A',
+      firmwareVersion: '24.0.0-9',
+      hardwareVersion: 'HW=2, BL=1.1.9, PL=9.4.0.32.5, SKU=PGZNG1-1ADNAS',
+      manufacturer: 'ADT Pulse Gateway',
+      model: 'PGZNG1',
+      primaryConnectionType: 'Broadband',
+    },
   },
   {
-    broadbandConnectionStatus: null,
-    cellularConnectionStatus: 'Active',
-    cellularSignalStrength: 'N/A',
-    firmwareVersion: '27.0.0-140',
-    hardwareVersion: 'HW=02_CSMAP, BL=NA, PL=27.0.0-140',
-    manufacturer: null,
-    model: 'Compact SMA Protocol Gateway',
-    primaryConnectionType: 'Cellular',
+    description: 'ADT Pulse Gateway PGZNG1 / HW 2 / Broadband Unavailable',
+    gateway: {
+      broadbandConnectionStatus: 'Unavailable',
+      cellularConnectionStatus: 'N/A',
+      cellularSignalStrength: 'N/A',
+      firmwareVersion: '24.0.0-9',
+      hardwareVersion: 'HW=2, BL=1.1.9, PL=9.4.0.32.5, SKU=PGZNG1-1ADNAS',
+      manufacturer: 'ADT Pulse Gateway',
+      model: 'PGZNG1',
+      primaryConnectionType: 'Broadband',
+    },
   },
   {
-    broadbandConnectionStatus: null,
-    cellularConnectionStatus: 'Active',
-    cellularSignalStrength: 'N/A',
-    firmwareVersion: '27.0.0-140',
-    hardwareVersion: 'HW=02_Lynx, BL=ICONTROL_CFE 1.0, PL=27.0.0-140',
-    manufacturer: null,
-    model: 'Lynx/QuickConnect Cellular-Only Gateway',
-    primaryConnectionType: 'Cellular',
+    description: 'ADT TSSC Lifestyle Module / HW 2 / Broadband Active',
+    gateway: {
+      broadbandConnectionStatus: 'Active',
+      cellularConnectionStatus: 'N/A',
+      cellularSignalStrength: 'N/A',
+      firmwareVersion: '24.0.0-9',
+      hardwareVersion: 'HW=0002, BL=UBOOT 2009.08-svn99, PL=5.5.0-5, SKU=TSSC-NA-NONE-01',
+      manufacturer: 'ADT',
+      model: 'TSSC Lifestyle Module',
+      primaryConnectionType: 'Broadband',
+    },
   },
   {
-    broadbandConnectionStatus: 'Active',
-    cellularConnectionStatus: 'N/A',
-    cellularSignalStrength: 'N/A',
-    firmwareVersion: '24.0.0-9',
-    hardwareVersion: 'HW=0002, BL=UBOOT 2009.08-svn99, PL=5.5.0-5, SKU=TSSC-NA-NONE-01',
-    manufacturer: 'ADT',
-    model: 'TSSC Lifestyle Module',
-    primaryConnectionType: 'Broadband',
+    description: 'Compact SMA Protocol Gateway / HW 2 / Cellular Active',
+    gateway: {
+      broadbandConnectionStatus: null,
+      cellularConnectionStatus: 'Active',
+      cellularSignalStrength: 'N/A',
+      firmwareVersion: '27.0.0-140',
+      hardwareVersion: 'HW=02_CSMAP, BL=NA, PL=27.0.0-140',
+      manufacturer: null,
+      model: 'Compact SMA Protocol Gateway',
+      primaryConnectionType: 'Cellular',
+    },
+  },
+  {
+    description: 'Lynx/QuickConnect Cellular-Only Gateway / HW 2 / Cellular Active',
+    gateway: {
+      broadbandConnectionStatus: null,
+      cellularConnectionStatus: 'Active',
+      cellularSignalStrength: 'N/A',
+      firmwareVersion: '27.0.0-140',
+      hardwareVersion: 'HW=02_Lynx, BL=ICONTROL_CFE 1.0, PL=27.0.0-140',
+      manufacturer: null,
+      model: 'Lynx/QuickConnect Cellular-Only Gateway',
+      primaryConnectionType: 'Cellular',
+    },
   },
 ];
 
@@ -357,34 +416,52 @@ export const deviceGateways: DeviceGateways = [
  */
 export const deviceSecurityPanels: DeviceSecurityPanels = [
   {
-    emergencyKeys: 'Button: Fire Alarm (Zone 995) Button: Audible Panic Alarm (Zone 999)',
-    manufacturerProvider: 'ADT',
-    typeModel: 'TSSC Life Safety Module',
+    description: 'ADT Safewatch Pro 3000/3000CN - Emergency Keys 95/99',
+    panel: {
+      emergencyKeys: 'Button: Fire Alarm (Zone 95) Button: Audible Panic Alarm (Zone 99)',
+      manufacturerProvider: 'ADT',
+      typeModel: 'Security Panel - Safewatch Pro 3000/3000CN',
+    },
   },
   {
-    emergencyKeys: 'Button: Fire Alarm (Zone 995) Button: Personal Emergency (Zone 996) Button: Audible Panic Alarm (Zone 999)',
-    manufacturerProvider: 'ADT',
-    typeModel: 'TSSC Life Safety Module',
+    description: 'ADT Safewatch Pro 3000/3000CN - Emergency Keys 95/96/99',
+    panel: {
+      emergencyKeys: 'Button: Fire Alarm (Zone 95) Button: Personal Emergency (Zone 96) Button: Audible Panic Alarm (Zone 99)',
+      manufacturerProvider: 'ADT',
+      typeModel: 'Security Panel - Safewatch Pro 3000/3000CN',
+    },
   },
   {
-    emergencyKeys: null,
-    manufacturerProvider: 'DSC',
-    typeModel: 'Security Panel - Impassa SCW9057',
+    description: 'ADT TSSC Life Safety Module - Emergency Keys 95/99',
+    panel: {
+      emergencyKeys: 'Button: Fire Alarm (Zone 995) Button: Audible Panic Alarm (Zone 999)',
+      manufacturerProvider: 'ADT',
+      typeModel: 'TSSC Life Safety Module',
+    },
   },
   {
-    emergencyKeys: 'Button: Fire Alarm (Zone 95) Button: Audible Panic Alarm (Zone 99)',
-    manufacturerProvider: null,
-    typeModel: 'Security Panel - LYNX/QuickConnect',
+    description: 'ADT TSSC Life Safety Module - Emergency Keys 95/96/99',
+    panel: {
+      emergencyKeys: 'Button: Fire Alarm (Zone 995) Button: Personal Emergency (Zone 996) Button: Audible Panic Alarm (Zone 999)',
+      manufacturerProvider: 'ADT',
+      typeModel: 'TSSC Life Safety Module',
+    },
   },
   {
-    emergencyKeys: 'Button: Fire Alarm (Zone 95) Button: Audible Panic Alarm (Zone 99)',
-    manufacturerProvider: 'ADT',
-    typeModel: 'Security Panel - Safewatch Pro 3000/3000CN',
+    description: 'Ademco LYNX/ADT QuickConnect - Emergency Keys 95/99',
+    panel: {
+      emergencyKeys: 'Button: Fire Alarm (Zone 95) Button: Audible Panic Alarm (Zone 99)',
+      manufacturerProvider: null,
+      typeModel: 'Security Panel - LYNX/QuickConnect',
+    },
   },
   {
-    emergencyKeys: 'Button: Fire Alarm (Zone 95) Button: Personal Emergency (Zone 96) Button: Audible Panic Alarm (Zone 99)',
-    manufacturerProvider: 'ADT',
-    typeModel: 'Security Panel - Safewatch Pro 3000/3000CN',
+    description: 'DSC Impassa SCW9057',
+    panel: {
+      emergencyKeys: null,
+      manufacturerProvider: 'DSC',
+      typeModel: 'Security Panel - Impassa SCW9057',
+    },
   },
 ];
 

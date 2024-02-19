@@ -1056,7 +1056,9 @@ export function isUnknownDoSubmitHandlerCollection(handlers: IsUnknownDoSubmitHa
     href: handler.urlParams.href,
   }));
 
-  return !collectionDoSubmitHandlers.some((collectionDoSubmitHandler) => _.isEqual(collectionDoSubmitHandler, currentHandlerCollection));
+  return !collectionDoSubmitHandlers
+    .map((collectionDoSubmitHandler) => collectionDoSubmitHandler.handlers)
+    .some((collectionDoSubmitHandler) => _.isEqual(collectionDoSubmitHandler, currentHandlerCollection));
 }
 
 /**
@@ -1080,7 +1082,9 @@ export function isUnknownGatewayDevice(gateway: IsUnknownGatewayDeviceGateway): 
     primaryConnectionType: _.get(gateway, ['Primary Connection Type:', 0], null),
   };
 
-  return !deviceGateways.some((deviceGateway) => _.isEqual(deviceGateway, currentGateway));
+  return !deviceGateways
+    .map((deviceGateway) => deviceGateway.gateway)
+    .some((deviceGateway) => _.isEqual(deviceGateway, currentGateway));
 }
 
 /**
@@ -1099,7 +1103,9 @@ export function isUnknownOrbSecurityButtonCollection(buttons: IsUnknownOrbSecuri
     loadingText: ('loadingText' in button) ? button.loadingText : null,
   }));
 
-  return !collectionOrbSecurityButtons.some((collectionOrbSecurityButton) => _.isEqual(collectionOrbSecurityButton, currentButtonCollection));
+  return !collectionOrbSecurityButtons
+    .map((collectionOrbSecurityButton) => collectionOrbSecurityButton.buttons)
+    .some((collectionOrbSecurityButton) => _.isEqual(collectionOrbSecurityButton, currentButtonCollection));
 }
 
 /**
@@ -1118,7 +1124,9 @@ export function isUnknownPanelDevice(panel: IsUnknownPanelDevicePanel): IsUnknow
     typeModel: _.get(panel, ['Type/Model:', 0], null),
   };
 
-  return !deviceSecurityPanels.some((deviceSecurityPanel) => _.isEqual(deviceSecurityPanel, currentPanel));
+  return !deviceSecurityPanels
+    .map((deviceSecurityPanel) => deviceSecurityPanel.panel)
+    .some((deviceSecurityPanel) => _.isEqual(deviceSecurityPanel, currentPanel));
 }
 
 /**

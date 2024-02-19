@@ -1109,13 +1109,20 @@ export type ClearWhitespaceReturns = string;
  *
  * @since 1.0.0
  */
+export type CollectionDoSubmitHandlerDescription = string;
+
 export type CollectionDoSubmitHandlerHandlerHref = PortalPanelForceArmButtonHref;
 
 export type CollectionDoSubmitHandlerHandler = {
   href: CollectionDoSubmitHandlerHandlerHref;
 };
 
-export type CollectionDoSubmitHandler = CollectionDoSubmitHandlerHandler[];
+export type CollectionDoSubmitHandlerHandlers = CollectionDoSubmitHandlerHandler[];
+
+export type CollectionDoSubmitHandler = {
+  description: CollectionDoSubmitHandlerDescription;
+  handlers: CollectionDoSubmitHandlerHandlers;
+};
 
 export type CollectionDoSubmitHandlers = CollectionDoSubmitHandler[];
 
@@ -1124,6 +1131,8 @@ export type CollectionDoSubmitHandlers = CollectionDoSubmitHandler[];
  *
  * @since 1.0.0
  */
+export type CollectionOrbSecurityButtonDescription = string;
+
 export type CollectionOrbSecurityButtonButtonButtonDisabled = boolean;
 
 export type CollectionOrbSecurityButtonButtonButtonText = PortalPanelArmButtonText | PortalPanelArmButtonLoadingText;
@@ -1136,7 +1145,12 @@ export type CollectionOrbSecurityButtonButton = {
   loadingText: CollectionOrbSecurityButtonButtonLoadingText;
 };
 
-export type CollectionOrbSecurityButton = CollectionOrbSecurityButtonButton[];
+export type CollectionOrbSecurityButtonButtons = CollectionOrbSecurityButtonButton[];
+
+export type CollectionOrbSecurityButton = {
+  description: CollectionOrbSecurityButtonDescription;
+  buttons: CollectionOrbSecurityButtonButtons;
+};
 
 export type CollectionOrbSecurityButtons = CollectionOrbSecurityButton[];
 
@@ -1399,31 +1413,38 @@ export type DetectPlatformUnknownSensorsActionReturns = Promise<boolean>;
  *
  * @since 1.0.0
  */
-export type DeviceGatewayBroadbandConnectionStatus = string | null;
+export type DeviceGatewayDescription = string;
 
-export type DeviceGatewayCellularConnectionStatus = string | null;
+export type DeviceGatewayGatewayBroadbandConnectionStatus = string | null;
 
-export type DeviceGatewayCellularSignalStrength = string | null;
+export type DeviceGatewayGatewayCellularConnectionStatus = string | null;
 
-export type DeviceGatewayFirmwareVersion = string | null;
+export type DeviceGatewayGatewayCellularSignalStrength = string | null;
 
-export type DeviceGatewayHardwareVersion = string | null;
+export type DeviceGatewayGatewayFirmwareVersion = string | null;
 
-export type DeviceGatewayManufacturer = string | null;
+export type DeviceGatewayGatewayHardwareVersion = string | null;
 
-export type DeviceGatewayModel = string | null;
+export type DeviceGatewayGatewayManufacturer = string | null;
 
-export type DeviceGatewayPrimaryConnectionType = string | null;
+export type DeviceGatewayGatewayModel = string | null;
+
+export type DeviceGatewayGatewayPrimaryConnectionType = string | null;
+
+export type DeviceGatewayGateway = {
+  broadbandConnectionStatus: DeviceGatewayGatewayBroadbandConnectionStatus;
+  cellularConnectionStatus: DeviceGatewayGatewayCellularConnectionStatus;
+  cellularSignalStrength: DeviceGatewayGatewayCellularSignalStrength;
+  firmwareVersion: DeviceGatewayGatewayFirmwareVersion;
+  hardwareVersion: DeviceGatewayGatewayHardwareVersion;
+  manufacturer: DeviceGatewayGatewayManufacturer;
+  model: DeviceGatewayGatewayModel;
+  primaryConnectionType: DeviceGatewayGatewayPrimaryConnectionType;
+};
 
 export type DeviceGateway = {
-  broadbandConnectionStatus: DeviceGatewayBroadbandConnectionStatus;
-  cellularConnectionStatus: DeviceGatewayCellularConnectionStatus;
-  cellularSignalStrength: DeviceGatewayCellularSignalStrength;
-  firmwareVersion: DeviceGatewayFirmwareVersion;
-  hardwareVersion: DeviceGatewayHardwareVersion;
-  manufacturer: DeviceGatewayManufacturer;
-  model: DeviceGatewayModel;
-  primaryConnectionType: DeviceGatewayPrimaryConnectionType;
+  description: DeviceGatewayDescription;
+  gateway: DeviceGatewayGateway;
 };
 
 export type DeviceGateways = DeviceGateway[];
@@ -1433,16 +1454,23 @@ export type DeviceGateways = DeviceGateway[];
  *
  * @since 1.0.0
  */
-export type DeviceSecurityPanelEmergencyKeys = string | null;
+export type DeviceSecurityPanelDescription = string;
 
-export type DeviceSecurityPanelManufacturerProvider = string | null;
+export type DeviceSecurityPanelPanelEmergencyKeys = string | null;
 
-export type DeviceSecurityPanelTypeModel = string | null;
+export type DeviceSecurityPanelPanelManufacturerProvider = string | null;
+
+export type DeviceSecurityPanelPanelTypeModel = string | null;
+
+export type DeviceSecurityPanelPanel = {
+  emergencyKeys: DeviceSecurityPanelPanelEmergencyKeys;
+  manufacturerProvider: DeviceSecurityPanelPanelManufacturerProvider;
+  typeModel: DeviceSecurityPanelPanelTypeModel;
+};
 
 export type DeviceSecurityPanel = {
-  emergencyKeys: DeviceSecurityPanelEmergencyKeys;
-  manufacturerProvider: DeviceSecurityPanelManufacturerProvider;
-  typeModel: DeviceSecurityPanelTypeModel;
+  description: DeviceSecurityPanelDescription;
+  panel: DeviceSecurityPanelPanel;
 };
 
 export type DeviceSecurityPanels = DeviceSecurityPanel[];
