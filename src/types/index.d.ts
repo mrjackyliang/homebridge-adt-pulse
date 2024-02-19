@@ -1080,8 +1080,6 @@ export type ADTPulseTestStartTestReturns = Promise<void>;
 /**
  * ADT Pulse Test - Zod parse response.
  *
- * @private
- *
  * @since 1.0.0
  */
 export type ADTPulseTestZodParseResponse = z.SafeParseReturnType<any, any> | undefined;
@@ -1715,6 +1713,17 @@ export type IsPluginOutdatedReturns = Promise<boolean>;
 export type IsPortalSyncCodeSyncCode = string;
 
 export type IsPortalSyncCodeTypeGuard = PortalSyncCode;
+
+/**
+ * Is session clean state.
+ *
+ * @since 1.0.0
+ */
+export type IsSessionCleanStateOrbSecurityButtons = OrbSecurityButtons;
+
+export type IsSessionCleanStateReturns = boolean;
+
+export type IsSessionCleanStateReadyButton = OrbSecurityButtonBase & OrbSecurityButtonReady;
 
 /**
  * Is unknown do submit handler collection.

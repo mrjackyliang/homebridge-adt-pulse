@@ -10,7 +10,7 @@ let fingerprintResults;
  * @param {Element}         element - Element.
  * @param {('fingerprint')} type    - Type.
  *
- * @return {Promise<boolean>}
+ * @returns {Promise<boolean>}
  *
  * @since 1.0.0
  */

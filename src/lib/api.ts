@@ -46,6 +46,7 @@ import {
   generateFakeReadyButtons,
   generateHash,
   isPortalSyncCode,
+  isSessionCleanState,
   parseArmDisarmMessage,
   parseDoSubmitHandlers,
   parseOrbSecurityButtons,
@@ -2285,6 +2286,9 @@ export class ADTPulse {
         rawHtml: sessions.axiosSummary.data,
       });
 
+      // "armState" can be dirty without the plugin changing the state itself. Most likely when multiple users are logged in.
+      this.#session.isCleanState = isSessionCleanState(parsedOrbSecurityButtons);
+
       if (this.#internal.debug) {
         debugLog(this.#internal.logger, 'api.ts / ADTPulse.getOrbSecurityButtons()', 'success', `Successfully retrieved orb security buttons from "${this.#internal.baseUrl}"`);
       }
@@ -2799,9 +2803,6 @@ export class ADTPulse {
 
         forceArmRequired = forceArmResponse.info.forceArmRequired;
       }
-
-      // After changing any arm state, the "armState" may be different from when you logged into the portal.
-      this.#session.isCleanState = false;
 
       // Allow some time for the security orb buttons to refresh.
       await sleep(this.#internal.waitTimeAfterArm);

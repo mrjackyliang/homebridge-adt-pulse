@@ -103,6 +103,9 @@ import type {
   IsPluginOutdatedReturns,
   IsPortalSyncCodeSyncCode,
   IsPortalSyncCodeTypeGuard,
+  IsSessionCleanStateOrbSecurityButtons,
+  IsSessionCleanStateReadyButton,
+  IsSessionCleanStateReturns,
   IsUnknownDoSubmitHandlerCollectionHandlers,
   IsUnknownDoSubmitHandlerCollectionReturns,
   IsUnknownGatewayDeviceGateway,
@@ -1040,6 +1043,26 @@ export async function isPluginOutdated(): IsPluginOutdatedReturns {
  */
 export function isPortalSyncCode(syncCode: IsPortalSyncCodeSyncCode): syncCode is IsPortalSyncCodeTypeGuard {
   return textSyncCode.test(syncCode);
+}
+
+/**
+ * Is session clean state.
+ *
+ * @param {IsSessionCleanStateOrbSecurityButtons} orbSecurityButtons - Orb security buttons.
+ *
+ * @returns {IsSessionCleanStateReturns}
+ *
+ * @since 1.0.0
+ */
+export function isSessionCleanState(orbSecurityButtons: IsSessionCleanStateOrbSecurityButtons): IsSessionCleanStateReturns {
+  // When at least 1 security button is disabled, it means the system is busy changing state.
+  if (orbSecurityButtons.some((orbSecurityButton) => orbSecurityButton.buttonDisabled)) {
+    return false;
+  }
+
+  return orbSecurityButtons
+    .filter((orbSecurityButton): orbSecurityButton is IsSessionCleanStateReadyButton => !orbSecurityButton.buttonDisabled)
+    .every((orbSecurityButton) => !['disarmed', 'disarmed+with+alarm', 'night+stay'].includes(orbSecurityButton.urlParams.armState));
 }
 
 /**
