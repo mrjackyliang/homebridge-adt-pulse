@@ -67,6 +67,20 @@ export const collectionOrbSecurityButtons: CollectionOrbSecurityButtons = [
   ],
   [
     {
+      buttonDisabled: false,
+      buttonText: 'Disarm',
+      loadingText: 'Disarming',
+    },
+  ],
+  [
+    {
+      buttonDisabled: true,
+      buttonText: 'Disarming',
+      loadingText: null,
+    },
+  ],
+  [
+    {
       buttonDisabled: true,
       buttonText: 'Arming Away',
       loadingText: null,
@@ -84,13 +98,6 @@ export const collectionOrbSecurityButtons: CollectionOrbSecurityButtons = [
       buttonDisabled: true,
       buttonText: 'Arming Night',
       loadingText: null,
-    },
-  ],
-  [
-    {
-      buttonDisabled: false,
-      buttonText: 'Disarm',
-      loadingText: 'Disarming',
     },
   ],
   [
