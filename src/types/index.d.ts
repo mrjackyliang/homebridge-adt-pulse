@@ -114,8 +114,6 @@ export type ADTPulseArmDisarmHandlerReturns = Promise<ApiResponse<'ARM_DISARM_HA
 
 export type ADTPulseArmDisarmHandlerSessions = Sessions<{
   axiosSetArmMode?: AxiosResponseNodeJs<unknown>;
-  axiosSummary?: AxiosResponseNodeJs<unknown>;
-  jsdomSummary?: JSDOM;
 }>;
 
 export type ADTPulseArmDisarmHandlerReadyButton = OrbSecurityButtonBase & OrbSecurityButtonReady;
@@ -239,6 +237,20 @@ export type ADTPulseGetRequestConfigExtraConfig = AxiosRequestConfig;
 export type ADTPulseGetRequestConfigReturns = AxiosRequestConfig;
 
 export type ADTPulseGetRequestConfigDefaultConfig = AxiosRequestConfig;
+
+/**
+ * ADT Pulse - Get orb security buttons.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseADTPulseGetOrbSecurityButtonsReturnsInfo = OrbSecurityButtons;
+
+export type ADTPulseGetOrbSecurityButtonsReturns = Promise<ApiResponse<'GET_ORB_SECURITY_BUTTONS', ADTPulseADTPulseGetOrbSecurityButtonsReturnsInfo>>;
+
+export type ADTPulseGetOrbSecurityButtonsSessions = Sessions<{
+  axiosSummary?: AxiosResponseNodeJs<unknown>;
+  jsdomSummary?: JSDOM;
+}>;
 
 /**
  * ADT Pulse - Get sensors information.
@@ -390,7 +402,7 @@ export type ADTPulseLogoutSessions = Sessions<{
 export type ADTPulseNewInformationDispatcherType = 'debug-parser' | 'do-submit-handlers' | 'gateway-information' | 'orb-security-buttons' | 'panel-information' | 'panel-status' | 'portal-version' | 'sensors-information' | 'sensors-status';
 
 export type ADTPulseNewInformationDispatcherData<Type extends ADTPulseNewInformationDispatcherType> =
-  Type extends 'debug-parser' ? DebugParser<'armDisarmHandler'> | DebugParser<'forceArmHandler'> | DebugParser<'getGatewayInformation'> | DebugParser<'getPanelInformation'> | DebugParser<'getPanelStatus'> | DebugParser<'getSensorsInformation'> | DebugParser<'getSensorsStatus'> | DebugParser<'setPanelStatus'>
+  Type extends 'debug-parser' ? DebugParser<'forceArmHandler'> | DebugParser<'getGatewayInformation'> | DebugParser<'getOrbSecurityButtons'> | DebugParser<'getPanelInformation'> | DebugParser<'getPanelStatus'> | DebugParser<'getSensorsInformation'> | DebugParser<'getSensorsStatus'>
     : Type extends 'do-submit-handlers' ? DoSubmitHandlers
       : Type extends 'gateway-information' ? GatewayInformation
         : Type extends 'orb-security-buttons' ? OrbSecurityButtons
@@ -484,11 +496,6 @@ export type ADTPulseSetPanelStatusReturnsInfo = {
 };
 
 export type ADTPulseSetPanelStatusReturns = Promise<ApiResponse<'SET_PANEL_STATUS', ADTPulseSetPanelStatusReturnsInfo>>;
-
-export type ADTPulseSetPanelStatusSessions = Sessions<{
-  axiosSummary?: AxiosResponseNodeJs<unknown>;
-  jsdomSummary?: JSDOM;
-}>;
 
 export type ADTPulseSetPanelStatusReadyButton = OrbSecurityButtonBase & OrbSecurityButtonReady;
 
@@ -839,6 +846,8 @@ export type ADTPulsePlatformStateActivity = {
 
 export type ADTPulsePlatformStateDataGatewayInfo = GatewayInformation | null;
 
+export type ADTPulsePlatformStateDataOrbSecurityButtons = OrbSecurityButtons;
+
 export type ADTPulsePlatformStateDataPanelInfo = PanelInformation | null;
 
 export type ADTPulsePlatformStateDataPanelStatus = PanelStatus | null;
@@ -855,6 +864,7 @@ export type ADTPulsePlatformStateDataSyncCode = PortalSyncCode;
 
 export type ADTPulsePlatformStateData = {
   gatewayInfo: ADTPulsePlatformStateDataGatewayInfo;
+  orbSecurityButtons: ADTPulsePlatformStateDataOrbSecurityButtons;
   panelInfo: ADTPulsePlatformStateDataPanelInfo;
   panelStatus: ADTPulsePlatformStateDataPanelStatus;
   sensorsInfo: ADTPulsePlatformStateDataSensorsInfo;
@@ -1219,7 +1229,7 @@ export type DebugLogReturns = void;
  *
  * @since 1.0.0
  */
-export type DetectApiDebugParserData = DebugParser<'armDisarmHandler'> | DebugParser<'forceArmHandler'> | DebugParser<'getGatewayInformation'> | DebugParser<'getPanelInformation'> | DebugParser<'getPanelStatus'> | DebugParser<'getSensorsInformation'> | DebugParser<'getSensorsStatus'> | DebugParser<'setPanelStatus'>;
+export type DetectApiDebugParserData = DebugParser<'forceArmHandler'> | DebugParser<'getGatewayInformation'> | DebugParser<'getOrbSecurityButtons'> | DebugParser<'getPanelInformation'> | DebugParser<'getPanelStatus'> | DebugParser<'getSensorsInformation'> | DebugParser<'getSensorsStatus'>;
 
 export type DetectApiDebugParserLogger = Logger | null;
 
@@ -1475,6 +1485,19 @@ export type FetchTableCellsReturns = Record<string, string[]>;
 export type FetchTableCellsMatched = Record<string, string[]>;
 
 /**
+ * Find gateway manufacturer model.
+ *
+ * @since 1.0.0
+ */
+export type FindGatewayManufacturerModelMode = 'manufacturer' | 'model';
+
+export type FindGatewayManufacturerModelManufacturer = string | null;
+
+export type FindGatewayManufacturerModelModel = string | null;
+
+export type FindGatewayManufacturerModelReturns = string | null;
+
+/**
  * Find index with value.
  *
  * @since 1.0.0
@@ -1504,6 +1527,17 @@ export type FindNullKeysParentKey = string;
 export type FindNullKeysReturns = string[];
 
 export type FindNullKeysFound = string[];
+
+/**
+ * Find panel manufacturer.
+ *
+ * @since 1.0.0
+ */
+export type FindPanelManufacturerManufacturerProvider = string | null;
+
+export type FindPanelManufacturerTypeModel = string | null;
+
+export type FindPanelManufacturerReturns = string | null;
 
 /**
  * Generate dynatrace pc header value.
@@ -1631,6 +1665,8 @@ export type IsForwardSlashOSReturns = boolean;
  * @since 1.0.0
  */
 export type IsPanelAlarmActivePanelStatuses = PanelStatusStatuses;
+
+export type IsPanelAlarmActiveOrbSecurityButtons = OrbSecurityButtons;
 
 export type IsPanelAlarmActiveIgnoreSensorProblem = boolean;
 

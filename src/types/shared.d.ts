@@ -44,6 +44,7 @@ export type ApiResponseAction =
   'ARM_DISARM_HANDLER'
   | 'FORCE_ARM_HANDLER'
   | 'GET_GATEWAY_INFORMATION'
+  | 'GET_ORB_SECURITY_BUTTONS'
   | 'GET_PANEL_INFORMATION'
   | 'GET_PANEL_STATUS'
   | 'GET_SENSORS_INFORMATION'
@@ -106,13 +107,13 @@ export type Config = z.infer<typeof platformConfig>;
  *
  * @since 1.0.0
  */
-export type DebugParserMethod = 'armDisarmHandler' | 'forceArmHandler' | 'getGatewayInformation' | 'getPanelInformation' | 'getPanelStatus' | 'getSensorsInformation' | 'getSensorsStatus' | 'setPanelStatus';
-
-export type DebugParserResponseArmDisarmHandler = OrbSecurityButtons;
+export type DebugParserMethod = 'forceArmHandler' | 'getGatewayInformation' | 'getOrbSecurityButtons' | 'getPanelInformation' | 'getPanelStatus' | 'getSensorsInformation' | 'getSensorsStatus';
 
 export type DebugParserResponseForceArmHandler = DoSubmitHandlers;
 
 export type DebugParserResponseGetGatewayInformation = Record<string, string[]>;
+
+export type DebugParserResponseGetOrbSecurityButtons = OrbSecurityButtons;
 
 export type DebugParserResponseGetPanelInformation = Record<string, string[]>;
 
@@ -122,17 +123,14 @@ export type DebugParserResponseGetSensorsInformation = SensorInformation[];
 
 export type DebugParserResponseGetSensorsStatus = SensorStatus[];
 
-export type DebugParserResponseSetPanelStatus = OrbSecurityButtons;
-
 export type DebugParserResponse = {
-  armDisarmHandler: DebugParserResponseArmDisarmHandler;
   forceArmHandler: DebugParserResponseForceArmHandler;
   getGatewayInformation: DebugParserResponseGetGatewayInformation;
+  getOrbSecurityButtons: DebugParserResponseGetOrbSecurityButtons;
   getPanelInformation: DebugParserResponseGetPanelInformation;
   getPanelStatus: DebugParserResponseGetPanelStatus;
   getSensorsInformation: DebugParserResponseGetSensorsInformation;
   getSensorsStatus: DebugParserResponseGetSensorsStatus;
-  setPanelStatus: DebugParserResponseSetPanelStatus;
 };
 
 export type DebugParserRawHtml = string;

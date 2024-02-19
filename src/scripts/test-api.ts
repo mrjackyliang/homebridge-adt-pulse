@@ -102,6 +102,7 @@ class ADTPulseTest {
         instance.setPanelStatus.bind(instance, 'night', 'off', false),
         instance.getSensorsInformation.bind(instance),
         instance.getSensorsStatus.bind(instance),
+        instance.getOrbSecurityButtons.bind(instance),
         instance.performSyncCheck.bind(instance),
         instance.performKeepAlive.bind(instance),
         instance.logout.bind(instance),

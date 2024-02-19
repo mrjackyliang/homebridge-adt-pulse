@@ -160,6 +160,13 @@ export const textOrbTextSummarySections = /\.\s*/;
 export const textPanelEmergencyKeys = /([A-Za-z0-9]+: [A-Za-z0-9 ]+? \(Zone \d+\))/g;
 
 /**
+ * Text panel type model.
+ *
+ * @since 1.0.0
+ */
+export const textPanelTypeModel = /(.+) - (.+)/;
+
+/**
  * Text sync code.
  *
  * @since 1.0.0

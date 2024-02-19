@@ -32,13 +32,16 @@ import {
   requestPathSystemGateway,
   requestPathSystemSystem,
   textPanelEmergencyKeys,
+  textPanelTypeModel,
 } from '@/lib/regex.js';
 import {
   debugLog,
   fetchErrorMessage,
   fetchMissingSatCode,
   fetchTableCells,
+  findGatewayManufacturerModel,
   findNullKeys,
+  findPanelManufacturer,
   generateDynatracePCHeaderValue,
   generateFakeReadyButtons,
   generateHash,
@@ -69,6 +72,8 @@ import type {
   ADTPulseGetGatewayInformationReturns,
   ADTPulseGetGatewayInformationReturnsStatus,
   ADTPulseGetGatewayInformationSessions,
+  ADTPulseGetOrbSecurityButtonsReturns,
+  ADTPulseGetOrbSecurityButtonsSessions,
   ADTPulseGetPanelInformationReturns,
   ADTPulseGetPanelInformationReturnsStatus,
   ADTPulseGetPanelInformationSessions,
@@ -105,7 +110,6 @@ import type {
   ADTPulseSetPanelStatusIsAlarmActive,
   ADTPulseSetPanelStatusReadyButton,
   ADTPulseSetPanelStatusReturns,
-  ADTPulseSetPanelStatusSessions,
 } from '@/types/index.d.ts';
 
 /**
@@ -816,6 +820,10 @@ export class ADTPulse {
         1,
         1,
       );
+      const manufacturer = _.get(fetchedTableCells, ['Manufacturer:', 0], null);
+      const model = _.get(fetchedTableCells, ['Model:', 0], null);
+      const parsedManufacturer = findGatewayManufacturerModel('manufacturer', manufacturer, model);
+      const parsedModel = findGatewayManufacturerModel('model', manufacturer, model);
       const gatewayInformation = {
         communication: {
           broadbandConnectionStatus: _.get(fetchedTableCells, ['Broadband Connection Status:', 0], null),
@@ -823,8 +831,8 @@ export class ADTPulse {
           cellularSignalStrength: _.get(fetchedTableCells, ['Cellular Signal Strength:', 0], null),
           primaryConnectionType: _.get(fetchedTableCells, ['Primary Connection Type:', 0], null),
         },
-        manufacturer: _.get(fetchedTableCells, ['Manufacturer:', 0], null),
-        model: _.get(fetchedTableCells, ['Model:', 0], null),
+        manufacturer: parsedManufacturer,
+        model: parsedModel,
         network: {
           broadband: {
             ip: _.get(fetchedTableCells, ['Broadband LAN IP Address:', 0], null),
@@ -1039,18 +1047,17 @@ export class ADTPulse {
         1,
       );
       const emergencyKeys = _.get(fetchedTableCells, ['Emergency Keys:', 0], null);
-      const parsedEmergencyKeys = (emergencyKeys !== null) ? emergencyKeys.match(textPanelEmergencyKeys) : null;
       const manufacturerProvider = _.get(fetchedTableCells, ['Manufacturer/Provider:', 0], null);
-      const parsedManufacturer = (manufacturerProvider !== null) ? manufacturerProvider.split(' - ')[0] ?? null : null;
-      const parsedProvider = (manufacturerProvider !== null) ? manufacturerProvider.split(' - ')[1] ?? null : null;
       const typeModel = _.get(fetchedTableCells, ['Type/Model:', 0], null);
-      const parsedType = (typeModel !== null) ? typeModel.split(' - ')[0] ?? null : null;
-      const parsedModel = (typeModel !== null) ? typeModel.split(' - ')[1] ?? null : null;
+      const parsedEmergencyKeys = (emergencyKeys !== null) ? emergencyKeys.match(textPanelEmergencyKeys) : null;
+      const parsedManufacturer = findPanelManufacturer(manufacturerProvider, typeModel);
+      const parsedType = (typeModel !== null && typeModel.includes(' - ')) ? typeModel.replace(textPanelTypeModel, '$1') : null;
+      const parsedModel = (typeModel !== null) ? typeModel.replace(textPanelTypeModel, '$2') : null;
       const panelInformation = {
         emergencyKeys: parsedEmergencyKeys,
         manufacturer: parsedManufacturer,
         masterCode: _.get(fetchedTableCells, ['Security Panel Master Code:', 0], null),
-        provider: parsedProvider,
+        provider: 'ADT',
         type: parsedType,
         model: parsedModel,
         status: _.get(fetchedTableCells, ['Status:', 0], null) as ADTPulseGetPanelInformationReturnsStatus,
@@ -1424,210 +1431,31 @@ export class ADTPulse {
     }
 
     try {
-      const sessions: ADTPulseSetPanelStatusSessions = {};
-
       let isAlarmCurrentlyActive = isAlarmActive;
 
-      // sessions.axiosSummary: Load the summary page.
-      sessions.axiosSummary = await this.#session.httpClient.get<unknown>(
-        `${this.#internal.baseUrl}/myhome/${this.#session.portalVersion}/summary/summary.jsp`,
-        this.getRequestConfig({
-          headers: {
-            Referer: `${this.#internal.baseUrl}/myhome/${this.#session.portalVersion}/summary/summary.jsp`,
-            'Sec-Fetch-Site': 'same-origin',
-          },
-        }),
-      );
+      // Get the security buttons.
+      const securityButtonsResponse = await this.getOrbSecurityButtons();
 
-      // If the "ClientRequest" object does not exist in the Axios response.
-      if (typeof sessions.axiosSummary?.request === 'undefined') {
+      if (!securityButtonsResponse.success) {
         if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'error', 'The HTTP client responded without the "request" object');
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'error', 'An error occurred while retrieving security buttons');
         }
 
         return {
           action: 'SET_PANEL_STATUS',
           success: false,
-          info: {
-            message: 'The HTTP client responded without the "request" object',
-          },
+          info: securityButtonsResponse.info,
         };
       }
 
-      const axiosSummaryRequestPath = sessions.axiosSummary.request.path;
-      const axiosSummaryRequestPathValid = requestPathSummarySummary.test(axiosSummaryRequestPath);
-
-      if (this.#internal.debug) {
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'info', `Request path ➜ ${axiosSummaryRequestPath}`);
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'info', `Request path valid ➜ ${axiosSummaryRequestPathValid}`);
-      }
-
-      // If the final URL of sessions.axiosSummary is not the summary page.
-      if (!axiosSummaryRequestPathValid) {
-        if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'error', `"${axiosSummaryRequestPath}" is not the summary page`);
-        }
-
-        // Check if "this instance" was not signed in during this time.
-        this.handleLoginFailure(axiosSummaryRequestPath, sessions.axiosSummary);
-
-        return {
-          action: 'SET_PANEL_STATUS',
-          success: false,
-          info: {
-            message: `"${axiosSummaryRequestPath}" is not the summary page`,
-          },
-        };
-      }
-
-      // Make sure we are able to use JSDOM on the response data.
-      if (typeof sessions.axiosSummary.data !== 'string') {
-        if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'error', 'The response body of the summary page is not of type "string"');
-        }
-
-        return {
-          action: 'SET_PANEL_STATUS',
-          success: false,
-          info: {
-            message: 'The response body of the summary page is not of type "string"',
-          },
-        };
-      }
-
-      // Recover sat code if it was missing during login.
-      if (this.#session.backupSatCode === null) {
-        const missingSatCode = fetchMissingSatCode(sessions.axiosSummary);
-
-        if (missingSatCode !== null) {
-          if (this.#internal.debug) {
-            debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'success', 'Backup sat code was successfully recovered from previous failed retrieval');
-          }
-
-          this.#session.backupSatCode = missingSatCode;
-        }
-      }
-
-      // sessions.jsdomSummary: Parse the summary page.
-      sessions.jsdomSummary = new JSDOM(
-        sessions.axiosSummary.data,
-        {
-          url: sessions.axiosSummary.config.url,
-          referrer: sessions.axiosSummary.config.headers.Referer,
-          contentType: 'text/html',
-          pretendToBeVisual: true,
-        },
-      );
-
-      /**
-       * Detailed parsing information for "orbSecurityButtons".
-       *
-       * NOTICE: Responses may be inaccurate or missing.
-       * PATENT: https://patents.google.com/patent/US20170070361A1/en
-       *
-       * How the data may be displayed:
-       * ➜ <input id="security_button_1" value="Arm Stay" onclick="setArmState('quickcontrol/armDisarm.jsp','Arming Stay','1','2','false','href=rest/adt/ui/client/security/setArmState&amp;armstate=off&amp;arm=stay&amp;sat=21580428-e539-4075-8237-5c58b6c6fec8')">
-       * ➜ <input id="security_button_1" value="Arming Stay" disabled="">
-       *
-       * Example data after being processed by "parseOrbSecurityButtons()" function/method:
-       * ➜ [
-       *     {
-       *       buttonDisabled: false,
-       *       buttonId: 'security_button_1',
-       *       buttonIndex: 1,
-       *       buttonText: 'Arm Stay',
-       *       changeAccessCode: false,
-       *       loadingText: 'Arming Stay',
-       *       relativeUrl: 'quickcontrol/armDisarm.jsp',
-       *       totalButtons: 2,
-       *       urlParams: {
-       *         arm: 'stay',
-       *         armState: 'off',
-       *         href: 'rest/adt/ui/client/security/setArmState',
-       *         sat: '21580428-e539-4075-8237-5c58b6c6fec8',
-       *       },
-       *     },
-       *   ]
-       * ➜ [
-       *     {
-       *       buttonDisabled: true,
-       *       buttonId: 'security_button_1',
-       *       buttonText: 'Arming Stay',
-       *     },
-       *   ]
-       *
-       * Notes I've gathered during the process:
-       * - After disarming, "armState" will be set to "disarmed". It will be set to "off" after re-login.¹
-       * - After turning off siren, "armState" will be set to "disarmed+with+alarm". It will be set to "disarmed_with_alarm" after re-login.¹²
-       * - After arming night, "armState" will be set to "night+stay". It will be set to "night" after re-login.¹
-       * - The "sat" code is required for all arm/disarm actions (UUID, generated on every login).
-       * - If "armState" is not "off" or "disarmed", you must disarm first before setting to other modes.
-       *
-       * Footnotes:
-       * ¹ States are synced across an entire site (per home). If one account arms, every user signed in during that phase becomes "dirty".
-       * ² Turning off siren means system is in "Uncleared Alarm" mode, not truly "Disarmed" mode.
-       *
-       * @since 1.0.0
-       */
-      const jsdomSummaryOrbSecurityButtons = sessions.jsdomSummary.window.document.querySelectorAll('#divOrbSecurityButtons input');
-      const parsedOrbSecurityButtons = parseOrbSecurityButtons(jsdomSummaryOrbSecurityButtons);
-
-      /**
-       * Check if "orbSecurityButtons" needs documenting or testing.
-       *
-       * NOTICE: Parts NOT SHOWN below will NOT be tracked, documented, or tested.
-       * PATENT: https://patents.google.com/patent/US20170070361A1/en
-       *
-       * buttonText: 'Arm Away'
-       *             'Arm Night'
-       *             'Arm Stay'
-       *             'Clear Alarm'
-       *             'Disarm'
-       *
-       * loadingText: 'Arming Away'
-       *              'Arming Night'
-       *              'Arming Stay'
-       *              'Disarming'
-       *
-       * relativeUrl: 'quickcontrol/armDisarm.jsp'
-       *
-       * urlParams.arm: 'away'
-       *                'night'
-       *                'off'
-       *                'stay'
-       *
-       * urlParams.armState: 'away'
-       *                     'disarmed'
-       *                     'disarmed_with_alarm'
-       *                     'disarmed+with+alarm'
-       *                     'night'
-       *                     'night+stay'
-       *                     'off'
-       *                     'stay'
-       *
-       * urlParams.href: 'rest/adt/ui/client/security/setArmState'
-       *
-       * Notes I've gathered during the process:
-       * - When a button is in pending (disabled) state, the "buttonText" will be the "loadingText".
-       * - Currently, "disarmed+with+alarm" and "night+stay" are considered dirty states.
-       *
-       * @since 1.0.0
-       */
-      await this.newInformationDispatcher('orb-security-buttons', parsedOrbSecurityButtons);
-
-      // Check if the parsing function is parsing data incorrectly.
-      await this.newInformationDispatcher('debug-parser', {
-        method: 'setPanelStatus',
-        response: parsedOrbSecurityButtons,
-        rawHtml: sessions.axiosSummary.data,
-      });
+      const securityButtons = securityButtonsResponse.info;
 
       // Only keep all ready (enabled) orb security buttons.
-      let readyButtons = parsedOrbSecurityButtons.filter((parsedOrbSecurityButton): parsedOrbSecurityButton is ADTPulseSetPanelStatusReadyButton => !parsedOrbSecurityButton.buttonDisabled);
+      let readyButtons = securityButtons.filter((securityButton): securityButton is ADTPulseSetPanelStatusReadyButton => !securityButton.buttonDisabled);
 
       // Generate "fake" ready buttons if arming tasks become stuck (backup sat code required).
       if (readyButtons.length === 0 && this.#session.backupSatCode !== null) {
-        readyButtons = generateFakeReadyButtons(parsedOrbSecurityButtons, this.#session.isCleanState, {
+        readyButtons = generateFakeReadyButtons(securityButtons, this.#session.isCleanState, {
           relativeUrl: 'quickcontrol/armDisarm.jsp',
           href: 'rest/adt/ui/client/security/setArmState',
           sat: this.#session.backupSatCode,
@@ -1636,7 +1464,7 @@ export class ADTPulse {
         if (this.#internal.debug) {
           debugLog(this.#internal.logger, 'api.ts / ADTPulse.setPanelStatus()', 'warn', 'No security buttons were found. Replacing stuck orb security buttons with fake buttons');
           stackTracer('fake-ready-buttons', {
-            before: parsedOrbSecurityButtons,
+            before: securityButtons,
             after: readyButtons,
           });
         }
@@ -2247,6 +2075,244 @@ export class ADTPulse {
   }
 
   /**
+   * ADT Pulse - Get orb security buttons.
+   *
+   * @returns {ADTPulseGetOrbSecurityButtonsReturns}
+   *
+   * @since 1.0.0
+   */
+  public async getOrbSecurityButtons(): ADTPulseGetOrbSecurityButtonsReturns {
+    let errorObject;
+
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.getOrbSecurityButtons()', 'info', `Attempting to retrieve orb security buttons from "${this.#internal.baseUrl}"`);
+    }
+
+    try {
+      const sessions: ADTPulseGetOrbSecurityButtonsSessions = {};
+
+      // sessions.axiosSummary: Load the summary page.
+      sessions.axiosSummary = await this.#session.httpClient.get<unknown>(
+        `${this.#internal.baseUrl}/myhome/${this.#session.portalVersion}/summary/summary.jsp`,
+        this.getRequestConfig({
+          headers: {
+            Referer: `${this.#internal.baseUrl}/myhome/${this.#session.portalVersion}/summary/summary.jsp`,
+            'Sec-Fetch-Site': 'same-origin',
+          },
+        }),
+      );
+
+      // If the "ClientRequest" object does not exist in the Axios response.
+      if (typeof sessions.axiosSummary?.request === 'undefined') {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getOrbSecurityButtons()', 'error', 'The HTTP client responded without the "request" object');
+        }
+
+        return {
+          action: 'GET_ORB_SECURITY_BUTTONS',
+          success: false,
+          info: {
+            message: 'The HTTP client responded without the "request" object',
+          },
+        };
+      }
+
+      const axiosSummaryRequestPath = sessions.axiosSummary.request.path;
+      const axiosSummaryRequestPathValid = requestPathSummarySummary.test(axiosSummaryRequestPath);
+
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getOrbSecurityButtons()', 'info', `Request path ➜ ${axiosSummaryRequestPath}`);
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getOrbSecurityButtons()', 'info', `Request path valid ➜ ${axiosSummaryRequestPathValid}`);
+      }
+
+      // If the final URL of sessions.axiosSummary is not the summary page.
+      if (!axiosSummaryRequestPathValid) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getOrbSecurityButtons()', 'error', `"${axiosSummaryRequestPath}" is not the summary page`);
+        }
+
+        // Check if "this instance" was not signed in during this time.
+        this.handleLoginFailure(axiosSummaryRequestPath, sessions.axiosSummary);
+
+        return {
+          action: 'GET_ORB_SECURITY_BUTTONS',
+          success: false,
+          info: {
+            message: `"${axiosSummaryRequestPath}" is not the summary page`,
+          },
+        };
+      }
+
+      // Make sure we are able to use JSDOM on the response data.
+      if (typeof sessions.axiosSummary.data !== 'string') {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getOrbSecurityButtons()', 'error', 'The response body of the summary page is not of type "string"');
+        }
+
+        return {
+          action: 'GET_ORB_SECURITY_BUTTONS',
+          success: false,
+          info: {
+            message: 'The response body of the summary page is not of type "string"',
+          },
+        };
+      }
+
+      // Recover sat code if it was missing during login.
+      if (this.#session.backupSatCode === null) {
+        const missingSatCode = fetchMissingSatCode(sessions.axiosSummary);
+
+        if (missingSatCode !== null) {
+          if (this.#internal.debug) {
+            debugLog(this.#internal.logger, 'api.ts / ADTPulse.getOrbSecurityButtons()', 'success', 'Backup sat code was successfully recovered from previous failed retrieval');
+          }
+
+          this.#session.backupSatCode = missingSatCode;
+        }
+      }
+
+      // sessions.jsdomSummary: Parse the summary page.
+      sessions.jsdomSummary = new JSDOM(
+        sessions.axiosSummary.data,
+        {
+          url: sessions.axiosSummary.config.url,
+          referrer: sessions.axiosSummary.config.headers.Referer,
+          contentType: 'text/html',
+          pretendToBeVisual: true,
+        },
+      );
+
+      /**
+       * Detailed parsing information for "orbSecurityButtons".
+       *
+       * NOTICE: Responses may be inaccurate or missing.
+       * PATENT: https://patents.google.com/patent/US20170070361A1/en
+       *
+       * How the data may be displayed:
+       * ➜ <input id="security_button_1" value="Arm Stay" onclick="setArmState('quickcontrol/armDisarm.jsp','Arming Stay','1','2','false','href=rest/adt/ui/client/security/setArmState&amp;armstate=off&amp;arm=stay&amp;sat=21580428-e539-4075-8237-5c58b6c6fec8')">
+       * ➜ <input id="security_button_1" value="Arming Stay" disabled="">
+       *
+       * Example data after being processed by "parseOrbSecurityButtons()" function/method:
+       * ➜ [
+       *     {
+       *       buttonDisabled: false,
+       *       buttonId: 'security_button_1',
+       *       buttonIndex: 1,
+       *       buttonText: 'Arm Stay',
+       *       changeAccessCode: false,
+       *       loadingText: 'Arming Stay',
+       *       relativeUrl: 'quickcontrol/armDisarm.jsp',
+       *       totalButtons: 2,
+       *       urlParams: {
+       *         arm: 'stay',
+       *         armState: 'off',
+       *         href: 'rest/adt/ui/client/security/setArmState',
+       *         sat: '21580428-e539-4075-8237-5c58b6c6fec8',
+       *       },
+       *     },
+       *   ]
+       * ➜ [
+       *     {
+       *       buttonDisabled: true,
+       *       buttonId: 'security_button_1',
+       *       buttonText: 'Arming Stay',
+       *     },
+       *   ]
+       *
+       * Notes I've gathered during the process:
+       * - After disarming, "armState" will be set to "disarmed". It will be set to "off" after re-login.¹
+       * - After turning off siren, "armState" will be set to "disarmed+with+alarm". It will be set to "disarmed_with_alarm" after re-login.¹²
+       * - After arming night, "armState" will be set to "night+stay". It will be set to "night" after re-login.¹
+       * - The "sat" code is required for all arm/disarm actions (UUID, generated on every login).
+       * - If "armState" is not "off" or "disarmed", you must disarm first before setting to other modes.
+       *
+       * Footnotes:
+       * ¹ States are synced across an entire site (per home). If one account arms, every user signed in during that phase becomes "dirty".
+       * ² Turning off siren means system is in "Uncleared Alarm" mode, not truly "Disarmed" mode.
+       *
+       * @since 1.0.0
+       */
+      const jsdomSummaryOrbSecurityButtons = sessions.jsdomSummary.window.document.querySelectorAll('#divOrbSecurityButtons input');
+      const parsedOrbSecurityButtons = parseOrbSecurityButtons(jsdomSummaryOrbSecurityButtons);
+
+      /**
+       * Check if "orbSecurityButtons" needs documenting or testing.
+       *
+       * NOTICE: Parts NOT SHOWN below will NOT be tracked, documented, or tested.
+       * PATENT: https://patents.google.com/patent/US20170070361A1/en
+       *
+       * buttonText: 'Arm Away'
+       *             'Arm Night'
+       *             'Arm Stay'
+       *             'Clear Alarm'
+       *             'Disarm'
+       *
+       * loadingText: 'Arming Away'
+       *              'Arming Night'
+       *              'Arming Stay'
+       *              'Disarming'
+       *
+       * relativeUrl: 'quickcontrol/armDisarm.jsp'
+       *
+       * urlParams.arm: 'away'
+       *                'night'
+       *                'off'
+       *                'stay'
+       *
+       * urlParams.armState: 'away'
+       *                     'disarmed'
+       *                     'disarmed_with_alarm'
+       *                     'disarmed+with+alarm'
+       *                     'night'
+       *                     'night+stay'
+       *                     'off'
+       *                     'stay'
+       *
+       * urlParams.href: 'rest/adt/ui/client/security/setArmState'
+       *
+       * Notes I've gathered during the process:
+       * - When a button is in pending (disabled) state, the "buttonText" will be the "loadingText".
+       * - Currently, "disarmed+with+alarm" and "night+stay" are considered dirty states.
+       *
+       * @since 1.0.0
+       */
+      await this.newInformationDispatcher('orb-security-buttons', parsedOrbSecurityButtons);
+
+      // Check if the parsing function is parsing data incorrectly.
+      await this.newInformationDispatcher('debug-parser', {
+        method: 'getOrbSecurityButtons',
+        response: parsedOrbSecurityButtons,
+        rawHtml: sessions.axiosSummary.data,
+      });
+
+      if (this.#internal.debug) {
+        debugLog(this.#internal.logger, 'api.ts / ADTPulse.getOrbSecurityButtons()', 'success', `Successfully retrieved orb security buttons from "${this.#internal.baseUrl}"`);
+      }
+
+      return {
+        action: 'GET_ORB_SECURITY_BUTTONS',
+        success: true,
+        info: parsedOrbSecurityButtons,
+      };
+    } catch (error) {
+      errorObject = serializeError(error);
+    }
+
+    if (this.#internal.debug) {
+      debugLog(this.#internal.logger, 'api.ts / ADTPulse.getOrbSecurityButtons()', 'error', 'Method encountered an error during execution');
+      stackTracer('serialize-error', errorObject);
+    }
+
+    return {
+      action: 'GET_ORB_SECURITY_BUTTONS',
+      success: false,
+      info: {
+        error: errorObject,
+      },
+    };
+  }
+
+  /**
    * ADT Pulse - Perform sync check.
    *
    * @returns {ADTPulsePerformSyncCheckReturns}
@@ -2302,7 +2368,7 @@ export class ADTPulse {
         debugLog(this.#internal.logger, 'api.ts / ADTPulse.performSyncCheck()', 'info', `Request path valid ➜ ${syncCheckRequestPathValid}`);
       }
 
-      // If the final URL of sessions.axios_syncCheck is not the sync check page.
+      // If the final URL of sessions.axiosSyncCheck is not the sync check page.
       if (!syncCheckRequestPathValid) {
         if (this.#internal.debug) {
           debugLog(this.#internal.logger, 'api.ts / ADTPulse.performSyncCheck()', 'error', `"${syncCheckRequestPath}" is not the sync check page`);
@@ -2555,11 +2621,10 @@ export class ADTPulse {
         && options.arm === 'away'
       )
       || (
-        options.armState === 'night'
-        && options.arm === 'night'
-      )
-      || (
-        options.armState === 'night+stay'
+        (
+          options.armState === 'night'
+          || options.armState === 'night+stay'
+        )
         && options.arm === 'night'
       )
       || (
@@ -2567,12 +2632,10 @@ export class ADTPulse {
         && options.arm === 'stay'
       )
       || (
-        options.armState === 'disarmed'
-        && options.arm === 'off'
-        && !isAlarmActive
-      )
-      || (
-        options.armState === 'off'
+        (
+          options.armState === 'disarmed'
+          || options.armState === 'off'
+        )
         && options.arm === 'off'
         && !isAlarmActive
       )
@@ -2743,205 +2806,28 @@ export class ADTPulse {
       // Allow some time for the security orb buttons to refresh.
       await sleep(this.#internal.waitTimeAfterArm);
 
-      // sessions.axiosSummary: Load the summary page.
-      sessions.axiosSummary = await this.#session.httpClient.get<unknown>(
-        `${this.#internal.baseUrl}/myhome/${this.#session.portalVersion}/summary/summary.jsp`,
-        this.getRequestConfig({
-          headers: {
-            Referer: `${this.#internal.baseUrl}/myhome/${this.#session.portalVersion}/summary/summary.jsp`,
-            'Sec-Fetch-Site': 'same-origin',
-          },
-        }),
-      );
+      // Get the security buttons.
+      const securityButtonsResponse = await this.getOrbSecurityButtons();
 
-      // If the "ClientRequest" object does not exist in the Axios response.
-      if (typeof sessions.axiosSummary?.request === 'undefined') {
+      if (!securityButtonsResponse.success) {
         if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'error', 'The HTTP client responded without the "request" object');
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'error', 'An error occurred while retrieving security buttons');
         }
 
         return {
           action: 'ARM_DISARM_HANDLER',
           success: false,
-          info: {
-            message: 'The HTTP client responded without the "request" object',
-          },
+          info: securityButtonsResponse.info,
         };
       }
 
-      const axiosSummaryRequestPath = sessions.axiosSummary.request.path;
-      const axiosSummaryRequestPathValid = requestPathSummarySummary.test(axiosSummaryRequestPath);
+      const securityButtons = securityButtonsResponse.info;
 
-      if (this.#internal.debug) {
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'info', `Request path ➜ ${axiosSummaryRequestPath}`);
-        debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'info', `Request path valid ➜ ${axiosSummaryRequestPathValid}`);
-      }
-
-      // If the final URL of sessions.axios[1] is not the summary page.
-      if (!axiosSummaryRequestPathValid) {
-        if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'error', `"${axiosSummaryRequestPath}" is not the summary page`);
-        }
-
-        // Check if "this instance" was not signed in during this time.
-        this.handleLoginFailure(axiosSummaryRequestPath, sessions.axiosSummary);
-
-        return {
-          action: 'ARM_DISARM_HANDLER',
-          success: false,
-          info: {
-            message: `"${axiosSummaryRequestPath}" is not the summary page`,
-          },
-        };
-      }
-
-      // Make sure we are able to use JSDOM on the response data.
-      if (typeof sessions.axiosSummary.data !== 'string') {
-        if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'error', 'The response body of the summary page is not of type "string"');
-        }
-
-        return {
-          action: 'ARM_DISARM_HANDLER',
-          success: false,
-          info: {
-            message: 'The response body of the summary page is not of type "string"',
-          },
-        };
-      }
-
-      // Recover sat code if it was missing during login.
-      if (this.#session.backupSatCode === null) {
-        const missingSatCode = fetchMissingSatCode(sessions.axiosSummary);
-
-        if (missingSatCode !== null) {
-          if (this.#internal.debug) {
-            debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'success', 'Backup sat code was successfully recovered from previous failed retrieval');
-          }
-
-          this.#session.backupSatCode = missingSatCode;
-        }
-      }
-
-      // sessions.jsdomSummary: Parse the summary page.
-      sessions.jsdomSummary = new JSDOM(
-        sessions.axiosSummary.data,
-        {
-          url: sessions.axiosSummary.config.url,
-          referrer: sessions.axiosSummary.config.headers.Referer,
-          contentType: 'text/html',
-          pretendToBeVisual: true,
-        },
-      );
-
-      /**
-       * Detailed parsing information for "orbSecurityButtons".
-       *
-       * NOTICE: Responses may be inaccurate or missing.
-       * PATENT: https://patents.google.com/patent/US20170070361A1/en
-       *
-       * How the data may be displayed:
-       * ➜ <input id="security_button_1" value="Arm Stay" onclick="setArmState('quickcontrol/armDisarm.jsp','Arming Stay','1','2','false','href=rest/adt/ui/client/security/setArmState&amp;armstate=off&amp;arm=stay&amp;sat=21580428-e539-4075-8237-5c58b6c6fec8')">
-       * ➜ <input id="security_button_1" value="Arming Stay" disabled="">
-       *
-       * Example data after being processed by "parseOrbSecurityButtons()" function/method:
-       * ➜ [
-       *     {
-       *       buttonDisabled: false,
-       *       buttonId: 'security_button_1',
-       *       buttonIndex: 1,
-       *       buttonText: 'Arm Stay',
-       *       changeAccessCode: false,
-       *       loadingText: 'Arming Stay',
-       *       relativeUrl: 'quickcontrol/armDisarm.jsp',
-       *       totalButtons: 2,
-       *       urlParams: {
-       *         arm: 'stay',
-       *         armState: 'off',
-       *         href: 'rest/adt/ui/client/security/setArmState',
-       *         sat: '21580428-e539-4075-8237-5c58b6c6fec8',
-       *       },
-       *     },
-       *   ]
-       * ➜ [
-       *     {
-       *       buttonDisabled: true,
-       *       buttonId: 'security_button_1',
-       *       buttonText: 'Arming Stay',
-       *     },
-       *   ]
-       *
-       * Notes I've gathered during the process:
-       * - After disarming, "armState" will be set to "disarmed". It will be set to "off" after re-login.¹
-       * - After turning off siren, "armState" will be set to "disarmed+with+alarm". It will be set to "disarmed_with_alarm" after re-login.¹²
-       * - After arming night, "armState" will be set to "night+stay". It will be set to "night" after re-login.¹
-       * - The "sat" code is required for all arm/disarm actions (UUID, generated on every login).
-       * - If "armState" is not "off" or "disarmed", you must disarm first before setting to other modes.
-       *
-       * Footnotes:
-       * ¹ States are synced across an entire site (per home). If one account arms, every user signed in during that phase becomes "dirty".
-       * ² Turning off siren means system is in "Uncleared Alarm" mode, not truly "Disarmed" mode.
-       *
-       * @since 1.0.0
-       */
-      const jsdomSummaryOrbSecurityButtons = sessions.jsdomSummary.window.document.querySelectorAll('#divOrbSecurityButtons input');
-      const parsedOrbSecurityButtons = parseOrbSecurityButtons(jsdomSummaryOrbSecurityButtons);
-
-      /**
-       * Check if "orbSecurityButtons" needs documenting or testing.
-       *
-       * NOTICE: Parts NOT SHOWN below will NOT be tracked, documented, or tested.
-       * PATENT: https://patents.google.com/patent/US20170070361A1/en
-       *
-       * buttonText: 'Arm Away'
-       *             'Arm Night'
-       *             'Arm Stay'
-       *             'Clear Alarm'
-       *             'Disarm'
-       *
-       * loadingText: 'Arming Away'
-       *              'Arming Night'
-       *              'Arming Stay'
-       *              'Disarming'
-       *
-       * relativeUrl: 'quickcontrol/armDisarm.jsp'
-       *
-       * urlParams.arm: 'away'
-       *                'night'
-       *                'off'
-       *                'stay'
-       *
-       * urlParams.armState: 'away'
-       *                     'disarmed'
-       *                     'disarmed_with_alarm'
-       *                     'disarmed+with+alarm'
-       *                     'night'
-       *                     'night+stay'
-       *                     'off'
-       *                     'stay'
-       *
-       * urlParams.href: 'rest/adt/ui/client/security/setArmState'
-       *
-       * Notes I've gathered during the process:
-       * - When a button is in pending (disabled) state, the "buttonText" will be the "loadingText".
-       * - Currently, "disarmed+with+alarm" and "night+stay" are considered dirty states.
-       *
-       * @since 1.0.0
-       */
-      await this.newInformationDispatcher('orb-security-buttons', parsedOrbSecurityButtons);
-
-      // Check if the parsing function is parsing data incorrectly.
-      await this.newInformationDispatcher('debug-parser', {
-        method: 'armDisarmHandler',
-        response: parsedOrbSecurityButtons,
-        rawHtml: sessions.axiosSummary.data,
-      });
-
-      let readyButtons = parsedOrbSecurityButtons.filter((parsedOrbSecurityButton): parsedOrbSecurityButton is ADTPulseArmDisarmHandlerReadyButton => !parsedOrbSecurityButton.buttonDisabled);
+      let readyButtons = securityButtons.filter((securityButton): securityButton is ADTPulseArmDisarmHandlerReadyButton => !securityButton.buttonDisabled);
 
       // Generate "fake" ready buttons if arming tasks become stuck.
       if (readyButtons.length === 0) {
-        readyButtons = generateFakeReadyButtons(parsedOrbSecurityButtons, this.#session.isCleanState, {
+        readyButtons = generateFakeReadyButtons(securityButtons, this.#session.isCleanState, {
           relativeUrl: options.relativeUrl,
           href: options.href,
           sat: options.sat,
@@ -2950,7 +2836,7 @@ export class ADTPulse {
         if (this.#internal.debug) {
           debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'warn', 'No security buttons were found. Replacing stuck orb security buttons with fake buttons');
           stackTracer('fake-ready-buttons', {
-            before: parsedOrbSecurityButtons,
+            before: securityButtons,
             after: readyButtons,
           });
         }

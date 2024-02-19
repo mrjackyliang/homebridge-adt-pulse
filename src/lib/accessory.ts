@@ -172,7 +172,7 @@ export class ADTPulseAccessory {
     // Set the "AccessoryInformation" characteristics.
     this.#services.Information
       .setCharacteristic(this.#characteristic.Identify, false)
-      .setCharacteristic(this.#characteristic.Manufacturer, manufacturer ?? 'ADT')
+      .setCharacteristic(this.#characteristic.Manufacturer, manufacturer ?? 'N/A')
       .setCharacteristic(this.#characteristic.Model, model ?? 'N/A')
       .setCharacteristic(this.#characteristic.Name, name)
       .setCharacteristic(this.#characteristic.SerialNumber, serial ?? 'N/A')
@@ -626,7 +626,11 @@ export class ADTPulseAccessory {
 
     // Find the state for "Security System Alarm Type" (optional characteristic).
     if (mode === 'alarmType') {
-      if (isPanelAlarmActive(panelStatuses, this.#config?.options.includes('ignoreSensorProblemStatus') ?? false)) {
+      if (isPanelAlarmActive(
+        panelStatuses,
+        this.#state.data.orbSecurityButtons,
+        this.#config?.options.includes('ignoreSensorProblemStatus') ?? false,
+      )) {
         return 1;
       }
 
@@ -662,7 +666,11 @@ export class ADTPulseAccessory {
     switch (true) {
       case mode === 'current' && this.#activity.isBusy && this.#activity.setCurrentValue !== null:
         return this.#activity.setCurrentValue;
-      case mode === 'current' && isPanelAlarmActive(panelStatuses, this.#config?.options.includes('ignoreSensorProblemStatus') ?? false):
+      case mode === 'current' && isPanelAlarmActive(
+        panelStatuses,
+        this.#state.data.orbSecurityButtons,
+        this.#config?.options.includes('ignoreSensorProblemStatus') ?? false,
+      ):
         return this.#characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
       case mode === 'current' && panelStates.includes('Armed Stay'):
         return this.#characteristic.SecuritySystemCurrentState.STAY_ARM;
@@ -748,7 +756,11 @@ export class ADTPulseAccessory {
     }
 
     // Only show as "On" if alarm is ringing.
-    return isPanelAlarmActive(panelStatuses, this.#config?.options.includes('ignoreSensorProblemStatus') ?? false);
+    return isPanelAlarmActive(
+      panelStatuses,
+      this.#state.data.orbSecurityButtons,
+      this.#config?.options.includes('ignoreSensorProblemStatus') ?? false,
+    );
   }
 
   /**
@@ -798,7 +810,11 @@ export class ADTPulseAccessory {
     const { panelStates } = this.#state.data.panelStatus;
 
     const condensedPanelStates = condensePanelStates(this.#characteristic, panelStates);
-    const isAlarmActive = isPanelAlarmActive(this.#state.data.panelStatus.panelStatuses, this.#config?.options.includes('ignoreSensorProblemStatus') ?? false);
+    const isAlarmActive = isPanelAlarmActive(
+      this.#state.data.panelStatus.panelStatuses,
+      this.#state.data.orbSecurityButtons,
+      this.#config?.options.includes('ignoreSensorProblemStatus') ?? false,
+    );
 
     // If panel status cannot be found or most likely "Status Unavailable".
     if (condensedPanelStates === undefined) {
@@ -937,7 +953,11 @@ export class ADTPulseAccessory {
     const { panelStates } = this.#state.data.panelStatus;
 
     const condensedPanelStates = condensePanelStates(this.#characteristic, panelStates);
-    const isAlarmActive = isPanelAlarmActive(this.#state.data.panelStatus.panelStatuses, this.#config?.options.includes('ignoreSensorProblemStatus') ?? false);
+    const isAlarmActive = isPanelAlarmActive(
+      this.#state.data.panelStatus.panelStatuses,
+      this.#state.data.orbSecurityButtons,
+      this.#config?.options.includes('ignoreSensorProblemStatus') ?? false,
+    );
 
     // If panel status cannot be found or most likely "Status Unavailable".
     if (condensedPanelStates === undefined) {

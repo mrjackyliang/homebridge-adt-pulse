@@ -208,6 +208,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
       },
       data: {
         gatewayInfo: null,
+        orbSecurityButtons: [],
         panelInfo: null,
         panelStatus: null,
         sensorsInfo: [],
@@ -567,7 +568,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
           currentTimestamp - this.#state.lastRunOn.adtLastLogin >= this.#constants.intervalTimestamps.adtSessionLifespan
           && this.#state.lastRunOn.adtLastLogin !== 0
         ) {
-          this.#log.debug('Login session now requires a reset. Resetting the login session now ...');
+          this.#log.debug('Login session requires a reset. Resetting the login session now ...');
 
           this.#instance.resetSession();
         }
@@ -636,7 +637,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
           currentTimestamp - this.#state.lastRunOn.adtKeepAlive >= this.#constants.intervalTimestamps.adtKeepAlive
           && !this.#state.activity.isAdtKeepingAlive
         ) {
-          this.#log.debug('Login session now requires a keep alive ping. Initiating a keep alive request now ...');
+          this.#log.debug('Login session requires a keep alive ping. Initiating a keep alive request now ...');
 
           this.synchronizeKeepAlive();
         }
@@ -646,7 +647,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
           currentTimestamp - this.#state.lastRunOn.adtSyncCheck >= this.#constants.intervalTimestamps.adtSyncCheck
           && !this.#state.activity.isAdtSyncChecking
         ) {
-          this.#log.debug('Login session now requires a sync check. Running a sync check request now ...');
+          this.#log.debug('Login session requires a sync check. Running a sync check request now ...');
 
           this.synchronizeSyncCheck();
         }
@@ -841,6 +842,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         this.#instance.getPanelStatus(),
         this.#instance.getSensorsInformation(),
         this.#instance.getSensorsStatus(),
+        this.#instance.getOrbSecurityButtons(),
       ]);
 
       // Update gateway information.
@@ -881,6 +883,14 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
 
         // Set sensors status into memory.
         this.#state.data.sensorsStatus = sensors;
+      }
+
+      // Cache orb security buttons.
+      if (requests[5].success) {
+        const { info } = requests[5];
+
+        // Set orb security buttons into memory.
+        this.#state.data.orbSecurityButtons = info;
       }
 
       // Check if device statuses have changed.
@@ -1071,12 +1081,11 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     // Add gateway as an accessory.
     if (gatewayInfo !== null) {
       const id = 'adt-device-0';
-      const name = gatewayInfo.manufacturer ?? gatewayInfo.model ?? 'ADT Pulse Gateway';
 
       devices.push({
         id,
-        name: (name.includes('Gateway')) ? name : 'ADT Pulse Gateway',
-        originalName: (name.includes('Gateway')) ? name : 'ADT Pulse Gateway',
+        name: 'Gateway',
+        originalName: 'Gateway',
         type: 'gateway',
         zone: null,
         category: 'OTHER',
@@ -1111,7 +1120,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         uuid: this.#api.hap.uuid.generate(idPanel),
       });
 
-      // A separate switch designed to turn off ringing alarm while in "Disarmed" state.
+      // A separate switch designed to turn off ringing alarm (originally designed to be used in "Disarmed" state).
       if (this.#config !== null && !this.#config.options.includes('disableAlarmRingingSwitch')) {
         devices.push({
           id: idSwitch,

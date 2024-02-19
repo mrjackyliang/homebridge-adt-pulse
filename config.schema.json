@@ -272,7 +272,7 @@
                 },
                 {
                   "value": "ignoreSensorProblemStatus",
-                  "name": "Ignore Sensor Problem Status"
+                  "name": "Ignore \"Sensor Problem\" Panel Status"
                 }
               ]
             }

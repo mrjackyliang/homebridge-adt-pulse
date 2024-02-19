@@ -60,6 +60,10 @@ import type {
   FetchTableCellsMatchItems,
   FetchTableCellsNodeElements,
   FetchTableCellsReturns,
+  FindGatewayManufacturerModelManufacturer,
+  FindGatewayManufacturerModelMode,
+  FindGatewayManufacturerModelModel,
+  FindGatewayManufacturerModelReturns,
   FindIndexWithValueArray,
   FindIndexWithValueCondition,
   FindIndexWithValueReturns,
@@ -67,6 +71,9 @@ import type {
   FindNullKeysParentKey,
   FindNullKeysProperties,
   FindNullKeysReturns,
+  FindPanelManufacturerManufacturerProvider,
+  FindPanelManufacturerReturns,
+  FindPanelManufacturerTypeModel,
   GenerateDynatracePCHeaderValueMode,
   GenerateDynatracePCHeaderValueReturns,
   GenerateFakeReadyButtonsButtons,
@@ -90,6 +97,7 @@ import type {
   IsEmptyOrbTextSummaryReturns,
   IsForwardSlashOSReturns,
   IsPanelAlarmActiveIgnoreSensorProblem,
+  IsPanelAlarmActiveOrbSecurityButtons,
   IsPanelAlarmActivePanelStatuses,
   IsPanelAlarmActiveReturns,
   IsPluginOutdatedReturns,
@@ -526,6 +534,39 @@ export function fetchTableCells(nodeElements: FetchTableCellsNodeElements, match
 }
 
 /**
+ * Find gateway manufacturer model.
+ *
+ * @param {FindGatewayManufacturerModelMode}         mode         - Mode.
+ * @param {FindGatewayManufacturerModelManufacturer} manufacturer - Manufacturer.
+ * @param {FindGatewayManufacturerModelModel}        model        - Model.
+ *
+ * @returns {FindGatewayManufacturerModelReturns}
+ *
+ * @since 1.0.0
+ */
+export function findGatewayManufacturerModel(mode: FindGatewayManufacturerModelMode, manufacturer: FindGatewayManufacturerModelManufacturer, model: FindGatewayManufacturerModelModel): FindGatewayManufacturerModelReturns {
+  let newManufacturer = manufacturer;
+  let newModel = model;
+
+  switch (true) {
+    case manufacturer === 'ADT Pulse Gateway' && model === 'PGZNG1':
+      newManufacturer = 'Netgear';
+      newModel = 'ADT Pulse Gateway PGZNG1';
+      break;
+    case manufacturer === null && model === 'Compact SMA Protocol Gateway':
+      newManufacturer = 'Icontrol Networks';
+      break;
+    case manufacturer === null && model === 'Lynx/QuickConnect Cellular-Only Gateway':
+      newManufacturer = 'Ademco/ADT';
+      break;
+    default:
+      break;
+  }
+
+  return (mode === 'manufacturer') ? newManufacturer : newModel;
+}
+
+/**
  * Find index with value.
  *
  * @param {FindIndexWithValueArray}     array     - Array.
@@ -579,6 +620,29 @@ export function findNullKeys(properties: FindNullKeysProperties, parentKey: Find
   });
 
   return found;
+}
+
+/**
+ * Find panel manufacturer.
+ *
+ * @param {FindPanelManufacturerManufacturerProvider} manufacturerProvider - Manufacturer provider.
+ * @param {FindPanelManufacturerTypeModel}            typeModel            - Type model.
+ *
+ * @returns {FindPanelManufacturerReturns}
+ *
+ * @since 1.0.0
+ */
+export function findPanelManufacturer(manufacturerProvider: FindPanelManufacturerManufacturerProvider, typeModel: FindPanelManufacturerTypeModel): FindPanelManufacturerReturns {
+  if (manufacturerProvider !== null) {
+    return manufacturerProvider;
+  }
+
+  switch (typeModel) {
+    case 'Security Panel - LYNX/QuickConnect':
+      return 'Ademco/ADT';
+    default:
+      return null;
+  }
 }
 
 /**
@@ -903,23 +967,32 @@ export function isForwardSlashOS(): IsForwardSlashOSReturns {
  * Is panel alarm active.
  *
  * @param {IsPanelAlarmActivePanelStatuses}       panelStatuses       - Panel statuses.
+ * @param {IsPanelAlarmActiveOrbSecurityButtons}  orbSecurityButtons  - Orb security buttons.
  * @param {IsPanelAlarmActiveIgnoreSensorProblem} ignoreSensorProblem - Ignore sensor problem.
  *
  * @returns {IsPanelAlarmActiveReturns}
  *
  * @since 1.0.0
  */
-export function isPanelAlarmActive(panelStatuses: IsPanelAlarmActivePanelStatuses, ignoreSensorProblem: IsPanelAlarmActiveIgnoreSensorProblem): IsPanelAlarmActiveReturns {
+export function isPanelAlarmActive(panelStatuses: IsPanelAlarmActivePanelStatuses, orbSecurityButtons: IsPanelAlarmActiveOrbSecurityButtons, ignoreSensorProblem: IsPanelAlarmActiveIgnoreSensorProblem): IsPanelAlarmActiveReturns {
+  const hasDisarmedTroubleButtons = orbSecurityButtons.filter((orbSecurityButton) => {
+    const orbSecurityButtonButtonText = orbSecurityButton.buttonText;
+
+    return orbSecurityButtonButtonText !== null && ['Disarm', 'Arm Away', 'Arm Stay'].includes(orbSecurityButtonButtonText);
+  }).length === 3;
+
   return (
     panelStatuses.includes('BURGLARY ALARM')
     || panelStatuses.includes('Carbon Monoxide Alarm')
     || panelStatuses.includes('FIRE ALARM')
     || (
       panelStatuses.includes('Sensor Problem')
+      && hasDisarmedTroubleButtons
       && !ignoreSensorProblem
     )
     || (
       panelStatuses.includes('Sensor Problems')
+      && hasDisarmedTroubleButtons
       && !ignoreSensorProblem
     )
     || panelStatuses.includes('Uncleared Alarm')

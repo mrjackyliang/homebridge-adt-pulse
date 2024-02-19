@@ -263,6 +263,7 @@ class ADTPulseRepl {
       `    ${chalk.yellowBright(`await api.setPanelStatus(${chalk.magentaBright('armFrom')}, ${chalk.magentaBright('armTo')}, ${chalk.magentaBright('isAlarmActive')});`)}`,
       `    ${chalk.yellowBright('await api.getSensorsInformation();')}`,
       `    ${chalk.yellowBright('await api.getSensorsStatus();')}`,
+      `    ${chalk.yellowBright('await api.getOrbSecurityButtons();')}`,
       `    ${chalk.yellowBright('await api.performSyncCheck();')}`,
       `    ${chalk.yellowBright('await api.performKeepAlive();')}`,
       `    ${chalk.yellowBright('      api.isAuthenticated();')}`,
