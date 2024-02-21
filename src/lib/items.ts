@@ -330,6 +330,19 @@ export const collectionSensorActions: CollectionSensorActions = [
  */
 export const deviceGateways: DeviceGateways = [
   {
+    description: 'ADT Pulse Gateway iHub-3001 / HW 3.4 / Broadband Active',
+    gateway: {
+      broadbandConnectionStatus: 'Active',
+      cellularConnectionStatus: 'N/A',
+      cellularSignalStrength: 'N/A',
+      firmwareVersion: '24.0.0-9',
+      hardwareVersion: 'HW=3.4, BL=ICONTROL_CFE 1.3, PL=24.0.0-9, SKU=0YUC0500MY5',
+      manufacturer: 'ADT Pulse Gateway',
+      model: 'iHub-3001',
+      primaryConnectionType: 'Broadband',
+    },
+  },
+  {
     description: 'ADT Pulse Gateway PGZNG1 / HW 1 / Broadband Active',
     gateway: {
       broadbandConnectionStatus: 'Active',
@@ -378,6 +391,19 @@ export const deviceGateways: DeviceGateways = [
       hardwareVersion: 'HW=0002, BL=UBOOT 2009.08-svn99, PL=5.5.0-5, SKU=TSSC-NA-NONE-01',
       manufacturer: 'ADT',
       model: 'TSSC Lifestyle Module',
+      primaryConnectionType: 'Broadband',
+    },
+  },
+  {
+    description: 'Compact SMA Protocol Gateway / HW 2 / Broadband Active',
+    gateway: {
+      broadbandConnectionStatus: 'Active',
+      cellularConnectionStatus: 'N/A',
+      cellularSignalStrength: 'N/A',
+      firmwareVersion: '27.0.0-140',
+      hardwareVersion: 'HW=02_CSMAP, BL=NA, PL=27.0.0-140',
+      manufacturer: null,
+      model: 'Compact SMA Protocol Gateway',
       primaryConnectionType: 'Broadband',
     },
   },
@@ -456,11 +482,27 @@ export const deviceSecurityPanels: DeviceSecurityPanels = [
     },
   },
   {
+    description: 'Ademco LYNX/ADT QuickConnect - Emergency Keys 95/96/99',
+    panel: {
+      emergencyKeys: 'Button: Fire Alarm (Zone 95) Button: Personal Emergency (Zone 96) Button: Personal Emergency (Zone 99)',
+      manufacturerProvider: null,
+      typeModel: 'Security Panel - LYNX/QuickConnect',
+    },
+  },
+  {
     description: 'DSC Impassa SCW9057',
     panel: {
       emergencyKeys: null,
       manufacturerProvider: 'DSC',
       typeModel: 'Security Panel - Impassa SCW9057',
+    },
+  },
+  {
+    description: 'GE Security Concord 4',
+    panel: {
+      emergencyKeys: null,
+      manufacturerProvider: 'GE Security',
+      typeModel: 'Security Panel - Concord 4',
     },
   },
 ];

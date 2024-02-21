@@ -552,15 +552,21 @@ export function findGatewayManufacturerModel(mode: FindGatewayManufacturerModelM
   let newModel = model;
 
   switch (true) {
+    case manufacturer === 'ADT Pulse Gateway' && model === 'iHub-3001':
+      newManufacturer = 'iControl';
+      newModel = 'ADT Pulse Gateway iHub-3001';
+      break;
     case manufacturer === 'ADT Pulse Gateway' && model === 'PGZNG1':
-      newManufacturer = 'Netgear';
+      newManufacturer = 'NETGEAR';
       newModel = 'ADT Pulse Gateway PGZNG1';
       break;
     case manufacturer === null && model === 'Compact SMA Protocol Gateway':
-      newManufacturer = 'Icontrol Networks';
+      newManufacturer = 'iControl';
+      newModel = 'Compact SMA Protocol Gateway';
       break;
     case manufacturer === null && model === 'Lynx/QuickConnect Cellular-Only Gateway':
       newManufacturer = 'Ademco/ADT';
+      newModel = 'Lynx/QuickConnect Cellular-Only Gateway';
       break;
     default:
       break;
@@ -1440,7 +1446,11 @@ export function parseSensorsTable(elements: ParseOrbSensorsTableElements): Parse
           const cleanedZone = Number(clearWhitespace(zoneText));
 
           // These devices are not supported because they do not display a status in the summary page.
-          if (['System/Supervisory', 'Unknown Device Type'].includes(cleanedDeviceType)) {
+          if ([
+            'System/Supervisory',
+            'Unknown Device Type',
+            'Unknown Device Type (Notable Events Only)',
+          ].includes(cleanedDeviceType)) {
             return;
           }
 
