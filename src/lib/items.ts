@@ -298,7 +298,19 @@ export const collectionSensorActions: CollectionSensorActions = [
   {
     type: 'shock',
     statuses: [
+      'ALARM, Okay',
+      'ALARM, Tripped',
+      'Bypassed, Okay',
+      'Bypassed, Tripped',
+      'Low Battery, Okay',
+      'Low Battery, Tripped',
       'Offline',
+      'Okay',
+      'Tampered, Okay',
+      'Tampered, Tripped',
+      'Tripped',
+      'Trouble, Okay',
+      'Trouble, Tripped',
       'Unknown',
     ],
   },
@@ -346,6 +358,19 @@ export const deviceGateways: DeviceGateways = [
     description: 'ADT Pulse Gateway PGZNG1 / HW 1 / Broadband Active',
     gateway: {
       broadbandConnectionStatus: 'Active',
+      cellularConnectionStatus: 'N/A',
+      cellularSignalStrength: 'N/A',
+      firmwareVersion: '24.0.0-9',
+      hardwareVersion: 'HW=1, BL=1.1.9, PL=9.4.0.32.5, SKU=PGZNG1-1ADNAS',
+      manufacturer: 'ADT Pulse Gateway',
+      model: 'PGZNG1',
+      primaryConnectionType: 'Broadband',
+    },
+  },
+  {
+    description: 'ADT Pulse Gateway PGZNG1 / HW 1 / Broadband Unavailable',
+    gateway: {
+      broadbandConnectionStatus: 'Unavailable',
       cellularConnectionStatus: 'N/A',
       cellularSignalStrength: 'N/A',
       firmwareVersion: '24.0.0-9',
@@ -421,6 +446,19 @@ export const deviceGateways: DeviceGateways = [
     },
   },
   {
+    description: 'Compact SMA Protocol Gateway / HW 2 / Cellular Unavailable',
+    gateway: {
+      broadbandConnectionStatus: null,
+      cellularConnectionStatus: 'Unavailable',
+      cellularSignalStrength: 'N/A',
+      firmwareVersion: '27.0.0-140',
+      hardwareVersion: 'HW=02_CSMAP, BL=NA, PL=27.0.0-140',
+      manufacturer: null,
+      model: 'Compact SMA Protocol Gateway',
+      primaryConnectionType: 'Cellular',
+    },
+  },
+  {
     description: 'Lynx/QuickConnect Cellular-Only Gateway / HW 2 / Cellular Active',
     gateway: {
       broadbandConnectionStatus: null,
@@ -442,7 +480,7 @@ export const deviceGateways: DeviceGateways = [
  */
 export const deviceSecurityPanels: DeviceSecurityPanels = [
   {
-    description: 'ADT Safewatch Pro 3000/3000CN - Emergency Keys 95/99',
+    description: 'ADT Safewatch Pro 3000/3000CN - Emergency Keys FA 95/APA 99',
     panel: {
       emergencyKeys: 'Button: Fire Alarm (Zone 95) Button: Audible Panic Alarm (Zone 99)',
       manufacturerProvider: 'ADT',
@@ -450,7 +488,7 @@ export const deviceSecurityPanels: DeviceSecurityPanels = [
     },
   },
   {
-    description: 'ADT Safewatch Pro 3000/3000CN - Emergency Keys 95/96/99',
+    description: 'ADT Safewatch Pro 3000/3000CN - Emergency Keys FA 95/PE 96/APA 99',
     panel: {
       emergencyKeys: 'Button: Fire Alarm (Zone 95) Button: Personal Emergency (Zone 96) Button: Audible Panic Alarm (Zone 99)',
       manufacturerProvider: 'ADT',
@@ -458,7 +496,7 @@ export const deviceSecurityPanels: DeviceSecurityPanels = [
     },
   },
   {
-    description: 'ADT TSSC Life Safety Module - Emergency Keys 95/99',
+    description: 'ADT TSSC Life Safety Module - Emergency Keys FA 95/APA 99',
     panel: {
       emergencyKeys: 'Button: Fire Alarm (Zone 995) Button: Audible Panic Alarm (Zone 999)',
       manufacturerProvider: 'ADT',
@@ -466,7 +504,7 @@ export const deviceSecurityPanels: DeviceSecurityPanels = [
     },
   },
   {
-    description: 'ADT TSSC Life Safety Module - Emergency Keys 95/96/99',
+    description: 'ADT TSSC Life Safety Module - Emergency Keys FA 95/PE 96/APA 99',
     panel: {
       emergencyKeys: 'Button: Fire Alarm (Zone 995) Button: Personal Emergency (Zone 996) Button: Audible Panic Alarm (Zone 999)',
       manufacturerProvider: 'ADT',
@@ -474,7 +512,7 @@ export const deviceSecurityPanels: DeviceSecurityPanels = [
     },
   },
   {
-    description: 'Ademco LYNX/ADT QuickConnect - Emergency Keys 95/99',
+    description: 'Ademco LYNX/ADT QuickConnect - Emergency Keys FA 95/APA 99',
     panel: {
       emergencyKeys: 'Button: Fire Alarm (Zone 95) Button: Audible Panic Alarm (Zone 99)',
       manufacturerProvider: null,
@@ -482,9 +520,17 @@ export const deviceSecurityPanels: DeviceSecurityPanels = [
     },
   },
   {
-    description: 'Ademco LYNX/ADT QuickConnect - Emergency Keys 95/96/99',
+    description: 'Ademco LYNX/ADT QuickConnect - Emergency Keys FA 95/PE 96/PE 99',
     panel: {
       emergencyKeys: 'Button: Fire Alarm (Zone 95) Button: Personal Emergency (Zone 96) Button: Personal Emergency (Zone 99)',
+      manufacturerProvider: null,
+      typeModel: 'Security Panel - LYNX/QuickConnect',
+    },
+  },
+  {
+    description: 'Ademco LYNX/ADT QuickConnect - Emergency Keys FA 95/PE 96/APA 99',
+    panel: {
+      emergencyKeys: 'Button: Fire Alarm (Zone 95) Button: Personal Emergency (Zone 96) Button: Audible Panic Alarm (Zone 99)',
       manufacturerProvider: null,
       typeModel: 'Security Panel - LYNX/QuickConnect',
     },

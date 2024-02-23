@@ -515,7 +515,6 @@ export class ADTPulseAccessory {
           return this.#characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED;
         }
         break;
-      // TODO Device type needs to be manually tested and confirmed first.
       case 'heat':
         if (statuses.includes('ALARM') || statuses.includes('Tripped')) {
           return this.#characteristic.OccupancyDetected.OCCUPANCY_DETECTED;
@@ -534,10 +533,15 @@ export class ADTPulseAccessory {
           return false;
         }
         break;
-      // TODO Device type needs to be manually tested and confirmed first.
       case 'shock':
+        if (statuses.includes('ALARM') || statuses.includes('Tripped')) {
+          return this.#characteristic.OccupancyDetected.OCCUPANCY_DETECTED;
+        }
+
+        if (statuses.includes('Okay')) {
+          return this.#characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED;
+        }
         break;
-      // TODO Device type needs to be manually tested and confirmed first.
       case 'temperature':
         /**
          * Since sensors from ADT do not show exact temperatures
