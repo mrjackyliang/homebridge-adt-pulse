@@ -355,6 +355,19 @@ export const deviceGateways: DeviceGateways = [
     },
   },
   {
+    description: 'ADT Pulse Gateway iHub-3001 / HW 3.4 / Broadband Unavailable',
+    gateway: {
+      broadbandConnectionStatus: 'Unavailable',
+      cellularConnectionStatus: 'N/A',
+      cellularSignalStrength: 'N/A',
+      firmwareVersion: '24.0.0-9',
+      hardwareVersion: 'HW=3.4, BL=ICONTROL_CFE 1.3, PL=24.0.0-9, SKU=0YUC0500MY5',
+      manufacturer: 'ADT Pulse Gateway',
+      model: 'iHub-3001',
+      primaryConnectionType: 'Broadband',
+    },
+  },
+  {
     description: 'ADT Pulse Gateway PGZNG1 / HW 1 / Broadband Active',
     gateway: {
       broadbandConnectionStatus: 'Active',
@@ -407,6 +420,32 @@ export const deviceGateways: DeviceGateways = [
     },
   },
   {
+    description: 'ADT TSSC Lifestyle Module / HW 1 / Broadband Active',
+    gateway: {
+      broadbandConnectionStatus: 'Active',
+      cellularConnectionStatus: 'N/A',
+      cellularSignalStrength: 'N/A',
+      firmwareVersion: '24.0.0-9',
+      hardwareVersion: 'HW=0001, BL=UBOOT 2009.08-svn99, PL=5.5.0-5, SKU=TSSC-NA-NONE-01',
+      manufacturer: 'ADT',
+      model: 'TSSC Lifestyle Module',
+      primaryConnectionType: 'Broadband',
+    },
+  },
+  {
+    description: 'ADT TSSC Lifestyle Module / HW 1 / Broadband Unavailable',
+    gateway: {
+      broadbandConnectionStatus: 'Unavailable',
+      cellularConnectionStatus: 'N/A',
+      cellularSignalStrength: 'N/A',
+      firmwareVersion: '24.0.0-9',
+      hardwareVersion: 'HW=0001, BL=UBOOT 2009.08-svn99, PL=5.5.0-5, SKU=TSSC-NA-NONE-01',
+      manufacturer: 'ADT',
+      model: 'TSSC Lifestyle Module',
+      primaryConnectionType: 'Broadband',
+    },
+  },
+  {
     description: 'ADT TSSC Lifestyle Module / HW 2 / Broadband Active',
     gateway: {
       broadbandConnectionStatus: 'Active',
@@ -420,9 +459,35 @@ export const deviceGateways: DeviceGateways = [
     },
   },
   {
+    description: 'ADT TSSC Lifestyle Module / HW 2 / Broadband Unavailable',
+    gateway: {
+      broadbandConnectionStatus: 'Unavailable',
+      cellularConnectionStatus: 'N/A',
+      cellularSignalStrength: 'N/A',
+      firmwareVersion: '24.0.0-9',
+      hardwareVersion: 'HW=0002, BL=UBOOT 2009.08-svn99, PL=5.5.0-5, SKU=TSSC-NA-NONE-01',
+      manufacturer: 'ADT',
+      model: 'TSSC Lifestyle Module',
+      primaryConnectionType: 'Broadband',
+    },
+  },
+  {
     description: 'Compact SMA Protocol Gateway / HW 2 / Broadband Active',
     gateway: {
       broadbandConnectionStatus: 'Active',
+      cellularConnectionStatus: 'N/A',
+      cellularSignalStrength: 'N/A',
+      firmwareVersion: '27.0.0-140',
+      hardwareVersion: 'HW=02_CSMAP, BL=NA, PL=27.0.0-140',
+      manufacturer: null,
+      model: 'Compact SMA Protocol Gateway',
+      primaryConnectionType: 'Broadband',
+    },
+  },
+  {
+    description: 'Compact SMA Protocol Gateway / HW 2 / Broadband Unavailable',
+    gateway: {
+      broadbandConnectionStatus: 'Unavailable',
       cellularConnectionStatus: 'N/A',
       cellularSignalStrength: 'N/A',
       firmwareVersion: '27.0.0-140',
@@ -463,6 +528,19 @@ export const deviceGateways: DeviceGateways = [
     gateway: {
       broadbandConnectionStatus: null,
       cellularConnectionStatus: 'Active',
+      cellularSignalStrength: 'N/A',
+      firmwareVersion: '27.0.0-140',
+      hardwareVersion: 'HW=02_Lynx, BL=ICONTROL_CFE 1.0, PL=27.0.0-140',
+      manufacturer: null,
+      model: 'Lynx/QuickConnect Cellular-Only Gateway',
+      primaryConnectionType: 'Cellular',
+    },
+  },
+  {
+    description: 'Lynx/QuickConnect Cellular-Only Gateway / HW 2 / Cellular Unavailable',
+    gateway: {
+      broadbandConnectionStatus: null,
+      cellularConnectionStatus: 'Unavailable',
       cellularSignalStrength: 'N/A',
       firmwareVersion: '27.0.0-140',
       hardwareVersion: 'HW=02_Lynx, BL=ICONTROL_CFE 1.0, PL=27.0.0-140',
@@ -549,6 +627,14 @@ export const deviceSecurityPanels: DeviceSecurityPanels = [
       emergencyKeys: null,
       manufacturerProvider: 'GE Security',
       typeModel: 'Security Panel - Concord 4',
+    },
+  },
+  {
+    description: 'Honeywell Security Vista-20PSIA - Emergency Keys PE 95/FA 96/APA 99',
+    panel: {
+      emergencyKeys: 'Button: Personal Emergency (Zone 95) Button: Fire Alarm (Zone 96) Button: Audible Panic Alarm (Zone 99)',
+      manufacturerProvider: 'Honeywell Security',
+      typeModel: 'Security Panel - Vista-20PSIA',
     },
   },
 ];
