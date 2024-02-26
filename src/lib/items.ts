@@ -342,7 +342,7 @@ export const collectionSensorActions: CollectionSensorActions = [
  */
 export const deviceGateways: DeviceGateways = [
   {
-    description: 'ADT Pulse Gateway iHub-3001 / HW 3.4 / Broadband Active',
+    description: 'ADT Pulse Gateway iHub-3001 / HW 3.4 / BL 1.3 / Broadband Active',
     gateway: {
       broadbandConnectionStatus: 'Active',
       cellularConnectionStatus: 'N/A',
@@ -355,13 +355,39 @@ export const deviceGateways: DeviceGateways = [
     },
   },
   {
-    description: 'ADT Pulse Gateway iHub-3001 / HW 3.4 / Broadband Unavailable',
+    description: 'ADT Pulse Gateway iHub-3001 / HW 3.4 / BL 1.3 / Broadband Unavailable',
     gateway: {
       broadbandConnectionStatus: 'Unavailable',
       cellularConnectionStatus: 'N/A',
       cellularSignalStrength: 'N/A',
       firmwareVersion: '24.0.0-9',
       hardwareVersion: 'HW=3.4, BL=ICONTROL_CFE 1.3, PL=24.0.0-9, SKU=0YUC0500MY5',
+      manufacturer: 'ADT Pulse Gateway',
+      model: 'iHub-3001',
+      primaryConnectionType: 'Broadband',
+    },
+  },
+  {
+    description: 'ADT Pulse Gateway iHub-3001 / HW 3.4 / BL 1.4 / Broadband Active',
+    gateway: {
+      broadbandConnectionStatus: 'Active',
+      cellularConnectionStatus: 'N/A',
+      cellularSignalStrength: 'N/A',
+      firmwareVersion: '24.0.0-9',
+      hardwareVersion: 'HW=3.4, BL=ICONTROL_CFE 1.4, PL=24.0.0-9, SKU=0YUC0500MY5',
+      manufacturer: 'ADT Pulse Gateway',
+      model: 'iHub-3001',
+      primaryConnectionType: 'Broadband',
+    },
+  },
+  {
+    description: 'ADT Pulse Gateway iHub-3001 / HW 3.4 / BL 1.4 / Broadband Unavailable',
+    gateway: {
+      broadbandConnectionStatus: 'Unavailable',
+      cellularConnectionStatus: 'N/A',
+      cellularSignalStrength: 'N/A',
+      firmwareVersion: '24.0.0-9',
+      hardwareVersion: 'HW=3.4, BL=ICONTROL_CFE 1.4, PL=24.0.0-9, SKU=0YUC0500MY5',
       manufacturer: 'ADT Pulse Gateway',
       model: 'iHub-3001',
       primaryConnectionType: 'Broadband',
