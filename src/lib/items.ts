@@ -95,6 +95,16 @@ export const collectionOrbSecurityButtons: CollectionOrbSecurityButtons = [
     ],
   },
   {
+    description: 'System disarmed / Uncleared alarm',
+    buttons: [
+      {
+        buttonDisabled: false,
+        buttonText: 'Clear Alarm',
+        loadingText: 'Disarming',
+      },
+    ],
+  },
+  {
     description: 'System armed',
     buttons: [
       {
