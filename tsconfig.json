@@ -1,15 +1,19 @@
 {
   "compilerOptions": {
-    "allowJs": true,
+    "allowJs": false,
     "allowSyntheticDefaultImports": true,
     "baseUrl": "./",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "incremental": false,
+    "isolatedModules": false,
+    "jsx": "preserve",
     "lib": [
       "ESNext"
     ],
     "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "moduleResolution": "Node",
+    "noEmit": false,
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
@@ -20,9 +24,11 @@
         "./src/*"
       ]
     },
+    "plugins": [],
     "removeComments": true,
     "resolveJsonModule": true,
     "rootDir": "./src",
+    "skipLibCheck": false,
     "sourceMap": true,
     "strict": true,
     "target": "ESNext",
@@ -34,7 +40,8 @@
     ]
   },
   "include": [
-    "./src"
+    "**/*.ts",
+    "**/*.tsx"
   ],
   "exclude": [
     "node_modules"

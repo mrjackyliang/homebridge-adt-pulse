@@ -650,6 +650,14 @@ export const deviceSecurityPanels: DeviceSecurityPanels = [
     },
   },
   {
+    description: 'Ademco LYNX/ADT QuickConnect - Emergency Keys PE 95/FA 96/APA 99',
+    panel: {
+      emergencyKeys: 'Button: Personal Emergency (Zone 95) Button: Fire Alarm (Zone 96) Button: Audible Panic Alarm (Zone 99)',
+      manufacturerProvider: null,
+      typeModel: 'Security Panel - LYNX/QuickConnect',
+    },
+  },
+  {
     description: 'DSC Impassa SCW9057',
     panel: {
       emergencyKeys: null,
