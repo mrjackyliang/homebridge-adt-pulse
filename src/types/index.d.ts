@@ -1413,12 +1413,6 @@ export type DetectPlatformUnknownSensorsActionReturns = Promise<boolean>;
  */
 export type DeviceGatewayDescription = string;
 
-export type DeviceGatewayGatewayBroadbandConnectionStatus = string | null;
-
-export type DeviceGatewayGatewayCellularConnectionStatus = string | null;
-
-export type DeviceGatewayGatewayCellularSignalStrength = string | null;
-
 export type DeviceGatewayGatewayFirmwareVersion = string | null;
 
 export type DeviceGatewayGatewayHardwareVersion = string | null;
@@ -1430,9 +1424,6 @@ export type DeviceGatewayGatewayModel = string | null;
 export type DeviceGatewayGatewayPrimaryConnectionType = string | null;
 
 export type DeviceGatewayGateway = {
-  broadbandConnectionStatus: DeviceGatewayGatewayBroadbandConnectionStatus;
-  cellularConnectionStatus: DeviceGatewayGatewayCellularConnectionStatus;
-  cellularSignalStrength: DeviceGatewayGatewayCellularSignalStrength;
   firmwareVersion: DeviceGatewayGatewayFirmwareVersion;
   hardwareVersion: DeviceGatewayGatewayHardwareVersion;
   manufacturer: DeviceGatewayGatewayManufacturer;
@@ -1454,14 +1445,11 @@ export type DeviceGateways = DeviceGateway[];
  */
 export type DeviceSecurityPanelDescription = string;
 
-export type DeviceSecurityPanelPanelEmergencyKeys = string | null;
-
 export type DeviceSecurityPanelPanelManufacturerProvider = string | null;
 
 export type DeviceSecurityPanelPanelTypeModel = string | null;
 
 export type DeviceSecurityPanelPanel = {
-  emergencyKeys: DeviceSecurityPanelPanelEmergencyKeys;
   manufacturerProvider: DeviceSecurityPanelPanelManufacturerProvider;
   typeModel: DeviceSecurityPanelPanelTypeModel;
 };

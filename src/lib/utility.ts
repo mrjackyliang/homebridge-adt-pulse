@@ -1101,9 +1101,6 @@ export function isUnknownDoSubmitHandlerCollection(handlers: IsUnknownDoSubmitHa
  */
 export function isUnknownGatewayDevice(gateway: IsUnknownGatewayDeviceGateway): IsUnknownGatewayDeviceReturns {
   const currentGateway = {
-    broadbandConnectionStatus: _.get(gateway, ['Broadband Connection Status:', 0], null),
-    cellularConnectionStatus: _.get(gateway, ['Cellular Connection Status:', 0], null),
-    cellularSignalStrength: _.get(gateway, ['Cellular Signal Strength:', 0], null),
     firmwareVersion: _.get(gateway, ['Firmware Version:', 0], null),
     hardwareVersion: _.get(gateway, ['Hardware Version:', 0], null),
     manufacturer: _.get(gateway, ['Manufacturer:', 0], null),
@@ -1148,7 +1145,6 @@ export function isUnknownOrbSecurityButtonCollection(buttons: IsUnknownOrbSecuri
  */
 export function isUnknownPanelDevice(panel: IsUnknownPanelDevicePanel): IsUnknownPanelDeviceReturns {
   const currentPanel = {
-    emergencyKeys: _.get(panel, ['Emergency Keys:', 0], null),
     manufacturerProvider: _.get(panel, ['Manufacturer/Provider:', 0], null),
     typeModel: _.get(panel, ['Type/Model:', 0], null),
   };
