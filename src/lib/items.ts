@@ -154,10 +154,6 @@ export const collectionOrbSecurityButtons: CollectionOrbSecurityButtons = [
       },
     ],
   },
-  {
-    description: 'System unavailable',
-    buttons: [],
-  },
 ];
 
 /**
