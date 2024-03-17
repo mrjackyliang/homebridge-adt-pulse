@@ -29,7 +29,7 @@ export const platformConfig = z.object({
   options: z.array(z.union([
     z.literal('disableAlarmRingingSwitch'),
     z.literal('ignoreSensorProblemStatus'),
-  ])),
+  ])).optional.default([]),
   sensors: z.array(z.object({
     name: z.string().min(1).max(50).optional(),
     adtName: z.string().min(1).max(100),
