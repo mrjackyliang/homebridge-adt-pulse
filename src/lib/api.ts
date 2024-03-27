@@ -268,6 +268,21 @@ export class ADTPulse {
         this.getRequestConfig(),
       );
 
+      // Check for server error response.
+      if (sessions.axiosIndex.status >= 400) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'error', `The remote server responded with a HTTP ${sessions.axiosIndex.status} status code`);
+        }
+
+        return {
+          action: 'LOGIN',
+          success: false,
+          info: {
+            message: `The remote server responded with a HTTP ${sessions.axiosIndex.status} status code`,
+          },
+        };
+      }
+
       // If the "ClientRequest" object does not exist in the Axios response.
       if (typeof sessions.axiosIndex?.request === 'undefined') {
         if (this.#internal.debug) {
@@ -373,6 +388,21 @@ export class ADTPulse {
           },
         }),
       );
+
+      // Check for server error response.
+      if (sessions.axiosIndex.status >= 400) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.login()', 'error', `The remote server responded with a HTTP ${sessions.axiosIndex.status} status code`);
+        }
+
+        return {
+          action: 'LOGIN',
+          success: false,
+          info: {
+            message: `The remote server responded with a HTTP ${sessions.axiosIndex.status} status code`,
+          },
+        };
+      }
 
       // If the "ClientRequest" object does not exist in the Axios response.
       if (typeof sessions.axiosSignin?.request === 'undefined') {
@@ -580,6 +610,21 @@ export class ADTPulse {
         }),
       );
 
+      // Check for server error response.
+      if (sessions.axiosSignout.status >= 400) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.logout()', 'error', `The remote server responded with a HTTP ${sessions.axiosSignout.status} status code`);
+        }
+
+        return {
+          action: 'LOGOUT',
+          success: false,
+          info: {
+            message: `The remote server responded with a HTTP ${sessions.axiosSignout.status} status code`,
+          },
+        };
+      }
+
       // If the "ClientRequest" object does not exist in the Axios response.
       if (typeof sessions.axiosSignout?.request === 'undefined') {
         if (this.#internal.debug) {
@@ -699,6 +744,21 @@ export class ADTPulse {
           },
         }),
       );
+
+      // Check for server error response.
+      if (sessions.axiosSystemGateway.status >= 400) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getGatewayInformation()', 'error', `The remote server responded with a HTTP ${sessions.axiosSystemGateway.status} status code`);
+        }
+
+        return {
+          action: 'GET_GATEWAY_INFORMATION',
+          success: false,
+          info: {
+            message: `The remote server responded with a HTTP ${sessions.axiosSystemGateway.status} status code`,
+          },
+        };
+      }
 
       // If the "ClientRequest" object does not exist in the Axios response.
       if (typeof sessions.axiosSystemGateway?.request === 'undefined') {
@@ -936,6 +996,21 @@ export class ADTPulse {
         }),
       );
 
+      // Check for server error response.
+      if (sessions.axiosSystemDeviceId1.status >= 400) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelInformation()', 'error', `The remote server responded with a HTTP ${sessions.axiosSystemDeviceId1.status} status code`);
+        }
+
+        return {
+          action: 'GET_PANEL_INFORMATION',
+          success: false,
+          info: {
+            message: `The remote server responded with a HTTP ${sessions.axiosSystemDeviceId1.status} status code`,
+          },
+        };
+      }
+
       // If the "ClientRequest" object does not exist in the Axios response.
       if (typeof sessions.axiosSystemDeviceId1?.request === 'undefined') {
         if (this.#internal.debug) {
@@ -1139,6 +1214,21 @@ export class ADTPulse {
           },
         }),
       );
+
+      // Check for server error response.
+      if (sessions.axiosSummary.status >= 400) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getPanelStatus()', 'error', `The remote server responded with a HTTP ${sessions.axiosSummary.status} status code`);
+        }
+
+        return {
+          action: 'GET_PANEL_STATUS',
+          success: false,
+          info: {
+            message: `The remote server responded with a HTTP ${sessions.axiosSummary.status} status code`,
+          },
+        };
+      }
 
       // If the "ClientRequest" object does not exist in the Axios response.
       if (typeof sessions.axiosSummary?.request === 'undefined') {
@@ -1664,6 +1754,21 @@ export class ADTPulse {
         }),
       );
 
+      // Check for server error response.
+      if (sessions.axiosSystem.status >= 400) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsInformation()', 'error', `The remote server responded with a HTTP ${sessions.axiosSystem.status} status code`);
+        }
+
+        return {
+          action: 'GET_SENSORS_INFORMATION',
+          success: false,
+          info: {
+            message: `The remote server responded with a HTTP ${sessions.axiosSystem.status} status code`,
+          },
+        };
+      }
+
       // If the "ClientRequest" object does not exist in the Axios response.
       if (typeof sessions.axiosSystem?.request === 'undefined') {
         if (this.#internal.debug) {
@@ -1718,6 +1823,23 @@ export class ADTPulse {
             message: 'The response body of the system page is not of type "string"',
           },
         };
+      }
+
+      // TODO Temporary detector to find sensor mis-match bug from "devStatTamper" sensors.
+      if (sessions.axiosSystem.data.includes('icon="devStatTamper"')) {
+        await this.newInformationDispatcher('debug-parser', {
+          method: 'getSensorsInformation',
+          response: [
+            {
+              deviceId: 0,
+              deviceType: 'Door Sensor',
+              name: 'Temporary detector to find sensor mis-match bug from devStatTamper sensors',
+              status: 'Status Unknown',
+              zone: 0,
+            },
+          ],
+          rawHtml: sessions.axiosSystem.data,
+        });
       }
 
       // sessions.jsdomSystem: Parse the system page.
@@ -1857,6 +1979,21 @@ export class ADTPulse {
           },
         }),
       );
+
+      // Check for server error response.
+      if (sessions.axiosSummary.status >= 400) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getSensorsStatus()', 'error', `The remote server responded with a HTTP ${sessions.axiosSummary.status} status code`);
+        }
+
+        return {
+          action: 'GET_SENSORS_STATUS',
+          success: false,
+          info: {
+            message: `The remote server responded with a HTTP ${sessions.axiosSummary.status} status code`,
+          },
+        };
+      }
 
       // If the "ClientRequest" object does not exist in the Axios response.
       if (typeof sessions.axiosSummary?.request === 'undefined') {
@@ -2102,6 +2239,21 @@ export class ADTPulse {
           },
         }),
       );
+
+      // Check for server error response.
+      if (sessions.axiosSummary.status >= 400) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.getOrbSecurityButtons()', 'error', `The remote server responded with a HTTP ${sessions.axiosSummary.status} status code`);
+        }
+
+        return {
+          action: 'GET_ORB_SECURITY_BUTTONS',
+          success: false,
+          info: {
+            message: `The remote server responded with a HTTP ${sessions.axiosSummary.status} status code`,
+          },
+        };
+      }
 
       // If the "ClientRequest" object does not exist in the Axios response.
       if (typeof sessions.axiosSummary?.request === 'undefined') {
@@ -2349,6 +2501,21 @@ export class ADTPulse {
         }),
       );
 
+      // Check for server error response.
+      if (sessions.axiosSyncCheck.status >= 400) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.performSyncCheck()', 'error', `The remote server responded with a HTTP ${sessions.axiosSyncCheck.status} status code`);
+        }
+
+        return {
+          action: 'PERFORM_SYNC_CHECK',
+          success: false,
+          info: {
+            message: `The remote server responded with a HTTP ${sessions.axiosSyncCheck.status} status code`,
+          },
+        };
+      }
+
       // If the "ClientRequest" object does not exist in the Axios response.
       if (typeof sessions.axiosSyncCheck?.request === 'undefined') {
         if (this.#internal.debug) {
@@ -2498,6 +2665,21 @@ export class ADTPulse {
           },
         }),
       );
+
+      // Check for server error response.
+      if (sessions.axiosKeepAlive.status >= 400) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.performKeepAlive()', 'error', `The remote server responded with a HTTP ${sessions.axiosKeepAlive.status} status code`);
+        }
+
+        return {
+          action: 'PERFORM_KEEP_ALIVE',
+          success: false,
+          info: {
+            message: `The remote server responded with a HTTP ${sessions.axiosKeepAlive.status} status code`,
+          },
+        };
+      }
 
       // If the "ClientRequest" object does not exist in the Axios response.
       if (typeof sessions.axiosKeepAlive?.request === 'undefined') {
@@ -2713,7 +2895,7 @@ export class ADTPulse {
          *     - Clean mode: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=night&arm=off&sat=<sat>
          *     - Dirty mode: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=night+stay&arm=off&sat=<sat>
          *
-         * - When alarm is triggered (when siren is done screaming at you):
+         * - When alarm is triggered (when siren is done screaming):
          *   - Clicking the "Clear Alarm" button:
          *     - Clean mode: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=disarmed_with_alarm&arm=off&sat=<sat>
          *     - Dirty mode: https://<subdomain>.adtpulse.com/myhome/<version>/<relativeUrl>?href=<href>&armstate=disarmed+with+alarm&arm=off&sat=<sat>
@@ -2739,6 +2921,21 @@ export class ADTPulse {
           },
         }),
       );
+
+      // Check for server error response.
+      if (sessions.axiosSetArmMode.status >= 400) {
+        if (this.#internal.debug) {
+          debugLog(this.#internal.logger, 'api.ts / ADTPulse.armDisarmHandler()', 'error', `The remote server responded with a HTTP ${sessions.axiosSetArmMode.status} status code`);
+        }
+
+        return {
+          action: 'ARM_DISARM_HANDLER',
+          success: false,
+          info: {
+            message: `The remote server responded with a HTTP ${sessions.axiosSetArmMode.status} status code`,
+          },
+        };
+      }
 
       // If the "ClientRequest" object does not exist in the Axios response.
       if (typeof sessions.axiosSetArmMode?.request === 'undefined') {
@@ -2994,10 +3191,7 @@ export class ADTPulse {
       });
 
       // Check if there are no force arm buttons available.
-      if (
-        parsedDoSubmitHandlers.length === 0
-        || parsedArmDisarmMessage === null
-      ) {
+      if (parsedDoSubmitHandlers.length === 0) {
         // In test mode, system must detect at least 1 door or window open.
         if (this.#internal.testMode.enabled) {
           if (this.#internal.debug) {
@@ -3103,6 +3297,21 @@ export class ADTPulse {
           }),
         );
 
+        // Check for server error response.
+        if (sessions.axiosForceArm.status >= 400) {
+          if (this.#internal.debug) {
+            debugLog(this.#internal.logger, 'api.ts / ADTPulse.forceArmHandler()', 'error', `The remote server responded with a HTTP ${sessions.axiosForceArm.status} status code`);
+          }
+
+          return {
+            action: 'FORCE_ARM_HANDLER',
+            success: false,
+            info: {
+              message: `The remote server responded with a HTTP ${sessions.axiosForceArm.status} status code`,
+            },
+          };
+        }
+
         // If the "ClientRequest" object does not exist in the Axios response.
         if (typeof sessions.axiosForceArm?.request === 'undefined') {
           if (this.#internal.debug) {
@@ -3158,7 +3367,7 @@ export class ADTPulse {
            *
            * Notes I've gathered during the process:
            * - "Method not allowed" error appeared when "parseDoSubmitHandlers().href" has escaped forward slashes (e.g. rest\/adt\/ui\/client\/security\/setForceArm).
-           * - POST method is allowed. The error message steers in to the wrong direction. Probably for security reasons.
+           * - POST method is allowed. The error message steers user into the wrong direction. Either message is outdated or due to security reasons.
            *
            * @since 1.0.0
            */

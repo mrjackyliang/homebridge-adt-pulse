@@ -93,13 +93,13 @@ import type {
  * @since 1.0.0
  */
 export async function detectApiDebugParser(data: DetectApiDebugParserData, logger: DetectApiDebugParserLogger, debugMode: DetectApiDebugParserDebugMode): DetectApiDebugParserReturns {
-  const forceArmHandlerAnomaly = data.method === 'forceArmHandler' && isUnknownDoSubmitHandlerCollection(data.response);
+  const forceArmHandlerAnomaly = data.method === 'forceArmHandler' && (isUnknownDoSubmitHandlerCollection(data.response) || !data.rawHtml.includes('class="p_armDisarmWrapper"'));
   const getGatewayInformationAnomaly = data.method === 'getGatewayInformation' && isUnknownGatewayDevice(data.response);
   const getOrbSecurityButtonsAnomaly = data.method === 'getOrbSecurityButtons' && isUnknownOrbSecurityButtonCollection(data.response) && !data.rawHtml.includes('Status Unavailable.');
   const getPanelInformationAnomaly = data.method === 'getPanelInformation' && isUnknownPanelDevice(data.response);
   const getPanelStatusAnomaly = data.method === 'getPanelStatus' && isEmptyOrbTextSummary(data.response);
   const getSensorsInformationAnomaly = data.method === 'getSensorsInformation' && data.response.length < 1;
-  const getSensorsStatusAnomaly = data.method === 'getSensorsStatus' && data.response.length < 1 && !data.rawHtml.includes('Status Unavailable.');
+  const getSensorsStatusAnomaly = data.method === 'getSensorsStatus' && data.response.length < 1 && !data.rawHtml.includes('id="orbSensorsList"');
 
   if (
     forceArmHandlerAnomaly

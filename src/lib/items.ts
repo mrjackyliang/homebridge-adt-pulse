@@ -348,7 +348,7 @@ export const collectionSensorActions: CollectionSensorActions = [
  */
 export const deviceGateways: DeviceGateways = [
   {
-    description: 'ADT Pulse Gateway iHub-3001 / HW 3.4 / BL 1.3 / Broadband',
+    description: 'ADT Pulse Gateway iHub-3001 / HW 3.4 / BL 1.3 / PL 24.0.0-9 / SKU 0YUC0500MY5 / Broadband',
     gateway: {
       firmwareVersion: '24.0.0-9',
       hardwareVersion: 'HW=3.4, BL=ICONTROL_CFE 1.3, PL=24.0.0-9, SKU=0YUC0500MY5',
@@ -358,7 +358,7 @@ export const deviceGateways: DeviceGateways = [
     },
   },
   {
-    description: 'ADT Pulse Gateway iHub-3001 / HW 3.4 / BL 1.4 / Broadband',
+    description: 'ADT Pulse Gateway iHub-3001 / HW 3.4 / BL 1.4 / PL 24.0.0-9 / SKU 0YUC0500MY5 / Broadband',
     gateway: {
       firmwareVersion: '24.0.0-9',
       hardwareVersion: 'HW=3.4, BL=ICONTROL_CFE 1.4, PL=24.0.0-9, SKU=0YUC0500MY5',
@@ -368,7 +368,17 @@ export const deviceGateways: DeviceGateways = [
     },
   },
   {
-    description: 'ADT Pulse Gateway PGZNG1 / HW 1 / Broadband',
+    description: 'ADT Pulse Gateway iHub-3001 / HW 3.4 / BL 1.4 / PL 24.0.0-9 / SKU 0YUC1500MY5 / Broadband',
+    gateway: {
+      firmwareVersion: '24.0.0-9',
+      hardwareVersion: 'HW=3.4, BL=ICONTROL_CFE 1.4, PL=24.0.0-9, SKU=0YUC1500MY5',
+      manufacturer: 'ADT Pulse Gateway',
+      model: 'iHub-3001',
+      primaryConnectionType: 'Broadband',
+    },
+  },
+  {
+    description: 'ADT Pulse Gateway PGZNG1 / HW 1 / BL 1.1.9 / PL 9.4.0.32.5 / SKU PGZNG1-1ADNAS / Broadband',
     gateway: {
       firmwareVersion: '24.0.0-9',
       hardwareVersion: 'HW=1, BL=1.1.9, PL=9.4.0.32.5, SKU=PGZNG1-1ADNAS',
@@ -378,7 +388,7 @@ export const deviceGateways: DeviceGateways = [
     },
   },
   {
-    description: 'ADT Pulse Gateway PGZNG1 / HW 2 / Broadband',
+    description: 'ADT Pulse Gateway PGZNG1 / HW 2 / BL 1.1.9 / PL 9.4.0.32.5 / SKU PGZNG1-1ADNAS / Broadband',
     gateway: {
       firmwareVersion: '24.0.0-9',
       hardwareVersion: 'HW=2, BL=1.1.9, PL=9.4.0.32.5, SKU=PGZNG1-1ADNAS',
@@ -388,7 +398,7 @@ export const deviceGateways: DeviceGateways = [
     },
   },
   {
-    description: 'ADT TSSC Lifestyle Module / HW 1 / Broadband',
+    description: 'ADT TSSC Lifestyle Module / HW 0001 / BL UBOOT 2009.08-svn99 / PL 5.5.0-5 / SKU TSSC-NA-NONE-01 / Broadband',
     gateway: {
       firmwareVersion: '24.0.0-9',
       hardwareVersion: 'HW=0001, BL=UBOOT 2009.08-svn99, PL=5.5.0-5, SKU=TSSC-NA-NONE-01',
@@ -398,7 +408,7 @@ export const deviceGateways: DeviceGateways = [
     },
   },
   {
-    description: 'ADT TSSC Lifestyle Module / HW 2 / Broadband',
+    description: 'ADT TSSC Lifestyle Module / HW 0002 / BL UBOOT 2009.08-svn99 / PL 5.5.0-5 / SKU TSSC-NA-NONE-01 / Broadband',
     gateway: {
       firmwareVersion: '24.0.0-9',
       hardwareVersion: 'HW=0002, BL=UBOOT 2009.08-svn99, PL=5.5.0-5, SKU=TSSC-NA-NONE-01',
@@ -408,7 +418,7 @@ export const deviceGateways: DeviceGateways = [
     },
   },
   {
-    description: 'Compact SMA Protocol Gateway / HW 2 / Broadband',
+    description: 'Compact SMA Protocol Gateway / HW 02_CSMAP / BL NA / PL 27.0.0-140 / Broadband',
     gateway: {
       firmwareVersion: '27.0.0-140',
       hardwareVersion: 'HW=02_CSMAP, BL=NA, PL=27.0.0-140',
@@ -418,7 +428,7 @@ export const deviceGateways: DeviceGateways = [
     },
   },
   {
-    description: 'Compact SMA Protocol Gateway / HW 2 / Cellular',
+    description: 'Compact SMA Protocol Gateway / HW 02_CSMAP / BL NA / PL 27.0.0-140 / Cellular',
     gateway: {
       firmwareVersion: '27.0.0-140',
       hardwareVersion: 'HW=02_CSMAP, BL=NA, PL=27.0.0-140',
@@ -428,7 +438,7 @@ export const deviceGateways: DeviceGateways = [
     },
   },
   {
-    description: 'Lynx/QuickConnect Cellular-Only Gateway / HW 2 / Cellular',
+    description: 'Lynx/QuickConnect Cellular-Only Gateway / HW 02_Lynx / BL ICONTROL_CFE 1.0 / PL 27.0.0-140 / Cellular',
     gateway: {
       firmwareVersion: '27.0.0-140',
       hardwareVersion: 'HW=02_Lynx, BL=ICONTROL_CFE 1.0, PL=27.0.0-140',
