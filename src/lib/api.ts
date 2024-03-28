@@ -1826,7 +1826,12 @@ export class ADTPulse {
       }
 
       // TODO Temporary detector to find sensor mis-match bug from "devStatTamper" sensors.
-      if (sessions.axiosSystem.data.includes('icon="devStatTamper"')) {
+      if (
+        sessions.axiosSystem.data.includes('devStatTamper')
+        || sessions.axiosSystem.data.includes('Panic (14)')
+        || sessions.axiosSystem.data.includes('Shed Door')
+        || sessions.axiosSystem.data.includes('Patio Door')
+      ) {
         await this.newInformationDispatcher('debug-parser', {
           method: 'getSensorsInformation',
           response: [
