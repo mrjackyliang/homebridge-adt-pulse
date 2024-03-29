@@ -226,6 +226,10 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         adtLastLogin: 0, // January 1, 1970, at 00:00:00 UTC.
         adtSyncCheck: 0, // January 1, 1970, at 00:00:00 UTC.
       },
+      rawHtml: {
+        sensorsInfo: '',
+        sensorsStatus: '',
+      },
       reportedHashes: [],
     };
 
@@ -871,18 +875,24 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
 
       // Update sensors information.
       if (requests[3].success) {
-        const { sensors } = requests[3].info;
+        const { rawHtml, sensors } = requests[3].info;
 
         // Set sensors information into memory.
         this.#state.data.sensorsInfo = sensors;
+
+        // Set raw html of sensors information into memory.
+        this.#state.rawHtml.sensorsInfo = rawHtml;
       }
 
       // Update sensors status.
       if (requests[4].success) {
-        const { sensors } = requests[4].info;
+        const { rawHtml, sensors } = requests[4].info;
 
         // Set sensors status into memory.
         this.#state.data.sensorsStatus = sensors;
+
+        // Set raw html of sensors status into memory.
+        this.#state.rawHtml.sensorsStatus = rawHtml;
       }
 
       // Cache orb security buttons.
@@ -1017,16 +1027,23 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
    * @since 1.0.0
    */
   private async unknownInformationDispatcher(): ADTPulsePlatformUnknownInformationDispatcherReturns {
-    const { sensorsInfo, sensorsStatus } = this.#state.data;
+    const { sensorsInfo: dataSensorsInfo, sensorsStatus: dataSensorsStatus } = this.#state.data;
+    const { sensorsInfo: rawHtmlSensorsInfo, sensorsStatus: rawHtmlSensorsStatus } = this.#state.rawHtml;
 
     if (
-      sensorsInfo.length !== sensorsStatus.length // Check if there was a mismatch between the "sensorsInfo" and "sensorsStatus" array.
-      && !(sensorsInfo.length === 0 && sensorsStatus.length > 0) // Sometimes devices are slow to fetch sensors information.
-      && !(sensorsInfo.length > 0 && sensorsStatus.length === 0) // Sometimes devices are slow to fetch sensors status.
+      dataSensorsInfo.length !== dataSensorsStatus.length // Check if there was a mismatch between the "sensorsInfo" and "sensorsStatus" array.
+      && !(dataSensorsInfo.length === 0 && dataSensorsStatus.length > 0) // Sometimes devices are slow to fetch sensors information.
+      && !(dataSensorsInfo.length > 0 && dataSensorsStatus.length === 0) // Sometimes devices are slow to fetch sensors status.
     ) {
       const data = {
-        sensorsInfo,
-        sensorsStatus,
+        data: {
+          sensorsInfo: dataSensorsInfo,
+          sensorsStatus: dataSensorsStatus,
+        },
+        rawHtml: {
+          sensorsInfo: rawHtmlSensorsInfo,
+          sensorsStatus: rawHtmlSensorsStatus,
+        },
       };
       const dataHash = generateHash(data);
 
@@ -1045,10 +1062,10 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     }
 
     // Generate an array of matching "sensorInfo" and "sensorStatus" with the device type.
-    const sensors = sensorsInfo.map((sensorInfo, sensorsInfoKey) => ({
-      info: sensorInfo,
-      status: sensorsStatus[sensorsInfoKey],
-      type: condenseSensorType(sensorInfo.deviceType),
+    const sensors = dataSensorsInfo.map((dataSensorInfo, dataSensorsInfoKey) => ({
+      info: dataSensorInfo,
+      status: dataSensorsStatus[dataSensorsInfoKey],
+      type: condenseSensorType(dataSensorInfo.deviceType),
     }));
     const matchedSensors = sensors.filter((sensor): sensor is NonNullable<typeof sensors[number]> => sensor !== null);
     const dataHash = generateHash(sensors);

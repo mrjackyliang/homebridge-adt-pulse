@@ -257,11 +257,14 @@ export type ADTPulseGetOrbSecurityButtonsSessions = Sessions<{
  *
  * @since 1.0.0
  */
+export type ADTPulseGetSensorsInformationReturnsInfoRawHtml = string;
+
 export type ADTPulseGetSensorsInformationReturnsInfoSensor = SensorInformation;
 
 export type ADTPulseGetSensorsInformationReturnsInfoSensors = ADTPulseGetSensorsInformationReturnsInfoSensor[];
 
 export type ADTPulseGetSensorsInformationReturnsInfo = {
+  rawHtml: ADTPulseGetSensorsInformationReturnsInfoRawHtml;
   sensors: ADTPulseGetSensorsInformationReturnsInfoSensors;
 };
 
@@ -277,11 +280,14 @@ export type ADTPulseGetSensorsInformationSessions = Sessions<{
  *
  * @since 1.0.0
  */
+export type ADTPulseGetSensorsStatusReturnsInfoRawHtml = string;
+
 export type ADTPulseGetSensorsStatusReturnsInfoSensor = SensorStatus;
 
 export type ADTPulseGetSensorsStatusReturnsInfoSensors = ADTPulseGetSensorsStatusReturnsInfoSensor[];
 
 export type ADTPulseGetSensorsStatusReturnsInfo = {
+  rawHtml: ADTPulseGetSensorsStatusReturnsInfoRawHtml;
   sensors: ADTPulseGetSensorsStatusReturnsInfoSensors;
 };
 
@@ -896,6 +902,15 @@ export type ADTPulsePlatformStateLastRunOn = {
   adtSyncCheck: ADTPulsePlatformStateLastRunOnAdtSyncCheck;
 };
 
+export type ADTPulsePlatformStateRawHtmlSensorsInfo = string;
+
+export type ADTPulsePlatformStateRawHtmlSensorsStatus = string;
+
+export type ADTPulsePlatformStateRawHtml = {
+  sensorsInfo: ADTPulsePlatformStateRawHtmlSensorsInfo;
+  sensorsStatus: ADTPulsePlatformStateRawHtmlSensorsStatus;
+};
+
 export type ADTPulsePlatformStateReportedHash = string;
 
 export type ADTPulsePlatformStateReportedHashes = ADTPulsePlatformStateReportedHash[];
@@ -906,6 +921,7 @@ export type ADTPulsePlatformState = {
   eventCounters: ADTPulsePlatformStateEventCounters;
   intervals: ADTPulsePlatformStateIntervals;
   lastRunOn: ADTPulsePlatformStateLastRunOn;
+  rawHtml: ADTPulsePlatformStateRawHtml;
   reportedHashes: ADTPulsePlatformStateReportedHashes;
 };
 
@@ -1362,17 +1378,31 @@ export type DetectApiSensorsStatusReturns = Promise<boolean>;
  *
  * @since 1.0.0
  */
-export type DetectPlatformSensorCountMismatchDataSensorInfo = SensorInformation;
+export type DetectPlatformSensorCountMismatchDataDataSensorInfo = SensorInformation;
 
-export type DetectPlatformSensorCountMismatchDataSensorsInfo = DetectPlatformSensorCountMismatchDataSensorInfo[];
+export type DetectPlatformSensorCountMismatchDataDataSensorsInfo = DetectPlatformSensorCountMismatchDataDataSensorInfo[];
 
-export type DetectPlatformSensorCountMismatchDataSensorStatus = SensorStatus;
+export type DetectPlatformSensorCountMismatchDataDataSensorStatus = SensorStatus;
 
-export type DetectPlatformSensorCountMismatchDataSensorsStatus = DetectPlatformSensorCountMismatchDataSensorStatus[];
+export type DetectPlatformSensorCountMismatchDataDataSensorsStatus = DetectPlatformSensorCountMismatchDataDataSensorStatus[];
+
+export type DetectPlatformSensorCountMismatchDataData = {
+  sensorsInfo: DetectPlatformSensorCountMismatchDataDataSensorsInfo;
+  sensorsStatus: DetectPlatformSensorCountMismatchDataDataSensorsStatus;
+};
+
+export type DetectPlatformSensorCountMismatchDataRawHtmlSensorsInfo = string;
+
+export type DetectPlatformSensorCountMismatchDataRawHtmlSensorsStatus = string;
+
+export type DetectPlatformSensorCountMismatchDataRawHtml = {
+  sensorsInfo: DetectPlatformSensorCountMismatchDataRawHtmlSensorsInfo;
+  sensorsStatus: DetectPlatformSensorCountMismatchDataRawHtmlSensorsStatus;
+};
 
 export type DetectPlatformSensorCountMismatchData = {
-  sensorsInfo: DetectPlatformSensorCountMismatchDataSensorsInfo;
-  sensorsStatus: DetectPlatformSensorCountMismatchDataSensorsStatus;
+  data: DetectPlatformSensorCountMismatchDataData;
+  rawHtml: DetectPlatformSensorCountMismatchDataRawHtml;
 };
 
 export type DetectPlatformSensorCountMismatchLogger = Logger | null;

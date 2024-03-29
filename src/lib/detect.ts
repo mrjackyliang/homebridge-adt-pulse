@@ -93,7 +93,7 @@ import type {
  * @since 1.0.0
  */
 export async function detectApiDebugParser(data: DetectApiDebugParserData, logger: DetectApiDebugParserLogger, debugMode: DetectApiDebugParserDebugMode): DetectApiDebugParserReturns {
-  const forceArmHandlerAnomaly = data.method === 'forceArmHandler' && (isUnknownDoSubmitHandlerCollection(data.response) || !data.rawHtml.includes('class="p_armDisarmWrapper"'));
+  const forceArmHandlerAnomaly = data.method === 'forceArmHandler' && isUnknownDoSubmitHandlerCollection(data.response) && !data.rawHtml.includes('p_whiteBoxMiddleCenter') && !data.rawHtml.includes('p_armDisarmWrapper');
   const getGatewayInformationAnomaly = data.method === 'getGatewayInformation' && isUnknownGatewayDevice(data.response);
   const getOrbSecurityButtonsAnomaly = data.method === 'getOrbSecurityButtons' && isUnknownOrbSecurityButtonCollection(data.response) && !data.rawHtml.includes('Status Unavailable.');
   const getPanelInformationAnomaly = data.method === 'getPanelInformation' && isUnknownPanelDevice(data.response);
@@ -901,7 +901,7 @@ export async function detectApiSensorsStatus(sensors: DetectApiSensorsStatusSens
  * @since 1.0.0
  */
 export async function detectPlatformSensorCountMismatch(data: DetectPlatformSensorCountMismatchData, logger: DetectPlatformSensorCountMismatchLogger, debugMode: DetectPlatformSensorCountMismatchDebugMode): DetectPlatformSensorCountMismatchReturns {
-  const detectedCountMismatch = data.sensorsInfo.length !== data.sensorsStatus.length;
+  const detectedCountMismatch = data.data.sensorsInfo.length !== data.data.sensorsStatus.length;
 
   if (detectedCountMismatch) {
     const cleanedData = removePersonalIdentifiableInformation(data);

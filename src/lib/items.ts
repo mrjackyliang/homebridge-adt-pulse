@@ -47,10 +47,6 @@ export const collectionDoSubmitHandlers: CollectionDoSubmitHandlers = [
       },
     ],
   },
-  {
-    description: 'No force arm required',
-    handlers: [],
-  },
 ];
 
 /**

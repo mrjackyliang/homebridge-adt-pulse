@@ -1825,28 +1825,6 @@ export class ADTPulse {
         };
       }
 
-      // TODO Temporary detector to find sensor mis-match bug from "devStatTamper" sensors.
-      if (
-        sessions.axiosSystem.data.includes('devStatTamper')
-        || sessions.axiosSystem.data.includes('Panic (14)')
-        || sessions.axiosSystem.data.includes('Shed Door')
-        || sessions.axiosSystem.data.includes('Patio Door')
-      ) {
-        await this.newInformationDispatcher('debug-parser', {
-          method: 'getSensorsInformation',
-          response: [
-            {
-              deviceId: 0,
-              deviceType: 'Door Sensor',
-              name: 'Temporary detector to find sensor mis-match bug from devStatTamper sensors',
-              status: 'Status Unknown',
-              zone: 0,
-            },
-          ],
-          rawHtml: sessions.axiosSystem.data,
-        });
-      }
-
       // sessions.jsdomSystem: Parse the system page.
       sessions.jsdomSystem = new JSDOM(
         sessions.axiosSystem.data,
@@ -1936,6 +1914,7 @@ export class ADTPulse {
         action: 'GET_SENSORS_INFORMATION',
         success: true,
         info: {
+          rawHtml: sessions.axiosSystem.data,
           sensors: parsedSensorsTable,
         },
       };
@@ -2196,6 +2175,7 @@ export class ADTPulse {
         action: 'GET_SENSORS_STATUS',
         success: true,
         info: {
+          rawHtml: sessions.axiosSummary.data,
           sensors: parsedOrbSensors,
         },
       };
@@ -3162,7 +3142,7 @@ export class ADTPulse {
        *
        * @since 1.0.0
        */
-      const jsdomArmDisarmDoSubmitHandlers = sessions.jsdomArmDisarm.window.document.querySelectorAll('.p_armDisarmWrapper input');
+      const jsdomArmDisarmDoSubmitHandlers = sessions.jsdomArmDisarm.window.document.querySelectorAll('.p_whiteBoxMiddleCenter .p_armDisarmWrapper input');
       const jsdomArmDisarmArmDisarmMessage = sessions.jsdomArmDisarm.window.document.querySelector('.p_armDisarmWrapper div:first-child');
       const parsedArmDisarmMessage = parseArmDisarmMessage(jsdomArmDisarmArmDisarmMessage);
       const parsedDoSubmitHandlers = parseDoSubmitHandlers(jsdomArmDisarmDoSubmitHandlers);
