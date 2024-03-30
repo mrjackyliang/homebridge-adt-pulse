@@ -10,7 +10,7 @@ import { serializeError } from 'serialize-error';
 
 import { ADTPulseAccessory } from '@/lib/accessory.js';
 import { ADTPulse } from '@/lib/api.js';
-import { detectPlatformSensorCountMismatch, detectPlatformUnknownSensorsAction } from '@/lib/detect.js';
+import { detectPlatformUnknownSensorsAction } from '@/lib/detect.js';
 import { textOrbTextSummarySections } from '@/lib/regex.js';
 import { platformConfig } from '@/lib/schema.js';
 import {
@@ -61,6 +61,7 @@ import type {
   ADTPulsePlatformUnifyDevicesId,
   ADTPulsePlatformUnifyDevicesReturns,
   ADTPulsePlatformUnknownInformationDispatcherReturns,
+  ADTPulsePlatformUnknownInformationDispatcherSensors,
   ADTPulsePlatformUpdateAccessoryDevice,
   ADTPulsePlatformUpdateAccessoryReturns,
 } from '@/types/index.d.ts';
@@ -225,10 +226,6 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
         adtKeepAlive: 0, // January 1, 1970, at 00:00:00 UTC.
         adtLastLogin: 0, // January 1, 1970, at 00:00:00 UTC.
         adtSyncCheck: 0, // January 1, 1970, at 00:00:00 UTC.
-      },
-      rawHtml: {
-        sensorsInfo: '',
-        sensorsStatus: '',
       },
       reportedHashes: [],
     };
@@ -875,24 +872,18 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
 
       // Update sensors information.
       if (requests[3].success) {
-        const { rawHtml, sensors } = requests[3].info;
+        const { sensors } = requests[3].info;
 
         // Set sensors information into memory.
         this.#state.data.sensorsInfo = sensors;
-
-        // Set raw html of sensors information into memory.
-        this.#state.rawHtml.sensorsInfo = rawHtml;
       }
 
       // Update sensors status.
       if (requests[4].success) {
-        const { rawHtml, sensors } = requests[4].info;
+        const { sensors } = requests[4].info;
 
         // Set sensors status into memory.
         this.#state.data.sensorsStatus = sensors;
-
-        // Set raw html of sensors status into memory.
-        this.#state.rawHtml.sensorsStatus = rawHtml;
       }
 
       // Cache orb security buttons.
@@ -1027,52 +1018,26 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
    * @since 1.0.0
    */
   private async unknownInformationDispatcher(): ADTPulsePlatformUnknownInformationDispatcherReturns {
-    const { sensorsInfo: dataSensorsInfo, sensorsStatus: dataSensorsStatus } = this.#state.data;
-    const { sensorsInfo: rawHtmlSensorsInfo, sensorsStatus: rawHtmlSensorsStatus } = this.#state.rawHtml;
+    const { sensorsInfo, sensorsStatus } = this.#state.data;
 
-    if (
-      dataSensorsInfo.length !== dataSensorsStatus.length // Check if there was a mismatch between the "sensorsInfo" and "sensorsStatus" array.
-      && !(dataSensorsInfo.length === 0 && dataSensorsStatus.length > 0) // Sometimes devices are slow to fetch sensors information.
-      && !(dataSensorsInfo.length > 0 && dataSensorsStatus.length === 0) // Sometimes devices are slow to fetch sensors status.
-    ) {
-      const data = {
-        data: {
-          sensorsInfo: dataSensorsInfo,
-          sensorsStatus: dataSensorsStatus,
-        },
-        rawHtml: {
-          sensorsInfo: rawHtmlSensorsInfo,
-          sensorsStatus: rawHtmlSensorsStatus,
-        },
-      };
-      const dataHash = generateHash(data);
+    const sensors = sensorsInfo.reduce((allSensors, currentSensor) => {
+      const matchedStatus = sensorsStatus.find((sensorStatus) => currentSensor.zone === sensorStatus.zone);
 
-      // If the detector has not reported this event before.
-      if (this.#state.reportedHashes.find((reportedHash) => dataHash === reportedHash) === undefined) {
-        const detectedNew = await detectPlatformSensorCountMismatch(data, this.#log, this.#debugMode);
-
-        // Save this hash so the detector does not detect the same thing multiple times.
-        if (detectedNew) {
-          this.#state.reportedHashes.push(dataHash);
-        }
+      if (matchedStatus !== undefined) {
+        allSensors.push({
+          info: currentSensor,
+          status: matchedStatus,
+          type: condenseSensorType(currentSensor.deviceType),
+        });
       }
 
-      // Stop here until this is resolved.
-      return;
-    }
-
-    // Generate an array of matching "sensorInfo" and "sensorStatus" with the device type.
-    const sensors = dataSensorsInfo.map((dataSensorInfo, dataSensorsInfoKey) => ({
-      info: dataSensorInfo,
-      status: dataSensorsStatus[dataSensorsInfoKey],
-      type: condenseSensorType(dataSensorInfo.deviceType),
-    }));
-    const matchedSensors = sensors.filter((sensor): sensor is NonNullable<typeof sensors[number]> => sensor !== null);
+      return allSensors;
+    }, [] as ADTPulsePlatformUnknownInformationDispatcherSensors);
     const dataHash = generateHash(sensors);
 
     // If the detector has not reported this event before.
     if (this.#state.reportedHashes.find((reportedHash) => dataHash === reportedHash) === undefined) {
-      const detectedNew = await detectPlatformUnknownSensorsAction(matchedSensors, this.#log, this.#debugMode);
+      const detectedNew = await detectPlatformUnknownSensorsAction(sensors, this.#log, this.#debugMode);
 
       // Save this hash so the detector does not detect the same thing multiple times.
       if (detectedNew) {

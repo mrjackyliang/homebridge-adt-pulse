@@ -71,10 +71,6 @@ import type {
   DetectApiSensorsStatusLogger,
   DetectApiSensorsStatusReturns,
   DetectApiSensorsStatusSensors,
-  DetectPlatformSensorCountMismatchData,
-  DetectPlatformSensorCountMismatchDebugMode,
-  DetectPlatformSensorCountMismatchLogger,
-  DetectPlatformSensorCountMismatchReturns,
   DetectPlatformUnknownSensorsActionDebugMode,
   DetectPlatformUnknownSensorsActionLogger,
   DetectPlatformUnknownSensorsActionReturns,
@@ -878,90 +874,6 @@ export async function detectApiSensorsStatus(sensors: DetectApiSensorsStatusSens
     } catch (error) {
       if (debugMode === true) {
         debugLog(logger, 'detect.ts / detectApiSensorsStatus()', 'error', 'Failed to notify plugin author about the new sensors status');
-        stackTracer('serialize-error', serializeError(error));
-      }
-
-      // Try to send information to author later.
-      return false;
-    }
-  }
-
-  return false;
-}
-
-/**
- * Detect platform sensor count mismatch.
- *
- * @param {DetectPlatformSensorCountMismatchData}      data      - Data.
- * @param {DetectPlatformSensorCountMismatchLogger}    logger    - Logger.
- * @param {DetectPlatformSensorCountMismatchDebugMode} debugMode - Debug mode.
- *
- * @returns {DetectPlatformSensorCountMismatchReturns}
- *
- * @since 1.0.0
- */
-export async function detectPlatformSensorCountMismatch(data: DetectPlatformSensorCountMismatchData, logger: DetectPlatformSensorCountMismatchLogger, debugMode: DetectPlatformSensorCountMismatchDebugMode): DetectPlatformSensorCountMismatchReturns {
-  const detectedCountMismatch = data.data.sensorsInfo.length !== data.data.sensorsStatus.length;
-
-  if (detectedCountMismatch) {
-    const cleanedData = removePersonalIdentifiableInformation(data);
-
-    // If outdated, it means plugin may already have support.
-    try {
-      const outdated = await isPluginOutdated();
-
-      if (outdated) {
-        if (logger !== null) {
-          logger.warn('Plugin has detected a sensor count mismatch. You are running an older plugin version, please update soon.');
-        }
-
-        // This is intentionally duplicated if using Homebridge debug mode.
-        if (debugMode) {
-          debugLog(logger, 'detect.ts / detectPlatformSensorCountMismatch()', 'warn', 'Plugin has detected a sensor count mismatch. You are running an older plugin version, please update soon');
-        }
-
-        // Do not send analytics for users running outdated plugin versions.
-        return false;
-      }
-    } catch (error) {
-      if (debugMode === true) {
-        debugLog(logger, 'detect.ts / detectPlatformSensorCountMismatch()', 'error', 'Failed to check if plugin is outdated');
-        stackTracer('serialize-error', serializeError(error));
-      }
-
-      // Try to check if plugin is outdated later on.
-      return false;
-    }
-
-    if (logger !== null) {
-      logger.warn('Plugin has detected a sensor count mismatch. Notifying plugin author about this discovery ...');
-    }
-
-    // This is intentionally duplicated if using Homebridge debug mode.
-    if (debugMode) {
-      debugLog(logger, 'detect.ts / detectPlatformSensorCountMismatch()', 'warn', 'Plugin has detected a sensor count mismatch. Notifying plugin author about this discovery');
-    }
-
-    // Show content being sent to author.
-    stackTracer('detect-content', cleanedData);
-
-    try {
-      await axios.post(
-        getDetectReportUrl(),
-        JSON.stringify(cleanedData, null, 2),
-        {
-          family: 4,
-          headers: {
-            'User-Agent': 'homebridge-adt-pulse',
-            'X-Title': 'Detected a sensor count mismatch',
-          },
-        },
-      );
-
-      return true;
-    } catch (error) {
-      if (debugMode === true) {
-        debugLog(logger, 'detect.ts / detectPlatformSensorCountMismatch()', 'error', 'Failed to notify plugin author about the sensor count mismatch');
         stackTracer('serialize-error', serializeError(error));
       }
 

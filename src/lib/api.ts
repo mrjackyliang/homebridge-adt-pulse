@@ -1914,7 +1914,6 @@ export class ADTPulse {
         action: 'GET_SENSORS_INFORMATION',
         success: true,
         info: {
-          rawHtml: sessions.axiosSystem.data,
           sensors: parsedSensorsTable,
         },
       };
@@ -2175,7 +2174,6 @@ export class ADTPulse {
         action: 'GET_SENSORS_STATUS',
         success: true,
         info: {
-          rawHtml: sessions.axiosSummary.data,
           sensors: parsedOrbSensors,
         },
       };
