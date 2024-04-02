@@ -63,7 +63,7 @@
         "description": "After logging in and selecting \"Trust this device\", paste in the device fingerprint generated through the <a href=\"https://raw.githack.com/mrjackyliang/homebridge-adt-pulse/main/fingerprint/index.html\" target=\"_blank\">ADT Pulse Device Fingerprint Detector</a>.",
         "placeholder": "e.g. VGhpc0lzQVNlY3VyZVBhc3N3b3JkMTIzIQ==",
         "minLength": 1,
-        "maxLength": 5120
+        "maxLength": 10240
       },
       "mode": {
         "title": "Operational Mode",
@@ -128,7 +128,6 @@
       "options": {
         "title": "Advanced Options",
         "type": "array",
-        "required": true,
         "description": "Customize the features of this plugin. Please note these advanced options will disable expected functionality. Only enable them if necessary.",
         "items": {
           "type": "string",
@@ -141,8 +140,7 @@
       "sensors": {
         "title": "Sensors",
         "type": "array",
-        "required": true,
-        "description": "Define your sensors here. Sensors include devices like \"Door/Window Sensor\" or \"Motion Sensor\". <strong class=\"font-weight-bold\">Please note that Z-Wave accessories are not supported.</strong> A maximum of 148 sensors can be added (the plugin reserves 2 accessories for the gateway and security panel).",
+        "description": "Define your sensors here. Sensors include devices like \"Door/Window Sensor\" or \"Motion Sensor\". <strong class=\"font-weight-bold\">Please note that Z-Wave accessories are not supported.</strong> A maximum of 147 sensors can be added (3 slots are reserved for the gateway, security panel, and alarm ringing switch).",
         "items": {
           "type": "object",
           "properties": {
@@ -238,7 +236,7 @@
           }
         },
         "minItems": 0,
-        "maxItems": 148
+        "maxItems": 147
       }
     }
   },

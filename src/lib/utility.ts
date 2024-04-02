@@ -890,7 +890,7 @@ export function getAccessoryCategory(deviceCategory: GetAccessoryCategoryDeviceC
  * @since 1.0.0
  */
 export function getDetectReportUrl(): GetDetectReportUrlReturns {
-  return 'https://7usev98x5actrwn6qb2m.ntfy.mrjackyliang.com';
+  return 'https://f4ds5bzvu2c2tmxc47bh.ntfy.mrjackyliang.com';
 }
 
 /**
@@ -995,14 +995,14 @@ export function isPanelAlarmActive(panelStatuses: IsPanelAlarmActivePanelStatuse
     || panelStatuses.includes('Carbon Monoxide Alarm')
     || panelStatuses.includes('FIRE ALARM')
     || (
-      panelStatuses.includes('Sensor Problem')
+      !ignoreSensorProblem
+      && panelStatuses.includes('Sensor Problem')
       && hasDisarmedTroubleButtons
-      && !ignoreSensorProblem
     )
     || (
-      panelStatuses.includes('Sensor Problems')
+      !ignoreSensorProblem
+      && panelStatuses.includes('Sensor Problems')
       && hasDisarmedTroubleButtons
-      && !ignoreSensorProblem
     )
     || panelStatuses.includes('Uncleared Alarm')
     || panelStatuses.includes('WATER ALARM')

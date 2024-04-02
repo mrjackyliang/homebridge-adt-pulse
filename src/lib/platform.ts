@@ -236,7 +236,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
     // Check for a valid platform configuration before initializing.
     if (!parsedConfig.success) {
       this.#log.error('Plugin is unable to initialize due to an invalid platform configuration.');
-      this.#log.warn('If you just upgraded from "v2 to v3" or from "v3 to v3.1", please update your configuration.');
+      this.#log.warn('If you just upgraded from v2 to v3, the configuration has been changed. Please re-configure your plugin.');
       this.#log.warn('Carefully observe the error below. The answer you are looking for is there.');
       stackTracer('zod-error', parsedConfig.error.errors);
 
