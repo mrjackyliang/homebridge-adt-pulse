@@ -1101,8 +1101,6 @@ export function isUnknownDoSubmitHandlerCollection(handlers: IsUnknownDoSubmitHa
  */
 export function isUnknownGatewayDevice(gateway: IsUnknownGatewayDeviceGateway): IsUnknownGatewayDeviceReturns {
   const currentGateway = {
-    firmwareVersion: _.get(gateway, ['Firmware Version:', 0], null),
-    hardwareVersion: _.get(gateway, ['Hardware Version:', 0], null),
     manufacturer: _.get(gateway, ['Manufacturer:', 0], null),
     model: _.get(gateway, ['Model:', 0], null),
     primaryConnectionType: _.get(gateway, ['Primary Connection Type:', 0], null),

@@ -1391,10 +1391,6 @@ export type DetectPlatformUnknownSensorsActionReturns = Promise<boolean>;
  */
 export type DeviceGatewayDescription = string;
 
-export type DeviceGatewayGatewayFirmwareVersion = string | null;
-
-export type DeviceGatewayGatewayHardwareVersion = string | null;
-
 export type DeviceGatewayGatewayManufacturer = string | null;
 
 export type DeviceGatewayGatewayModel = string | null;
@@ -1402,8 +1398,6 @@ export type DeviceGatewayGatewayModel = string | null;
 export type DeviceGatewayGatewayPrimaryConnectionType = string | null;
 
 export type DeviceGatewayGateway = {
-  firmwareVersion: DeviceGatewayGatewayFirmwareVersion;
-  hardwareVersion: DeviceGatewayGatewayHardwareVersion;
   manufacturer: DeviceGatewayGatewayManufacturer;
   model: DeviceGatewayGatewayModel;
   primaryConnectionType: DeviceGatewayGatewayPrimaryConnectionType;
