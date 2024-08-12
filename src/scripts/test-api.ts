@@ -6,7 +6,7 @@ import { exit, stdin, stdout } from 'node:process';
 import readline from 'node:readline';
 import util from 'node:util';
 
-import { ADTPulse } from '@/lib/api.js';
+import { ADTPulseAPI } from '@/lib/api.js';
 import { platformConfig } from '@/lib/schema.js';
 import { debugLog, isForwardSlashOS, stackTracer } from '@/lib/utility.js';
 import type {
@@ -82,7 +82,7 @@ class ADTPulseTest {
         exit(1);
       }
 
-      const instance = new ADTPulse(
+      const instance = new ADTPulseAPI(
         this.#selectedPlatform,
         {
           debug: true,
@@ -163,7 +163,7 @@ class ADTPulseTest {
         break;
       }
 
-      debugLog(null, 'test-api.ts', 'info', `Attempt ${i + 1}: Finding the Homebridge config file in "${possibleLocations[i]}"`);
+      debugLog(null, 'test-api.ts / ADTPulseTest.findConfig()', 'info', `Attempt ${i + 1}: Finding the Homebridge config file in "${possibleLocations[i]}"`);
 
       try {
         const rawFile = readFileSync(possibleLocations[i], 'utf-8');
@@ -189,18 +189,18 @@ class ADTPulseTest {
     }
 
     if (this.#selectedConfigLocation === undefined || this.#selectedPlatform === undefined) {
-      debugLog(null, 'test-api.ts', 'error', 'Unable to find a parsable Homebridge config file with a validated "ADTPulse" platform');
+      debugLog(null, 'test-api.ts / ADTPulseTest.findConfig()', 'error', 'Unable to find a parsable Homebridge config file with a validated "ADTPulse" platform');
 
       if (this.#zodParseResponse !== undefined) {
-        debugLog(null, 'test-api.ts', 'warn', 'If you just upgraded from "v2 to v3" or from "v3 to v3.1", please update your configuration');
-        debugLog(null, 'test-api.ts', 'warn', 'Carefully observe the error below. The answer you are looking for is there');
+        debugLog(null, 'test-api.ts / ADTPulseTest.findConfig()', 'warn', 'If you just upgraded from "v2 to v3" or from "v3 to v3.1", please update your configuration');
+        debugLog(null, 'test-api.ts / ADTPulseTest.findConfig()', 'warn', 'Carefully observe the error below. The answer you are looking for is there');
         stackTracer('zod-error', this.#zodParseResponse);
       }
 
       return false;
     }
 
-    debugLog(null, 'test-api.ts', 'success', `Found valid Homebridge config in "${this.#selectedConfigLocation}"`);
+    debugLog(null, 'test-api.ts / ADTPulseTest.findConfig()', 'success', `Found valid Homebridge config in "${this.#selectedConfigLocation}"`);
 
     return true;
   }

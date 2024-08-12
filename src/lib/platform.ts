@@ -9,7 +9,7 @@ import {
 import { serializeError } from 'serialize-error';
 
 import { ADTPulseAccessory } from '@/lib/accessory.js';
-import { ADTPulse } from '@/lib/api.js';
+import { ADTPulseAPI } from '@/lib/api.js';
 import { detectPlatformUnknownSensorsAction } from '@/lib/detect.js';
 import { textOrbTextSummarySections } from '@/lib/regex.js';
 import { platformConfig } from '@/lib/schema.js';
@@ -20,6 +20,7 @@ import {
   getAccessoryCategory,
   getPackageVersion,
   getPluralForm,
+  isMaintenancePeriod,
   sleep,
   stackTracer,
 } from '@/lib/utility.js';
@@ -324,7 +325,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
       }
 
       // Initialize the API instance.
-      this.#instance = new ADTPulse(
+      this.#instance = new ADTPulseAPI(
         this.#config,
         {
           // If Homebridge debug mode, set "this instance" to debug mode as well.
@@ -587,7 +588,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
             if (login.success) {
               currentTimestamp = Date.now();
 
-              // Update timing for the sync protocols, so they can pace themselves.
+              // Update timing for the sync protocols, so the methods being called can pace themselves.
               this.#state.lastRunOn.adtKeepAlive = currentTimestamp;
               this.#state.lastRunOn.adtLastLogin = currentTimestamp;
               this.#state.lastRunOn.adtSyncCheck = currentTimestamp;
@@ -605,6 +606,11 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
                 const suspendMinutes = this.#constants.intervalTimestamps.suspendSyncing / 1000 / 60;
 
                 this.#log.error(`Login attempt has failed for ${this.#constants.maxLoginRetries} ${getPluralForm(this.#constants.maxLoginRetries, 'time', 'times')}. Sleeping for ${suspendMinutes} ${getPluralForm(suspendMinutes, 'minute', 'minutes')} before resuming ...`);
+
+                // Makes an attempted guess that the web portal may be undergoing maintenance.
+                if (isMaintenancePeriod()) {
+                  this.#log.warn('The web portal may be undergoing an unwarranted maintenance period at this time. The plugin will self-recover.');
+                }
               }
 
               stackTracer('api-response', login);

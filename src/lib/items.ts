@@ -428,6 +428,13 @@ export const deviceSecurityPanels: DeviceSecurityPanels = [
     },
   },
   {
+    description: 'DSC PowerSeries/ADT PremisePro',
+    panel: {
+      manufacturerProvider: null,
+      typeModel: 'Security Panel - PowerSeries/PremisePro',
+    },
+  },
+  {
     description: 'GE Security Concord 4',
     panel: {
       manufacturerProvider: 'GE Security',
@@ -572,6 +579,7 @@ export const itemOrbSecurityButtonUrlParamsArmStates: ItemOrbSecurityButtonUrlPa
   'night',
   'night+stay',
   'off',
+  'sensortest',
   'stay',
 ];
 
@@ -613,6 +621,7 @@ export const itemPanelInformationStatuses: ItemPanelInformationStatuses = [
  * @since 1.0.0
  */
 export const itemPanelStatusNotes: ItemPanelStatusNotes = [
+  'EXIT FAULT ALARM',
   'This may take several minutes',
 ];
 

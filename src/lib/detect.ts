@@ -35,10 +35,6 @@ import {
   stackTracer,
 } from '@/lib/utility.js';
 import type {
-  DetectApiDebugParserData,
-  DetectApiDebugParserDebugMode,
-  DetectApiDebugParserLogger,
-  DetectApiDebugParserReturns,
   DetectApiDoSubmitHandlersDebugMode,
   DetectApiDoSubmitHandlersHandlers,
   DetectApiDoSubmitHandlersLogger,
@@ -59,10 +55,6 @@ import type {
   DetectApiPanelStatusLogger,
   DetectApiPanelStatusReturns,
   DetectApiPanelStatusSummary,
-  DetectApiPortalVersionDebugMode,
-  DetectApiPortalVersionLogger,
-  DetectApiPortalVersionReturns,
-  DetectApiPortalVersionVersion,
   DetectApiSensorsInformationDebugMode,
   DetectApiSensorsInformationLogger,
   DetectApiSensorsInformationReturns,
@@ -71,111 +63,19 @@ import type {
   DetectApiSensorsStatusLogger,
   DetectApiSensorsStatusReturns,
   DetectApiSensorsStatusSensors,
+  DetectGlobalDebugParserData,
+  DetectGlobalDebugParserDebugMode,
+  DetectGlobalDebugParserLogger,
+  DetectGlobalDebugParserReturns,
+  DetectGlobalPortalVersionDebugMode,
+  DetectGlobalPortalVersionLogger,
+  DetectGlobalPortalVersionReturns,
+  DetectGlobalPortalVersionVersion,
   DetectPlatformUnknownSensorsActionDebugMode,
   DetectPlatformUnknownSensorsActionLogger,
   DetectPlatformUnknownSensorsActionReturns,
   DetectPlatformUnknownSensorsActionSensors,
 } from '@/types/index.d.ts';
-
-/**
- * Detect api debug parser.
- *
- * @param {DetectApiDebugParserData}      data      - Data.
- * @param {DetectApiDebugParserLogger}    logger    - Logger.
- * @param {DetectApiDebugParserDebugMode} debugMode - Debug mode.
- *
- * @returns {DetectApiDebugParserReturns}
- *
- * @since 1.0.0
- */
-export async function detectApiDebugParser(data: DetectApiDebugParserData, logger: DetectApiDebugParserLogger, debugMode: DetectApiDebugParserDebugMode): DetectApiDebugParserReturns {
-  const forceArmHandlerAnomaly = data.method === 'forceArmHandler' && isUnknownDoSubmitHandlerCollection(data.response) && !data.rawHtml.includes('p_whiteBoxMiddleCenter') && !data.rawHtml.includes('p_armDisarmWrapper');
-  const getGatewayInformationAnomaly = data.method === 'getGatewayInformation' && isUnknownGatewayDevice(data.response);
-  const getOrbSecurityButtonsAnomaly = data.method === 'getOrbSecurityButtons' && isUnknownOrbSecurityButtonCollection(data.response) && !data.rawHtml.includes('Status Unavailable.');
-  const getPanelInformationAnomaly = data.method === 'getPanelInformation' && isUnknownPanelDevice(data.response);
-  const getPanelStatusAnomaly = data.method === 'getPanelStatus' && isEmptyOrbTextSummary(data.response);
-  const getSensorsInformationAnomaly = data.method === 'getSensorsInformation' && data.response.length < 1;
-  const getSensorsStatusAnomaly = data.method === 'getSensorsStatus' && data.response.length < 1 && !data.rawHtml.includes('id="orbSensorsList"');
-
-  if (
-    forceArmHandlerAnomaly
-    || getGatewayInformationAnomaly
-    || getOrbSecurityButtonsAnomaly
-    || getPanelInformationAnomaly
-    || getPanelStatusAnomaly
-    || getSensorsInformationAnomaly
-    || getSensorsStatusAnomaly
-  ) {
-    // Unfortunately, modifying "data.rawHtml", which may include PII, would cause more unnecessary complexity.
-    const cleanedData = removePersonalIdentifiableInformation(data);
-    const loggedData = _.omit(cleanedData, ['rawHtml']);
-
-    // If outdated, it means plugin may already have support.
-    try {
-      const outdated = await isPluginOutdated();
-
-      if (outdated) {
-        if (logger !== null) {
-          logger.warn(`Plugin has detected a parser anomaly for "${data.method}". You are running an older plugin version, please update soon.`);
-        }
-
-        // This is intentionally duplicated if using Homebridge debug mode.
-        if (debugMode) {
-          debugLog(logger, 'detect.ts / detectApiDebugParser()', 'warn', `Plugin has detected a parser anomaly for "${data.method}". You are running an older plugin version, please update soon`);
-        }
-
-        // Do not send analytics for users running outdated plugin versions.
-        return false;
-      }
-    } catch (error) {
-      if (debugMode === true) {
-        debugLog(logger, 'detect.ts / detectApiDebugParser()', 'error', 'Failed to check if plugin is outdated');
-        stackTracer('serialize-error', serializeError(error));
-      }
-
-      // Try to check if plugin is outdated later on.
-      return false;
-    }
-
-    if (logger !== null) {
-      logger.warn(`Plugin has detected a parser anomaly for "${data.method}". Notifying plugin author about this discovery ...`);
-    }
-
-    // This is intentionally duplicated if using Homebridge debug mode.
-    if (debugMode) {
-      debugLog(logger, 'detect.ts / detectApiDebugParser()', 'warn', `Plugin has detected a parser anomaly for "${data.method}". Notifying plugin author about this discovery`);
-    }
-
-    // Show content being sent to author except for "data.rawHtml".
-    stackTracer('detect-content', loggedData);
-
-    try {
-      await axios.post(
-        getDetectReportUrl(),
-        JSON.stringify(cleanedData, null, 2),
-        {
-          family: 4,
-          headers: {
-            'User-Agent': 'homebridge-adt-pulse',
-            'X-Title': `Detected a parser anomaly for "${data.method}"`,
-          },
-        },
-      );
-
-      return true;
-    } catch (error) {
-      if (debugMode === true) {
-        debugLog(logger, 'detect.ts / detectApiDebugParser()', 'error', `Failed to notify plugin author about the parser anomaly for "${data.method}"`);
-        stackTracer('serialize-error', serializeError(error));
-      }
-
-      // Try to send information to author later.
-      return false;
-    }
-  }
-
-  return false;
-}
 
 /**
  * Detect api do submit handlers.
@@ -631,90 +531,6 @@ export async function detectApiPanelStatus(summary: DetectApiPanelStatusSummary,
 }
 
 /**
- * Detect api portal version.
- *
- * @param {DetectApiPortalVersionVersion}   version   - Version.
- * @param {DetectApiPortalVersionLogger}    logger    - Logger.
- * @param {DetectApiPortalVersionDebugMode} debugMode - Debug mode.
- *
- * @returns {DetectApiPortalVersionReturns}
- *
- * @since 1.0.0
- */
-export async function detectApiPortalVersion(version: DetectApiPortalVersionVersion, logger: DetectApiPortalVersionLogger, debugMode: DetectApiPortalVersionDebugMode): DetectApiPortalVersionReturns {
-  const detectedNewVersion = (version.version !== null && !itemPortalVersions.includes(version.version));
-
-  if (detectedNewVersion) {
-    const cleanedData = removePersonalIdentifiableInformation(version);
-
-    // If outdated, it means plugin may already have support.
-    try {
-      const outdated = await isPluginOutdated();
-
-      if (outdated) {
-        if (logger !== null) {
-          logger.warn('Plugin has detected a new portal version. You are running an older plugin version, please update soon.');
-        }
-
-        // This is intentionally duplicated if using Homebridge debug mode.
-        if (debugMode) {
-          debugLog(logger, 'detect.ts / detectApiPortalVersion()', 'warn', 'Plugin has detected a new portal version. You are running an older plugin version, please update soon');
-        }
-
-        // Do not send analytics for users running outdated plugin versions.
-        return false;
-      }
-    } catch (error) {
-      if (debugMode === true) {
-        debugLog(logger, 'detect.ts / detectApiPortalVersion()', 'error', 'Failed to check if plugin is outdated');
-        stackTracer('serialize-error', serializeError(error));
-      }
-
-      // Try to check if plugin is outdated later on.
-      return false;
-    }
-
-    if (logger !== null) {
-      logger.warn('Plugin has detected a new portal version. Notifying plugin author about this discovery ...');
-    }
-
-    // This is intentionally duplicated if using Homebridge debug mode.
-    if (debugMode) {
-      debugLog(logger, 'detect.ts / detectApiPortalVersion()', 'warn', 'Plugin has detected a new portal version. Notifying plugin author about this discovery');
-    }
-
-    // Show content being sent to author.
-    stackTracer('detect-content', cleanedData);
-
-    try {
-      await axios.post(
-        getDetectReportUrl(),
-        JSON.stringify(cleanedData, null, 2),
-        {
-          family: 4,
-          headers: {
-            'User-Agent': 'homebridge-adt-pulse',
-            'X-Title': 'Detected a new portal version',
-          },
-        },
-      );
-
-      return true;
-    } catch (error) {
-      if (debugMode === true) {
-        debugLog(logger, 'detect.ts / detectApiPortalVersion()', 'error', 'Failed to notify plugin author about the new portal version');
-        stackTracer('serialize-error', serializeError(error));
-      }
-
-      // Try to send information to author later.
-      return false;
-    }
-  }
-
-  return false;
-}
-
-/**
  * Detect api sensors information.
  *
  * @param {DetectApiSensorsInformationSensors}   sensors   - Sensors.
@@ -874,6 +690,192 @@ export async function detectApiSensorsStatus(sensors: DetectApiSensorsStatusSens
     } catch (error) {
       if (debugMode === true) {
         debugLog(logger, 'detect.ts / detectApiSensorsStatus()', 'error', 'Failed to notify plugin author about the new sensors status');
+        stackTracer('serialize-error', serializeError(error));
+      }
+
+      // Try to send information to author later.
+      return false;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Detect global debug parser.
+ *
+ * @param {DetectGlobalDebugParserData}      data      - Data.
+ * @param {DetectGlobalDebugParserLogger}    logger    - Logger.
+ * @param {DetectGlobalDebugParserDebugMode} debugMode - Debug mode.
+ *
+ * @returns {DetectGlobalDebugParserReturns}
+ *
+ * @since 1.0.0
+ */
+export async function detectGlobalDebugParser(data: DetectGlobalDebugParserData, logger: DetectGlobalDebugParserLogger, debugMode: DetectGlobalDebugParserDebugMode): DetectGlobalDebugParserReturns {
+  const forceArmHandlerAnomaly = data.method === 'forceArmHandler' && isUnknownDoSubmitHandlerCollection(data.response) && !data.rawHtml.includes('p_whiteBoxMiddleCenter') && !data.rawHtml.includes('p_armDisarmWrapper');
+  const generateSensorsConfigAnomaly = data.method === 'generateSensorsConfig' && data.response.length < 1;
+  const getGatewayInformationAnomaly = data.method === 'getGatewayInformation' && isUnknownGatewayDevice(data.response);
+  const getOrbSecurityButtonsAnomaly = data.method === 'getOrbSecurityButtons' && isUnknownOrbSecurityButtonCollection(data.response) && !data.rawHtml.includes('Status Unavailable');
+  const getPanelInformationAnomaly = data.method === 'getPanelInformation' && isUnknownPanelDevice(data.response);
+  const getPanelStatusAnomaly = data.method === 'getPanelStatus' && isEmptyOrbTextSummary(data.response);
+  const getSensorsInformationAnomaly = data.method === 'getSensorsInformation' && data.response.length < 1;
+  const getSensorsStatusAnomaly = data.method === 'getSensorsStatus' && data.response.length < 1 && !data.rawHtml.includes('id="orbSensorsList"');
+
+  if (
+    forceArmHandlerAnomaly
+    || generateSensorsConfigAnomaly
+    || getGatewayInformationAnomaly
+    || getOrbSecurityButtonsAnomaly
+    || getPanelInformationAnomaly
+    || getPanelStatusAnomaly
+    || getSensorsInformationAnomaly
+    || getSensorsStatusAnomaly
+  ) {
+    // Unfortunately, modifying "data.rawHtml", which may include PII, would cause more unnecessary complexity.
+    const cleanedData = removePersonalIdentifiableInformation(data);
+    const loggedData = _.omit(cleanedData, ['rawHtml']);
+
+    // If outdated, it means plugin may already have support.
+    try {
+      const outdated = await isPluginOutdated();
+
+      if (outdated) {
+        if (logger !== null) {
+          logger.warn(`Plugin has detected a parser anomaly for "${data.method}". You are running an older plugin version, please update soon.`);
+        }
+
+        // This is intentionally duplicated if using Homebridge debug mode.
+        if (debugMode) {
+          debugLog(logger, 'detect.ts / detectGlobalDebugParser()', 'warn', `Plugin has detected a parser anomaly for "${data.method}". You are running an older plugin version, please update soon`);
+        }
+
+        // Do not send analytics for users running outdated plugin versions.
+        return false;
+      }
+    } catch (error) {
+      if (debugMode === true) {
+        debugLog(logger, 'detect.ts / detectGlobalDebugParser()', 'error', 'Failed to check if plugin is outdated');
+        stackTracer('serialize-error', serializeError(error));
+      }
+
+      // Try to check if plugin is outdated later on.
+      return false;
+    }
+
+    if (logger !== null) {
+      logger.warn(`Plugin has detected a parser anomaly for "${data.method}". Notifying plugin author about this discovery ...`);
+    }
+
+    // This is intentionally duplicated if using Homebridge debug mode.
+    if (debugMode) {
+      debugLog(logger, 'detect.ts / detectGlobalDebugParser()', 'warn', `Plugin has detected a parser anomaly for "${data.method}". Notifying plugin author about this discovery`);
+    }
+
+    // Show content being sent to author except for "data.rawHtml".
+    stackTracer('detect-content', loggedData);
+
+    try {
+      await axios.post(
+        getDetectReportUrl(),
+        JSON.stringify(cleanedData, null, 2),
+        {
+          family: 4,
+          headers: {
+            'User-Agent': 'homebridge-adt-pulse',
+            'X-Title': `Detected a parser anomaly for "${data.method}"`,
+          },
+        },
+      );
+
+      return true;
+    } catch (error) {
+      if (debugMode === true) {
+        debugLog(logger, 'detect.ts / detectGlobalDebugParser()', 'error', `Failed to notify plugin author about the parser anomaly for "${data.method}"`);
+        stackTracer('serialize-error', serializeError(error));
+      }
+
+      // Try to send information to author later.
+      return false;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Detect global portal version.
+ *
+ * @param {DetectGlobalPortalVersionVersion}   version   - Version.
+ * @param {DetectGlobalPortalVersionLogger}    logger    - Logger.
+ * @param {DetectGlobalPortalVersionDebugMode} debugMode - Debug mode.
+ *
+ * @returns {DetectGlobalPortalVersionReturns}
+ *
+ * @since 1.0.0
+ */
+export async function detectGlobalPortalVersion(version: DetectGlobalPortalVersionVersion, logger: DetectGlobalPortalVersionLogger, debugMode: DetectGlobalPortalVersionDebugMode): DetectGlobalPortalVersionReturns {
+  const detectedNewVersion = (version.version !== null && !itemPortalVersions.includes(version.version));
+
+  if (detectedNewVersion) {
+    const cleanedData = removePersonalIdentifiableInformation(version);
+
+    // If outdated, it means plugin may already have support.
+    try {
+      const outdated = await isPluginOutdated();
+
+      if (outdated) {
+        if (logger !== null) {
+          logger.warn('Plugin has detected a new portal version. You are running an older plugin version, please update soon.');
+        }
+
+        // This is intentionally duplicated if using Homebridge debug mode.
+        if (debugMode) {
+          debugLog(logger, 'detect.ts / detectGlobalPortalVersion()', 'warn', 'Plugin has detected a new portal version. You are running an older plugin version, please update soon');
+        }
+
+        // Do not send analytics for users running outdated plugin versions.
+        return false;
+      }
+    } catch (error) {
+      if (debugMode === true) {
+        debugLog(logger, 'detect.ts / detectGlobalPortalVersion()', 'error', 'Failed to check if plugin is outdated');
+        stackTracer('serialize-error', serializeError(error));
+      }
+
+      // Try to check if plugin is outdated later on.
+      return false;
+    }
+
+    if (logger !== null) {
+      logger.warn('Plugin has detected a new portal version. Notifying plugin author about this discovery ...');
+    }
+
+    // This is intentionally duplicated if using Homebridge debug mode.
+    if (debugMode) {
+      debugLog(logger, 'detect.ts / detectGlobalPortalVersion()', 'warn', 'Plugin has detected a new portal version. Notifying plugin author about this discovery');
+    }
+
+    // Show content being sent to author.
+    stackTracer('detect-content', cleanedData);
+
+    try {
+      await axios.post(
+        getDetectReportUrl(),
+        JSON.stringify(cleanedData, null, 2),
+        {
+          family: 4,
+          headers: {
+            'User-Agent': 'homebridge-adt-pulse',
+            'X-Title': 'Detected a new portal version',
+          },
+        },
+      );
+
+      return true;
+    } catch (error) {
+      if (debugMode === true) {
+        debugLog(logger, 'detect.ts / detectGlobalPortalVersion()', 'error', 'Failed to notify plugin author about the new portal version');
         stackTracer('serialize-error', serializeError(error));
       }
 

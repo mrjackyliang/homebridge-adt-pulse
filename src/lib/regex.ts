@@ -41,6 +41,41 @@ export const functionGoToUrl = /^goToUrl\('device\.jsp\?id=([0-9]+)'\);$/;
 export const functionSetArmState = /setArmState\(\s*'([^']+)',\s*'([^']+)',\s*'([^']+)',\s*'([^']+)',\s*'([^']+)',\s*'href=([^']+)&armstate=([^&]+)&arm=([^&]+)&sat=([^']+?)'\s*\)/;
 
 /**
+ * Object key client type.
+ *
+ * @since 1.0.0
+ */
+export const objectKeyClientType = /xClientType: ['"](.+)['"],/;
+
+/**
+ * Object key locale.
+ *
+ * @since 1.0.0
+ */
+export const objectKeyLocale = /locale: ['"](.+)['"],/;
+
+/**
+ * Object key login.
+ *
+ * @since 1.0.0
+ */
+export const objectKeyLogin = /xLogin: ['"](.+)['"],/;
+
+/**
+ * Object key pre auth token.
+ *
+ * @since 1.0.0
+ */
+export const objectKeyPreAuthToken = /xPreAuthToken: ['"](.+)['"],/;
+
+/**
+ * Object key sat.
+ *
+ * @since 1.0.0
+ */
+export const objectKeySat = /sat: ['"](.+)['"],/;
+
+/**
  * Param network id.
  *
  * @since 1.0.0
@@ -66,7 +101,7 @@ export const requestPathAccessSignIn = /^(\/myhome\/)([0-9.-]+)(\/access\/signin
  *
  * @since 1.0.0
  */
-export const requestPathAccessSignInEXxPartnerAdt = /^(\/myhome\/)([0-9.-]+)(\/access\/signin\.jsp\?e=(ns|to)&partner=adt)$/;
+export const requestPathAccessSignInEXxPartnerAdt = /^(\/myhome\/)([0-9.-]+)(\/access\/signin\.jsp\?e=(ns|to|un)&partner=adt)$/;
 
 /**
  * Request path access sign in network id xx partner adt.
@@ -95,6 +130,41 @@ export const requestPathKeepAlive = /^(\/myhome\/)([0-9.-]+)(\/KeepAlive)$/;
  * @since 1.0.0
  */
 export const requestPathMfaMfaSignInWorkflowChallenge = /^(\/myhome\/)([0-9.-]+)(\/mfa\/mfaSignIn\.jsp\?workflow=challenge)$/;
+
+/**
+ * Request path nga serv run rra proxy href rest adt ui client multi factor auth add trusted device sat xx.
+ *
+ * @since 1.0.0
+ */
+export const requestPathNgaServRunRraProxyHrefRestAdtUiClientMultiFactorAuthAddTrustedDeviceSatXx = /^(\/myhome\/)([0-9.-]+)(\/nga\/serv\/RunRRAProxy\?href=rest\/adt\/ui\/client\/multiFactorAuth\/addTrustedDevice&sat=(.+))$/;
+
+/**
+ * Request path nga serv run rra proxy href rest adt ui client multi factor auth request otp for registered property sat xx.
+ *
+ * @since 1.0.0
+ */
+export const requestPathNgaServRunRraProxyHrefRestAdtUiClientMultiFactorAuthRequestOtpForRegisteredPropertySatXx = /^(\/myhome\/)([0-9.-]+)(\/nga\/serv\/RunRRAProxy\?href=rest\/adt\/ui\/client\/multiFactorAuth\/requestOtpForRegisteredProperty&sat=(.+))$/;
+
+/**
+ * Request path nga serv run rra proxy href rest adt ui client multi factor auth validate otp sat xx.
+ *
+ * @since 1.0.0
+ */
+export const requestPathNgaServRunRraProxyHrefRestAdtUiClientMultiFactorAuthValidateOtpSatXx = /^(\/myhome\/)([0-9.-]+)(\/nga\/serv\/RunRRAProxy\?href=rest\/adt\/ui\/client\/multiFactorAuth\/validateOtp&sat=(.+))$/;
+
+/**
+ * Request path nga serv run rra proxy href rest icontrol ui client multi factor auth sat xx.
+ *
+ * @since 1.0.0
+ */
+export const requestPathNgaServRunRraProxyHrefRestIcontrolUiClientMultiFactorAuthSatXx = /^(\/myhome\/)([0-9.-]+)(\/nga\/serv\/RunRRAProxy\?href=rest\/icontrol\/ui\/client\/multiFactorAuth&sat=(.+))$/;
+
+/**
+ * Request path nga serv run rra proxy only client multi factor auth exclude sat xx href rest adt ui updates sat xx.
+ *
+ * @since 1.0.0
+ */
+export const requestPathNgaServRunRraProxyOnlyClientMultiFactorAuthExcludeSatXxHrefRestAdtUiUpdatesSatXx = /^(\/myhome\/)([0-9.-]+)(\/nga\/serv\/RunRRAProxy\?only=client.multiFactorAuth&exclude=&sat=(.+)&href=rest\/adt\/ui\/updates&sat=(.+)&)$/;
 
 /**
  * Request path quick control arm disarm.
@@ -137,6 +207,13 @@ export const requestPathSystemGateway = /^(\/myhome\/)([0-9.-]+)(\/system\/gatew
  * @since 1.0.0
  */
 export const requestPathSystemSystem = /^(\/myhome\/)([0-9.-]+)(\/system\/system\.jsp)$/;
+
+/**
+ * Text one time passcode.
+ *
+ * @since 1.0.0
+ */
+export const textOneTimePasscode = /^[0-9]{6}$/;
 
 /**
  * Text orb sensor zone.

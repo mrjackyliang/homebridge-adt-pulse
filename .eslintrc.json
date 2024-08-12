@@ -7,10 +7,11 @@
     {
       "excludedFiles": [],
       "extends": [
-        "airbnb-base"
+        "airbnb"
       ],
       "files": [
-        "./**/*.js"
+        "./**/*.js",
+        "./**/*.jsx"
       ],
       "rules": {
         "import/extensions": [
@@ -49,11 +50,12 @@
     {
       "excludedFiles": [],
       "extends": [
-        "airbnb-base",
-        "airbnb-typescript/base"
+        "airbnb",
+        "airbnb-typescript"
       ],
       "files": [
-        "./**/*.ts"
+        "./**/*.ts",
+        "./**/*.tsx"
       ],
       "parser": "@typescript-eslint/parser",
       "parserOptions": {

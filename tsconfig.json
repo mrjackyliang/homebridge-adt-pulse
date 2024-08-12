@@ -9,6 +9,8 @@
     "isolatedModules": false,
     "jsx": "preserve",
     "lib": [
+      "DOM",
+      "DOM.Iterable",
       "ESNext"
     ],
     "module": "ESNext",
@@ -36,6 +38,9 @@
       "node",
       "jsdom",
       "lodash",
+      "luxon",
+      "react",
+      "react-dom",
       "tough-cookie"
     ]
   },

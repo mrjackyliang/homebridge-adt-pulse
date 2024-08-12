@@ -3,7 +3,7 @@ import type { Logger } from 'homebridge';
 import type http from 'http';
 import type { JSDOM } from 'jsdom';
 import type { ErrorObject } from 'serialize-error';
-import z from 'zod';
+import type { z } from 'zod';
 
 import type { platformConfig } from '@/lib/schema.js';
 import type {
@@ -32,6 +32,7 @@ import type {
   PortalSensorDeviceType,
   PortalSensorStatusIcon,
   PortalSensorStatusText,
+  PortalSubdomain,
   PortalVersion,
 } from '@/types/constant.d.ts';
 
@@ -41,19 +42,32 @@ import type {
  * @since 1.0.0
  */
 export type ApiResponseAction =
-  'ARM_DISARM_HANDLER'
+  'ADD_TRUSTED_DEVICE'
+  | 'ARM_DISARM_HANDLER'
+  | 'COMPLETE_SIGN_IN'
   | 'FORCE_ARM_HANDLER'
   | 'GET_GATEWAY_INFORMATION'
   | 'GET_ORB_SECURITY_BUTTONS'
   | 'GET_PANEL_INFORMATION'
   | 'GET_PANEL_STATUS'
+  | 'GET_SENSORS'
   | 'GET_SENSORS_INFORMATION'
   | 'GET_SENSORS_STATUS'
+  | 'GET_TRUSTED_DEVICES'
+  | 'GET_VERIFICATION_METHODS'
+  | 'INITIALIZE'
   | 'LOGIN'
   | 'LOGOUT'
   | 'PERFORM_KEEP_ALIVE'
   | 'PERFORM_SYNC_CHECK'
-  | 'SET_PANEL_STATUS';
+  | 'REQUEST_CODE'
+  | 'SET_PANEL_STATUS'
+  | 'UI_GENERATE_CONFIG'
+  | 'UI_GET_METHODS'
+  | 'UI_INITIALIZE'
+  | 'UI_REQUEST_CODE'
+  | 'UI_VALIDATE'
+  | 'VALIDATE_CODE';
 
 export type ApiResponseSuccessSuccess = true;
 
@@ -96,6 +110,13 @@ export interface AxiosResponseNodeJs<T = any, D = any> extends AxiosResponse<T, 
 }
 
 /**
+ * Base url.
+ *
+ * @since 1.0.0
+ */
+export type BaseUrl = `https://${string}`;
+
+/**
  * Config.
  *
  * @since 1.0.0
@@ -103,13 +124,50 @@ export interface AxiosResponseNodeJs<T = any, D = any> extends AxiosResponse<T, 
 export type Config = z.infer<typeof platformConfig>;
 
 /**
+ * Connection.
+ *
+ * @since 1.0.0
+ */
+export type ConnectionSubdomain = PortalSubdomain;
+
+export type Connection = {
+  subdomain: ConnectionSubdomain;
+};
+
+/**
+ * Credentials.
+ *
+ * @since 1.0.0
+ */
+export type CredentialsFingerprint = string;
+
+export type CredentialsPassword = string;
+
+export type CredentialsUsername = string;
+
+export type Credentials = {
+  fingerprint: CredentialsFingerprint;
+  password: CredentialsPassword;
+  username: CredentialsUsername;
+};
+
+/**
+ * Current view.
+ *
+ * @since 1.0.0
+ */
+export type CurrentView = 'setup' | 'settings' | undefined;
+
+/**
  * Debug parser.
  *
  * @since 1.0.0
  */
-export type DebugParserMethod = 'forceArmHandler' | 'getGatewayInformation' | 'getOrbSecurityButtons' | 'getPanelInformation' | 'getPanelStatus' | 'getSensorsInformation' | 'getSensorsStatus';
+export type DebugParserMethod = 'forceArmHandler' | 'generateSensorsConfig' | 'getGatewayInformation' | 'getOrbSecurityButtons' | 'getPanelInformation' | 'getPanelStatus' | 'getSensorsInformation' | 'getSensorsStatus';
 
 export type DebugParserResponseForceArmHandler = DoSubmitHandlers;
+
+export type DebugParserResponseGenerateSensorsConfig = SensorConfig[];
 
 export type DebugParserResponseGetGatewayInformation = Record<string, string[]>;
 
@@ -125,6 +183,7 @@ export type DebugParserResponseGetSensorsStatus = SensorStatus[];
 
 export type DebugParserResponse = {
   forceArmHandler: DebugParserResponseForceArmHandler;
+  generateSensorsConfig: DebugParserResponseGenerateSensorsConfig;
   getGatewayInformation: DebugParserResponseGetGatewayInformation;
   getOrbSecurityButtons: DebugParserResponseGetOrbSecurityButtons;
   getPanelInformation: DebugParserResponseGetPanelInformation;
@@ -314,7 +373,7 @@ export type GatewayInformation = {
  *
  * @since 1.0.0
  */
-export type InternalConfigBaseUrl = `https://${string}`;
+export type InternalConfigBaseUrl = BaseUrl;
 
 export type InternalConfigDebug = boolean;
 
@@ -334,6 +393,37 @@ export type InternalConfig = {
   debug?: InternalConfigDebug;
   logger?: InternalConfigLogger;
   testMode?: InternalConfigTestMode;
+};
+
+/**
+ * Mfa device.
+ *
+ * @since 1.0.0
+ */
+export type MfaDeviceId = string;
+
+export type MfaDeviceType = 'EMAIL' | 'SMS';
+
+export type MfaDeviceLabel = string;
+
+export type MfaDevice = {
+  id: MfaDeviceId,
+  type: MfaDeviceType;
+  label: MfaDeviceLabel;
+};
+
+/**
+ * Mfa trusted device.
+ *
+ * @since 1.0.0
+ */
+export type MfaTrustedDeviceId = string;
+
+export type MfaTrustedDeviceName = string;
+
+export type MfaTrustedDevice = {
+  id: MfaTrustedDeviceId;
+  name: MfaTrustedDeviceName;
 };
 
 /**
@@ -478,6 +568,23 @@ export type PanelStatus = {
  */
 export type PortalVersionContent = {
   version: PortalVersion | null;
+};
+
+/**
+ * Sensor config.
+ *
+ * @since 1.0.0
+ */
+export type SensorConfigAdtName = string;
+
+export type SensorConfigAdtType = PluginDeviceSensorType;
+
+export type SensorConfigAdtZone = number;
+
+export type SensorConfig = {
+  adtName: SensorConfigAdtName;
+  adtType: SensorConfigAdtType;
+  adtZone: SensorConfigAdtZone;
 };
 
 /**

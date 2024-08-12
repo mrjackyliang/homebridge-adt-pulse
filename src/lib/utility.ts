@@ -3,6 +3,7 @@ import { Categories } from 'homebridge';
 import { JSDOM } from 'jsdom';
 import latestVersion from 'latest-version';
 import _ from 'lodash';
+import { DateTime } from 'luxon';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import os from 'node:os';
@@ -74,14 +75,6 @@ import type {
   FindPanelManufacturerManufacturerProvider,
   FindPanelManufacturerReturns,
   FindPanelManufacturerTypeModel,
-  GenerateDynatracePCHeaderValueMode,
-  GenerateDynatracePCHeaderValueReturns,
-  GenerateFakeReadyButtonsButtons,
-  GenerateFakeReadyButtonsDisplayedButtons,
-  GenerateFakeReadyButtonsIsCleanState,
-  GenerateFakeReadyButtonsOptions,
-  GenerateFakeReadyButtonsReadyButtons,
-  GenerateFakeReadyButtonsReturns,
   GenerateHashData,
   GenerateHashReturns,
   GetAccessoryCategoryDeviceCategory,
@@ -96,6 +89,7 @@ import type {
   IsEmptyOrbTextSummaryMatch,
   IsEmptyOrbTextSummaryReturns,
   IsForwardSlashOSReturns,
+  IsMaintenancePeriodReturns,
   IsPanelAlarmActiveIgnoreSensorProblem,
   IsPanelAlarmActiveOrbSecurityButtons,
   IsPanelAlarmActivePanelStatuses,
@@ -123,6 +117,12 @@ import type {
   ParseDoSubmitHandlersUrlParamsArm,
   ParseDoSubmitHandlersUrlParamsArmState,
   ParseDoSubmitHandlersUrlParamsHref,
+  ParseMultiFactorMethodsMethods,
+  ParseMultiFactorMethodsResponse,
+  ParseMultiFactorMethodsReturns,
+  ParseMultiFactorTrustedDevicesDevices,
+  ParseMultiFactorTrustedDevicesResponse,
+  ParseMultiFactorTrustedDevicesReturns,
   ParseOrbSecurityButtonsArm,
   ParseOrbSecurityButtonsArmState,
   ParseOrbSecurityButtonsButtonId,
@@ -144,6 +144,7 @@ import type {
   ParseOrbSensorsTableReturns,
   ParseOrbSensorsTableSensors,
   ParseOrbSensorsTableStatus,
+  ParseOrbSensorsTableType,
   ParseOrbTextSummaryElement,
   ParseOrbTextSummaryFinalParsed,
   ParseOrbTextSummaryNoteItem,
@@ -619,7 +620,7 @@ export function findNullKeys(properties: FindNullKeysProperties, parentKey: Find
   const found: FindNullKeysFound = [];
 
   Object.entries(properties).forEach(([propertyKey, property]) => {
-    const currentKey = parentKey !== '' ? `${parentKey}.${propertyKey}` : propertyKey;
+    const currentKey = (parentKey !== '') ? `${parentKey}.${propertyKey}` : propertyKey;
 
     if (_.isPlainObject(property)) {
       found.push(...findNullKeys(property, currentKey));
@@ -652,171 +653,6 @@ export function findPanelManufacturer(manufacturerProvider: FindPanelManufacture
     default:
       return null;
   }
-}
-
-/**
- * Generate dynatrace pc header value.
- *
- * @param {GenerateDynatracePCHeaderValueMode} mode - Mode.
- *
- * @returns {GenerateDynatracePCHeaderValueReturns}
- *
- * @since 1.0.0
- */
-export function generateDynatracePCHeaderValue(mode: GenerateDynatracePCHeaderValueMode): GenerateDynatracePCHeaderValueReturns {
-  const serverId = _.sample([1, 3, 5, 6]);
-  const currentMillis = Date.now().toString();
-  const slicedMillis = (mode === 'keep-alive') ? currentMillis.slice(-8) : currentMillis.slice(-9);
-  const randomThreeDigit = Math.floor(Math.random() * (932 - 218 + 1)) + 218;
-  const randomTwoDigit = Math.floor(Math.random() * (29 - 11 + 1)) + 11;
-  const randomAlphabet = _.range(32).map(() => _.sample('ABCDEFGHIJKLMNOPQRSTUVW')).join('');
-
-  /**
-   * Some information on how Dynatrace generates the "x-dtpc" header.
-   *
-   * Structure of "5$12345678_218h20vABCDEFGHIJKLMNOPQRSTUVWABCDEFGHI-0e0":
-   * - Server ID (1, 3, 5, 6)
-   * - $
-   * - Last 8 to 9 digits (depending on mode) of current time in milliseconds
-   * - _
-   * - Random 3 digit value (from 218 to 932)
-   * - h
-   * - Random 2 digit value (11 to 29)
-   * - v
-   * - Random 32 uppercase letters (except X, Y, or Z)
-   * - -0e0
-   *
-   * Purpose: Required to identify proper endpoints for beacon transmission; includes session ID for correlation.
-   *
-   * https://docs.dynatrace.com/docs/manage/data-privacy-and-security/data-privacy/cookies
-   * https://docs.dynatrace.com/docs/platform-modules/digital-experience/web-applications/initial-setup/firewall-constraints-for-rum
-   * https://docs.dynatrace.com/docs/whats-new/release-notes/oneagent/sprint-165
-   *
-   * @since 1.0.0
-   */
-  return `${serverId}$${slicedMillis}_${randomThreeDigit}h${randomTwoDigit}v${randomAlphabet}-0e0`;
-}
-
-/**
- * Generate fake ready buttons.
- *
- * @param {GenerateFakeReadyButtonsButtons}      buttons      - Buttons.
- * @param {GenerateFakeReadyButtonsIsCleanState} isCleanState - Is clean state.
- * @param {GenerateFakeReadyButtonsOptions}      options      - Options.
- *
- * @returns {GenerateFakeReadyButtonsReturns}
- *
- * @since 1.0.0
- */
-export function generateFakeReadyButtons(buttons: GenerateFakeReadyButtonsButtons, isCleanState: GenerateFakeReadyButtonsIsCleanState, options: GenerateFakeReadyButtonsOptions): GenerateFakeReadyButtonsReturns {
-  const readyButtons: GenerateFakeReadyButtonsReadyButtons = [];
-
-  // If the button is a "Disarming" button, generate the two arm buttons.
-  if (buttons.length === 1 && buttons[0].buttonText === 'Disarming') {
-    const displayedButtons: GenerateFakeReadyButtonsDisplayedButtons = [
-      {
-        buttonText: 'Arm Away',
-        loadingText: 'Arming Away',
-        arm: 'away',
-      },
-      {
-        buttonText: 'Arm Stay',
-        loadingText: 'Arming Stay',
-        arm: 'stay',
-      },
-    ];
-
-    displayedButtons.forEach((displayedButton, displayedButtonIndex) => {
-      readyButtons.push({
-        buttonId: `security_button_${displayedButtonIndex}`,
-        buttonDisabled: false,
-        buttonIndex: displayedButtonIndex,
-        buttonText: displayedButton.buttonText,
-        changeAccessCode: false,
-        loadingText: displayedButton.loadingText,
-        relativeUrl: options.relativeUrl,
-        totalButtons: buttons.length,
-        urlParams: {
-          arm: displayedButton.arm,
-          armState: (isCleanState) ? 'off' : 'disarmed',
-          href: options.href,
-          sat: options.sat,
-        },
-      });
-    });
-
-    return readyButtons;
-  }
-
-  buttons.forEach((button, buttonIndex) => {
-    // If button is already a "ready button", copy the button and skip processing.
-    if (!button.buttonDisabled) {
-      readyButtons.push(button);
-
-      return;
-    }
-
-    switch (button.buttonText) {
-      case 'Arming Away':
-        readyButtons.push({
-          buttonId: button.buttonId,
-          buttonDisabled: false,
-          buttonIndex,
-          buttonText: 'Disarm',
-          changeAccessCode: false,
-          loadingText: 'Disarming',
-          relativeUrl: options.relativeUrl,
-          totalButtons: buttons.length,
-          urlParams: {
-            arm: 'off',
-            armState: (isCleanState) ? 'away' : 'away',
-            href: options.href,
-            sat: options.sat,
-          },
-        });
-        break;
-      case 'Arming Night':
-        readyButtons.push({
-          buttonId: button.buttonId,
-          buttonDisabled: false,
-          buttonIndex,
-          buttonText: 'Disarm',
-          changeAccessCode: false,
-          loadingText: 'Disarming',
-          relativeUrl: options.relativeUrl,
-          totalButtons: buttons.length,
-          urlParams: {
-            arm: 'off',
-            armState: (isCleanState) ? 'night' : 'night+stay',
-            href: options.href,
-            sat: options.sat,
-          },
-        });
-        break;
-      case 'Arming Stay':
-        readyButtons.push({
-          buttonId: button.buttonId,
-          buttonDisabled: false,
-          buttonIndex,
-          buttonText: 'Disarm',
-          changeAccessCode: false,
-          loadingText: 'Disarming',
-          relativeUrl: options.relativeUrl,
-          totalButtons: buttons.length,
-          urlParams: {
-            arm: 'off',
-            armState: (isCleanState) ? 'stay' : 'stay',
-            href: options.href,
-            sat: options.sat,
-          },
-        });
-        break;
-      default:
-        break;
-    }
-  });
-
-  return readyButtons;
 }
 
 /**
@@ -970,6 +806,36 @@ export function isForwardSlashOS(): IsForwardSlashOSReturns {
     'sunos',
     'netbsd',
   ].includes(currentOS);
+}
+
+/**
+ * Is maintenance period.
+ *
+ * @returns {IsMaintenancePeriodReturns}
+ *
+ * @since 1.0.0
+ */
+export function isMaintenancePeriod(): IsMaintenancePeriodReturns {
+  // Assumes a timezone of "America/Los_Angeles" because Icontrol One headquarters in Redwood City, CA.
+  const now = DateTime.now().setZone('America/Los_Angeles');
+
+  const startTime = now.set({
+    hour: 22,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  });
+  const endTime = now.set({
+    hour: 4,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+  }).plus({
+    days: 1,
+  });
+
+  // Current time is between 10 PM and 4 AM PST.
+  return (now >= startTime || now < endTime);
 }
 
 /**
@@ -1210,6 +1076,65 @@ export function parseDoSubmitHandlers(elements: ParseDoSubmitHandlersElements): 
 }
 
 /**
+ * Parse multi factor methods.
+ *
+ * @param {ParseMultiFactorMethodsResponse} response - Response.
+ *
+ * @returns {ParseMultiFactorMethodsReturns}
+ *
+ * @since 1.0.0
+ */
+export function parseMultiFactorMethods(response: ParseMultiFactorMethodsResponse): ParseMultiFactorMethodsReturns {
+  const methods: ParseMultiFactorMethodsMethods = [];
+
+  // Parse the multi-factor methods.
+  response.state.mfaProperties.forEach((mfaProperty) => {
+    const mfaPropertyId = mfaProperty.id;
+    const mfaPropertyType = mfaProperty.type;
+    const mfaPropertyLabel = mfaProperty.label;
+
+    methods.push({
+      id: mfaPropertyId,
+      type: mfaPropertyType,
+      label: mfaPropertyLabel,
+    });
+  });
+
+  return methods;
+}
+
+/**
+ * Parse multi factor trusted devices.
+ *
+ * @param {ParseMultiFactorTrustedDevicesResponse} response - Response.
+ *
+ * @returns {ParseMultiFactorTrustedDevicesReturns}
+ *
+ * @since 1.0.0
+ */
+export function parseMultiFactorTrustedDevices(response: ParseMultiFactorTrustedDevicesResponse): ParseMultiFactorTrustedDevicesReturns {
+  const devices: ParseMultiFactorTrustedDevicesDevices = [];
+
+  // If "trustedDevices" do not exist, return an empty array.
+  if (response.state.trustedDevices === undefined) {
+    return devices;
+  }
+
+  // Parse the multi-factor trusted devices.
+  response.state.trustedDevices.forEach((trustedDevice) => {
+    const trustedDeviceId = trustedDevice.id;
+    const trustedDeviceName = trustedDevice.name;
+
+    devices.push({
+      id: trustedDeviceId,
+      name: trustedDeviceName,
+    });
+  });
+
+  return devices;
+}
+
+/**
  * Parse orb sensors.
  *
  * @param {ParseOrbSensorsElements} elements - Elements.
@@ -1394,14 +1319,15 @@ export function parseOrbSecurityButtons(elements: ParseOrbSecurityButtonsElement
 /**
  * Parse sensors table.
  *
+ * @param {ParseOrbSensorsTableType}     type     - Type.
  * @param {ParseOrbSensorsTableElements} elements - Elements.
  *
  * @returns {ParseOrbSensorsTableReturns}
  *
  * @since 1.0.0
  */
-export function parseSensorsTable(elements: ParseOrbSensorsTableElements): ParseOrbSensorsTableReturns {
-  const sensors: ParseOrbSensorsTableSensors = [];
+export function parseSensorsTable(type: ParseOrbSensorsTableType, elements: ParseOrbSensorsTableElements): ParseOrbSensorsTableReturns<ParseOrbSensorsTableType> {
+  const sensors: ParseOrbSensorsTableSensors<ParseOrbSensorsTableType> = [];
 
   let atSensorsSection = false;
 
@@ -1448,13 +1374,26 @@ export function parseSensorsTable(elements: ParseOrbSensorsTableElements): Parse
             return;
           }
 
-          sensors.push({
-            deviceId: cleanedDeviceId,
-            deviceType: cleanedDeviceType,
-            name: cleanedName,
-            status: cleanedStatus,
-            zone: cleanedZone,
-          });
+          // Generate a different sensor object based on the type.
+          if (type === 'sensors-config') {
+            const condensedType = condenseSensorType(cleanedDeviceType);
+
+            if (condensedType !== undefined) {
+              (sensors as ParseOrbSensorsTableSensors<'sensors-config'>).push({
+                adtName: cleanedName,
+                adtType: condensedType,
+                adtZone: cleanedZone,
+              });
+            }
+          } else {
+            (sensors as ParseOrbSensorsTableSensors<'sensors-information'>).push({
+              deviceId: cleanedDeviceId,
+              deviceType: cleanedDeviceType,
+              name: cleanedName,
+              status: cleanedStatus,
+              zone: cleanedZone,
+            });
+          }
         }
       }
     }
@@ -1476,7 +1415,11 @@ export function parseSensorsTable(elements: ParseOrbSensorsTableElements): Parse
     }
   });
 
-  return sensors.sort((a, b) => a.zone - b.zone);
+  if (type === 'sensors-config') {
+    return (sensors as ParseOrbSensorsTableSensors<'sensors-config'>).sort((a, b) => a.adtZone - b.adtZone);
+  }
+
+  return (sensors as ParseOrbSensorsTableSensors<'sensors-information'>).sort((a, b) => a.zone - b.zone);
 }
 
 /**

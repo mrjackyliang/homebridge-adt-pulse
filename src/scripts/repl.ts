@@ -1,21 +1,25 @@
 import chalk from 'chalk';
 import repl from 'node:repl';
 
-import { ADTPulse } from '@/lib/api.js';
+import { ADTPulseAPI } from '@/lib/api.js';
+import { ADTPulseAuth } from '@/lib/auth.js';
+import { debugLog } from '@/lib/utility.js';
 import type {
   ADTPulseDisplayHelpHeaderReturns,
   ADTPulseDisplayHelpMenuReturns,
   ADTPulseDisplayStartupHeaderReturns,
   ADTPulseReplApi,
-  ADTPulseReplColorLogMessage,
-  ADTPulseReplColorLogReturns,
-  ADTPulseReplColorLogType,
+  ADTPulseReplAuth,
   ADTPulseReplReplServer,
-  ADTPulseReplSetInstanceFingerprint,
-  ADTPulseReplSetInstancePassword,
-  ADTPulseReplSetInstanceReturns,
-  ADTPulseReplSetInstanceSubdomain,
-  ADTPulseReplSetInstanceUsername,
+  ADTPulseReplSetApiInstanceFingerprint,
+  ADTPulseReplSetApiInstancePassword,
+  ADTPulseReplSetApiInstanceReturns,
+  ADTPulseReplSetApiInstanceSubdomain,
+  ADTPulseReplSetApiInstanceUsername,
+  ADTPulseReplSetAuthInstancePassword,
+  ADTPulseReplSetAuthInstanceReturns,
+  ADTPulseReplSetAuthInstanceSubdomain,
+  ADTPulseReplSetAuthInstanceUsername,
   ADTPulseReplStartReplReturns,
 } from '@/types/index.d.ts';
 
@@ -33,6 +37,15 @@ class ADTPulseRepl {
    * @since 1.0.0
    */
   #api: ADTPulseReplApi;
+
+  /**
+   * ADT Pulse Repl - Auth.
+   *
+   * @private
+   *
+   * @since 1.0.0
+   */
+  #auth: ADTPulseReplAuth;
 
   /**
    * ADT Pulse Repl - Repl server.
@@ -67,7 +80,7 @@ class ADTPulseRepl {
     this.#replServer.defineCommand('break', {
       help: 'Sometimes you get stuck, this gets you out',
       action() {
-        ADTPulseRepl.colorLog('error', 'The ".break" command is not allowed.');
+        debugLog(null, 'repl.ts / ADTPulseRepl.startRepl()', 'error', 'The ".break" command is not allowed');
         this.displayPrompt();
       },
     });
@@ -76,7 +89,7 @@ class ADTPulseRepl {
     this.#replServer.defineCommand('clear', {
       help: 'Break, and also clear the local context',
       action() {
-        ADTPulseRepl.colorLog('error', 'The ".clear" command is not allowed.');
+        debugLog(null, 'repl.ts / ADTPulseRepl.startRepl()', 'error', 'The ".clear" command is not allowed');
         this.displayPrompt();
       },
     });
@@ -85,7 +98,7 @@ class ADTPulseRepl {
     this.#replServer.defineCommand('editor', {
       help: 'Enter editor mode',
       action() {
-        ADTPulseRepl.colorLog('error', 'The ".editor" command is not allowed.');
+        debugLog(null, 'repl.ts / ADTPulseRepl.startRepl()', 'error', 'The ".editor" command is not allowed');
         this.displayPrompt();
       },
     });
@@ -104,7 +117,7 @@ class ADTPulseRepl {
     this.#replServer.defineCommand('load', {
       help: 'Load JS from a file into the REPL session',
       action() {
-        ADTPulseRepl.colorLog('error', 'The ".load" command is not allowed.');
+        debugLog(null, 'repl.ts / ADTPulseRepl.startRepl()', 'error', 'The ".load" command is not allowed');
         this.displayPrompt();
       },
     });
@@ -113,51 +126,51 @@ class ADTPulseRepl {
     this.#replServer.defineCommand('save', {
       help: 'Save all evaluated commands in this REPL session to a file',
       action() {
-        ADTPulseRepl.colorLog('error', 'The ".save" command is not allowed.');
+        debugLog(null, 'repl.ts / ADTPulseRepl.startRepl()', 'error', 'The ".save" command is not allowed');
         this.displayPrompt();
       },
     });
   }
 
   /**
-   * ADT Pulse Repl - Set instance.
+   * ADT Pulse Repl - Set api instance.
    *
-   * @param {ADTPulseReplSetInstanceSubdomain}   subdomain   - Subdomain.
-   * @param {ADTPulseReplSetInstanceUsername}    username    - Username.
-   * @param {ADTPulseReplSetInstancePassword}    password    - Password.
-   * @param {ADTPulseReplSetInstanceFingerprint} fingerprint - Fingerprint.
+   * @param {ADTPulseReplSetApiInstanceSubdomain}   subdomain   - Subdomain.
+   * @param {ADTPulseReplSetApiInstanceUsername}    username    - Username.
+   * @param {ADTPulseReplSetApiInstancePassword}    password    - Password.
+   * @param {ADTPulseReplSetApiInstanceFingerprint} fingerprint - Fingerprint.
    *
-   * @returns {ADTPulseReplSetInstanceReturns}
+   * @returns {ADTPulseReplSetApiInstanceReturns}
    *
    * @since 1.0.0
    */
-  public setInstance(subdomain: ADTPulseReplSetInstanceSubdomain, username: ADTPulseReplSetInstanceUsername, password: ADTPulseReplSetInstancePassword, fingerprint: ADTPulseReplSetInstanceFingerprint): ADTPulseReplSetInstanceReturns {
+  public setApiInstance(subdomain: ADTPulseReplSetApiInstanceSubdomain, username: ADTPulseReplSetApiInstanceUsername, password: ADTPulseReplSetApiInstancePassword, fingerprint: ADTPulseReplSetApiInstanceFingerprint): ADTPulseReplSetApiInstanceReturns {
     if (subdomain !== 'portal' && subdomain !== 'portal-ca') {
-      ADTPulseRepl.colorLog('error', 'Invalid subdomain specified. Valid values are either "portal" or "portal-ca".');
+      debugLog(null, 'repl.ts / ADTPulseRepl.setApiInstance()', 'error', 'Invalid subdomain specified. Valid values are either "portal" or "portal-ca"');
 
       return;
     }
 
     if (typeof username !== 'string' || username === '') {
-      ADTPulseRepl.colorLog('error', 'Username must be a string and cannot be empty.');
+      debugLog(null, 'repl.ts / ADTPulseRepl.setApiInstance()', 'error', 'Username must be a string and cannot be empty');
 
       return;
     }
 
     if (typeof password !== 'string' || password === '') {
-      ADTPulseRepl.colorLog('error', 'Password must be a string and cannot be empty.');
+      debugLog(null, 'repl.ts / ADTPulseRepl.setApiInstance()', 'error', 'Password must be a string and cannot be empty');
 
       return;
     }
 
     if (typeof fingerprint !== 'string' || fingerprint === '') {
-      ADTPulseRepl.colorLog('error', 'Fingerprint must be a string and cannot be empty.');
+      debugLog(null, 'repl.ts / ADTPulseRepl.setApiInstance()', 'error', 'Fingerprint must be a string and cannot be empty');
 
       return;
     }
 
     // If the values are valid, set a new instance.
-    this.#api = new ADTPulse({
+    this.#api = new ADTPulseAPI({
       platform: 'ADTPulse',
       name: 'ADT Pulse',
       subdomain,
@@ -174,7 +187,7 @@ class ADTPulseRepl {
 
     // Check if "this.#replServer" was properly set during startup.
     if (this.#replServer === undefined) {
-      ADTPulseRepl.colorLog('error', 'Failed to set context because "this.#replServer" is undefined.');
+      debugLog(null, 'repl.ts / ADTPulseRepl.setApiInstance()', 'error', 'Failed to set API context because "this.#replServer" is undefined');
 
       return;
     }
@@ -182,34 +195,59 @@ class ADTPulseRepl {
     // Set the REPL server context after setting the instance.
     this.#replServer.context.api = this.#api;
 
-    ADTPulseRepl.colorLog('info', 'Instance has been successfully set.');
-    ADTPulseRepl.colorLog('info', 'You may now use the available API methods to test the system!');
-    ADTPulseRepl.colorLog('info', '\n');
+    debugLog(null, 'repl.ts / ADTPulseRepl.setApiInstance()', 'success', 'API instance has been successfully set');
   }
 
   /**
-   * ADT Pulse Repl - Color log.
+   * ADT Pulse Repl - Set auth instance.
    *
-   * @param {ADTPulseReplColorLogType}    type    - Type.
-   * @param {ADTPulseReplColorLogMessage} message - Message.
+   * @param {ADTPulseReplSetAuthInstanceSubdomain} subdomain - Subdomain.
+   * @param {ADTPulseReplSetAuthInstanceUsername}  username  - Username.
+   * @param {ADTPulseReplSetAuthInstancePassword}  password  - Password.
    *
-   * @private
-   *
-   * @returns {ADTPulseReplColorLogReturns}
+   * @returns {ADTPulseReplSetAuthInstanceReturns}
    *
    * @since 1.0.0
    */
-  private static colorLog(type: ADTPulseReplColorLogType, message: ADTPulseReplColorLogMessage): ADTPulseReplColorLogReturns {
-    switch (type) {
-      case 'error':
-        console.error(chalk.redBright(message));
-        break;
-      case 'info':
-        console.info(chalk.greenBright(message));
-        break;
-      default:
-        break;
+  public setAuthInstance(subdomain: ADTPulseReplSetAuthInstanceSubdomain, username: ADTPulseReplSetAuthInstanceUsername, password: ADTPulseReplSetAuthInstancePassword): ADTPulseReplSetAuthInstanceReturns {
+    if (subdomain !== 'portal' && subdomain !== 'portal-ca') {
+      debugLog(null, 'repl.ts / ADTPulseRepl.setAuthInstance()', 'error', 'Invalid subdomain specified. Valid values are either "portal" or "portal-ca"');
+
+      return;
     }
+
+    if (typeof username !== 'string' || username === '') {
+      debugLog(null, 'repl.ts / ADTPulseRepl.setAuthInstance()', 'error', 'Username must be a string and cannot be empty');
+
+      return;
+    }
+
+    if (typeof password !== 'string' || password === '') {
+      debugLog(null, 'repl.ts / ADTPulseRepl.setAuthInstance()', 'error', 'Password must be a string and cannot be empty');
+
+      return;
+    }
+
+    // If the values are valid, set a new instance.
+    this.#auth = new ADTPulseAuth({
+      subdomain,
+      username,
+      password,
+    }, {
+      debug: true,
+    });
+
+    // Check if "this.#replServer" was properly set during startup.
+    if (this.#replServer === undefined) {
+      debugLog(null, 'repl.ts / ADTPulseRepl.setAuthInstance()', 'error', 'Failed to set auth context because "this.#replServer" is undefined');
+
+      return;
+    }
+
+    // Set the REPL server context after setting the instance.
+    this.#replServer.context.auth = this.#auth;
+
+    debugLog(null, 'repl.ts / ADTPulseRepl.setAuthInstance()', 'success', 'Auth instance has been successfully set');
   }
 
   /**
@@ -250,11 +288,15 @@ class ADTPulseRepl {
       `    {'arm' | 'night' | 'off' | 'stay'} ${chalk.magentaBright('armFrom')}       - Specify the current system arm state`,
       `    {'arm' | 'night' | 'off' | 'stay'} ${chalk.magentaBright('armTo')}         - Specify the arm state you would like to set`,
       `    {boolean}                          ${chalk.magentaBright('isAlarmActive')} - If the alarm system is ringing`,
+      `    {string}                           ${chalk.magentaBright('methodId')}      - Which device to request a verification code from (usually "SMS" or "EMAIL")`,
+      `    {string}                           ${chalk.magentaBright('otpCode')}       - The one-time password code received from the verification method`,
+      `    {string}                           ${chalk.magentaBright('deviceName')}    - The name to use when saving as a trusted device after verification`,
       '',
-      chalk.bold('Before you use the API, set the instance using this command:'),
-      `    ${chalk.yellowBright(`repl.setInstance(${chalk.magentaBright('subdomain')}, ${chalk.magentaBright('username')}, ${chalk.magentaBright('password')}, ${chalk.magentaBright('fingerprint')});`)}`,
+      chalk.bold('Before you use the API, set the instances using this command:'),
+      `    ${chalk.yellowBright(`repl.setApiInstance(${chalk.magentaBright('subdomain')}, ${chalk.magentaBright('username')}, ${chalk.magentaBright('password')}, ${chalk.magentaBright('fingerprint')});`)}`,
+      `    ${chalk.yellowBright(`repl.setAuthInstance(${chalk.magentaBright('subdomain')}, ${chalk.magentaBright('username')}, ${chalk.magentaBright('password')});`)}`,
       '',
-      chalk.bold('Once an instance is set, interact with the portal using these methods:'),
+      chalk.bold('Once the API instance is set, interact with the portal using these methods:'),
       `    ${chalk.yellowBright('await api.login();')}`,
       `    ${chalk.yellowBright('await api.logout();')}`,
       `    ${chalk.yellowBright('await api.getGatewayInformation();')}`,
@@ -268,6 +310,16 @@ class ADTPulseRepl {
       `    ${chalk.yellowBright('await api.performKeepAlive();')}`,
       `    ${chalk.yellowBright('      api.isAuthenticated();')}`,
       `    ${chalk.yellowBright('      api.resetSession();')}`,
+      '',
+      chalk.bold('Once the auth instance is set, interact with the portal using these methods:'),
+      `    ${chalk.yellowBright('await auth.getVerificationMethods();')}`,
+      `    ${chalk.yellowBright(`await auth.requestCode(${chalk.magentaBright('methodId')});`)}`,
+      `    ${chalk.yellowBright(`await auth.validateCode(${chalk.magentaBright('otpCode')});`)}`,
+      `    ${chalk.yellowBright('await auth.getTrustedDevices();')}`,
+      `    ${chalk.yellowBright(`await auth.addTrustedDevice(${chalk.magentaBright('deviceName')});`)}`,
+      `    ${chalk.yellowBright('await auth.completeSignIn();')}`,
+      `    ${chalk.yellowBright('await auth.getSensors();')}`,
+      `    ${chalk.yellowBright('      auth.getFingerprint();')}`,
       '',
       chalk.bold('You may also wrap the above methods with this to see the entire response:'),
       `    ${chalk.yellowBright(`console.log(util.inspect(${chalk.magentaBright('replace me without the ending semi-colon')}, false, null, true));`)}`,

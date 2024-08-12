@@ -2,8 +2,8 @@
   "pluginAlias": "ADTPulse",
   "pluginType": "platform",
   "singular": true,
-  "headerDisplay": "Welcome to the configuration page for **[ADT Pulse for Homebridge](https://github.com/mrjackyliang/homebridge-adt-pulse)**! You will find customizable settings to tailor your experience here. Start by inputting your login credentials, and then specify the sensors you want to incorporate into this setup.",
-  "footerDisplay": "For further assistance, please consult the [readme](https://github.com/mrjackyliang/homebridge-adt-pulse#readme) file. Should you encounter any issues, such as crashes or unexpected results, please [create a new issue](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new/choose) on GitHub.",
+  "customUi": true,
+  "customUiPath": "./build/config-ui",
   "schema": {
     "type": "object",
     "properties": {
@@ -21,16 +21,16 @@
         "title": "Portal Region",
         "type": "string",
         "required": true,
-        "description": "Select the portal region based on where you are subscribed in. For subscribers in Canada, choose \"Canada\" from the dropdown menu.",
+        "description": "Select the portal region based on where you are subscribed in.",
         "oneOf": [
           {
-            "title": "United States \uD83C\uDDFA\uD83C\uDDF8 - portal.adtpulse.com</span>",
+            "title": "United States \uD83C\uDDFA\uD83C\uDDF8</span>",
             "enum": [
               "portal"
             ]
           },
           {
-            "title": "Canada \uD83C\uDDE8\uD83C\uDDE6 - portal-ca.adtpulse.com",
+            "title": "Canada \uD83C\uDDE8\uD83C\uDDE6",
             "enum": [
               "portal-ca"
             ]
@@ -60,7 +60,7 @@
         "title": "Fingerprint",
         "type": "string",
         "required": true,
-        "description": "After logging in and selecting \"Trust this device\", paste in the device fingerprint generated through the <a href=\"https://raw.githack.com/mrjackyliang/homebridge-adt-pulse/main/fingerprint/index.html\" target=\"_blank\">ADT Pulse Device Fingerprint Detector</a>.",
+        "description": "Generate a new fingerprint by deleting the configuration and re-running setup.",
         "placeholder": "e.g. VGhpc0lzQVNlY3VyZVBhc3N3b3JkMTIzIQ==",
         "minLength": 1,
         "maxLength": 10240
@@ -291,14 +291,20 @@
             {
               "key": "password",
               "type": "password"
-            },
+            }
+          ]
+        },
+        {
+          "title": "Fingerprint",
+          "htmlClass": "px-3 pt-3 pb-0",
+          "items": [
             {
               "key": "fingerprint",
               "type": "password"
             },
             {
               "type": "help",
-              "helpvalue": "<div class=\"alert alert-primary\" role=\"alert\">If you wish, you can optionally view the \"Device Details\" tab to see what information the device fingerprint contains about your browser.</div>"
+              "helpvalue": "<div class=\"alert alert-primary\" role=\"alert\">In a future update, you will be able to utilize an upgraded settings panel that allows you to see the details of your fingerprint. Fingerprints generated are randomized.</div>"
             }
           ]
         },

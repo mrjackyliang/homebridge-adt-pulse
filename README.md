@@ -81,13 +81,9 @@ ADT Pulse is available to consumers in either the United States or Canada. To sp
 Select the appropriate setting based on your country, as the ability to switch between countries is determined by the ADT region you are subscribed to.
 
 ## Finding the Device Fingerprint
-Since the introduction of 2-factor authentication, a device fingerprint has become a necessity during login. To retrieve the fingerprint, follow these steps:
+Since the introduction of 2-factor authentication, a device fingerprint has become a necessity during login.
 
-1. Log in to the ADT Pulse portal, complete the MFA challenge, and choose to "Trust this device" (you can name the device as you see fit).
-2. Using the same browser that was used for login, visit the [ADT Pulse Device Fingerprint Detector](https://raw.githack.com/mrjackyliang/homebridge-adt-pulse/main/fingerprint/index.html) web page.
-3. Click the "Copy Fingerprint" button and paste it into the `fingerprint` value in the `config.json` file.
-
-For a detailed breakdown of the device fingerprint contents, explore the "Device Details" tab located at the top right of the web page.
+Starting from `v3.4.0`, you no longer need to use an external tool to retrieve the fingerprints. The dedicated Homebridge setup wizard will help retrieve your fingerprint for you.
 
 ## Specifying the Operational Mode
 This plugin offers three operational modes: "Normal", "Paused", and "Reset". To configure these modes, use the following settings:

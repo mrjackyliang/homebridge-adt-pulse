@@ -151,6 +151,7 @@ export type PortalPanelArmStateClean =
   | 'disarmed_with_alarm'
   | 'night'
   | 'off'
+  | 'sensortest'
   | 'stay';
 
 /**
@@ -163,6 +164,7 @@ export type PortalPanelArmStateDirty =
   | 'disarmed'
   | 'disarmed+with+alarm'
   | 'night+stay'
+  | 'sensortest'
   | 'stay';
 
 /**
@@ -222,7 +224,8 @@ export type PortalPanelForceArmButtonRelativeUrl =
  * @since 1.0.0
  */
 export type PortalPanelNote =
-  'This may take several minutes';
+  'EXIT FAULT ALARM'
+  | 'This may take several minutes';
 
 /**
  * Portal panel state.
