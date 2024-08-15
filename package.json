@@ -52,7 +52,7 @@
     "email": "hello@mrjackyliang.com",
     "url": "https://www.mrjackyliang.com"
   },
-  "license": "Apache-2.0",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/mrjackyliang/homebridge-adt-pulse/issues"
   },
