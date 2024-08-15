@@ -4,7 +4,7 @@ run-name: "Running a scheduled task to lock inactive issues over 30 days"
 
 on:
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "0 0 * * 0"
 
 permissions:
   issues: "write"
@@ -16,7 +16,7 @@ jobs:
       - uses: "dessant/lock-threads@v5"
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
-          issue-comment: "Due to inactivity, this issue will be locked and marked as resolved. If you have any further questions or inquiries, please feel free to open a new [issue](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/new/choose)."
-          issue-inactive-days: 30
+          issue-comment: "Due to inactivity, this issue will be locked and marked as resolved. If you have any further questions or inquiries, please feel free to open a new issue."
+          issue-inactive-days: "30"
           issue-lock-reason: "resolved"
-          log-output: true
+          log-output: "true"

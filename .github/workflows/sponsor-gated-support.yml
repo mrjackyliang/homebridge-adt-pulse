@@ -1,0 +1,39 @@
+name: "Sponsor Gated Support"
+
+run-name: "Running a task to analyze support issues"
+
+on:
+  issue_comment:
+    types:
+      - "created"
+      - "edited"
+  issues:
+    types:
+      - "opened"
+      - "closed"
+
+permissions:
+  issues: "write"
+
+jobs:
+  check-issues:
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Checkout repository"
+        uses: "actions/checkout@v4"
+      - name: "Show current workflow directory"
+        run: "ls -la"
+      - name: "Check support issues"
+        uses: "mrjackyliang/sponsor-gated-support@1.0.1"
+        with:
+          GITHUB_PERSONAL_ACCESS_TOKEN: "${{ secrets.PERSONAL_ACCESS_TOKEN }}"
+          GITHUB_WORKFLOW_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          ISSUE_LABELS: "${{ vars.ISSUE_LABELS }}"
+          ISSUE_LIMIT_COMMENTER: "${{ vars.ISSUE_LIMIT_COMMENTER }}"
+          ISSUE_LOCK_ON_CLOSE: "${{ vars.ISSUE_LOCK_ON_CLOSE }}"
+          ISSUE_MESSAGE_NOT_SPONSOR: "${{ vars.ISSUE_MESSAGE_NOT_SPONSOR }}"
+          ISSUE_MESSAGE_WELCOME: "${{ vars.ISSUE_MESSAGE_WELCOME }}"
+          IS_ORGANIZATION: "${{ vars.IS_ORGANIZATION }}"
+          SPONSOR_ACTIVE_ONLY: "${{ vars.SPONSOR_ACTIVE_ONLY }}"
+          SPONSOR_EXEMPT_FILE_LOCATION: "${{ vars.SPONSOR_EXEMPT_FILE_LOCATION }}"
+          SPONSOR_MINIMUM: "${{ vars.SPONSOR_MINIMUM }}"
