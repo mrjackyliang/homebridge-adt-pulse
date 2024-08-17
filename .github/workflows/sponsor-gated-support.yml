@@ -24,7 +24,7 @@ jobs:
       - name: "Show current workflow directory"
         run: "ls -la"
       - name: "Check support issues"
-        uses: "mrjackyliang/sponsor-gated-support@1.0.1"
+        uses: "mrjackyliang/sponsor-gated-support@v1.0.1"
         with:
           GITHUB_PERSONAL_ACCESS_TOKEN: "${{ secrets.PERSONAL_ACCESS_TOKEN }}"
           GITHUB_WORKFLOW_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
