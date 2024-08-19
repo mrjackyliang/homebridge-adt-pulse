@@ -37,8 +37,8 @@ Here is an example of how the `config.json` file for this plugin should be confi
         {
           "name": "Family Room Couch Window 1",
           "adtName": "Family Room Window (99)",
-          "adtType": "doorWindow",
-          "adtZone": 99
+          "adtZone": 99,
+          "adtType": "doorWindow"
         }
       ]
     },
@@ -136,12 +136,12 @@ All sensors are now organized within an array of objects, with each object conta
   - For display purposes (offers clarity in the event of an unforeseen reset).
 - __ADT Name__ (`adtName`)
   - Must match the name shown under the "Name" column in the "System" tab when logged into the portal.
-- __ADT Type__ (`adtType`)
-  - Must match the type shown under the "Device Type" column in the "System" tab when logged into the portal.
-  - For example, if the type is "Door/Window Sensor", the value should be `doorWindow`. Read the [Supported Devices](#supported-devices) section for more information.
 - __ADT Zone__ (`adtZone`)
   - Must match the zone shown under the "Zone" column in the "System" tab when logged into the portal.
   - For compatibility reasons, only devices with zones 1 through 99 are supported.
+- __ADT Type__ (`adtType`)
+  - Must match the type shown under the "Device Type" column in the "System" tab when logged into the portal.
+  - For example, if the type is "Door/Window Sensor", the value should be `doorWindow`. Read the [Supported Devices](#supported-devices) section for more information.
 
 If you do not wish to add sensors, simply assign an empty array (e.g. `[]`). However, it is advisable to include all supported sensors, as having none does not optimize plugin performance.
 

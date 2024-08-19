@@ -8,5 +8,7 @@ import type { Styles } from '@/types/config-ui.d.ts';
  * @since 1.0.0
  */
 export const styles: Styles = {
-  height: 110,
+  image: {
+    height: 110,
+  },
 };

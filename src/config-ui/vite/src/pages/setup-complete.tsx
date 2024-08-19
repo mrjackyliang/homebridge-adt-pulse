@@ -30,7 +30,7 @@ export default function SetupComplete(props: SetupCompleteProps) {
     homebridge.showSpinner();
 
     const configs = await homebridge.getPluginConfig();
-    const config = configs[0];
+    const config = configs[0] ?? {};
     const generateConfigResponse = await homebridge.request('/generate-config', {
       oldConfig: config,
       updateSensors,
@@ -46,7 +46,7 @@ export default function SetupComplete(props: SetupCompleteProps) {
 
   return (
     <div className="text-center">
-      <img src={CompleteLogo} className="mb-3" style={styles} alt="Setup Complete" />
+      <img src={CompleteLogo} className="mb-3" style={styles.image} alt="Setup Complete" />
       <h2 className="fw-semibold lh-2">Setup Complete</h2>
       <p className="lead">Restart Homebridge to apply your configuration changes.</p>
       <button type="button" className="btn btn-primary" onClick={() => onSubmit()}>Save and Close</button>

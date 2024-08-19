@@ -370,7 +370,7 @@ export class ADTPulseAuth {
         debugLog(this.#internal.logger, 'auth.ts / ADTPulseAuth.getVerificationMethods()', 'info', `Request path valid ➜ ${axiosSignInRequestPathValid}`);
       }
 
-      // If the final URL of sessions.axiosSignIn is the summary page.
+      // Test if the login response does not require further verification.
       if (requestPathSummarySummary.test(axiosSignInRequestPath)) {
         if (this.#internal.debug) {
           debugLog(this.#internal.logger, 'auth.ts / ADTPulseAuth.getVerificationMethods()', 'info', `Verification methods not required from "${this.#internal.baseUrl}"`);
@@ -389,20 +389,22 @@ export class ADTPulseAuth {
         };
       }
 
-      // If the final URL of sessions.axiosSignIn is the login page.
-      if (requestPathAccessSignInEXxPartnerAdt.test(axiosSignInRequestPath)) {
+      // Test if the login response had an error.
+      if (requestPathAccessSignIn.test(axiosSignInRequestPath) || requestPathAccessSignInEXxPartnerAdt.test(axiosSignInRequestPath)) {
+        const errorMessage = fetchErrorMessage(sessions.axiosSignIn);
+
         if (this.#internal.debug) {
-          debugLog(this.#internal.logger, 'auth.ts / ADTPulseAuth.getVerificationMethods()', 'error', 'Invalid username and/or password');
+          debugLog(this.#internal.logger, 'auth.ts / ADTPulseAuth.getVerificationMethods()', 'error', errorMessage ?? 'Unknown error');
         }
 
-        // Check if "this instance" was not signed in during this time.
-        this.handleLoginFailure(axiosSignInRequestPath, sessions.axiosSignIn);
+        // Mark the session for "this instance" as de-authenticated.
+        this.#session.status = 'logged-out';
 
         return {
           action: 'GET_VERIFICATION_METHODS',
           success: false,
           info: {
-            message: 'Invalid username and/or password',
+            message: errorMessage ?? 'Unknown error',
           },
         };
       }
@@ -1656,8 +1658,8 @@ export class ADTPulseAuth {
        * ➜ [
        *     {
        *       adtName: 'Sensor 1',
-       *       adtType: 'doorWindow',
        *       adtZone: 1,
+       *       adtType: 'doorWindow',
        *     },
        *   ]
        *

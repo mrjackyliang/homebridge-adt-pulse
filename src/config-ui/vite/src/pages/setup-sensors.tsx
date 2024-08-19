@@ -44,7 +44,7 @@ export default function SetupSensors(props: SetupSensorsProps) {
       }
 
       const configs = await homebridge.getPluginConfig();
-      const config = configs[0];
+      const config = configs[0] ?? {};
 
       // For user experience purposes.
       if (_.get(config, ['sensors'], []).length > 0) {

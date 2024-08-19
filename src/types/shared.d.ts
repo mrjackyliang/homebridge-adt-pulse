@@ -156,7 +156,7 @@ export type Credentials = {
  *
  * @since 1.0.0
  */
-export type CurrentView = 'setup' | 'settings' | undefined;
+export type CurrentView = 'settings' | 'settings-classic' | 'setup' | undefined;
 
 /**
  * Debug parser.
@@ -577,14 +577,14 @@ export type PortalVersionContent = {
  */
 export type SensorConfigAdtName = string;
 
-export type SensorConfigAdtType = PluginDeviceSensorType;
-
 export type SensorConfigAdtZone = number;
+
+export type SensorConfigAdtType = PluginDeviceSensorType;
 
 export type SensorConfig = {
   adtName: SensorConfigAdtName;
-  adtType: SensorConfigAdtType;
   adtZone: SensorConfigAdtZone;
+  adtType: SensorConfigAdtType;
 };
 
 /**

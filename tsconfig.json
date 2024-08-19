@@ -41,6 +41,7 @@
       "luxon",
       "react",
       "react-dom",
+      "semver",
       "tough-cookie"
     ]
   },

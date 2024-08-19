@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import ScreenToggle from '@/config-ui/vite/src/components/screen-toggle.js';
 import Settings from '@/config-ui/vite/src/pages/settings.js';
+import SettingsClassic from '@/config-ui/vite/src/pages/settings-classic.js';
 import Setup from '@/config-ui/vite/src/pages/setup.js';
 import type { RouterProps, RouterView } from '@/types/config-ui.d.ts';
 
@@ -29,8 +30,7 @@ export default function Router(props: RouterProps) {
       if (configs.length === 0) {
         setView('setup');
       } else {
-        // setView('settings');
-        homebridge.showSchemaForm(); // TODO Will be replaced in a future version.
+        setView('settings');
       }
     })();
   }, [homebridge]);
@@ -39,6 +39,9 @@ export default function Router(props: RouterProps) {
     <ScreenToggle view={view} setView={setView}>
       {(view === 'settings') ? (
         <Settings homebridge={homebridge} setView={setView} />
+      ) : null}
+      {(view === 'settings-classic') ? (
+        <SettingsClassic homebridge={homebridge} setView={setView} />
       ) : null}
       {(view === 'setup') ? (
         <Setup homebridge={homebridge} />

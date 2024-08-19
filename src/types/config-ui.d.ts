@@ -1,4 +1,6 @@
 import type { IHomebridgePluginUi } from '@homebridge/plugin-ui-utils/dist/ui.interface';
+import type { ReactNode } from 'react';
+import type { Control, UseFormGetValues, UseFormSetValue } from 'react-hook-form';
 import type { z } from 'zod';
 
 import type { ADTPulseAuth } from '@/lib/auth.js';
@@ -8,6 +10,7 @@ import type {
   configServerValidate,
   platformConfig,
 } from '@/lib/schema.js';
+import type { PluginSettingOptions } from '@/types/constant.d.ts';
 import type { ApiResponse, CurrentView, MfaDevice } from '@/types/shared.d.ts';
 
 /**
@@ -141,6 +144,50 @@ export type ADTPulseConfigServerValidateReturnsInfo = null;
 export type ADTPulseConfigServerValidateReturns = Promise<ApiResponse<'UI_VALIDATE', ADTPulseConfigServerValidateReturnsInfo>>;
 
 /**
+ * Fingerprint table.
+ *
+ * @since 1.0.0
+ */
+export type FingerprintTablePropsFingerprint = string;
+
+export type FingerprintTableProps = {
+  fingerprint: FingerprintTablePropsFingerprint;
+};
+
+export type FingerprintTableParsedObject = object;
+
+export type FingerprintTableStatus = 'failed' | 'loading' | 'success';
+
+/**
+ * Fingerprint table - Render table property.
+ *
+ * @since 1.0.0
+ */
+export type FingerprintTableRenderTablePropertyProperty = string;
+
+export type FingerprintTableRenderTablePropertyReturns = string;
+
+/**
+ * Fingerprint table - Render table value.
+ *
+ * @since 1.0.0
+ */
+export type FingerprintTableRenderTableValueProperty = string;
+
+export type FingerprintTableRenderTableValueValue = unknown;
+
+export type FingerprintTableRenderTableValueReturns = ReactNode;
+
+/**
+ * Fingerprint table - Render table.
+ *
+ * @since 1.0.0
+ */
+export type FingerprintTableRenderTableData = object;
+
+export type FingerprintTableRenderTableReturns = ReactNode;
+
+/**
  * Router.
  *
  * @since 1.0.0
@@ -183,6 +230,121 @@ export type SettingsProps = {
   homebridge: SettingsPropsHomebridge;
   setView: SettingsPropsSetView;
 };
+
+/**
+ * Settings classic.
+ *
+ * @since 1.0.0
+ */
+export type SettingsClassicPropsHomebridge = IHomebridgePluginUi | undefined;
+
+export type SettingsClassicPropsSetView = React.Dispatch<React.SetStateAction<CurrentView>>;
+
+export type SettingsClassicProps = {
+  homebridge: SettingsClassicPropsHomebridge;
+  setView: SettingsClassicPropsSetView;
+};
+
+/**
+ * Settings fingerprint.
+ *
+ * @since 1.0.0
+ */
+export type SettingsFingerprintPropsFingerprint = string;
+
+export type SettingsFingerprintProps = {
+  fingerprint: SettingsFingerprintPropsFingerprint;
+};
+
+/**
+ * Settings general.
+ *
+ * @since 1.0.0
+ */
+export type SettingsGeneralPropsControl = Control<z.infer<typeof platformConfig>>;
+
+export type SettingsGeneralPropsGetValues = UseFormGetValues<z.infer<typeof platformConfig>>;
+
+export type SettingsGeneralPropsSetValue = UseFormSetValue<z.infer<typeof platformConfig>>;
+
+export type SettingsGeneralProps = {
+  control: SettingsGeneralPropsControl;
+  getValues: SettingsGeneralPropsGetValues;
+  setValue: SettingsGeneralPropsSetValue;
+};
+
+export type SettingsGeneralOptionsCheckboxId = string;
+
+export type SettingsGeneralOptionsCheckboxLabel = string;
+
+export type SettingsGeneralOptionsCheckboxValue = PluginSettingOptions;
+
+export type SettingsGeneralOptionsCheckbox = {
+  id: SettingsGeneralOptionsCheckboxId;
+  label: SettingsGeneralOptionsCheckboxLabel;
+  value: SettingsGeneralOptionsCheckboxValue;
+};
+
+export type SettingsGeneralOptionsCheckboxes = SettingsGeneralOptionsCheckbox[];
+
+/**
+ * Settings general - Handle options change.
+ *
+ * @since 1.0.0
+ */
+export type SettingsGeneralHandleOptionsChangeChecked = boolean;
+
+export type SettingsGeneralHandleOptionsChangeValue = PluginSettingOptions;
+
+export type SettingsGeneralHandleOptionsChangeReturns = void;
+
+/**
+ * Settings login.
+ *
+ * @since 1.0.0
+ */
+export type SettingsLoginPropsControl = Control<z.infer<typeof platformConfig>>;
+
+export type SettingsLoginPropsGetValues = UseFormGetValues<z.infer<typeof platformConfig>>;
+
+export type SettingsLoginProps = {
+  control: SettingsLoginPropsControl;
+  getValues: SettingsLoginPropsGetValues;
+};
+
+/**
+ * Settings plugin.
+ *
+ * @since 1.0.0
+ */
+export type SettingsPluginHomebridge = IHomebridgePluginUi | undefined;
+
+export type SettingsPluginPropsSetView = React.Dispatch<React.SetStateAction<CurrentView>>;
+
+export type SettingsPluginProps = {
+  homebridge: SettingsPluginHomebridge;
+  setView: SettingsPluginPropsSetView;
+};
+
+/**
+ * Settings sensors.
+ *
+ * @since 1.0.0
+ */
+export type SettingsSensorsPropsControl = Control<z.infer<typeof platformConfig>>;
+
+export type SettingsSensorsProps = {
+  control: SettingsSensorsPropsControl;
+};
+
+/**
+ * Settings sensors - Get sensor header.
+ *
+ * @since 1.0.0
+ */
+export type SettingsSensorsGetSensorHeaderIndex = number;
+
+export type SettingsSensorsGetSensorHeaderReturns = string;
 
 /**
  * Setup.
@@ -359,4 +521,4 @@ export type SetupWelcomeProps = {
  *
  * @since 1.0.0
  */
-export type Styles = React.CSSProperties;
+export type Styles = Record<string, React.CSSProperties>;

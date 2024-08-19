@@ -8,6 +8,7 @@ import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import os from 'node:os';
 import util from 'node:util';
+import semver from 'semver';
 
 import {
   collectionDoSubmitHandlers,
@@ -830,8 +831,6 @@ export function isMaintenancePeriod(): IsMaintenancePeriodReturns {
     minute: 0,
     second: 0,
     millisecond: 0,
-  }).plus({
-    days: 1,
   });
 
   // Current time is between 10 PM and 4 AM PST.
@@ -893,8 +892,8 @@ export async function isPluginOutdated(): IsPluginOutdatedReturns {
   try {
     const fetchedVersion = await latestVersion('homebridge-adt-pulse');
 
-    // Simple equals comparison is enough, no need to over-complicate things.
-    if (currentVersion !== fetchedVersion) {
+    // Check if plugin is outdated.
+    if (semver.gt(fetchedVersion, currentVersion)) {
       return true;
     }
   } catch {
@@ -1381,8 +1380,8 @@ export function parseSensorsTable(type: ParseOrbSensorsTableType, elements: Pars
             if (condensedType !== undefined) {
               (sensors as ParseOrbSensorsTableSensors<'sensors-config'>).push({
                 adtName: cleanedName,
-                adtType: condensedType,
                 adtZone: cleanedZone,
+                adtType: condensedType,
               });
             }
           } else {

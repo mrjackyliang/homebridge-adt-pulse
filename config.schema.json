@@ -150,7 +150,7 @@
               "required": false,
               "description": "<strong class=\"font-weight-bold\">Optional.</strong> Provide a display name for this sensor to differentiate it from the names assigned by ADT technicians during installation.",
               "placeholder": "e.g. Family Room Couch Window 1",
-              "minLength": 1,
+              "minLength": 0,
               "maxLength": 50
             },
             "adtName": {
@@ -161,6 +161,15 @@
               "placeholder": "e.g. Family Room Window (99)",
               "minLength": 1,
               "maxLength": 100
+            },
+            "adtZone": {
+              "title": "ADT Sensor Zone",
+              "type": "number",
+              "required": true,
+              "description": "Specify the <strong class=\"font-weight-bold\">exact zone</strong> associated with the sensor you want to add. Double-check the zone to ensure the correct sensor is added.",
+              "placeholder": "e.g. 99",
+              "minimum": 1,
+              "maximum": 99
             },
             "adtType": {
               "title": "ADT Sensor Type",
@@ -223,15 +232,6 @@
                   ]
                 }
               ]
-            },
-            "adtZone": {
-              "title": "ADT Sensor Zone",
-              "type": "number",
-              "required": true,
-              "description": "Specify the <strong class=\"font-weight-bold\">exact zone</strong> associated with the sensor you want to add. Double-check the zone to ensure the correct sensor is added.",
-              "placeholder": "e.g. 99",
-              "minimum": 1,
-              "maximum": 99
             }
           }
         },
@@ -301,10 +301,6 @@
             {
               "key": "fingerprint",
               "type": "password"
-            },
-            {
-              "type": "help",
-              "helpvalue": "<div class=\"alert alert-primary\" role=\"alert\">In a future update, you will be able to utilize an upgraded settings panel that allows you to see the details of your fingerprint. Fingerprints generated are randomized.</div>"
             }
           ]
         },
@@ -329,12 +325,12 @@
                       "type": "text"
                     },
                     {
-                      "key": "sensors[].adtType",
-                      "type": "select"
-                    },
-                    {
                       "key": "sensors[].adtZone",
                       "type": "number"
+                    },
+                    {
+                      "key": "sensors[].adtType",
+                      "type": "select"
                     }
                   ]
                 }

@@ -64,6 +64,15 @@ export type PluginLogLevel =
   | 'warn';
 
 /**
+ * Plugin setting options.
+ *
+ * @since 1.0.0
+ */
+export type PluginSettingOptions =
+  'disableAlarmRingingSwitch'
+  | 'ignoreSensorProblemStatus';
+
+/**
  * Portal device gateway status.
  *
  * @since 1.0.0

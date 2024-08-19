@@ -16,7 +16,7 @@ export default function SetupWelcome(props: SetupWelcomeProps) {
 
   return (
     <div className="text-center">
-      <img src={SetupLogo} className="my-3" style={styles} alt="ADT Pulse for Homebridge" />
+      <img src={SetupLogo} className="my-3" style={styles.image} alt="ADT Pulse for Homebridge" />
       <h2 className="fw-light my-2">Welcome to</h2>
       <h2 className="fw-semibold my-2">ADT Pulse</h2>
       <p className="lead my-2">Homebridge plugin for ADT Pulse Security System</p>

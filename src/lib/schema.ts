@@ -183,8 +183,9 @@ export const platformConfig = z.object({
     z.literal('ignoreSensorProblemStatus'),
   ])).default([]),
   sensors: z.array(z.object({
-    name: z.string().min(1).max(50).optional(),
+    name: z.string().min(0).max(50).optional(),
     adtName: z.string().min(1).max(100),
+    adtZone: z.number().min(1).max(99),
     adtType: z.union([
       z.literal('co'),
       z.literal('doorWindow'),
@@ -196,6 +197,5 @@ export const platformConfig = z.object({
       z.literal('shock'),
       z.literal('temperature'),
     ]),
-    adtZone: z.number().min(1).max(99),
   })).min(0).max(148).default([]),
 });
