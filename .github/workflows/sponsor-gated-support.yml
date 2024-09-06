@@ -21,8 +21,10 @@ jobs:
     steps:
       - name: "Checkout repository"
         uses: "actions/checkout@v4"
+
       - name: "Show current workflow directory"
         run: "ls -la"
+
       - name: "Check support issues"
         uses: "mrjackyliang/sponsor-gated-support@v1.0.1"
         with:
