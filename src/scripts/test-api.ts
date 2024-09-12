@@ -19,7 +19,6 @@ import type {
   ADTPulseTestPrintTestOutputReturns,
   ADTPulseTestSelectedConfigLocation,
   ADTPulseTestSelectedPlatform,
-  ADTPulseTestStartTestReturns,
   ADTPulseTestZodParseResponse,
 } from '@/types/index.d.ts';
 
@@ -57,83 +56,83 @@ class ADTPulseTest {
   #zodParseResponse: ADTPulseTestZodParseResponse;
 
   /**
-   * ADT Pulse Test - Start test.
-   *
-   * @returns {ADTPulseTestStartTestReturns}
+   * ADT Pulse Test - Constructor.
    *
    * @since 1.0.0
    */
-  async startTest(): ADTPulseTestStartTestReturns {
-    try {
-      const userAcceptedDisclaimer = await ADTPulseTest.askQuestion('disclaimer');
+  constructor() {
+    (async () => {
+      try {
+        const userAcceptedDisclaimer = await ADTPulseTest.askQuestion('disclaimer');
 
-      if (!userAcceptedDisclaimer) {
-        exit(0);
-      }
+        if (!userAcceptedDisclaimer) {
+          exit(0);
+        }
 
-      // Used to pad the user input to the next line.
-      console.info('\r');
+        // Used to pad the user input to the next line.
+        console.info('\r');
 
-      const configFoundAndSet = this.findConfig();
+        const configFoundAndSet = this.findConfig();
 
-      if (!configFoundAndSet || this.#selectedPlatform === undefined) {
-        ADTPulseTest.printTestOutput(false);
-
-        exit(1);
-      }
-
-      const instance = new ADTPulseAPI(
-        this.#selectedPlatform,
-        {
-          debug: true,
-          testMode: {
-            enabled: true,
-          },
-        },
-      );
-      const instanceFunctions = [
-        instance.login.bind(instance),
-        instance.getGatewayInformation.bind(instance),
-        instance.getPanelInformation.bind(instance),
-        instance.getPanelStatus.bind(instance),
-        instance.setPanelStatus.bind(instance, 'off', 'away', false),
-        instance.setPanelStatus.bind(instance, 'away', 'stay', false),
-        instance.setPanelStatus.bind(instance, 'stay', 'night', false),
-        instance.setPanelStatus.bind(instance, 'night', 'off', false),
-        instance.getSensorsInformation.bind(instance),
-        instance.getSensorsStatus.bind(instance),
-        instance.getOrbSecurityButtons.bind(instance),
-        instance.performSyncCheck.bind(instance),
-        instance.performKeepAlive.bind(instance),
-        instance.logout.bind(instance),
-      ];
-
-      for (let i = 0; i < instanceFunctions.length; i += 1) {
-        const response = await instanceFunctions[i]();
-
-        // If response is not successful, end the test.
-        if (!response.success) {
+        if (!configFoundAndSet || this.#selectedPlatform === undefined) {
           ADTPulseTest.printTestOutput(false);
 
           exit(1);
         }
 
-        // Print success responses.
-        console.info(util.inspect(response, {
-          showHidden: false,
-          depth: Infinity,
-          colors: true,
-        }));
+        const instance = new ADTPulseAPI(
+          this.#selectedPlatform,
+          {
+            debug: true,
+            testMode: {
+              enabled: true,
+            },
+          },
+        );
+        const instanceFunctions = [
+          instance.login.bind(instance),
+          instance.getGatewayInformation.bind(instance),
+          instance.getPanelInformation.bind(instance),
+          instance.getPanelStatus.bind(instance),
+          instance.setPanelStatus.bind(instance, 'off', 'away', false),
+          instance.setPanelStatus.bind(instance, 'away', 'stay', false),
+          instance.setPanelStatus.bind(instance, 'stay', 'night', false),
+          instance.setPanelStatus.bind(instance, 'night', 'off', false),
+          instance.getSensorsInformation.bind(instance),
+          instance.getSensorsStatus.bind(instance),
+          instance.getOrbSecurityButtons.bind(instance),
+          instance.performSyncCheck.bind(instance),
+          instance.performKeepAlive.bind(instance),
+          instance.logout.bind(instance),
+        ];
+
+        for (let i = 0; i < instanceFunctions.length; i += 1) {
+          const response = await instanceFunctions[i]();
+
+          // If response is not successful, end the test.
+          if (!response.success) {
+            ADTPulseTest.printTestOutput(false);
+
+            exit(1);
+          }
+
+          // Print success responses.
+          console.info(util.inspect(response, {
+            showHidden: false,
+            depth: Infinity,
+            colors: true,
+          }));
+        }
+
+        ADTPulseTest.printTestOutput(true);
+
+        exit(0);
+      } catch {
+        ADTPulseTest.printTestOutput(false);
+
+        exit(1);
       }
-
-      ADTPulseTest.printTestOutput(true);
-
-      exit(0);
-    } catch {
-      ADTPulseTest.printTestOutput(false);
-
-      exit(1);
-    }
+    })();
   }
 
   /**
@@ -294,5 +293,4 @@ class ADTPulseTest {
   }
 }
 
-const instance = new ADTPulseTest();
-await instance.startTest();
+new ADTPulseTest();

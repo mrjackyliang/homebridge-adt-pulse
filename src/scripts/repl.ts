@@ -20,7 +20,6 @@ import type {
   ADTPulseReplSetAuthInstanceReturns,
   ADTPulseReplSetAuthInstanceSubdomain,
   ADTPulseReplSetAuthInstanceUsername,
-  ADTPulseReplStartReplReturns,
 } from '@/types/index.d.ts';
 
 /**
@@ -54,16 +53,14 @@ class ADTPulseRepl {
    *
    * @since 1.0.0
    */
-  #replServer: ADTPulseReplReplServer;
+  readonly #replServer: ADTPulseReplReplServer;
 
   /**
-   * ADT Pulse Repl - Start repl.
-   *
-   * @returns {ADTPulseReplStartReplReturns}
+   * ADT Pulse Repl - Constructor.
    *
    * @since 1.0.0
    */
-  public async startRepl(): ADTPulseReplStartReplReturns {
+  constructor() {
     ADTPulseRepl.displayStartupHeader();
     ADTPulseRepl.displayHelpMenu();
 
@@ -356,5 +353,4 @@ class ADTPulseRepl {
   }
 }
 
-const adtPulseRepl = new ADTPulseRepl();
-await adtPulseRepl.startRepl();
+new ADTPulseRepl();

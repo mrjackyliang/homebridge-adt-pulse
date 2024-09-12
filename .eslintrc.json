@@ -127,6 +127,17 @@
           }
         ]
       }
+    },
+    {
+      "files": [
+        "./src/scripts/repl.ts",
+        "./src/scripts/test-api.ts"
+      ],
+      "rules": {
+        "no-new": [
+          "off"
+        ]
+      }
     }
   ]
 }

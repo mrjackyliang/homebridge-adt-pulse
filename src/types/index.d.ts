@@ -1305,13 +1305,6 @@ export type ADTPulseReplSetAuthInstancePassword = unknown;
 export type ADTPulseReplSetAuthInstanceReturns = void;
 
 /**
- * ADT Pulse Repl - Start repl.
- *
- * @since 1.0.0
- */
-export type ADTPulseReplStartReplReturns = Promise<void>;
-
-/**
  * ADT Pulse Test - Ask question.
  *
  * @since 1.0.0
@@ -1355,13 +1348,6 @@ export type ADTPulseTestSelectedConfigLocation = string | undefined;
  * @since 1.0.0
  */
 export type ADTPulseTestSelectedPlatform = Config | undefined;
-
-/**
- * ADT Pulse Test - Start test.
- *
- * @since 1.0.0
- */
-export type ADTPulseTestStartTestReturns = Promise<void>;
 
 /**
  * ADT Pulse Test - Zod parse response.

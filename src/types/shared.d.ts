@@ -1,7 +1,7 @@
 import type { AxiosResponse } from 'axios';
 import type { Logger } from 'homebridge';
-import type http from 'http';
 import type { JSDOM } from 'jsdom';
+import type http from 'node:http';
 import type { ErrorObject } from 'serialize-error';
 import type { z } from 'zod';
 

@@ -51,6 +51,8 @@ export default function Settings(props: SettingsProps) {
   useEffect(() => {
     (async () => {
       if (homebridge === undefined) {
+        setReady(true);
+
         return;
       }
 

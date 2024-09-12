@@ -1,6 +1,7 @@
 import React from 'react';
 import { Controller, useFieldArray, useWatch } from 'react-hook-form';
 
+import { styles } from '@/config-ui/vite/src/styles/pages/settings-sensors.js';
 import type { SettingsSensorsGetSensorHeaderIndex, SettingsSensorsGetSensorHeaderReturns, SettingsSensorsProps } from '@/types/config-ui.d.ts';
 
 /**
@@ -35,25 +36,40 @@ export default function SettingsSensors(props: SettingsSensorsProps) {
     const sensor = watch[index];
 
     if (sensor === undefined) {
-      return '';
+      return {
+        name: null,
+        adtName: null,
+      };
     }
 
     const sensorName = sensor.name;
     const sensorAdtName = sensor.adtName;
 
     if (sensorName && sensorAdtName) {
-      return `${sensorName} (${sensorAdtName})`;
+      return {
+        name: sensorName,
+        adtName: sensorAdtName,
+      };
     }
 
     if (sensorName) {
-      return `${sensorName}`;
+      return {
+        name: sensorName,
+        adtName: null,
+      };
     }
 
     if (sensorAdtName) {
-      return `${sensorAdtName}`;
+      return {
+        name: null,
+        adtName: sensorAdtName,
+      };
     }
 
-    return 'Sensor';
+    return {
+      name: 'Sensor',
+      adtName: null,
+    };
   };
 
   return (
@@ -77,7 +93,22 @@ export default function SettingsSensors(props: SettingsSensorsProps) {
                   aria-expanded="false"
                   aria-controls={`collapse-${sensor.id}`}
                 >
-                  {getSensorHeader(index)}
+                  <div className="d-flex justify-content-between" style={styles.sensorHeader}>
+                    {
+                      (getSensorHeader(index).name !== null) ? (
+                        <span>
+                          {getSensorHeader(index).name}
+                        </span>
+                      ) : null
+                    }
+                    {
+                      (getSensorHeader(index).adtName !== null) ? (
+                        <span className="text-secondary fst-italic">
+                          {getSensorHeader(index).adtName}
+                        </span>
+                      ) : null
+                    }
+                  </div>
                 </button>
               </div>
               <div id={`collapse-${sensor.id}`} className="accordion-collapse collapse" data-bs-parent="#accordion">

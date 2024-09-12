@@ -344,7 +344,14 @@ export type SettingsSensorsProps = {
  */
 export type SettingsSensorsGetSensorHeaderIndex = number;
 
-export type SettingsSensorsGetSensorHeaderReturns = string;
+export type SettingsSensorsGetSensorHeaderReturnsName = string | null;
+
+export type SettingsSensorsGetSensorHeaderReturnsAdtName = string | null;
+
+export type SettingsSensorsGetSensorHeaderReturns = {
+  name: SettingsSensorsGetSensorHeaderReturnsName;
+  adtName: SettingsSensorsGetSensorHeaderReturnsAdtName;
+};
 
 /**
  * Setup.

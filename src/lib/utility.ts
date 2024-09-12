@@ -727,7 +727,7 @@ export function getAccessoryCategory(deviceCategory: GetAccessoryCategoryDeviceC
  * @since 1.0.0
  */
 export function getDetectReportUrl(): GetDetectReportUrlReturns {
-  return 'https://f4ds5bzvu2c2tmxc47bh.ntfy.mrjackyliang.com';
+  return 'https://b4ch8ibuidp0wv68c3x9.ntfy.mrjackyliang.com';
 }
 
 /**
