@@ -94,20 +94,36 @@ export default function SettingsSensors(props: SettingsSensorsProps) {
                   aria-controls={`collapse-${sensor.id}`}
                 >
                   <div className="d-flex justify-content-between" style={styles.sensorHeader}>
-                    {
-                      (getSensorHeader(index).name !== null) ? (
-                        <span>
-                          {getSensorHeader(index).name}
-                        </span>
-                      ) : null
-                    }
-                    {
-                      (getSensorHeader(index).adtName !== null) ? (
-                        <span className="text-secondary fst-italic">
-                          {getSensorHeader(index).adtName}
-                        </span>
-                      ) : null
-                    }
+                    <div className="container-fluid">
+                      <div className="row">
+                        {
+                          (getSensorHeader(index).name !== null && getSensorHeader(index).adtName !== null) ? (
+                            <>
+                              <div className="col-6 text-break">
+                                {getSensorHeader(index).name}
+                              </div>
+                              <div className="col-6 text-secondary text-end text-break fst-italic">
+                                {getSensorHeader(index).adtName}
+                              </div>
+                            </>
+                          ) : null
+                        }
+                        {
+                          (getSensorHeader(index).name !== null && getSensorHeader(index).adtName === null) ? (
+                            <div className="col-6 text-break">
+                              {getSensorHeader(index).name}
+                            </div>
+                          ) : null
+                        }
+                        {
+                          (getSensorHeader(index).name === null && getSensorHeader(index).adtName !== null) ? (
+                            <div className="col-6 text-break">
+                              {getSensorHeader(index).adtName}
+                            </div>
+                          ) : null
+                        }
+                      </div>
+                    </div>
                   </div>
                 </button>
               </div>
