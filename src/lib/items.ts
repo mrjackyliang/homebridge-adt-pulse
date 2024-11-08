@@ -499,6 +499,7 @@ export const itemDoSubmitHandlerRelativeUrls: ItemDoSubmitHandlerRelativeUrls = 
   '/myhome/26.0.0-32/quickcontrol/serv/RunRRACommand',
   '/myhome/27.0.0-140/quickcontrol/serv/RunRRACommand',
   '/myhome/28.0.0-57/quickcontrol/serv/RunRRACommand',
+  '/myhome/29.0.0-28/quickcontrol/serv/RunRRACommand',
 ];
 
 /**
@@ -694,6 +695,7 @@ export const itemPortalVersions: ItemPortalVersions = [
   '26.0.0-32',
   '27.0.0-140',
   '28.0.0-57',
+  '29.0.0-28',
 ];
 
 /**
