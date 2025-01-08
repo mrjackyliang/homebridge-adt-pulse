@@ -4,11 +4,11 @@ import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import SettingsFingerprint from '@/config-ui/vite/src/pages/settings-fingerprint.js';
-import SettingsGeneral from '@/config-ui/vite/src/pages/settings-general.js';
-import SettingsLogin from '@/config-ui/vite/src/pages/settings-login.js';
-import SettingsPlugin from '@/config-ui/vite/src/pages/settings-plugin.js';
-import SettingsSensors from '@/config-ui/vite/src/pages/settings-sensors.js';
+import SettingsFingerprint from '@/config-ui/vite/src/pages/settings-fingerprint';
+import SettingsGeneral from '@/config-ui/vite/src/pages/settings-general';
+import SettingsLogin from '@/config-ui/vite/src/pages/settings-login';
+import SettingsPlugin from '@/config-ui/vite/src/pages/settings-plugin';
+import SettingsSensors from '@/config-ui/vite/src/pages/settings-sensors';
 import { platformConfig } from '@/lib/schema.js';
 import type { SettingsProps } from '@/types/config-ui.d.ts';
 
@@ -63,14 +63,14 @@ export default function Settings(props: SettingsProps) {
 
       // Set the most up-to-date config.
       reset(_.merge({
-        platform: 'ADTPulse' as 'ADTPulse',
+        platform: 'ADTPulse' as const,
         name: 'ADT Pulse',
-        subdomain: 'portal' as 'portal',
+        subdomain: 'portal' as const,
         username: '',
         password: '',
         fingerprint: '',
-        mode: 'normal' as 'normal',
-        speed: 1 as 1,
+        mode: 'normal' as const,
+        speed: 1 as const,
         options: [],
         sensors: [],
       }, config));
@@ -88,7 +88,10 @@ export default function Settings(props: SettingsProps) {
 
       homebridge.hideSpinner();
     })();
-  }, []);
+  }, [
+    homebridge,
+    reset,
+  ]);
 
   useEffect(() => {
     (async () => {
@@ -98,7 +101,10 @@ export default function Settings(props: SettingsProps) {
 
       await homebridge.updatePluginConfig([formChanges]);
     })();
-  }, [formChanges]);
+  }, [
+    formChanges,
+    homebridge,
+  ]);
 
   if (ready) {
     return (

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import FingerprintTable from '@/config-ui/vite/src/components/fingerprint-table.js';
+import FingerprintTable from '@/config-ui/vite/src/components/fingerprint-table';
 import type { SettingsFingerprintProps } from '@/types/config-ui.d.ts';
 
 /**

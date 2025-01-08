@@ -2,7 +2,7 @@ import axios from 'axios';
 import { wrapper } from 'axios-cookiejar-support';
 import { JSDOM } from 'jsdom';
 import _ from 'lodash';
-import { serializeError } from 'serialize-error';
+import { isErrorLike, serializeError } from 'serialize-error';
 import { CookieJar } from 'tough-cookie';
 
 import { detectGlobalDebugParser, detectGlobalPortalVersion } from '@/lib/detect.js';
@@ -681,7 +681,7 @@ export class ADTPulseAuth {
         },
       };
     } catch (error) {
-      errorObject = serializeError(error);
+      errorObject = (isErrorLike(error)) ? serializeError(error) : serializeError(new Error('Unknown error'));
     }
 
     if (this.#internal.debug) {
@@ -846,7 +846,7 @@ export class ADTPulseAuth {
         info: null,
       };
     } catch (error) {
-      errorObject = serializeError(error);
+      errorObject = (isErrorLike(error)) ? serializeError(error) : serializeError(new Error('Unknown error'));
     }
 
     if (this.#internal.debug) {
@@ -1030,7 +1030,7 @@ export class ADTPulseAuth {
         info: null,
       };
     } catch (error) {
-      errorObject = serializeError(error);
+      errorObject = (isErrorLike(error)) ? serializeError(error) : serializeError(new Error('Unknown error'));
     }
 
     if (this.#internal.debug) {
@@ -1206,7 +1206,7 @@ export class ADTPulseAuth {
         },
       };
     } catch (error) {
-      errorObject = serializeError(error);
+      errorObject = (isErrorLike(error)) ? serializeError(error) : serializeError(new Error('Unknown error'));
     }
 
     if (this.#internal.debug) {
@@ -1386,7 +1386,7 @@ export class ADTPulseAuth {
         info: null,
       };
     } catch (error) {
-      errorObject = serializeError(error);
+      errorObject = (isErrorLike(error)) ? serializeError(error) : serializeError(new Error('Unknown error'));
     }
 
     if (this.#internal.debug) {
@@ -1509,7 +1509,7 @@ export class ADTPulseAuth {
         info: null,
       };
     } catch (error) {
-      errorObject = serializeError(error);
+      errorObject = (isErrorLike(error)) ? serializeError(error) : serializeError(new Error('Unknown error'));
     }
 
     if (this.#internal.debug) {
@@ -1688,7 +1688,7 @@ export class ADTPulseAuth {
         },
       };
     } catch (error) {
-      errorObject = serializeError(error);
+      errorObject = (isErrorLike(error)) ? serializeError(error) : serializeError(new Error('Unknown error'));
     }
 
     if (this.#internal.debug) {

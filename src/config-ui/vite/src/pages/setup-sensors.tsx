@@ -51,7 +51,9 @@ export default function SetupSensors(props: SetupSensorsProps) {
         setHasExistingSensors(true);
       }
     })();
-  }, []);
+  }, [
+    homebridge,
+  ]);
 
   return (
     <>

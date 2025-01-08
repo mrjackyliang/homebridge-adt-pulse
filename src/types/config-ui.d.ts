@@ -1,5 +1,5 @@
 import type { IHomebridgePluginUi } from '@homebridge/plugin-ui-utils/dist/ui.interface';
-import type { ReactNode } from 'react';
+import type React from 'react';
 import type { Control, UseFormGetValues, UseFormSetValue } from 'react-hook-form';
 import type { z } from 'zod';
 
@@ -39,6 +39,13 @@ export type ADTPulseConfigInterfaceLoadBootstrapScript = {
 };
 
 export type ADTPulseConfigInterfaceLoadBootstrapScripts = ADTPulseConfigInterfaceLoadBootstrapScript[];
+
+/**
+ * ADT Pulse Config Interface - Observe theme.
+ *
+ * @since 1.0.0
+ */
+export type ADTPulseConfigInterfaceObserveThemeReturns = void;
 
 /**
  * ADT Pulse Config Interface - Root.
@@ -176,7 +183,7 @@ export type FingerprintTableRenderTableValueProperty = string;
 
 export type FingerprintTableRenderTableValueValue = unknown;
 
-export type FingerprintTableRenderTableValueReturns = ReactNode;
+export type FingerprintTableRenderTableValueReturns = React.ReactNode;
 
 /**
  * Fingerprint table - Render table.
@@ -185,7 +192,7 @@ export type FingerprintTableRenderTableValueReturns = ReactNode;
  */
 export type FingerprintTableRenderTableData = object;
 
-export type FingerprintTableRenderTableReturns = ReactNode;
+export type FingerprintTableRenderTableReturns = React.ReactNode;
 
 /**
  * Router.
@@ -376,7 +383,7 @@ export type SetupCompletePropsHomebridge = IHomebridgePluginUi | undefined;
 export type SetupCompletePropsUpdateSensors = boolean;
 
 export type SetupCompleteProps = {
-  homebridge:SetupCompletePropsHomebridge;
+  homebridge: SetupCompletePropsHomebridge;
   updateSensors: SetupCompletePropsUpdateSensors;
 };
 

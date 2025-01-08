@@ -2,7 +2,7 @@ import axios from 'axios';
 import { wrapper } from 'axios-cookiejar-support';
 import { JSDOM } from 'jsdom';
 import _ from 'lodash';
-import { serializeError } from 'serialize-error';
+import { isErrorLike, serializeError } from 'serialize-error';
 import { CookieJar } from 'tough-cookie';
 
 import {
@@ -551,7 +551,7 @@ export class ADTPulseAPI {
         },
       };
     } catch (error) {
-      errorObject = serializeError(error);
+      errorObject = (isErrorLike(error)) ? serializeError(error) : serializeError(new Error('Unknown error'));
     }
 
     if (this.#internal.debug) {
@@ -718,7 +718,7 @@ export class ADTPulseAPI {
         },
       };
     } catch (error) {
-      errorObject = serializeError(error);
+      errorObject = (isErrorLike(error)) ? serializeError(error) : serializeError(new Error('Unknown error'));
     }
 
     if (this.#internal.debug) {
@@ -970,7 +970,7 @@ export class ADTPulseAPI {
         info: gatewayInformation,
       };
     } catch (error) {
-      errorObject = serializeError(error);
+      errorObject = (isErrorLike(error)) ? serializeError(error) : serializeError(new Error('Unknown error'));
     }
 
     if (this.#internal.debug) {
@@ -1189,7 +1189,7 @@ export class ADTPulseAPI {
         info: panelInformation,
       };
     } catch (error) {
-      errorObject = serializeError(error);
+      errorObject = (isErrorLike(error)) ? serializeError(error) : serializeError(new Error('Unknown error'));
     }
 
     if (this.#internal.debug) {
@@ -1433,7 +1433,7 @@ export class ADTPulseAPI {
         info: parsedOrbTextSummary,
       };
     } catch (error) {
-      errorObject = serializeError(error);
+      errorObject = (isErrorLike(error)) ? serializeError(error) : serializeError(new Error('Unknown error'));
     }
 
     if (this.#internal.debug) {
@@ -1735,7 +1735,7 @@ export class ADTPulseAPI {
         },
       };
     } catch (error) {
-      errorObject = serializeError(error);
+      errorObject = (isErrorLike(error)) ? serializeError(error) : serializeError(new Error('Unknown error'));
     }
 
     if (this.#internal.debug) {
@@ -1944,7 +1944,7 @@ export class ADTPulseAPI {
         },
       };
     } catch (error) {
-      errorObject = serializeError(error);
+      errorObject = (isErrorLike(error)) ? serializeError(error) : serializeError(new Error('Unknown error'));
     }
 
     if (this.#internal.debug) {
@@ -2204,7 +2204,7 @@ export class ADTPulseAPI {
         },
       };
     } catch (error) {
-      errorObject = serializeError(error);
+      errorObject = (isErrorLike(error)) ? serializeError(error) : serializeError(new Error('Unknown error'));
     }
 
     if (this.#internal.debug) {
@@ -2461,7 +2461,7 @@ export class ADTPulseAPI {
         info: parsedOrbSecurityButtons,
       };
     } catch (error) {
-      errorObject = serializeError(error);
+      errorObject = (isErrorLike(error)) ? serializeError(error) : serializeError(new Error('Unknown error'));
     }
 
     if (this.#internal.debug) {
@@ -2622,7 +2622,7 @@ export class ADTPulseAPI {
         },
       };
     } catch (error) {
-      errorObject = serializeError(error);
+      errorObject = (isErrorLike(error)) ? serializeError(error) : serializeError(new Error('Unknown error'));
     }
 
     if (this.#internal.debug) {
@@ -2742,7 +2742,7 @@ export class ADTPulseAPI {
         info: null,
       };
     } catch (error) {
-      errorObject = serializeError(error);
+      errorObject = (isErrorLike(error)) ? serializeError(error) : serializeError(new Error('Unknown error'));
     }
 
     if (this.#internal.debug) {
@@ -3063,7 +3063,7 @@ export class ADTPulseAPI {
         },
       };
     } catch (error) {
-      errorObject = serializeError(error);
+      errorObject = (isErrorLike(error)) ? serializeError(error) : serializeError(new Error('Unknown error'));
     }
 
     if (this.#internal.debug) {
@@ -3438,7 +3438,7 @@ export class ADTPulseAPI {
         },
       };
     } catch (error) {
-      errorObject = serializeError(error);
+      errorObject = (isErrorLike(error)) ? serializeError(error) : serializeError(new Error('Unknown error'));
     }
 
     if (this.#internal.debug) {

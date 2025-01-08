@@ -1,10 +1,11 @@
-import chalk from 'chalk';
-import _ from 'lodash';
 import { readFileSync } from 'node:fs';
 import os from 'node:os';
 import { exit, stdin, stdout } from 'node:process';
 import readline from 'node:readline';
 import util from 'node:util';
+
+import chalk from 'chalk';
+import _ from 'lodash';
 
 import { ADTPulseAPI } from '@/lib/api.js';
 import { platformConfig } from '@/lib/schema.js';

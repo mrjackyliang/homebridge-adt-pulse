@@ -102,7 +102,7 @@ export default function SettingsSensors(props: SettingsSensorsProps) {
                               <div className="col-6 text-break">
                                 {getSensorHeader(index).name}
                               </div>
-                              <div className="col-6 text-secondary text-end text-break fst-italic">
+                              <div className="col-6 text-end text-break fst-italic">
                                 {getSensorHeader(index).adtName}
                               </div>
                             </>

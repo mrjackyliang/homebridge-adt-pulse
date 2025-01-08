@@ -25,6 +25,7 @@ import {
 import {
   debugLog,
   getDetectReportUrl,
+  getPackageVersion,
   isEmptyOrbTextSummary,
   isPluginOutdated,
   isUnknownDoSubmitHandlerCollection,
@@ -152,7 +153,7 @@ export async function detectApiDoSubmitHandlers(handlers: DetectApiDoSubmitHandl
           family: 4,
           headers: {
             'User-Agent': 'homebridge-adt-pulse',
-            'X-Title': 'Detected new do submit handlers',
+            'X-Title': `Detected new do submit handlers (v${getPackageVersion()})`,
           },
         },
       );
@@ -236,7 +237,7 @@ export async function detectApiGatewayInformation(device: DetectApiGatewayInform
           family: 4,
           headers: {
             'User-Agent': 'homebridge-adt-pulse',
-            'X-Title': 'Detected new gateway information',
+            'X-Title': `Detected new gateway information (v${getPackageVersion()})`,
           },
         },
       );
@@ -342,7 +343,7 @@ export async function detectApiOrbSecurityButtons(buttons: DetectApiOrbSecurityB
           family: 4,
           headers: {
             'User-Agent': 'homebridge-adt-pulse',
-            'X-Title': 'Detected new orb security buttons',
+            'X-Title': `Detected new orb security buttons (v${getPackageVersion()})`,
           },
         },
       );
@@ -426,7 +427,7 @@ export async function detectApiPanelInformation(device: DetectApiPanelInformatio
           family: 4,
           headers: {
             'User-Agent': 'homebridge-adt-pulse',
-            'X-Title': 'Detected new panel information',
+            'X-Title': `Detected new panel information (v${getPackageVersion()})`,
           },
         },
       );
@@ -510,7 +511,7 @@ export async function detectApiPanelStatus(summary: DetectApiPanelStatusSummary,
           family: 4,
           headers: {
             'User-Agent': 'homebridge-adt-pulse',
-            'X-Title': 'Detected a new panel state and/or status',
+            'X-Title': `Detected a new panel state and/or status (v${getPackageVersion()})`,
           },
         },
       );
@@ -597,7 +598,7 @@ export async function detectApiSensorsInformation(sensors: DetectApiSensorsInfor
           family: 4,
           headers: {
             'User-Agent': 'homebridge-adt-pulse',
-            'X-Title': 'Detected new sensors information',
+            'X-Title': `Detected new sensors information (v${getPackageVersion()})`,
           },
         },
       );
@@ -681,7 +682,7 @@ export async function detectApiSensorsStatus(sensors: DetectApiSensorsStatusSens
           family: 4,
           headers: {
             'User-Agent': 'homebridge-adt-pulse',
-            'X-Title': 'Detected new sensors status',
+            'X-Title': `Detected new sensors status (v${getPackageVersion()})`,
           },
         },
       );
@@ -783,7 +784,7 @@ export async function detectGlobalDebugParser(data: DetectGlobalDebugParserData,
           family: 4,
           headers: {
             'User-Agent': 'homebridge-adt-pulse',
-            'X-Title': `Detected a parser anomaly for "${data.method}"`,
+            'X-Title': `Detected a parser anomaly for "${data.method}" (v${getPackageVersion()})`,
           },
         },
       );
@@ -867,7 +868,7 @@ export async function detectGlobalPortalVersion(version: DetectGlobalPortalVersi
           family: 4,
           headers: {
             'User-Agent': 'homebridge-adt-pulse',
-            'X-Title': 'Detected a new portal version',
+            'X-Title': `Detected a new portal version (v${getPackageVersion()})`,
           },
         },
       );
@@ -965,7 +966,7 @@ export async function detectPlatformUnknownSensorsAction(sensors: DetectPlatform
           family: 4,
           headers: {
             'User-Agent': 'homebridge-adt-pulse',
-            'X-Title': 'Detected unknown sensors action',
+            'X-Title': `Detected unknown sensors action (v${getPackageVersion()})`,
           },
         },
       );

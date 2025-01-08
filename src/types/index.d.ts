@@ -1,3 +1,5 @@
+import type repl from 'node:repl';
+
 import type { AxiosInstance, AxiosRequestConfig } from 'axios';
 import type {
   API,
@@ -12,7 +14,6 @@ import type {
   Service,
 } from 'homebridge';
 import type { JSDOM } from 'jsdom';
-import type repl from 'node:repl';
 import type { ErrorObject } from 'serialize-error';
 import type { z } from 'zod';
 
@@ -892,7 +893,7 @@ export type ADTPulseAuthSessionMfa = {
   satCode: ADTPulseAuthSessionMfaSatCode;
   token: ADTPulseAuthSessionMfaToken;
   trustedDevices: ADTPulseAuthSessionMfaTrustedDevices;
-  verificationMethods: ADTPulseAuthSessionMfaVerificationMethods,
+  verificationMethods: ADTPulseAuthSessionMfaVerificationMethods;
 };
 
 export type ADTPulseAuthSessionPortalVersion = PortalVersion | null;

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 
-import SetupComplete from '@/config-ui/vite/src/pages/setup-complete.js';
-import SetupLogin from '@/config-ui/vite/src/pages/setup-login.js';
-import SetupRequestCode from '@/config-ui/vite/src/pages/setup-request-code.js';
-import SetupSensors from '@/config-ui/vite/src/pages/setup-sensors.js';
-import SetupValidate from '@/config-ui/vite/src/pages/setup-validate.js';
-import SetupWelcome from '@/config-ui/vite/src/pages/setup-welcome.js';
+import SetupComplete from '@/config-ui/vite/src/pages/setup-complete';
+import SetupLogin from '@/config-ui/vite/src/pages/setup-login';
+import SetupRequestCode from '@/config-ui/vite/src/pages/setup-request-code';
+import SetupSensors from '@/config-ui/vite/src/pages/setup-sensors';
+import SetupValidate from '@/config-ui/vite/src/pages/setup-validate';
+import SetupWelcome from '@/config-ui/vite/src/pages/setup-welcome';
 import type { SetupAvailableMethods, SetupProps } from '@/types/config-ui.d.ts';
 
 /**

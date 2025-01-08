@@ -1,13 +1,14 @@
+import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
+import os from 'node:os';
+import util from 'node:util';
+
 import chalk from 'chalk';
 import { Categories } from 'homebridge';
 import { JSDOM } from 'jsdom';
 import latestVersion from 'latest-version';
 import _ from 'lodash';
 import { DateTime } from 'luxon';
-import { createHash } from 'node:crypto';
-import { createRequire } from 'node:module';
-import os from 'node:os';
-import util from 'node:util';
 import semver from 'semver';
 
 import {
@@ -727,7 +728,7 @@ export function getAccessoryCategory(deviceCategory: GetAccessoryCategoryDeviceC
  * @since 1.0.0
  */
 export function getDetectReportUrl(): GetDetectReportUrlReturns {
-  return 'https://b4ch8ibuidp0wv68c3x9.ntfy.mrjackyliang.com';
+  return 'https://mtnu8h3zgw5c7fy24r9d.ntfy.mrjackyliang.com';
 }
 
 /**

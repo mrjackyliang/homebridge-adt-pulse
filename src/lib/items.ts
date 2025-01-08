@@ -438,6 +438,13 @@ export const deviceSecurityPanels: DeviceSecurityPanels = [
     },
   },
   {
+    description: 'DSC Impassa/SCW',
+    panel: {
+      manufacturerProvider: 'DSC',
+      typeModel: 'Security Panel - Impassa/SCW',
+    },
+  },
+  {
     description: 'DSC PowerSeries/ADT PremisePro',
     panel: {
       manufacturerProvider: null,

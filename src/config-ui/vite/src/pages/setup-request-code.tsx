@@ -110,7 +110,7 @@ export default function SetupRequestCode(props: SetupRequestCodeProps) {
                     <option value="">— Select one —</option>
                     {
                       availableMethods.map((method) => (
-                        <option value={method.id}>{method.label}</option>
+                        <option value={method.id} key={method.id}>{method.label}</option>
                       ))
                     }
                   </select>

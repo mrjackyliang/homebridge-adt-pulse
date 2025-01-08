@@ -1,7 +1,8 @@
+import type http from 'node:http';
+
 import type { AxiosResponse } from 'axios';
 import type { Logger } from 'homebridge';
 import type { JSDOM } from 'jsdom';
-import type http from 'node:http';
 import type { ErrorObject } from 'serialize-error';
 import type { z } from 'zod';
 
@@ -407,7 +408,7 @@ export type MfaDeviceType = 'EMAIL' | 'SMS';
 export type MfaDeviceLabel = string;
 
 export type MfaDevice = {
-  id: MfaDeviceId,
+  id: MfaDeviceId;
   type: MfaDeviceType;
   label: MfaDeviceLabel;
 };

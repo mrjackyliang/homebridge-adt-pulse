@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 
-import ScreenToggle from '@/config-ui/vite/src/components/screen-toggle.js';
-import Settings from '@/config-ui/vite/src/pages/settings.js';
-import SettingsClassic from '@/config-ui/vite/src/pages/settings-classic.js';
-import Setup from '@/config-ui/vite/src/pages/setup.js';
+import ScreenToggle from '@/config-ui/vite/src/components/screen-toggle';
+import Settings from '@/config-ui/vite/src/pages/settings';
+import SettingsClassic from '@/config-ui/vite/src/pages/settings-classic';
+import Setup from '@/config-ui/vite/src/pages/setup';
 import type { RouterProps, RouterView } from '@/types/config-ui.d.ts';
 
 /**

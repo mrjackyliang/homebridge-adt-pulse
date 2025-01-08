@@ -35,7 +35,9 @@ export default function SettingsClassic(props: SettingsClassicProps) {
 
       homebridge.hideSpinner();
     })();
-  }, []);
+  }, [
+    homebridge,
+  ]);
 
   if (ready) {
     return (

@@ -1,5 +1,14 @@
-/* Theme Variables */
+/**
+ * ==================================================
+ * Theme Colors
+ * ==================================================
+ */
 :root {
+  /* Orange Theme */
+  --config-ui-x-orange-bg: #ef6c001a;
+  --config-ui-x-orange-border: #ef6c001a;
+  --config-ui-x-orange-text: #ff9800;
+
   /* Red Theme */
   --config-ui-x-red-bg: #d32f2f1a;
   --config-ui-x-red-border: #d32f2f1a;
@@ -15,35 +24,40 @@
   --config-ui-x-purple-border: #4213671a;
   --config-ui-x-purple-text: #9c27b0;
 
+  /* Deep Purple Theme */
+  --config-ui-x-deep-purple-bg: #4527a01a;
+  --config-ui-x-deep-purple-border: #4527a01a;
+  --config-ui-x-deep-purple-text: #673ab7;
+
   /* Indigo Theme */
   --config-ui-x-indigo-bg: #303f9f1a;
   --config-ui-x-indigo-border: #303f9f1a;
   --config-ui-x-indigo-text: #3f51b5;
 
   /* Blue Theme */
-  --config-ui-x-blue-bg: #1976d21a;
-  --config-ui-x-blue-border: #1976d21a;
-  --config-ui-x-blue-text: #2196f3;
+  --config-ui-x-blue-bg: #0000701a;
+  --config-ui-x-blue-border: #0000701a;
+  --config-ui-x-blue-text: #333399;
 
   /* Blue Grey Theme */
   --config-ui-x-blue-grey-bg: #455a641a;
   --config-ui-x-blue-grey-border: #455a641a;
   --config-ui-x-blue-grey-text: #607d8b;
 
-  /* Navi Blue Theme */
-  --config-ui-x-navi-blue-bg: #0000701a;
-  --config-ui-x-navi-blue-border: #0000701a;
-  --config-ui-x-navi-blue-text: #009;
+  /* Cyan Theme */
+  --config-ui-x-cyan-bg: #00838f1a;
+  --config-ui-x-cyan-border: #00838f1a;
+  --config-ui-x-cyan-text: #00bcd4;
 
   /* Green Theme */
   --config-ui-x-green-bg: #388e3c1a;
   --config-ui-x-green-border: #388e3c1a;
   --config-ui-x-green-text: #4caf50;
 
-  /* Orange Theme */
-  --config-ui-x-orange-bg: #ef6c001a;
-  --config-ui-x-orange-border: #ef6c001a;
-  --config-ui-x-orange-text: #ff9800;
+  /* Teal Theme */
+  --config-ui-x-teal-bg: #00695c1a;
+  --config-ui-x-teal-border: #00695c1a;
+  --config-ui-x-teal-text: #009688;
 
   /* Grey Theme */
   --config-ui-x-grey-bg: #6161611a;
@@ -55,35 +69,10 @@
   --config-ui-x-brown-border: #4e342e1a;
   --config-ui-x-brown-text: #795548;
 
-  /* Amber Theme */
-  --config-ui-x-amber-bg: #ff8f001a;
-  --config-ui-x-amber-border: #ff8f001a;
-  --config-ui-x-amber-text: #ffc107;
-
-  /* Teal Theme */
-  --config-ui-x-teal-bg: #00695c1a;
-  --config-ui-x-teal-border: #00695c1a;
-  --config-ui-x-teal-text: #009688;
-
-  /* Cyan Theme */
-  --config-ui-x-cyan-bg: #00838f1a;
-  --config-ui-x-cyan-border: #00838f1a;
-  --config-ui-x-cyan-text: #00bcd4;
-
-  /* Deep Purple Theme */
-  --config-ui-x-deep-purple-bg: #4527a01a;
-  --config-ui-x-deep-purple-border: #4527a01a;
-  --config-ui-x-deep-purple-text: #673ab7;
-
-  /* Dark Mode Theme */
-  --config-ui-x-dark-mode-bg: #ffa0001a;
-  --config-ui-x-dark-mode-border: #ffa0001a;
-  --config-ui-x-dark-mode-text: #ffa000;
-
-  /* Dark Mode v1 Theme */
-  --config-ui-x-dark-mode-v1-bg: #ffa0001a;
-  --config-ui-x-dark-mode-v1-border: #ffa0001a;
-  --config-ui-x-dark-mode-v1-text: #ffa000;
+  /* Dark Mode Orange Theme */
+  --config-ui-x-dark-mode-orange-bg: #ffa0001a;
+  --config-ui-x-dark-mode-orange-border: #ffa0001a;
+  --config-ui-x-dark-mode-orange-text: #ffa000;
 
   /* Dark Mode Red Theme */
   --config-ui-x-dark-mode-red-bg: #d32f2f1a;
@@ -100,6 +89,11 @@
   --config-ui-x-dark-mode-purple-border: #9c27b01a;
   --config-ui-x-dark-mode-purple-text: #9c27b0;
 
+  /* Dark Mode Deep Purple Theme */
+  --config-ui-x-dark-mode-deep-purple-bg: #673ab71a;
+  --config-ui-x-dark-mode-deep-purple-border: #673ab71a;
+  --config-ui-x-dark-mode-deep-purple-text: #673ab7;
+
   /* Dark Mode Indigo Theme */
   --config-ui-x-dark-mode-indigo-bg: #3f51b51a;
   --config-ui-x-dark-mode-indigo-border: #3f51b51a;
@@ -115,10 +109,20 @@
   --config-ui-x-dark-mode-blue-grey-border: #607d8b1a;
   --config-ui-x-dark-mode-blue-grey-text: #607d8b;
 
+  /* Dark Mode Cyan Theme */
+  --config-ui-x-dark-mode-cyan-bg: #00838f1a;
+  --config-ui-x-dark-mode-cyan-border: #00838f1a;
+  --config-ui-x-dark-mode-cyan-text: #00838f;
+
   /* Dark Mode Green Theme */
   --config-ui-x-dark-mode-green-bg: #388e3c1a;
   --config-ui-x-dark-mode-green-border: #388e3c1a;
   --config-ui-x-dark-mode-green-text: #388e3c;
+
+  /* Dark Mode Teal Theme */
+  --config-ui-x-dark-mode-teal-bg: #0096881a;
+  --config-ui-x-dark-mode-teal-border: #0096881a;
+  --config-ui-x-dark-mode-teal-text: #009688;
 
   /* Dark Mode Grey Theme */
   --config-ui-x-dark-mode-grey-bg: #9e9e9e1a;
@@ -129,696 +133,1167 @@
   --config-ui-x-dark-mode-brown-bg: #7955481a;
   --config-ui-x-dark-mode-brown-border: #7955481a;
   --config-ui-x-dark-mode-brown-text: #795548;
-
-  /* Dark Mode Teal Theme */
-  --config-ui-x-dark-mode-teal-bg: #0096881a;
-  --config-ui-x-dark-mode-teal-border: #0096881a;
-  --config-ui-x-dark-mode-teal-text: #009688;
-
-  /* Dark Mode Cyan Theme */
-  --config-ui-x-dark-mode-cyan-bg: #00838f1a;
-  --config-ui-x-dark-mode-cyan-border: #00838f1a;
-  --config-ui-x-dark-mode-cyan-text: #00838f;
-}
-
-/* Nav links */
-.config-ui-x-red .nav-link {
-  color: var(--config-ui-x-red-text);
-}
-
-.config-ui-x-pink .nav-link {
-  color: var(--config-ui-x-pink-text);
-}
-
-.config-ui-x-purple .nav-link {
-  color: var(--config-ui-x-purple-text);
-}
-
-.config-ui-x-indigo .nav-link {
-  color: var(--config-ui-x-indigo-text);
-}
-
-.config-ui-x-blue .nav-link {
-  color: var(--config-ui-x-blue-text);
-}
-
-.config-ui-x-blue-grey .nav-link {
-  color: var(--config-ui-x-blue-grey-text);
-}
-
-.config-ui-x-navi-blue .nav-link {
-  color: var(--config-ui-x-navi-blue-text);
-}
-
-.config-ui-x-green .nav-link {
-  color: var(--config-ui-x-green-text);
-}
-
-.config-ui-x-orange .nav-link {
-  color: var(--config-ui-x-orange-text);
-}
-
-.config-ui-x-grey .nav-link {
-  color: var(--config-ui-x-grey-text);
-}
-
-.config-ui-x-brown .nav-link {
-  color: var(--config-ui-x-brown-text);
-}
-
-.config-ui-x-amber .nav-link {
-  color: var(--config-ui-x-amber-text);
-}
-
-.config-ui-x-teal .nav-link {
-  color: var(--config-ui-x-teal-text);
-}
-
-.config-ui-x-cyan .nav-link {
-  color: var(--config-ui-x-cyan-text);
-}
-
-.config-ui-x-deep-purple .nav-link {
-  color: var(--config-ui-x-deep-purple-text);
-}
-
-.config-ui-x-dark-mode .nav-link {
-  color: var(--config-ui-x-dark-mode-text);
-}
-
-.config-ui-x-dark-mode-v1 .nav-link {
-  color: var(--config-ui-x-dark-mode-v1-text);
-}
-
-.config-ui-x-dark-mode-red .nav-link {
-  color: var(--config-ui-x-dark-mode-red-text);
-}
-
-.config-ui-x-dark-mode-pink .nav-link {
-  color: var(--config-ui-x-dark-mode-pink-text);
-}
-
-.config-ui-x-dark-mode-purple .nav-link {
-  color: var(--config-ui-x-dark-mode-purple-text);
-}
-
-.config-ui-x-dark-mode-indigo .nav-link {
-  color: var(--config-ui-x-dark-mode-indigo-text);
-}
-
-.config-ui-x-dark-mode-blue .nav-link {
-  color: var(--config-ui-x-dark-mode-blue-text);
-}
-
-.config-ui-x-dark-mode-blue-grey .nav-link {
-  color: var(--config-ui-x-dark-mode-blue-grey-text);
-}
-
-.config-ui-x-dark-mode-green .nav-link {
-  color: var(--config-ui-x-dark-mode-green-text);
-}
-
-.config-ui-x-dark-mode-grey .nav-link {
-  color: var(--config-ui-x-dark-mode-grey-text);
-}
-
-.config-ui-x-dark-mode-brown .nav-link {
-  color: var(--config-ui-x-dark-mode-brown-text);
-}
-
-.config-ui-x-dark-mode-teal .nav-link {
-  color: var(--config-ui-x-dark-mode-teal-text);
-}
-
-.config-ui-x-dark-mode-cyan .nav-link {
-  color: var(--config-ui-x-dark-mode-cyan-text);
-}
-
-/* Nav links hover */
-.config-ui-x-red .nav-link:hover,
-.config-ui-x-red .nav-link:focus,
-.config-ui-x-pink .nav-link:hover,
-.config-ui-x-pink .nav-link:focus,
-.config-ui-x-purple .nav-link:hover,
-.config-ui-x-purple .nav-link:focus,
-.config-ui-x-indigo .nav-link:hover,
-.config-ui-x-indigo .nav-link:focus,
-.config-ui-x-blue .nav-link:hover,
-.config-ui-x-blue .nav-link:focus,
-.config-ui-x-blue-grey .nav-link:hover,
-.config-ui-x-blue-grey .nav-link:focus,
-.config-ui-x-navi-blue .nav-link:hover,
-.config-ui-x-navi-blue .nav-link:focus,
-.config-ui-x-green .nav-link:hover,
-.config-ui-x-green .nav-link:focus,
-.config-ui-x-orange .nav-link:hover,
-.config-ui-x-orange .nav-link:focus,
-.config-ui-x-grey .nav-link:hover,
-.config-ui-x-grey .nav-link:focus,
-.config-ui-x-brown .nav-link:hover,
-.config-ui-x-brown .nav-link:focus,
-.config-ui-x-amber .nav-link:hover,
-.config-ui-x-amber .nav-link:focus,
-.config-ui-x-teal .nav-link:hover,
-.config-ui-x-teal .nav-link:focus,
-.config-ui-x-cyan .nav-link:hover,
-.config-ui-x-cyan .nav-link:focus,
-.config-ui-x-deep-purple .nav-link:hover,
-.config-ui-x-deep-purple .nav-link:focus,
-.config-ui-x-dark-mode .nav-link:hover,
-.config-ui-x-dark-mode .nav-link:focus,
-.config-ui-x-dark-mode-v1 .nav-link:hover,
-.config-ui-x-dark-mode-v1 .nav-link:focus,
-.config-ui-x-dark-mode-red .nav-link:hover,
-.config-ui-x-dark-mode-red .nav-link:focus,
-.config-ui-x-dark-mode-pink .nav-link:hover,
-.config-ui-x-dark-mode-pink .nav-link:focus,
-.config-ui-x-dark-mode-purple .nav-link:hover,
-.config-ui-x-dark-mode-purple .nav-link:focus,
-.config-ui-x-dark-mode-indigo .nav-link:hover,
-.config-ui-x-dark-mode-indigo .nav-link:focus,
-.config-ui-x-dark-mode-blue .nav-link:hover,
-.config-ui-x-dark-mode-blue .nav-link:focus,
-.config-ui-x-dark-mode-blue-grey .nav-link:hover,
-.config-ui-x-dark-mode-blue-grey .nav-link:focus,
-.config-ui-x-dark-mode-green .nav-link:hover,
-.config-ui-x-dark-mode-green .nav-link:focus,
-.config-ui-x-dark-mode-grey .nav-link:hover,
-.config-ui-x-dark-mode-grey .nav-link:focus,
-.config-ui-x-dark-mode-brown .nav-link:hover,
-.config-ui-x-dark-mode-brown .nav-link:focus {
-  filter: brightness(1.2);
-}
-
-/* Navigation tabs */
-.nav-tabs .nav-link {
-  color: inherit;
-}
-
-/* Checkbox */
-.config-ui-x-red .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-red-text);
-}
-
-.config-ui-x-pink .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-pink-text);
-}
-
-.config-ui-x-purple .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-purple-text);
-}
-
-.config-ui-x-indigo .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-indigo-text);
-}
-
-.config-ui-x-blue .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-blue-text);
-}
-
-.config-ui-x-blue-grey .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-blue-grey-text);
-}
-
-.config-ui-x-navi-blue .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-navi-blue-text);
-}
-
-.config-ui-x-green .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-green-text);
-}
-
-.config-ui-x-orange .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-orange-text);
-}
-
-.config-ui-x-grey .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-grey-text);
-}
-
-.config-ui-x-brown .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-brown-text);
-}
-
-.config-ui-x-amber .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-amber-text);
-}
-
-.config-ui-x-teal .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-teal-text);
-}
-
-.config-ui-x-cyan .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-cyan-text);
-}
-
-.config-ui-x-deep-purple .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-deep-purple-text);
-}
-
-.config-ui-x-dark-mode .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-dark-mode-text);
-}
-
-.config-ui-x-dark-mode-v1 .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-dark-mode-v1-text);
-}
-
-.config-ui-x-dark-mode-red .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-dark-mode-red-text);
-}
-
-.config-ui-x-dark-mode-pink .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-dark-mode-pink-text);
-}
-
-.config-ui-x-dark-mode-purple .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-dark-mode-purple-text);
-}
-
-.config-ui-x-dark-mode-indigo .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-dark-mode-indigo-text);
-}
-
-.config-ui-x-dark-mode-blue .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-dark-mode-blue-text);
-}
-
-.config-ui-x-dark-mode-blue-grey .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-dark-mode-blue-grey-text);
-}
-
-.config-ui-x-dark-mode-green .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-dark-mode-green-text);
-}
-
-.config-ui-x-dark-mode-grey .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-dark-mode-grey-text);
-}
-
-.config-ui-x-dark-mode-brown .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-dark-mode-brown-text);
-}
-
-.config-ui-x-dark-mode-teal .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-dark-mode-teal-text);
-}
-
-.config-ui-x-dark-mode-cyan .form-check-input[type="checkbox"] {
-  border-color: var(--config-ui-x-dark-mode-cyan-text);
-}
-
-/* Checkbox checked */
-.config-ui-x-red .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-red-text);
-}
-
-.config-ui-x-pink .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-pink-text);
-}
-
-.config-ui-x-purple .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-purple-text);
-}
-
-.config-ui-x-indigo .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-indigo-text);
-}
-
-.config-ui-x-blue .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-blue-text);
-}
-
-.config-ui-x-blue-grey .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-blue-grey-text);
-}
-
-.config-ui-x-navi-blue .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-navi-blue-text);
-}
-
-.config-ui-x-green .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-green-text);
-}
-
-.config-ui-x-orange .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-orange-text);
-}
-
-.config-ui-x-grey .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-grey-text);
-}
-
-.config-ui-x-brown .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-brown-text);
-}
-
-.config-ui-x-amber .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-amber-text);
-}
-
-.config-ui-x-teal .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-teal-text);
-}
-
-.config-ui-x-cyan .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-cyan-text);
-}
-
-.config-ui-x-deep-purple .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-deep-purple-text);
-}
-
-.config-ui-x-dark-mode .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-dark-mode-text);
-}
-
-.config-ui-x-dark-mode-v1 .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-dark-mode-v1-text);
-}
-
-.config-ui-x-dark-mode-red .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-dark-mode-red-text);
-}
-
-.config-ui-x-dark-mode-pink .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-dark-mode-pink-text);
-}
-
-.config-ui-x-dark-mode-purple .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-dark-mode-purple-text);
-}
-
-.config-ui-x-dark-mode-indigo .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-dark-mode-indigo-text);
-}
-
-.config-ui-x-dark-mode-blue .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-dark-mode-blue-text);
-}
-
-.config-ui-x-dark-mode-blue-grey .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-dark-mode-blue-grey-text);
-}
-
-.config-ui-x-dark-mode-green .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-dark-mode-green-text);
-}
-
-.config-ui-x-dark-mode-grey .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-dark-mode-grey-text);
-}
-
-.config-ui-x-dark-mode-brown .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-dark-mode-brown-text);
-}
-
-.config-ui-x-dark-mode-teal .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-dark-mode-teal-text);
-}
-
-.config-ui-x-dark-mode-cyan .form-check-input:checked[type="checkbox"] {
-  background-color: var(--config-ui-x-dark-mode-cyan-text);
-}
-
-/* Accordion button */
-.config-ui-x-red .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-red-bg);
-  border-color: var(--config-ui-x-red-border);
-  color: var(--config-ui-x-red-text);
-}
-
-.config-ui-x-pink .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-pink-bg);
-  border-color: var(--config-ui-x-pink-border);
-  color: var(--config-ui-x-pink-text);
-}
-
-.config-ui-x-purple .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-purple-bg);
-  border-color: var(--config-ui-x-purple-border);
-  color: var(--config-ui-x-purple-text);
-}
-
-.config-ui-x-indigo .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-indigo-bg);
-  border-color: var(--config-ui-x-indigo-border);
-  color: var(--config-ui-x-indigo-text);
-}
-
-.config-ui-x-blue .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-blue-bg);
-  border-color: var(--config-ui-x-blue-border);
-  color: var(--config-ui-x-blue-text);
-}
-
-.config-ui-x-blue-grey .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-blue-grey-bg);
-  border-color: var(--config-ui-x-blue-grey-border);
-  color: var(--config-ui-x-blue-grey-text);
-}
-
-.config-ui-x-navi-blue .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-navi-blue-bg);
-  border-color: var(--config-ui-x-navi-blue-border);
-  color: var(--config-ui-x-navi-blue-text);
-}
-
-.config-ui-x-green .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-green-bg);
-  border-color: var(--config-ui-x-green-border);
-  color: var(--config-ui-x-green-text);
-}
-
-.config-ui-x-orange .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-orange-bg);
-  border-color: var(--config-ui-x-orange-border);
-  color: var(--config-ui-x-orange-text);
-}
-
-.config-ui-x-grey .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-grey-bg);
-  border-color: var(--config-ui-x-grey-border);
-  color: var(--config-ui-x-grey-text);
-}
-
-.config-ui-x-brown .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-brown-bg);
-  border-color: var(--config-ui-x-brown-border);
-  color: var(--config-ui-x-brown-text);
-}
-
-.config-ui-x-amber .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-amber-bg);
-  border-color: var(--config-ui-x-amber-border);
-  color: var(--config-ui-x-amber-text);
-}
-
-.config-ui-x-teal .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-teal-bg);
-  border-color: var(--config-ui-x-teal-border);
-  color: var(--config-ui-x-teal-text);
-}
-
-.config-ui-x-cyan .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-cyan-bg);
-  border-color: var(--config-ui-x-cyan-border);
-  color: var(--config-ui-x-cyan-text);
-}
-
-.config-ui-x-deep-purple .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-deep-purple-bg);
-  border-color: var(--config-ui-x-deep-purple-border);
-  color: var(--config-ui-x-deep-purple-text);
-}
-
-.config-ui-x-dark-mode .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-dark-mode-bg);
-  border-color: var(--config-ui-x-dark-mode-border);
-  color: var(--config-ui-x-dark-mode-text);
-}
-
-.config-ui-x-dark-mode-v1 .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-dark-mode-v1-bg);
-  border-color: var(--config-ui-x-dark-mode-v1-border);
-  color: var(--config-ui-x-dark-mode-v1-text);
-}
-
-.config-ui-x-dark-mode-red .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-dark-mode-red-bg);
-  border-color: var(--config-ui-x-dark-mode-red-border);
-  color: var(--config-ui-x-dark-mode-red-text);
-}
-
-.config-ui-x-dark-mode-pink .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-dark-mode-pink-bg);
-  border-color: var(--config-ui-x-dark-mode-pink-border);
-  color: var(--config-ui-x-dark-mode-pink-text);
-}
-
-.config-ui-x-dark-mode-purple .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-dark-mode-purple-bg);
-  border-color: var(--config-ui-x-dark-mode-purple-border);
-  color: var(--config-ui-x-dark-mode-purple-text);
-}
-
-.config-ui-x-dark-mode-indigo .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-dark-mode-indigo-bg);
-  border-color: var(--config-ui-x-dark-mode-indigo-border);
-  color: var(--config-ui-x-dark-mode-indigo-text);
-}
-
-.config-ui-x-dark-mode-blue .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-dark-mode-blue-bg);
-  border-color: var(--config-ui-x-dark-mode-blue-border);
-  color: var(--config-ui-x-dark-mode-blue-text);
-}
-
-.config-ui-x-dark-mode-blue-grey .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-dark-mode-blue-grey-bg);
-  border-color: var(--config-ui-x-dark-mode-blue-grey-border);
-  color: var(--config-ui-x-dark-mode-blue-grey-text);
-}
-
-.config-ui-x-dark-mode-green .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-dark-mode-green-bg);
-  border-color: var(--config-ui-x-dark-mode-green-border);
-  color: var(--config-ui-x-dark-mode-green-text);
-}
-
-.config-ui-x-dark-mode-grey .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-dark-mode-grey-bg);
-  border-color: var(--config-ui-x-dark-mode-grey-border);
-  color: var(--config-ui-x-dark-mode-grey-text);
-}
-
-.config-ui-x-dark-mode-brown .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-dark-mode-brown-bg);
-  border-color: var(--config-ui-x-dark-mode-brown-border);
-  color: var(--config-ui-x-dark-mode-brown-text);
-}
-
-.config-ui-x-dark-mode-teal .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-dark-mode-teal-bg);
-  border-color: var(--config-ui-x-dark-mode-teal-border);
-  color: var(--config-ui-x-dark-mode-teal-text);
-}
-
-.config-ui-x-dark-mode-cyan .accordion-button:not(.collapsed) {
-  background-color: var(--config-ui-x-dark-mode-cyan-bg);
-  border-color: var(--config-ui-x-dark-mode-cyan-border);
-  color: var(--config-ui-x-dark-mode-cyan-text);
-}
-
-/* Background text */
-.config-ui-x-red .text-bg-primary {
-  background-color: var(--config-ui-x-red-text) !important;
-}
-
-.config-ui-x-pink .text-bg-primary {
-  background-color: var(--config-ui-x-pink-text) !important;
-}
-
-.config-ui-x-purple .text-bg-primary {
-  background-color: var(--config-ui-x-purple-text) !important;
-}
-
-.config-ui-x-indigo .text-bg-primary {
-  background-color: var(--config-ui-x-indigo-text) !important;
-}
-
-.config-ui-x-blue .text-bg-primary {
-  background-color: var(--config-ui-x-blue-text) !important;
-}
-
-.config-ui-x-blue-grey .text-bg-primary {
-  background-color: var(--config-ui-x-blue-grey-text) !important;
-}
-
-.config-ui-x-navi-blue .text-bg-primary {
-  background-color: var(--config-ui-x-navi-blue-text) !important;
-}
-
-.config-ui-x-green .text-bg-primary {
-  background-color: var(--config-ui-x-green-text) !important;
 }
 
+/**
+ * ==================================================
+ * Text Background (Primary)
+ * ==================================================
+ */
 .config-ui-x-orange .text-bg-primary {
   background-color: var(--config-ui-x-orange-text) !important;
 }
-
-.config-ui-x-grey .text-bg-primary {
-  background-color: var(--config-ui-x-grey-text) !important;
+.config-ui-x-red .text-bg-primary {
+  background-color: var(--config-ui-x-red-text) !important;
 }
-
-.config-ui-x-brown .text-bg-primary {
-  background-color: var(--config-ui-x-brown-text) !important;
+.config-ui-x-pink .text-bg-primary {
+  background-color: var(--config-ui-x-pink-text) !important;
 }
-
-.config-ui-x-amber .text-bg-primary {
-  background-color: var(--config-ui-x-amber-text) !important;
+.config-ui-x-purple .text-bg-primary {
+  background-color: var(--config-ui-x-purple-text) !important;
 }
-
-.config-ui-x-teal .text-bg-primary {
-  background-color: var(--config-ui-x-teal-text) !important;
-}
-
-.config-ui-x-cyan .text-bg-primary {
-  background-color: var(--config-ui-x-cyan-text) !important;
-}
-
 .config-ui-x-deep-purple .text-bg-primary {
   background-color: var(--config-ui-x-deep-purple-text) !important;
 }
-
-.config-ui-x-dark-mode .text-bg-primary {
-  background-color: var(--config-ui-x-dark-mode-text) !important;
+.config-ui-x-indigo .text-bg-primary {
+  background-color: var(--config-ui-x-indigo-text) !important;
 }
-
-.config-ui-x-dark-mode-v1 .text-bg-primary {
-  background-color: var(--config-ui-x-dark-mode-v1-text) !important;
+.config-ui-x-blue .text-bg-primary {
+  background-color: var(--config-ui-x-blue-text) !important;
 }
-
+.config-ui-x-blue-grey .text-bg-primary {
+  background-color: var(--config-ui-x-blue-grey-text) !important;
+}
+.config-ui-x-cyan .text-bg-primary {
+  background-color: var(--config-ui-x-cyan-text) !important;
+}
+.config-ui-x-green .text-bg-primary {
+  background-color: var(--config-ui-x-green-text) !important;
+}
+.config-ui-x-teal .text-bg-primary {
+  background-color: var(--config-ui-x-teal-text) !important;
+}
+.config-ui-x-grey .text-bg-primary {
+  background-color: var(--config-ui-x-grey-text) !important;
+}
+.config-ui-x-brown .text-bg-primary {
+  background-color: var(--config-ui-x-brown-text) !important;
+}
+.config-ui-x-dark-mode-orange .text-bg-primary {
+  background-color: var(--config-ui-x-dark-mode-orange-text) !important;
+}
 .config-ui-x-dark-mode-red .text-bg-primary {
   background-color: var(--config-ui-x-dark-mode-red-text) !important;
 }
-
 .config-ui-x-dark-mode-pink .text-bg-primary {
   background-color: var(--config-ui-x-dark-mode-pink-text) !important;
 }
-
 .config-ui-x-dark-mode-purple .text-bg-primary {
   background-color: var(--config-ui-x-dark-mode-purple-text) !important;
 }
-
+.config-ui-x-dark-mode-deep-purple .text-bg-primary {
+  background-color: var(--config-ui-x-dark-mode-deep-purple-text) !important;
+}
 .config-ui-x-dark-mode-indigo .text-bg-primary {
   background-color: var(--config-ui-x-dark-mode-indigo-text) !important;
 }
-
 .config-ui-x-dark-mode-blue .text-bg-primary {
   background-color: var(--config-ui-x-dark-mode-blue-text) !important;
 }
-
 .config-ui-x-dark-mode-blue-grey .text-bg-primary {
   background-color: var(--config-ui-x-dark-mode-blue-grey-text) !important;
 }
-
+.config-ui-x-dark-mode-cyan .text-bg-primary {
+  background-color: var(--config-ui-x-dark-mode-cyan-text) !important;
+}
 .config-ui-x-dark-mode-green .text-bg-primary {
   background-color: var(--config-ui-x-dark-mode-green-text) !important;
 }
-
+.config-ui-x-dark-mode-teal .text-bg-primary {
+  background-color: var(--config-ui-x-dark-mode-teal-text) !important;
+}
 .config-ui-x-dark-mode-grey .text-bg-primary {
   background-color: var(--config-ui-x-dark-mode-grey-text) !important;
 }
-
 .config-ui-x-dark-mode-brown .text-bg-primary {
   background-color: var(--config-ui-x-dark-mode-brown-text) !important;
 }
 
-.config-ui-x-dark-mode-teal .text-bg-primary {
-  background-color: var(--config-ui-x-dark-mode-teal-text) !important;
+/**
+ * ==================================================
+ * Nav Link
+ * ==================================================
+ */
+.config-ui-x-orange .nav-link,
+.config-ui-x-orange .nav-link:focus,
+.config-ui-x-orange .nav-link:hover {
+  color: var(--config-ui-x-orange-text);
+}
+.config-ui-x-red .nav-link,
+.config-ui-x-red .nav-link:focus,
+.config-ui-x-red .nav-link:hover {
+  color: var(--config-ui-x-red-text);
+}
+.config-ui-x-pink .nav-link,
+.config-ui-x-pink .nav-link:focus,
+.config-ui-x-pink .nav-link:hover {
+  color: var(--config-ui-x-pink-text);
+}
+.config-ui-x-purple .nav-link,
+.config-ui-x-purple .nav-link:focus,
+.config-ui-x-purple .nav-link:hover {
+  color: var(--config-ui-x-purple-text);
+}
+.config-ui-x-deep-purple .nav-link,
+.config-ui-x-deep-purple .nav-link:focus,
+.config-ui-x-deep-purple .nav-link:hover {
+  color: var(--config-ui-x-deep-purple-text);
+}
+.config-ui-x-indigo .nav-link,
+.config-ui-x-indigo .nav-link:focus,
+.config-ui-x-indigo .nav-link:hover {
+  color: var(--config-ui-x-indigo-text);
+}
+.config-ui-x-blue .nav-link,
+.config-ui-x-blue .nav-link:focus,
+.config-ui-x-blue .nav-link:hover {
+  color: var(--config-ui-x-blue-text);
+}
+.config-ui-x-blue-grey .nav-link,
+.config-ui-x-blue-grey .nav-link:focus,
+.config-ui-x-blue-grey .nav-link:hover {
+  color: var(--config-ui-x-blue-grey-text);
+}
+.config-ui-x-cyan .nav-link,
+.config-ui-x-cyan .nav-link:focus,
+.config-ui-x-cyan .nav-link:hover {
+  color: var(--config-ui-x-cyan-text);
+}
+.config-ui-x-green .nav-link,
+.config-ui-x-green .nav-link:focus,
+.config-ui-x-green .nav-link:hover {
+  color: var(--config-ui-x-green-text);
+}
+.config-ui-x-teal .nav-link,
+.config-ui-x-teal .nav-link:focus,
+.config-ui-x-teal .nav-link:hover {
+  color: var(--config-ui-x-teal-text);
+}
+.config-ui-x-grey .nav-link,
+.config-ui-x-grey .nav-link:focus,
+.config-ui-x-grey .nav-link:hover {
+  color: var(--config-ui-x-grey-text);
+}
+.config-ui-x-brown .nav-link,
+.config-ui-x-brown .nav-link:focus,
+.config-ui-x-brown .nav-link:hover {
+  color: var(--config-ui-x-brown-text);
+}
+.config-ui-x-dark-mode-orange .nav-link,
+.config-ui-x-dark-mode-orange .nav-link:focus,
+.config-ui-x-dark-mode-orange .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-orange-text);
+}
+.config-ui-x-dark-mode-red .nav-link,
+.config-ui-x-dark-mode-red .nav-link:focus,
+.config-ui-x-dark-mode-red .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-red-text);
+}
+.config-ui-x-dark-mode-pink .nav-link,
+.config-ui-x-dark-mode-pink .nav-link:focus,
+.config-ui-x-dark-mode-pink .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-pink-text);
+}
+.config-ui-x-dark-mode-purple .nav-link,
+.config-ui-x-dark-mode-purple .nav-link:focus,
+.config-ui-x-dark-mode-purple .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-purple-text);
+}
+.config-ui-x-dark-mode-deep-purple .nav-link,
+.config-ui-x-dark-mode-deep-purple .nav-link:focus,
+.config-ui-x-dark-mode-deep-purple .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-deep-purple-text);
+}
+.config-ui-x-dark-mode-indigo .nav-link,
+.config-ui-x-dark-mode-indigo .nav-link:focus,
+.config-ui-x-dark-mode-indigo .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-indigo-text);
+}
+.config-ui-x-dark-mode-blue .nav-link,
+.config-ui-x-dark-mode-blue .nav-link:focus,
+.config-ui-x-dark-mode-blue .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-blue-text);
+}
+.config-ui-x-dark-mode-blue-grey .nav-link,
+.config-ui-x-dark-mode-blue-grey .nav-link:focus,
+.config-ui-x-dark-mode-blue-grey .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-blue-grey-text);
+}
+.config-ui-x-dark-mode-cyan .nav-link,
+.config-ui-x-dark-mode-cyan .nav-link:focus,
+.config-ui-x-dark-mode-cyan .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-cyan-text);
+}
+.config-ui-x-dark-mode-green .nav-link,
+.config-ui-x-dark-mode-green .nav-link:focus,
+.config-ui-x-dark-mode-green .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-green-text);
+}
+.config-ui-x-dark-mode-teal .nav-link,
+.config-ui-x-dark-mode-teal .nav-link:focus,
+.config-ui-x-dark-mode-teal .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-teal-text);
+}
+.config-ui-x-dark-mode-grey .nav-link,
+.config-ui-x-dark-mode-grey .nav-link:focus,
+.config-ui-x-dark-mode-grey .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-grey-text);
+}
+.config-ui-x-dark-mode-brown .nav-link,
+.config-ui-x-dark-mode-brown .nav-link:focus,
+.config-ui-x-dark-mode-brown .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-brown-text);
 }
 
-.config-ui-x-dark-mode-cyan .text-bg-primary {
-  background-color: var(--config-ui-x-dark-mode-cyan-text) !important;
+/**
+ * ==================================================
+ * Navigation Tab Links
+ * ==================================================
+ */
+.config-ui-x-orange .nav-tabs .nav-link:focus,
+.config-ui-x-orange .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-orange-text);
+}
+.config-ui-x-red .nav-tabs .nav-link:focus,
+.config-ui-x-red .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-red-text);
+}
+.config-ui-x-pink .nav-tabs .nav-link:focus,
+.config-ui-x-pink .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-pink-text);
+}
+.config-ui-x-purple .nav-tabs .nav-link:focus,
+.config-ui-x-purple .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-purple-text);
+}
+.config-ui-x-deep-purple .nav-tabs .nav-link:focus,
+.config-ui-x-deep-purple .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-deep-purple-text);
+}
+.config-ui-x-indigo .nav-tabs .nav-link:focus,
+.config-ui-x-indigo .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-indigo-text);
+}
+.config-ui-x-blue .nav-tabs .nav-link:focus,
+.config-ui-x-blue .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-blue-text);
+}
+.config-ui-x-blue-grey .nav-tabs .nav-link:focus,
+.config-ui-x-blue-grey .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-blue-grey-text);
+}
+.config-ui-x-cyan .nav-tabs .nav-link:focus,
+.config-ui-x-cyan .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-cyan-text);
+}
+.config-ui-x-green .nav-tabs .nav-link:focus,
+.config-ui-x-green .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-green-text);
+}
+.config-ui-x-teal .nav-tabs .nav-link:focus,
+.config-ui-x-teal .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-teal-text);
+}
+.config-ui-x-grey .nav-tabs .nav-link:focus,
+.config-ui-x-grey .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-grey-text);
+}
+.config-ui-x-brown .nav-tabs .nav-link:focus,
+.config-ui-x-brown .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-brown-text);
+}
+.config-ui-x-dark-mode-orange .nav-tabs .nav-link:focus,
+.config-ui-x-dark-mode-orange .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-orange-text);
+}
+.config-ui-x-dark-mode-red .nav-tabs .nav-link:focus,
+.config-ui-x-dark-mode-red .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-red-text);
+}
+.config-ui-x-dark-mode-pink .nav-tabs .nav-link:focus,
+.config-ui-x-dark-mode-pink .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-pink-text);
+}
+.config-ui-x-dark-mode-purple .nav-tabs .nav-link:focus,
+.config-ui-x-dark-mode-purple .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-purple-text);
+}
+.config-ui-x-dark-mode-deep-purple .nav-tabs .nav-link:focus,
+.config-ui-x-dark-mode-deep-purple .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-deep-purple-text);
+}
+.config-ui-x-dark-mode-indigo .nav-tabs .nav-link:focus,
+.config-ui-x-dark-mode-indigo .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-indigo-text);
+}
+.config-ui-x-dark-mode-blue .nav-tabs .nav-link:focus,
+.config-ui-x-dark-mode-blue .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-blue-text);
+}
+.config-ui-x-dark-mode-blue-grey .nav-tabs .nav-link:focus,
+.config-ui-x-dark-mode-blue-grey .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-blue-grey-text);
+}
+.config-ui-x-dark-mode-cyan .nav-tabs .nav-link:focus,
+.config-ui-x-dark-mode-cyan .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-cyan-text);
+}
+.config-ui-x-dark-mode-green .nav-tabs .nav-link:focus,
+.config-ui-x-dark-mode-green .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-green-text);
+}
+.config-ui-x-dark-mode-teal .nav-tabs .nav-link:focus,
+.config-ui-x-dark-mode-teal .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-teal-text);
+}
+.config-ui-x-dark-mode-grey .nav-tabs .nav-link:focus,
+.config-ui-x-dark-mode-grey .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-grey-text);
+}
+.config-ui-x-dark-mode-brown .nav-tabs .nav-link:focus,
+.config-ui-x-dark-mode-brown .nav-tabs .nav-link:hover {
+  color: var(--config-ui-x-dark-mode-brown-text);
+}
+
+/**
+ * ==================================================
+ * Alert
+ * ==================================================
+ */
+.config-ui-x-orange .alert,
+.config-ui-x-red .alert,
+.config-ui-x-pink .alert,
+.config-ui-x-purple .alert,
+.config-ui-x-deep-purple .alert,
+.config-ui-x-indigo .alert,
+.config-ui-x-blue .alert,
+.config-ui-x-blue-grey .alert,
+.config-ui-x-cyan .alert,
+.config-ui-x-green .alert,
+.config-ui-x-teal .alert,
+.config-ui-x-grey .alert,
+.config-ui-x-brown .alert,
+.config-ui-x-dark-mode-orange .alert,
+.config-ui-x-dark-mode-red .alert,
+.config-ui-x-dark-mode-pink .alert,
+.config-ui-x-dark-mode-purple .alert,
+.config-ui-x-dark-mode-deep-purple .alert,
+.config-ui-x-dark-mode-indigo .alert,
+.config-ui-x-dark-mode-blue .alert,
+.config-ui-x-dark-mode-blue-grey .alert,
+.config-ui-x-dark-mode-cyan .alert,
+.config-ui-x-dark-mode-green .alert,
+.config-ui-x-dark-mode-teal .alert,
+.config-ui-x-dark-mode-grey .alert,
+.config-ui-x-dark-mode-brown .alert {
+  color: var(--bs-alert-color) !important;
+  background-color: var(--bs-alert-bg) !important;
+  border-color: var(--bs-alert-border-color) !important;
+  box-shadow: 0 0 1px var(--bs-alert-border-color) !important;
+}
+
+/**
+ * ==================================================
+ * Table (Bordered)
+ * ==================================================
+ */
+.config-ui-x-orange .table-bordered,
+.config-ui-x-orange .table-bordered th,
+.config-ui-x-orange .table-bordered td,
+.config-ui-x-red .table-bordered,
+.config-ui-x-red .table-bordered th,
+.config-ui-x-red .table-bordered td,
+.config-ui-x-pink .table-bordered,
+.config-ui-x-pink .table-bordered th,
+.config-ui-x-pink .table-bordered td,
+.config-ui-x-purple .table-bordered,
+.config-ui-x-purple .table-bordered th,
+.config-ui-x-purple .table-bordered td,
+.config-ui-x-deep-purple .table-bordered,
+.config-ui-x-deep-purple .table-bordered th,
+.config-ui-x-deep-purple .table-bordered td,
+.config-ui-x-indigo .table-bordered,
+.config-ui-x-indigo .table-bordered th,
+.config-ui-x-indigo .table-bordered td,
+.config-ui-x-blue .table-bordered,
+.config-ui-x-blue .table-bordered th,
+.config-ui-x-blue .table-bordered td,
+.config-ui-x-blue-grey .table-bordered,
+.config-ui-x-blue-grey .table-bordered th,
+.config-ui-x-blue-grey .table-bordered td,
+.config-ui-x-cyan .table-bordered,
+.config-ui-x-cyan .table-bordered th,
+.config-ui-x-cyan .table-bordered td,
+.config-ui-x-green .table-bordered,
+.config-ui-x-green .table-bordered th,
+.config-ui-x-green .table-bordered td,
+.config-ui-x-teal .table-bordered,
+.config-ui-x-teal .table-bordered th,
+.config-ui-x-teal .table-bordered td,
+.config-ui-x-grey .table-bordered,
+.config-ui-x-grey .table-bordered th,
+.config-ui-x-grey .table-bordered td,
+.config-ui-x-brown .table-bordered,
+.config-ui-x-brown .table-bordered th,
+.config-ui-x-brown .table-bordered td,
+.config-ui-x-dark-mode-orange .table-bordered,
+.config-ui-x-dark-mode-orange .table-bordered th,
+.config-ui-x-dark-mode-orange .table-bordered td,
+.config-ui-x-dark-mode-red .table-bordered,
+.config-ui-x-dark-mode-red .table-bordered th,
+.config-ui-x-dark-mode-red .table-bordered td,
+.config-ui-x-dark-mode-pink .table-bordered,
+.config-ui-x-dark-mode-pink .table-bordered th,
+.config-ui-x-dark-mode-pink .table-bordered td,
+.config-ui-x-dark-mode-purple .table-bordered,
+.config-ui-x-dark-mode-purple .table-bordered th,
+.config-ui-x-dark-mode-purple .table-bordered td,
+.config-ui-x-dark-mode-deep-purple .table-bordered,
+.config-ui-x-dark-mode-deep-purple .table-bordered th,
+.config-ui-x-dark-mode-deep-purple .table-bordered td,
+.config-ui-x-dark-mode-indigo .table-bordered,
+.config-ui-x-dark-mode-indigo .table-bordered th,
+.config-ui-x-dark-mode-indigo .table-bordered td,
+.config-ui-x-dark-mode-blue .table-bordered,
+.config-ui-x-dark-mode-blue .table-bordered th,
+.config-ui-x-dark-mode-blue .table-bordered td,
+.config-ui-x-dark-mode-blue-grey .table-bordered,
+.config-ui-x-dark-mode-blue-grey .table-bordered th,
+.config-ui-x-dark-mode-blue-grey .table-bordered td,
+.config-ui-x-dark-mode-cyan .table-bordered,
+.config-ui-x-dark-mode-cyan .table-bordered th,
+.config-ui-x-dark-mode-cyan .table-bordered td,
+.config-ui-x-dark-mode-green .table-bordered,
+.config-ui-x-dark-mode-green .table-bordered th,
+.config-ui-x-dark-mode-green .table-bordered td,
+.config-ui-x-dark-mode-teal .table-bordered,
+.config-ui-x-dark-mode-teal .table-bordered th,
+.config-ui-x-dark-mode-teal .table-bordered td,
+.config-ui-x-dark-mode-grey .table-bordered,
+.config-ui-x-dark-mode-grey .table-bordered th,
+.config-ui-x-dark-mode-grey .table-bordered td,
+.config-ui-x-dark-mode-brown .table-bordered,
+.config-ui-x-dark-mode-brown .table-bordered th,
+.config-ui-x-dark-mode-brown .table-bordered td {
+  border-color: var(--bs-table-border-color);
+}
+
+/**
+ * ==================================================
+ * Form Label
+ * ==================================================
+ */
+.config-ui-x-orange .form-label,
+.config-ui-x-red .form-label,
+.config-ui-x-pink .form-label,
+.config-ui-x-purple .form-label,
+.config-ui-x-deep-purple .form-label,
+.config-ui-x-indigo .form-label,
+.config-ui-x-blue .form-label,
+.config-ui-x-blue-grey .form-label,
+.config-ui-x-cyan .form-label,
+.config-ui-x-green .form-label,
+.config-ui-x-teal .form-label,
+.config-ui-x-grey .form-label,
+.config-ui-x-brown .form-label,
+.config-ui-x-dark-mode-orange .form-label,
+.config-ui-x-dark-mode-red .form-label,
+.config-ui-x-dark-mode-pink .form-label,
+.config-ui-x-dark-mode-purple .form-label,
+.config-ui-x-dark-mode-deep-purple .form-label,
+.config-ui-x-dark-mode-indigo .form-label,
+.config-ui-x-dark-mode-blue .form-label,
+.config-ui-x-dark-mode-blue-grey .form-label,
+.config-ui-x-dark-mode-cyan .form-label,
+.config-ui-x-dark-mode-green .form-label,
+.config-ui-x-dark-mode-teal .form-label,
+.config-ui-x-dark-mode-grey .form-label,
+.config-ui-x-dark-mode-brown .form-label {
+  font-weight: normal;
+}
+
+/**
+ * ==================================================
+ * Form Control
+ * ==================================================
+ */
+.config-ui-x-orange .form-control,
+.config-ui-x-red .form-control,
+.config-ui-x-pink .form-control,
+.config-ui-x-purple .form-control,
+.config-ui-x-deep-purple .form-control,
+.config-ui-x-indigo .form-control,
+.config-ui-x-blue .form-control,
+.config-ui-x-blue-grey .form-control,
+.config-ui-x-cyan .form-control,
+.config-ui-x-green .form-control,
+.config-ui-x-teal .form-control,
+.config-ui-x-grey .form-control,
+.config-ui-x-brown .form-control,
+.config-ui-x-dark-mode-orange .form-control,
+.config-ui-x-dark-mode-red .form-control,
+.config-ui-x-dark-mode-pink .form-control,
+.config-ui-x-dark-mode-purple .form-control,
+.config-ui-x-dark-mode-deep-purple .form-control,
+.config-ui-x-dark-mode-indigo .form-control,
+.config-ui-x-dark-mode-blue .form-control,
+.config-ui-x-dark-mode-blue-grey .form-control,
+.config-ui-x-dark-mode-cyan .form-control,
+.config-ui-x-dark-mode-green .form-control,
+.config-ui-x-dark-mode-teal .form-control,
+.config-ui-x-dark-mode-grey .form-control,
+.config-ui-x-dark-mode-brown .form-control {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--bs-border-color);
+}
+
+/**
+ * ==================================================
+ * Form Control (Focus)
+ * ==================================================
+ */
+.config-ui-x-orange .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-orange-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-orange-border);
+}
+.config-ui-x-red .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-red-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-red-border);
+}
+.config-ui-x-pink .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-pink-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-pink-border);
+}
+.config-ui-x-purple .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-purple-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-purple-border);
+}
+.config-ui-x-deep-purple .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-deep-purple-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-deep-purple-border);
+}
+.config-ui-x-indigo .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-indigo-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-indigo-border);
+}
+.config-ui-x-blue .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-blue-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-blue-border);
+}
+.config-ui-x-blue-grey .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-blue-grey-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-blue-grey-border);
+}
+.config-ui-x-cyan .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-cyan-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-cyan-border);
+}
+.config-ui-x-green .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-green-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-green-border);
+}
+.config-ui-x-teal .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-teal-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-teal-border);
+}
+.config-ui-x-grey .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-grey-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-grey-border);
+}
+.config-ui-x-brown .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-brown-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-brown-border);
+}
+.config-ui-x-dark-mode-orange .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-dark-mode-orange-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-orange-border);
+}
+.config-ui-x-dark-mode-red .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-dark-mode-red-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-red-border);
+}
+.config-ui-x-dark-mode-pink .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-dark-mode-pink-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-pink-border);
+}
+.config-ui-x-dark-mode-purple .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-dark-mode-purple-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-purple-border);
+}
+.config-ui-x-dark-mode-deep-purple .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-dark-mode-deep-purple-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-deep-purple-border);
+}
+.config-ui-x-dark-mode-indigo .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-dark-mode-indigo-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-indigo-border);
+}
+.config-ui-x-dark-mode-blue .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-dark-mode-blue-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-blue-border);
+}
+.config-ui-x-dark-mode-blue-grey .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-dark-mode-blue-grey-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-blue-grey-border);
+}
+.config-ui-x-dark-mode-cyan .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-dark-mode-cyan-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-cyan-border);
+}
+.config-ui-x-dark-mode-green .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-dark-mode-green-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-green-border);
+}
+.config-ui-x-dark-mode-teal .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-dark-mode-teal-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-teal-border);
+}
+.config-ui-x-dark-mode-grey .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-dark-mode-grey-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-grey-border);
+}
+.config-ui-x-dark-mode-brown .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: var(--config-ui-x-dark-mode-brown-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-brown-border);
+}
+
+/**
+ * ==================================================
+ * Form Select (Focus)
+ * ==================================================
+ */
+.config-ui-x-orange .form-select:focus {
+  border-color: var(--config-ui-x-orange-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-orange-border);
+}
+.config-ui-x-red .form-select:focus {
+  border-color: var(--config-ui-x-red-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-red-border);
+}
+.config-ui-x-pink .form-select:focus {
+  border-color: var(--config-ui-x-pink-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-pink-border);
+}
+.config-ui-x-purple .form-select:focus {
+  border-color: var(--config-ui-x-purple-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-purple-border);
+}
+.config-ui-x-deep-purple .form-select:focus {
+  border-color: var(--config-ui-x-deep-purple-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-deep-purple-border);
+}
+.config-ui-x-indigo .form-select:focus {
+  border-color: var(--config-ui-x-indigo-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-indigo-border);
+}
+.config-ui-x-blue .form-select:focus {
+  border-color: var(--config-ui-x-blue-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-blue-border);
+}
+.config-ui-x-blue-grey .form-select:focus {
+  border-color: var(--config-ui-x-blue-grey-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-blue-grey-border);
+}
+.config-ui-x-cyan .form-select:focus {
+  border-color: var(--config-ui-x-cyan-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-cyan-border);
+}
+.config-ui-x-green .form-select:focus {
+  border-color: var(--config-ui-x-green-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-green-border);
+}
+.config-ui-x-teal .form-select:focus {
+  border-color: var(--config-ui-x-teal-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-teal-border);
+}
+.config-ui-x-grey .form-select:focus {
+  border-color: var(--config-ui-x-grey-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-grey-border);
+}
+.config-ui-x-brown .form-select:focus {
+  border-color: var(--config-ui-x-brown-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-brown-border);
+}
+.config-ui-x-dark-mode-orange .form-select:focus {
+  border-color: var(--config-ui-x-dark-mode-orange-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-orange-border);
+}
+.config-ui-x-dark-mode-red .form-select:focus {
+  border-color: var(--config-ui-x-dark-mode-red-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-red-border);
+}
+.config-ui-x-dark-mode-pink .form-select:focus {
+  border-color: var(--config-ui-x-dark-mode-pink-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-pink-border);
+}
+.config-ui-x-dark-mode-purple .form-select:focus {
+  border-color: var(--config-ui-x-dark-mode-purple-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-purple-border);
+}
+.config-ui-x-dark-mode-deep-purple .form-select:focus {
+  border-color: var(--config-ui-x-dark-mode-deep-purple-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-deep-purple-border);
+}
+.config-ui-x-dark-mode-indigo .form-select:focus {
+  border-color: var(--config-ui-x-dark-mode-indigo-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-indigo-border);
+}
+.config-ui-x-dark-mode-blue .form-select:focus {
+  border-color: var(--config-ui-x-dark-mode-blue-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-blue-border);
+}
+.config-ui-x-dark-mode-blue-grey .form-select:focus {
+  border-color: var(--config-ui-x-dark-mode-blue-grey-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-blue-grey-border);
+}
+.config-ui-x-dark-mode-cyan .form-select:focus {
+  border-color: var(--config-ui-x-dark-mode-cyan-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-cyan-border);
+}
+.config-ui-x-dark-mode-green .form-select:focus {
+  border-color: var(--config-ui-x-dark-mode-green-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-green-border);
+}
+.config-ui-x-dark-mode-teal .form-select:focus {
+  border-color: var(--config-ui-x-dark-mode-teal-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-teal-border);
+}
+.config-ui-x-dark-mode-grey .form-select:focus {
+  border-color: var(--config-ui-x-dark-mode-grey-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-grey-border);
+}
+.config-ui-x-dark-mode-brown .form-select:focus {
+  border-color: var(--config-ui-x-dark-mode-brown-text);
+  box-shadow: 0 0 0 .2rem var(--config-ui-x-dark-mode-brown-border);
+}
+
+/**
+ * ==================================================
+ * Form Check Input (Focus)
+ * ==================================================
+ */
+.config-ui-x-orange .form-check-input:focus {
+  border-color: var(--config-ui-x-orange-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-orange-border);
+}
+.config-ui-x-red .form-check-input:focus {
+  border-color: var(--config-ui-x-red-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-red-border);
+}
+.config-ui-x-pink .form-check-input:focus {
+  border-color: var(--config-ui-x-pink-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-pink-border);
+}
+.config-ui-x-purple .form-check-input:focus {
+  border-color: var(--config-ui-x-purple-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-purple-border);
+}
+.config-ui-x-deep-purple .form-check-input:focus {
+  border-color: var(--config-ui-x-deep-purple-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-deep-purple-border);
+}
+.config-ui-x-indigo .form-check-input:focus {
+  border-color: var(--config-ui-x-indigo-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-indigo-border);
+}
+.config-ui-x-blue .form-check-input:focus {
+  border-color: var(--config-ui-x-blue-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-blue-border);
+}
+.config-ui-x-blue-grey .form-check-input:focus {
+  border-color: var(--config-ui-x-blue-grey-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-blue-grey-border);
+}
+.config-ui-x-cyan .form-check-input:focus {
+  border-color: var(--config-ui-x-cyan-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-cyan-border);
+}
+.config-ui-x-green .form-check-input:focus {
+  border-color: var(--config-ui-x-green-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-green-border);
+}
+.config-ui-x-teal .form-check-input:focus {
+  border-color: var(--config-ui-x-teal-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-teal-border);
+}
+.config-ui-x-grey .form-check-input:focus {
+  border-color: var(--config-ui-x-grey-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-grey-border);
+}
+.config-ui-x-brown .form-check-input:focus {
+  border-color: var(--config-ui-x-brown-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-brown-border);
+}
+.config-ui-x-dark-mode-orange .form-check-input:focus {
+  border-color: var(--config-ui-x-dark-mode-orange-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-dark-mode-orange-border);
+}
+.config-ui-x-dark-mode-red .form-check-input:focus {
+  border-color: var(--config-ui-x-dark-mode-red-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-dark-mode-red-border);
+}
+.config-ui-x-dark-mode-pink .form-check-input:focus {
+  border-color: var(--config-ui-x-dark-mode-pink-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-dark-mode-pink-border);
+}
+.config-ui-x-dark-mode-purple .form-check-input:focus {
+  border-color: var(--config-ui-x-dark-mode-purple-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-dark-mode-purple-border);
+}
+.config-ui-x-dark-mode-deep-purple .form-check-input:focus {
+  border-color: var(--config-ui-x-dark-mode-deep-purple-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-dark-mode-deep-purple-border);
+}
+.config-ui-x-dark-mode-indigo .form-check-input:focus {
+  border-color: var(--config-ui-x-dark-mode-indigo-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-dark-mode-indigo-border);
+}
+.config-ui-x-dark-mode-blue .form-check-input:focus {
+  border-color: var(--config-ui-x-dark-mode-blue-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-dark-mode-blue-border);
+}
+.config-ui-x-dark-mode-blue-grey .form-check-input:focus {
+  border-color: var(--config-ui-x-dark-mode-blue-grey-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-dark-mode-blue-grey-border);
+}
+.config-ui-x-dark-mode-cyan .form-check-input:focus {
+  border-color: var(--config-ui-x-dark-mode-cyan-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-dark-mode-cyan-border);
+}
+.config-ui-x-dark-mode-green .form-check-input:focus {
+  border-color: var(--config-ui-x-dark-mode-green-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-dark-mode-green-border);
+}
+.config-ui-x-dark-mode-teal .form-check-input:focus {
+  border-color: var(--config-ui-x-dark-mode-teal-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-dark-mode-teal-border);
+}
+.config-ui-x-dark-mode-grey .form-check-input:focus {
+  border-color: var(--config-ui-x-dark-mode-grey-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-dark-mode-grey-border);
+}
+.config-ui-x-dark-mode-brown .form-check-input:focus {
+  border-color: var(--config-ui-x-dark-mode-brown-text);
+  box-shadow: 0 0 0 .25rem var(--config-ui-x-dark-mode-brown-border);
+}
+
+/**
+ * ==================================================
+ * Form Check Input (Checked)
+ * ==================================================
+ */
+.config-ui-x-orange .form-check-input:checked {
+  background-color: var(--config-ui-x-orange-text);
+  border-color: var(--config-ui-x-orange-text);
+}
+.config-ui-x-red .form-check-input:checked {
+  background-color: var(--config-ui-x-red-text);
+  border-color: var(--config-ui-x-red-text);
+}
+.config-ui-x-pink .form-check-input:checked {
+  background-color: var(--config-ui-x-pink-text);
+  border-color: var(--config-ui-x-pink-text);
+}
+.config-ui-x-purple .form-check-input:checked {
+  background-color: var(--config-ui-x-purple-text);
+  border-color: var(--config-ui-x-purple-text);
+}
+.config-ui-x-deep-purple .form-check-input:checked {
+  background-color: var(--config-ui-x-deep-purple-text);
+  border-color: var(--config-ui-x-deep-purple-text);
+}
+.config-ui-x-indigo .form-check-input:checked {
+  background-color: var(--config-ui-x-indigo-text);
+  border-color: var(--config-ui-x-indigo-text);
+}
+.config-ui-x-blue .form-check-input:checked {
+  background-color: var(--config-ui-x-blue-text);
+  border-color: var(--config-ui-x-blue-text);
+}
+.config-ui-x-blue-grey .form-check-input:checked {
+  background-color: var(--config-ui-x-blue-grey-text);
+  border-color: var(--config-ui-x-blue-grey-text);
+}
+.config-ui-x-cyan .form-check-input:checked {
+  background-color: var(--config-ui-x-cyan-text);
+  border-color: var(--config-ui-x-cyan-text);
+}
+.config-ui-x-green .form-check-input:checked {
+  background-color: var(--config-ui-x-green-text);
+  border-color: var(--config-ui-x-green-text);
+}
+.config-ui-x-teal .form-check-input:checked {
+  background-color: var(--config-ui-x-teal-text);
+  border-color: var(--config-ui-x-teal-text);
+}
+.config-ui-x-grey .form-check-input:checked {
+  background-color: var(--config-ui-x-grey-text);
+  border-color: var(--config-ui-x-grey-text);
+}
+.config-ui-x-brown .form-check-input:checked {
+  background-color: var(--config-ui-x-brown-text);
+  border-color: var(--config-ui-x-brown-text);
+}
+.config-ui-x-dark-mode-orange .form-check-input:checked {
+  background-color: var(--config-ui-x-dark-mode-orange-text);
+  border-color: var(--config-ui-x-dark-mode-orange-text);
+}
+.config-ui-x-dark-mode-red .form-check-input:checked {
+  background-color: var(--config-ui-x-dark-mode-red-text);
+  border-color: var(--config-ui-x-dark-mode-red-text);
+}
+.config-ui-x-dark-mode-pink .form-check-input:checked {
+  background-color: var(--config-ui-x-dark-mode-pink-text);
+  border-color: var(--config-ui-x-dark-mode-pink-text);
+}
+.config-ui-x-dark-mode-purple .form-check-input:checked {
+  background-color: var(--config-ui-x-dark-mode-purple-text);
+  border-color: var(--config-ui-x-dark-mode-purple-text);
+}
+.config-ui-x-dark-mode-deep-purple .form-check-input:checked {
+  background-color: var(--config-ui-x-dark-mode-deep-purple-text);
+  border-color: var(--config-ui-x-dark-mode-deep-purple-text);
+}
+.config-ui-x-dark-mode-indigo .form-check-input:checked {
+  background-color: var(--config-ui-x-dark-mode-indigo-text);
+  border-color: var(--config-ui-x-dark-mode-indigo-text);
+}
+.config-ui-x-dark-mode-blue .form-check-input:checked {
+  background-color: var(--config-ui-x-dark-mode-blue-text);
+  border-color: var(--config-ui-x-dark-mode-blue-text);
+}
+.config-ui-x-dark-mode-blue-grey .form-check-input:checked {
+  background-color: var(--config-ui-x-dark-mode-blue-grey-text);
+  border-color: var(--config-ui-x-dark-mode-blue-grey-text);
+}
+.config-ui-x-dark-mode-cyan .form-check-input:checked {
+  background-color: var(--config-ui-x-dark-mode-cyan-text);
+  border-color: var(--config-ui-x-dark-mode-cyan-text);
+}
+.config-ui-x-dark-mode-green .form-check-input:checked {
+  background-color: var(--config-ui-x-dark-mode-green-text);
+  border-color: var(--config-ui-x-dark-mode-green-text);
+}
+.config-ui-x-dark-mode-teal .form-check-input:checked {
+  background-color: var(--config-ui-x-dark-mode-teal-text);
+  border-color: var(--config-ui-x-dark-mode-teal-text);
+}
+.config-ui-x-dark-mode-grey .form-check-input:checked {
+  background-color: var(--config-ui-x-dark-mode-grey-text);
+  border-color: var(--config-ui-x-dark-mode-grey-text);
+}
+.config-ui-x-dark-mode-brown .form-check-input:checked {
+  background-color: var(--config-ui-x-dark-mode-brown-text);
+  border-color: var(--config-ui-x-dark-mode-brown-text);
+}
+
+/**
+ * ==================================================
+ * Accordion Button
+ * ==================================================
+ */
+.config-ui-x-orange .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-orange-bg);
+  color: var(--config-ui-x-orange-text);
+}
+.config-ui-x-red .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-red-bg);
+  color: var(--config-ui-x-red-text);
+}
+.config-ui-x-pink .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-pink-bg);
+  color: var(--config-ui-x-pink-text);
+}
+.config-ui-x-purple .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-purple-bg);
+  color: var(--config-ui-x-purple-text);
+}
+.config-ui-x-deep-purple .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-deep-purple-bg);
+  color: var(--config-ui-x-deep-purple-text);
+}
+.config-ui-x-indigo .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-indigo-bg);
+  color: var(--config-ui-x-indigo-text);
+}
+.config-ui-x-blue .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-blue-bg);
+  color: var(--config-ui-x-blue-text);
+}
+.config-ui-x-blue-grey .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-blue-grey-bg);
+  color: var(--config-ui-x-blue-grey-text);
+}
+.config-ui-x-cyan .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-cyan-bg);
+  color: var(--config-ui-x-cyan-text);
+}
+.config-ui-x-green .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-green-bg);
+  color: var(--config-ui-x-green-text);
+}
+.config-ui-x-teal .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-teal-bg);
+  color: var(--config-ui-x-teal-text);
+}
+.config-ui-x-grey .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-grey-bg);
+  color: var(--config-ui-x-grey-text);
+}
+.config-ui-x-brown .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-brown-bg);
+  color: var(--config-ui-x-brown-text);
+}
+.config-ui-x-dark-mode-orange .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-dark-mode-orange-bg);
+  color: var(--config-ui-x-dark-mode-orange-text);
+}
+.config-ui-x-dark-mode-red .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-dark-mode-red-bg);
+  color: var(--config-ui-x-dark-mode-red-text);
+}
+.config-ui-x-dark-mode-pink .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-dark-mode-pink-bg);
+  color: var(--config-ui-x-dark-mode-pink-text);
+}
+.config-ui-x-dark-mode-purple .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-dark-mode-purple-bg);
+  color: var(--config-ui-x-dark-mode-purple-text);
+}
+.config-ui-x-dark-mode-deep-purple .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-dark-mode-deep-purple-bg);
+  color: var(--config-ui-x-dark-mode-deep-purple-text);
+}
+.config-ui-x-dark-mode-indigo .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-dark-mode-indigo-bg);
+  color: var(--config-ui-x-dark-mode-indigo-text);
+}
+.config-ui-x-dark-mode-blue .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-dark-mode-blue-bg);
+  color: var(--config-ui-x-dark-mode-blue-text);
+}
+.config-ui-x-dark-mode-blue-grey .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-dark-mode-blue-grey-bg);
+  color: var(--config-ui-x-dark-mode-blue-grey-text);
+}
+.config-ui-x-dark-mode-cyan .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-dark-mode-cyan-bg);
+  color: var(--config-ui-x-dark-mode-cyan-text);
+}
+.config-ui-x-dark-mode-green .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-dark-mode-green-bg);
+  color: var(--config-ui-x-dark-mode-green-text);
+}
+.config-ui-x-dark-mode-teal .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-dark-mode-teal-bg);
+  color: var(--config-ui-x-dark-mode-teal-text);
+}
+.config-ui-x-dark-mode-grey .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-dark-mode-grey-bg);
+  color: var(--config-ui-x-dark-mode-grey-text);
+}
+.config-ui-x-dark-mode-brown .accordion-button:not(.collapsed) {
+  background-color: var(--config-ui-x-dark-mode-brown-bg);
+  color: var(--config-ui-x-dark-mode-brown-text);
+}
+
+/**
+ * ==================================================
+ * Accordion Button Icon
+ * ==================================================
+ */
+.config-ui-x-orange .accordion-button::after,
+.config-ui-x-red .accordion-button::after,
+.config-ui-x-pink .accordion-button::after,
+.config-ui-x-purple .accordion-button::after,
+.config-ui-x-deep-purple .accordion-button::after,
+.config-ui-x-indigo .accordion-button::after,
+.config-ui-x-blue .accordion-button::after,
+.config-ui-x-blue-grey .accordion-button::after,
+.config-ui-x-cyan .accordion-button::after,
+.config-ui-x-green .accordion-button::after,
+.config-ui-x-teal .accordion-button::after,
+.config-ui-x-grey .accordion-button::after,
+.config-ui-x-brown .accordion-button::after {
+  --bs-accordion-btn-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+  --bs-accordion-btn-active-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+}
+.config-ui-x-dark-mode-orange .accordion-button::after,
+.config-ui-x-dark-mode-red .accordion-button::after,
+.config-ui-x-dark-mode-pink .accordion-button::after,
+.config-ui-x-dark-mode-purple .accordion-button::after,
+.config-ui-x-dark-mode-deep-purple .accordion-button::after,
+.config-ui-x-dark-mode-indigo .accordion-button::after,
+.config-ui-x-dark-mode-blue .accordion-button::after,
+.config-ui-x-dark-mode-blue-grey .accordion-button::after,
+.config-ui-x-dark-mode-cyan .accordion-button::after,
+.config-ui-x-dark-mode-green .accordion-button::after,
+.config-ui-x-dark-mode-teal .accordion-button::after,
+.config-ui-x-dark-mode-grey .accordion-button::after,
+.config-ui-x-dark-mode-brown .accordion-button::after {
+  --bs-accordion-btn-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+  --bs-accordion-btn-active-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
 }

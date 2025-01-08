@@ -1,11 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
-import Router from '@/config-ui/vite/src/router.js';
+import Router from '@/config-ui/vite/src/router';
 import type {
   ADTPulseConfigInterfaceHomebridge,
   ADTPulseConfigInterfaceLoadBootstrapReturns,
   ADTPulseConfigInterfaceLoadBootstrapScripts,
+  ADTPulseConfigInterfaceObserveThemeReturns,
   ADTPulseConfigInterfaceRoot,
   ADTPulseConfigInterfaceStartFrontendReturns,
 } from '@/types/config-ui.d.ts';
@@ -48,6 +49,9 @@ class ADTPulseConfigInterface {
     // Helper scripts for Bootstrap 5.
     ADTPulseConfigInterface.loadBootstrap();
 
+    // Observe browser light/dark mode theme.
+    ADTPulseConfigInterface.observeTheme();
+
     // Ensures React is able to mount to the "#root" element.
     if (this.#root === undefined) {
       if (this.#homebridge !== undefined) {
@@ -66,6 +70,8 @@ class ADTPulseConfigInterface {
 
   /**
    * ADT Pulse Config Interface - Load bootstrap.
+   *
+   * @private
    *
    * @returns {ADTPulseConfigInterfaceLoadBootstrapReturns}
    *
@@ -108,6 +114,33 @@ class ADTPulseConfigInterface {
       });
 
       document.head.append(element);
+    });
+  }
+
+  /**
+   * ADT Pulse Config Interface - Observe theme.
+   *
+   * @private
+   *
+   * @returns {ADTPulseConfigInterfaceObserveThemeReturns}
+   *
+   * @since 1.0.0
+   */
+  private static observeTheme(): ADTPulseConfigInterfaceObserveThemeReturns {
+    const observer = new MutationObserver(() => {
+      const documentBodyClassName = document.body.className;
+
+      if (documentBodyClassName.includes('dark-mode')) {
+        document.documentElement.setAttribute('data-bs-theme', 'dark');
+      } else {
+        document.documentElement.setAttribute('data-bs-theme', 'light');
+      }
+    });
+
+    // Checks if the body's classes have changed.
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['class'],
     });
   }
 }

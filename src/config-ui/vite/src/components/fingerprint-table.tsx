@@ -186,7 +186,7 @@ export default function FingerprintTable(props: FingerprintTableProps) {
 
       setParsedObject(parsedFingerprint);
       setStatus('success');
-    } catch (error) {
+    } catch {
       setStatus('failed');
     }
   }, [fingerprint]);
@@ -194,12 +194,14 @@ export default function FingerprintTable(props: FingerprintTableProps) {
   // If parsing is successful.
   if (status === 'success') {
     return (
-      <div className="table-responsive">
+      <>
         <p className="alert alert-warning">The information shown below is for your eyes only. Fingerprints are considered your secondary password. Leaking this will compromise the MFA security to your ADT Pulse account.</p>
-        {
-          renderTable(_.get(parsedObject, ['fingerprint']))
-        }
-      </div>
+        <div className="table-responsive">
+          {
+            renderTable(_.get(parsedObject, ['fingerprint']))
+          }
+        </div>
+      </>
     );
   }
 

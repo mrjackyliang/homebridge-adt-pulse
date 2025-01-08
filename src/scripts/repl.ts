@@ -1,5 +1,6 @@
-import chalk from 'chalk';
 import repl from 'node:repl';
+
+import chalk from 'chalk';
 
 import { ADTPulseAPI } from '@/lib/api.js';
 import { ADTPulseAuth } from '@/lib/auth.js';

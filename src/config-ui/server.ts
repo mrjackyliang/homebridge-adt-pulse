@@ -1,6 +1,6 @@
 import { HomebridgePluginUiServer, RequestError } from '@homebridge/plugin-ui-utils';
 import _ from 'lodash';
-import { serializeError } from 'serialize-error';
+import { isErrorLike, serializeError } from 'serialize-error';
 
 import { ADTPulseAuth } from '@/lib/auth.js';
 import { configServerLogin, configServerRequestCode, configServerValidate } from '@/lib/schema.js';
@@ -223,7 +223,7 @@ class ADTPulseConfigServer extends HomebridgePluginUiServer {
         info: response.info,
       };
     } catch (error) {
-      const serializedError = serializeError(error);
+      const serializedError = (isErrorLike(error)) ? serializeError(error) : serializeError(new Error('Unknown error'));
 
       debugLog(null, 'server.ts / ADTPulseConfigServer.requestCode()', 'error', 'Method encountered an error during execution');
 
@@ -307,7 +307,7 @@ class ADTPulseConfigServer extends HomebridgePluginUiServer {
         info: null,
       };
     } catch (error) {
-      const serializedError = serializeError(error);
+      const serializedError = (isErrorLike(error)) ? serializeError(error) : serializeError(new Error('Unknown error'));
 
       debugLog(null, 'server.ts / ADTPulseConfigServer.validate()', 'error', 'Method encountered an error during execution');
 
@@ -386,7 +386,7 @@ class ADTPulseConfigServer extends HomebridgePluginUiServer {
         },
       };
     } catch (error) {
-      const serializedError = serializeError(error);
+      const serializedError = (isErrorLike(error)) ? serializeError(error) : serializeError(new Error('Unknown error'));
 
       debugLog(null, 'server.ts / ADTPulseConfigServer.generateConfig()', 'error', 'Method encountered an error during execution');
 

@@ -1,11 +1,12 @@
-import chalk from 'chalk';
-import _ from 'lodash';
 import {
   arch,
   argv,
   platform,
   versions,
 } from 'node:process';
+
+import chalk from 'chalk';
+import _ from 'lodash';
 import { serializeError } from 'serialize-error';
 
 import { ADTPulseAccessory } from '@/lib/accessory.js';
