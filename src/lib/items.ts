@@ -440,7 +440,7 @@ export const deviceSecurityPanels: DeviceSecurityPanels = [
   {
     description: 'DSC Impassa/SCW',
     panel: {
-      manufacturerProvider: 'DSC',
+      manufacturerProvider: null,
       typeModel: 'Security Panel - Impassa/SCW',
     },
   },
