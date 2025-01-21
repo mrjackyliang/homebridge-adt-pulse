@@ -17,7 +17,7 @@ import globals from 'globals';
  */
 const eslintConfig = [
   {
-    name: 'preferred-rules',
+    name: 'all-rules',
     files: [
       '**/*.js',
       '**/*.mjs',
@@ -34,20 +34,10 @@ const eslintConfig = [
         ...globals.node,
         NodeJS: 'readonly',
       },
-      parser: typescriptParser,
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true,
-        },
-        ecmaVersion: 'latest',
-        project: './tsconfig.json',
-        sourceType: 'module',
-      },
     },
     plugins: {
       '@stylistic': stylisticPlugin,
-      '@typescript-eslint': typescriptPlugin,
-      'import': importPlugin,
+      import: importPlugin,
       'jsx-a11y': jsxA11yPlugin,
       react: reactPlugin,
       'react-hooks': reactHooksPlugin,
@@ -69,20 +59,82 @@ const eslintConfig = [
       ...reactPlugin.configs.recommended.rules,
       ...reactHooksPlugin.configs.recommended.rules,
       ...stylisticPlugin.configs['recommended-flat'].rules,
-      ...typescriptPlugin.configs.recommended.rules,
       '@stylistic/arrow-parens': ['error', 'always'],
       '@stylistic/brace-style': ['error', '1tbs'],
       '@stylistic/comma-dangle': ['error', 'always-multiline'],
-      '@stylistic/member-delimiter-style': ['error', { singleline: { requireLast: true } }],
+      '@stylistic/member-delimiter-style': ['error', {
+        singleline: {
+          requireLast: true,
+        },
+      }],
       '@stylistic/multiline-ternary': ['off'],
       '@stylistic/quote-props': ['error', 'as-needed'],
       '@stylistic/quotes': ['error', 'single'],
       '@stylistic/semi': ['error', 'always'],
+      'import/newline-after-import': ['error', {
+        count: 1,
+      }],
+      'import/no-named-as-default': ['off'],
+      'import/order': ['error', {
+        alphabetize: {
+          order: 'asc',
+        },
+      }],
+      'no-console': ['warn', {
+        allow: [
+          'error',
+          'info',
+          'warn',
+        ],
+      }],
+      'no-irregular-whitespace': ['error', {
+        skipComments: true,
+      }],
+      'object-curly-newline': ['error', {
+        ObjectExpression: {
+          minProperties: 4,
+          multiline: true,
+          consistent: true,
+        },
+        ObjectPattern: {
+          minProperties: 4,
+          multiline: true,
+          consistent: true,
+        },
+        ImportDeclaration: {
+          minProperties: 4,
+          multiline: true,
+          consistent: true,
+        },
+      }],
+    },
+  },
+  {
+    name: 'typescript-rules',
+    files: [
+      '**/*.ts',
+      '**/*.mts',
+      '**/*.cts',
+      '**/*.tsx',
+    ],
+    languageOptions: {
+      parser: typescriptParser,
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+        ecmaVersion: 'latest',
+        project: './tsconfig.json',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': typescriptPlugin,
+    },
+    rules: {
+      ...typescriptPlugin.configs.recommended.rules,
       '@typescript-eslint/no-explicit-any': ['off'],
       '@typescript-eslint/no-unused-vars': ['error'],
-      'import/order': ['error', { alphabetize: { order: 'asc' } }],
-      'no-console': ['warn', { allow: ['error', 'info', 'warn'] }],
-      'no-irregular-whitespace': ['error', { skipComments: true }],
       'no-unused-vars': ['off'],
     },
   },
