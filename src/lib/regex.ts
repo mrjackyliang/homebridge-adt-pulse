@@ -38,7 +38,7 @@ export const functionGoToUrl = /^goToUrl\('device\.jsp\?id=([0-9]+)'\);$/;
  *
  * @since 1.0.0
  */
-export const functionSetArmState = /setArmState\(\s*'([^']+)',\s*'([^']+)',\s*'([^']+)',\s*'([^']+)',\s*'([^']+)',\s*'href=([^']+)&armstate=([^&]+)&arm=([^&]+)&sat=([^']+?)'\s*\)/;
+export const functionSetArmState = /setArmState\(\s*'([^']+)',\s*'([^']+)',\s*'([^']+)',\s*'([^']+)',\s*'([^']+)',\s*'href=([^']*)&armstate=([^&]*)&arm=([^&]*)&sat=([^']*?)'\s*\)/;
 
 /**
  * Object key client type.

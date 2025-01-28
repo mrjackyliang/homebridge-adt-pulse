@@ -240,7 +240,7 @@ export type ADTPulseAPIArmDisarmHandlerOptionsRelativeUrl = PortalPanelArmButton
 
 export type ADTPulseAPIArmDisarmHandlerOptionsHref = PortalPanelArmButtonHref;
 
-export type ADTPulseAPIArmDisarmHandlerOptionsArmState = PortalPanelArmStateClean | PortalPanelArmStateDirty;
+export type ADTPulseAPIArmDisarmHandlerOptionsArmState = '' | PortalPanelArmStateClean | PortalPanelArmStateDirty;
 
 export type ADTPulseAPIArmDisarmHandlerOptionsArm = PortalPanelArmValue;
 
@@ -2201,7 +2201,7 @@ export type ItemOrbSecurityButtonRelativeUrls = ItemOrbSecurityButtonRelativeUrl
  *
  * @since 1.0.0
  */
-export type ItemOrbSecurityButtonUrlParamsArmState = PortalPanelArmStateClean | PortalPanelArmStateDirty;
+export type ItemOrbSecurityButtonUrlParamsArmState = '' | PortalPanelArmStateClean | PortalPanelArmStateDirty;
 
 export type ItemOrbSecurityButtonUrlParamsArmStates = ItemOrbSecurityButtonUrlParamsArmState[];
 
@@ -2413,7 +2413,7 @@ export type ParseOrbSecurityButtonsLoadingText = PortalPanelArmButtonLoadingText
 
 export type ParseOrbSecurityButtonsHref = PortalPanelArmButtonHref;
 
-export type ParseOrbSecurityButtonsArmState = PortalPanelArmStateClean | PortalPanelArmStateDirty;
+export type ParseOrbSecurityButtonsArmState = '' | PortalPanelArmStateClean | PortalPanelArmStateDirty;
 
 export type ParseOrbSecurityButtonsArm = PortalPanelArmValue;
 

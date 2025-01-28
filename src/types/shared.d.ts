@@ -461,7 +461,7 @@ export type OrbSecurityButtonReadyTotalButtons = number;
 
 export type OrbSecurityButtonReadyUrlParamsArm = PortalPanelArmValue;
 
-export type OrbSecurityButtonReadyUrlParamsArmState = PortalPanelArmStateClean | PortalPanelArmStateDirty;
+export type OrbSecurityButtonReadyUrlParamsArmState = '' | PortalPanelArmStateClean | PortalPanelArmStateDirty;
 
 export type OrbSecurityButtonReadyUrlParamsHref = PortalPanelArmButtonHref;
 

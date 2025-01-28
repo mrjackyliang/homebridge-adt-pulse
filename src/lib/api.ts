@@ -2351,7 +2351,7 @@ export class ADTPulseAPI {
        * PATENT: https://patents.google.com/patent/US20170070361A1/en
        *
        * How the data may be displayed:
-       * ➜ <input id="security_button_1" value="Arm Stay" onclick="setArmState('quickcontrol/armDisarm.jsp','Arming Stay','1','2','false','href=rest/adt/ui/client/security/setArmState&amp;armstate=off&amp;arm=stay&amp;sat=21580428-e539-4075-8237-5c58b6c6fec8')">
+       * ➜ <input id="security_button_1" value="Arm Stay" onclick="setArmState('quickcontrol/armDisarm.jsp','Arming Stay','1','2','false','href=rest/adt/ui/client/security/setArmState&armstate=off&arm=stay&sat=21580428-e539-4075-8237-5c58b6c6fec8')">
        * ➜ <input id="security_button_1" value="Arming Stay" disabled="">
        *
        * Example data after being processed by "parseOrbSecurityButtons()" function/method:
@@ -2421,7 +2421,8 @@ export class ADTPulseAPI {
        *                'off'
        *                'stay'
        *
-       * urlParams.armState: 'away'
+       * urlParams.armState: ''
+       *                     'away'
        *                     'disarmed'
        *                     'disarmed_with_alarm'
        *                     'disarmed+with+alarm'
