@@ -19,8 +19,7 @@
     "build:ui": "vite build",
     "repl": "node ./build/scripts/repl.js",
     "test-api": "node ./build/scripts/test-api.js",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm run build"
+    "prepare": "npm run build"
   },
   "types": "",
   "repository": {
