@@ -1410,6 +1410,7 @@ export class ADTPulseAPI {
        *         'WATER ALARM'
        *
        * note: 'EXIT FAULT ALARM'
+       *       'SILENT PANIC ALARM'
        *       'This may take several minutes'
        *
        * @since 1.0.0

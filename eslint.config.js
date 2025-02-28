@@ -138,6 +138,15 @@ const eslintConfig = [
       'no-unused-vars': ['off'],
     },
   },
+  {
+    name: 'typescript-declaration-rules',
+    files: [
+      '**/*.d.ts',
+    ],
+    rules: {
+      'no-var': ['off'],
+    },
+  },
 ];
 
 export default eslintConfig;
