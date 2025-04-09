@@ -590,6 +590,7 @@ export const itemOrbSecurityButtonRelativeUrls: ItemOrbSecurityButtonRelativeUrl
  * @since 1.0.0
  */
 export const itemOrbSecurityButtonUrlParamsArmStates: ItemOrbSecurityButtonUrlParamsArmStates = [
+  '',
   'away',
   'disarmed',
   'disarmed_with_alarm',

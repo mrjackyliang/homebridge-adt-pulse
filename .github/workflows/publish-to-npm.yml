@@ -22,11 +22,8 @@ jobs:
           node-version-file: "package.json"
           registry-url: "https://registry.npmjs.org"
 
-      - name: "Install dependencies"
-        run: "npm install --ignore-scripts"
-
-      - name: "Build package"
-        run: "npm run build"
+      - name: "Install and build"
+        run: "npm install"
 
       - name: "Publish package to npm"
         run: "npm publish"
