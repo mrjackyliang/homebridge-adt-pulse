@@ -19,7 +19,7 @@
     "build:ui": "vite build",
     "repl": "node ./build/scripts/repl.js",
     "test-api": "node ./build/scripts/test-api.js",
-    "postinstall": "npm run build"
+    "postinstall": "node ./scripts/postinstall.js"
   },
   "types": "",
   "repository": {
