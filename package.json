@@ -1,7 +1,7 @@
 {
   "name": "homebridge-adt-pulse",
   "displayName": "Homebridge ADT Pulse",
-  "version": "3.4.10",
+  "version": "3.4.11",
   "description": "Homebridge security system platform for ADT Pulse",
   "main": "./build/index.js",
   "exports": "./build/index.js",
@@ -19,7 +19,7 @@
     "build:ui": "vite build",
     "repl": "node ./build/scripts/repl.js",
     "test-api": "node ./build/scripts/test-api.js",
-    "postinstall": "node ./scripts/postinstall.js"
+    "postinstall": "node postinstall.js"
   },
   "types": "",
   "repository": {
@@ -57,7 +57,8 @@
   },
   "files": [
     "./build",
-    "config.schema.json"
+    "config.schema.json",
+    "postinstall.js"
   ],
   "homepage": "https://github.com/mrjackyliang/homebridge-adt-pulse",
   "engines": {
