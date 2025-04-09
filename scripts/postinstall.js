@@ -1,10 +1,6 @@
 import { execSync } from 'node:child_process';
-import fs from 'node:fs';
 
-if (
-  process.env.npm_config_omit !== 'dev'
-  && !fs.existsSync('./build')
-) {
+if (process.env.npm_config_omit !== 'dev') {
   console.info('Running post-install commands ...');
 
   execSync('npm run build', {
