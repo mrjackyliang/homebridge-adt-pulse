@@ -641,6 +641,7 @@ export const itemPanelInformationStatuses: ItemPanelInformationStatuses = [
  */
 export const itemPanelStatusNotes: ItemPanelStatusNotes = [
   'EXIT FAULT ALARM',
+  'PERSONAL EMERGENCY ALARM',
   'SILENT PANIC ALARM',
   'This may take several minutes',
 ];

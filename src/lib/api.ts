@@ -1337,6 +1337,7 @@ export class ADTPulseAPI {
        *
        * How the data may be displayed:
        * ➜ "Disarmed. All Quiet."
+       * ➜ "Disarmed. PERSONAL EMERGENCY ALARM. This may take several minutes."
        * ➜ "Status Unavailable. "
        * ➜ "All Quiet."
        * ➜ "Armed Stay. All Quiet. This may take several minutes."
@@ -1348,6 +1349,11 @@ export class ADTPulseAPI {
        *     panelStates: ['Disarmed'],
        *     panelStatuses: ['All Quiet'],
        *     panelNotes: [],
+       *   }
+       * ➜ {
+       *     panelStates: ['Disarmed'],
+       *     panelStatuses: [],
+       *     panelNotes: ['PERSONAL EMERGENCY ALARM', 'This may take several minutes'],
        *   }
        * ➜ {
        *     panelStates: ['Status Unavailable'],

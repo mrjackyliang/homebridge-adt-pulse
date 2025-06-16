@@ -235,6 +235,7 @@ export type PortalPanelForceArmButtonRelativeUrl =
  */
 export type PortalPanelNote =
   'EXIT FAULT ALARM'
+  | 'PERSONAL EMERGENCY ALARM'
   | 'SILENT PANIC ALARM'
   | 'This may take several minutes';
 
