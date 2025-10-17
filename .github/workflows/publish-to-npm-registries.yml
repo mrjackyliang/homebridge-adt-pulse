@@ -7,8 +7,13 @@ on:
     types: [ "published" ]
   workflow_dispatch:
     inputs:
-      publish:
-        description: "Publish to Production"
+      publish-to-github-packages:
+        description: "Publish to GitHub Packages"
+        required: true
+        type: "boolean"
+        default: false
+      publish-to-npmjs:
+        description: "Publish to npm.js"
         required: true
         type: "boolean"
         default: false
@@ -24,7 +29,7 @@ jobs:
       packages: "write"
     env:
       NODE_AUTH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-      SHOULD_PUBLISH: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.publish) }}
+      SHOULD_PUBLISH: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs['publish-to-github-packages']) }}
       WORKING_DIR: "./"
     steps:
       - name: "Checkout repository"
@@ -38,12 +43,23 @@ jobs:
           registry-url: "https://npm.pkg.github.com"
           scope: "@${{ github.repository_owner }}"
 
+      - name: "Strip deprecated .npmrc config"
+        run: |
+          npmrc="${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}"
+
+          if [ -f "$npmrc" ]; then
+            sed -i '/^always-auth=/d' "$npmrc"
+          fi
+        working-directory: "${{ env.WORKING_DIR }}"
+
       - name: "Install packages"
-        run: "npm install"
+        run: |
+          npm install
         working-directory: "${{ env.WORKING_DIR }}"
 
       - name: "Build project"
-        run: "npm run build"
+        run: |
+          npm run build
         working-directory: "${{ env.WORKING_DIR }}"
 
       - name: "Change to scoped package name"
@@ -51,30 +67,29 @@ jobs:
           REPOSITORY_OWNER="@${{ github.repository_owner }}"
           PACKAGE_NAME=$(npm pkg get name --workspaces=false | jq -r '.')
 
-          echo "PACKAGE_NAME=$PACKAGE_NAME" >> "$GITHUB_ENV"
+          echo "Owner scope is \"${REPOSITORY_OWNER}\" and package name is \"${PACKAGE_NAME}\"."
 
-          echo "Owner scope is \"${REPOSITORY_OWNER}\"."
-          echo "Original name is \"${PACKAGE_NAME}\"."
+          echo "PACKAGE_NAME=$PACKAGE_NAME" >> "$GITHUB_ENV"
 
           if [[ "$PACKAGE_NAME" != "$REPOSITORY_OWNER/"* ]]; then
             BASE=${PACKAGE_NAME##*/}
             NEW_NAME="$REPOSITORY_OWNER/$BASE"
 
-            echo "Scoping package name to \"${NEW_NAME}\"."
+            echo "Package name not scoped; scoping package name to \"${NEW_NAME}\"."
 
             npm pkg set name="$NEW_NAME"
           else
-            echo "Package name already scoped."
+            echo "Package name already scoped; no changes needed."
           fi
         working-directory: "${{ env.WORKING_DIR }}"
 
-      - name: "Publish package"
+      - name: "Publish package to GitHub Packages"
         run: |
-          echo "Publish to production: ${SHOULD_PUBLISH}"
-
           if [ "${SHOULD_PUBLISH}" = "true" ]; then
+            echo "Production publish"
             npm publish
           else
+            echo "Dry-run publish"
             npm publish --dry-run
           fi
         working-directory: "${{ env.WORKING_DIR }}"
@@ -82,8 +97,6 @@ jobs:
       - name: "Restore package name"
         if: ${{ always() && env.PACKAGE_NAME }}
         run: |
-          echo "Restoring package name to \"${PACKAGE_NAME}\"."
-
           npm pkg set name="$PACKAGE_NAME"
         working-directory: "${{ env.WORKING_DIR }}"
 
@@ -93,7 +106,7 @@ jobs:
     permissions:
       id-token: "write"
     env:
-      SHOULD_PUBLISH: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.publish) }}
+      SHOULD_PUBLISH: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs['publish-to-npmjs']) }}
       WORKING_DIR: "./"
     steps:
       - name: "Checkout repository"
@@ -106,25 +119,37 @@ jobs:
           package-manager-cache: false
           registry-url: "https://registry.npmjs.org"
 
-      - name: "Update npm"
-        run: "npm install -g npm@latest"
+      - name: "Strip deprecated .npmrc config"
+        run: |
+          npmrc="${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}"
+
+          if [ -f "$npmrc" ]; then
+            sed -i '/^always-auth=/d' "$npmrc"
+          fi
+        working-directory: "${{ env.WORKING_DIR }}"
+
+      - name: "Update npm (Support for ODIC)"
+        run: |
+          npm install -g npm@latest
         working-directory: "${{ env.WORKING_DIR }}"
 
       - name: "Install packages"
-        run: "npm install"
+        run: |
+          npm install
         working-directory: "${{ env.WORKING_DIR }}"
 
       - name: "Build project"
-        run: "npm run build"
+        run: |
+          npm run build
         working-directory: "${{ env.WORKING_DIR }}"
 
-      - name: "Publish package"
+      - name: "Publish package to npm.js"
         run: |
-          echo "Publish to production: ${SHOULD_PUBLISH}"
-
           if [ "${SHOULD_PUBLISH}" = "true" ]; then
+            echo "Production publish"
             npm publish
           else
+            echo "Dry-run publish"
             npm publish --dry-run
           fi
         working-directory: "${{ env.WORKING_DIR }}"
