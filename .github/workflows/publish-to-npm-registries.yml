@@ -1,30 +1,31 @@
 name: "Publish to npm registries"
 
-run-name: "Publishing ${{ github.event.release.tag_name }} to npm registries"
+run-name: "Publishing ${{ github.event.release.tag_name || 'manually' }} to npm registries"
 
 on:
   release:
     types: [ "published" ]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Flip to true to push to the registries, or false to just perform a dry run."
+        required: true
+        type: "boolean"
+        default: false
 
 permissions:
   contents: "read"
-  id-token: "write"
-  packages: "write"
 
 jobs:
-  publish-to-npm-registries:
+  publish-to-github-packages:
     runs-on: "ubuntu-latest"
     timeout-minutes: 10
+    permissions:
+      packages: "write"
     env:
+      NODE_AUTH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      SHOULD_PUBLISH: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.publish) }}
       WORKING_DIR: "./"
-    strategy:
-      fail-fast: false
-      matrix:
-        registries:
-          - name: "npm"
-            registry: "https://registry.npmjs.org"
-          - name: "GitHub Packages"
-            registry: "https://npm.pkg.github.com"
     steps:
       - name: "Checkout repository"
         uses: "actions/checkout@v5"
@@ -34,10 +35,60 @@ jobs:
         with:
           node-version-file: "${{ env.WORKING_DIR }}/package.json"
           package-manager-cache: false
-          registry-url: "${{ matrix.registries.registry }}"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@${{ github.repository_owner }}"
 
-      - name: "Strip deprecated npm config"
-        run: "npmrc=\"${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}\" && if [ -f \"$npmrc\" ]; then sed -i '/^always-auth=/d' \"$npmrc\"; fi"
+      - name: "Install packages"
+        run: "npm install"
+        working-directory: "${{ env.WORKING_DIR }}"
+
+      - name: "Build project"
+        run: "npm run build"
+        working-directory: "${{ env.WORKING_DIR }}"
+
+      - name: "Change to scoped package name"
+        run: |
+          ORIGINAL_NAME=$(npm pkg get name --workspaces=false | jq -r '.')
+          echo "ORIGINAL_NAME=$ORIGINAL_NAME" >> "$GITHUB_ENV"
+          OWNER_SCOPE="@${{ github.repository_owner }}"
+          if [[ "$ORIGINAL_NAME" != "$OWNER_SCOPE/"* ]]; then
+            BASE=${ORIGINAL_NAME##*/}
+            npm pkg set name="$OWNER_SCOPE/$BASE"
+          fi
+        working-directory: "${{ env.WORKING_DIR }}"
+
+      - name: "Publish package"
+        run: |
+          if [ "${SHOULD_PUBLISH}" = "true" ]; then
+            npm publish
+          else
+            npm publish --dry-run
+          fi
+        working-directory: "${{ env.WORKING_DIR }}"
+
+      - name: "Restore package name"
+        if: ${{ always() && env.ORIGINAL_NAME }}
+        run: npm pkg set name="$ORIGINAL_NAME"
+        working-directory: "${{ env.WORKING_DIR }}"
+
+  publish-to-npmjs:
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 10
+    permissions:
+      id-token: "write"
+    env:
+      SHOULD_PUBLISH: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.publish) }}
+      WORKING_DIR: "./"
+    steps:
+      - name: "Checkout repository"
+        uses: "actions/checkout@v5"
+
+      - name: "Setup Node.js"
+        uses: "actions/setup-node@v6"
+        with:
+          node-version-file: "${{ env.WORKING_DIR }}/package.json"
+          package-manager-cache: false
+          registry-url: "https://registry.npmjs.org"
 
       - name: "Update npm"
         run: "npm install -g npm@latest"
@@ -51,10 +102,11 @@ jobs:
         run: "npm run build"
         working-directory: "${{ env.WORKING_DIR }}"
 
-      - name: "Set GitHub Packages Auth"
-        if: ${{ matrix.registries.name == 'GitHub Packages' }}
-        run: "echo \"NODE_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}\" >> \"$GITHUB_ENV\""
-
       - name: "Publish package"
-        run: "npm publish"
+        run: |
+          if [ "${SHOULD_PUBLISH}" = "true" ]; then
+            npm publish
+          else
+            npm publish --dry-run
+          fi
         working-directory: "${{ env.WORKING_DIR }}"
