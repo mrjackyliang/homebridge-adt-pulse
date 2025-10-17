@@ -57,6 +57,7 @@ jobs:
 
       - name: "Install packages"
         run: |
+          npm install -g npm@latest
           npm install
         working-directory: "${{ env.WORKING_DIR }}"
 
@@ -86,11 +87,13 @@ jobs:
           fi
         working-directory: "${{ env.WORKING_DIR }}"
 
-      - name: "Publish package to GitHub Packages (${{ env.PUBLISH_TO_GITHUB == 'true' && 'production' || 'dry run' }})"
+      - name: "Publish package to GitHub Packages"
         run: |
           if [ "${PUBLISH_TO_GITHUB}" = "true" ]; then
+            echo "MODE: PRODUCTION"
             npm publish
           else
+            echo "MODE: DRY RUN"
             npm publish --dry-run
           fi
         working-directory: "${{ env.WORKING_DIR }}"
@@ -126,13 +129,9 @@ jobs:
           fi
         working-directory: "${{ env.WORKING_DIR }}"
 
-      - name: "Update npm (Support for ODIC)"
-        run: |
-          npm install -g npm@latest
-        working-directory: "${{ env.WORKING_DIR }}"
-
       - name: "Install packages"
         run: |
+          npm install -g npm@latest
           npm install
         working-directory: "${{ env.WORKING_DIR }}"
 
@@ -141,11 +140,13 @@ jobs:
           npm run build
         working-directory: "${{ env.WORKING_DIR }}"
 
-      - name: "Publish package to npm.js (${{ env.PUBLISH_TO_NPMJS == 'true' && 'production' || 'dry run' }})"
+      - name: "Publish package to npm.js"
         run: |
           if [ "${PUBLISH_TO_NPMJS}" = "true" ]; then
+            echo "MODE: PRODUCTION"
             npm publish
           else
+            echo "MODE: DRY RUN"
             npm publish --dry-run
           fi
         working-directory: "${{ env.WORKING_DIR }}"
