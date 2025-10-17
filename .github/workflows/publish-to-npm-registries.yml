@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       publish:
-        description: "Flip to true to push to the registries, or false to just perform a dry run."
+        description: "Publish to Production"
         required: true
         type: "boolean"
         default: false
