@@ -43,7 +43,7 @@ jobs:
           registry-url: "https://npm.pkg.github.com"
           scope: "@${{ github.repository_owner }}"
 
-      - name: "Strip deprecated .npmrc config"
+      - name: "Remove deprecated .npmrc entries"
         run: |
           npmrc="${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}"
 
@@ -83,13 +83,11 @@ jobs:
           fi
         working-directory: "${{ env.WORKING_DIR }}"
 
-      - name: "Publish package to GitHub Packages"
+      - name: "Publish package to GitHub Packages (${{ env.SHOULD_PUBLISH == 'true' && 'production' || 'dry run' }})"
         run: |
           if [ "${SHOULD_PUBLISH}" = "true" ]; then
-            echo "Production publish"
             npm publish
           else
-            echo "Dry-run publish"
             npm publish --dry-run
           fi
         working-directory: "${{ env.WORKING_DIR }}"
@@ -119,7 +117,7 @@ jobs:
           package-manager-cache: false
           registry-url: "https://registry.npmjs.org"
 
-      - name: "Strip deprecated .npmrc config"
+      - name: "Remove deprecated .npmrc entries"
         run: |
           npmrc="${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}"
 
@@ -143,13 +141,11 @@ jobs:
           npm run build
         working-directory: "${{ env.WORKING_DIR }}"
 
-      - name: "Publish package to npm.js"
+      - name: "Publish package to npm.js (${{ env.SHOULD_PUBLISH == 'true' && 'production' || 'dry run' }})"
         run: |
           if [ "${SHOULD_PUBLISH}" = "true" ]; then
-            echo "Production publish"
             npm publish
           else
-            echo "Dry-run publish"
             npm publish --dry-run
           fi
         working-directory: "${{ env.WORKING_DIR }}"
