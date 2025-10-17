@@ -5,6 +5,11 @@ run-name: "Publishing ${{ github.event.release.tag_name }} to npm registries"
 on:
   release:
     types: [ "published" ]
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Release tag to use (leave blank to use default)"
+        required: false
 
 permissions:
   contents: "read"
