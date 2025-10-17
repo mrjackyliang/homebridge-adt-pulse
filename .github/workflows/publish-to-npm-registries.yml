@@ -48,17 +48,30 @@ jobs:
 
       - name: "Change to scoped package name"
         run: |
-          ORIGINAL_NAME=$(npm pkg get name --workspaces=false | jq -r '.')
-          echo "ORIGINAL_NAME=$ORIGINAL_NAME" >> "$GITHUB_ENV"
-          OWNER_SCOPE="@${{ github.repository_owner }}"
-          if [[ "$ORIGINAL_NAME" != "$OWNER_SCOPE/"* ]]; then
-            BASE=${ORIGINAL_NAME##*/}
-            npm pkg set name="$OWNER_SCOPE/$BASE"
+          REPOSITORY_OWNER="@${{ github.repository_owner }}"
+          PACKAGE_NAME=$(npm pkg get name --workspaces=false | jq -r '.')
+
+          echo "PACKAGE_NAME=$PACKAGE_NAME" >> "$GITHUB_ENV"
+
+          echo "Owner scope is \"${REPOSITORY_OWNER}\"."
+          echo "Original name is \"${PACKAGE_NAME}\"."
+
+          if [[ "$PACKAGE_NAME" != "$REPOSITORY_OWNER/"* ]]; then
+            BASE=${PACKAGE_NAME##*/}
+            NEW_NAME="$REPOSITORY_OWNER/$BASE"
+
+            echo "Scoping package name to \"${NEW_NAME}\"."
+
+            npm pkg set name="$NEW_NAME"
+          else
+            echo "Package name already scoped."
           fi
         working-directory: "${{ env.WORKING_DIR }}"
 
       - name: "Publish package"
         run: |
+          echo "Publish to production: ${SHOULD_PUBLISH}"
+
           if [ "${SHOULD_PUBLISH}" = "true" ]; then
             npm publish
           else
@@ -67,8 +80,11 @@ jobs:
         working-directory: "${{ env.WORKING_DIR }}"
 
       - name: "Restore package name"
-        if: ${{ always() && env.ORIGINAL_NAME }}
-        run: npm pkg set name="$ORIGINAL_NAME"
+        if: ${{ always() && env.PACKAGE_NAME }}
+        run: |
+          echo "Restoring package name to \"${PACKAGE_NAME}\"."
+
+          npm pkg set name="$PACKAGE_NAME"
         working-directory: "${{ env.WORKING_DIR }}"
 
   publish-to-npmjs:
@@ -104,6 +120,8 @@ jobs:
 
       - name: "Publish package"
         run: |
+          echo "Publish to production: ${SHOULD_PUBLISH}"
+
           if [ "${SHOULD_PUBLISH}" = "true" ]; then
             npm publish
           else
