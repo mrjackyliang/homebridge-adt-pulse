@@ -1,7 +1,7 @@
 {
   "name": "homebridge-adt-pulse",
   "displayName": "Homebridge ADT Pulse",
-  "version": "3.4.13",
+  "version": "3.4.14",
   "description": "Homebridge security system platform for ADT Pulse",
   "main": "./build/index.js",
   "exports": "./build/index.js",
@@ -21,7 +21,6 @@
     "test-api": "node ./build/scripts/test-api.js",
     "postinstall": "node postinstall.js"
   },
-  "types": "",
   "repository": {
     "type": "git",
     "url": "git://github.com/mrjackyliang/homebridge-adt-pulse.git"
@@ -62,14 +61,14 @@
   ],
   "homepage": "https://github.com/mrjackyliang/homebridge-adt-pulse",
   "engines": {
-    "homebridge": "~1.8.0 || ^2.0.0-beta.0",
-    "node": ">=20"
+    "homebridge": "^1.11.0 || ^2.0.0-beta.0",
+    "node": ">=22"
   },
   "dependencies": {
     "@faker-js/faker": "9.3.0",
     "@homebridge/plugin-ui-utils": "2.0.0",
     "@hookform/resolvers": "3.10.0",
-    "axios": "1.7.9",
+    "axios": "1.12.0",
     "axios-cookiejar-support": "5.0.5",
     "chalk": "5.4.1",
     "jsdom": "25.0.1",
@@ -91,14 +90,14 @@
     "@types/jsdom": "21.1.7",
     "@types/lodash": "4.17.14",
     "@types/luxon": "3.4.2",
-    "@types/node": "22.10.5",
+    "@types/node": "22.18.11",
     "@types/react": "19.0.3",
     "@types/react-dom": "19.0.2",
     "@types/semver": "7.5.8",
     "@types/tough-cookie": "4.0.5",
     "@typescript-eslint/eslint-plugin": "8.19.1",
     "@typescript-eslint/parser": "8.19.1",
-    "@vitejs/plugin-react": "4.3.4",
+    "@vitejs/plugin-react": "5.0.4",
     "eslint": "9.17.0",
     "eslint-import-resolver-typescript": "3.7.0",
     "eslint-plugin-import": "2.31.0",
@@ -111,7 +110,7 @@
     "rimraf": "6.0.1",
     "tsconfig-replace-paths": "0.0.14",
     "typescript": "5.7.2",
-    "vite": "6.0.7",
+    "vite": "7.1.10",
     "vite-tsconfig-paths": "5.1.4"
   }
 }
