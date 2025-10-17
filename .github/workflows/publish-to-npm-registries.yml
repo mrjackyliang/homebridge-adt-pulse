@@ -34,10 +34,6 @@ jobs:
         with:
           node-version-file: "${{ env.WORKING_DIR }}/package.json"
           package-manager-cache: false
-          registry-url: "${{ matrix.registries.registry }}"
-
-      - name: "Strip deprecated npm config"
-        run: "npmrc=\"${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}\" && if [ -f \"$npmrc\" ]; then sed -i '/^always-auth=/d' \"$npmrc\"; fi"
 
       - name: "Update npm"
         run: "npm install -g npm@latest"
@@ -56,5 +52,5 @@ jobs:
         run: "echo \"NODE_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}\" >> \"$GITHUB_ENV\""
 
       - name: "Publish package"
-        run: "npm publish"
+        run: "npm publish --registry ${{ matrix.registries.registry }}"
         working-directory: "${{ env.WORKING_DIR }}"
