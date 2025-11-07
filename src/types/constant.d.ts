@@ -226,7 +226,8 @@ export type PortalPanelForceArmButtonRelativeUrl =
   | '/myhome/26.0.0-32/quickcontrol/serv/RunRRACommand'
   | '/myhome/27.0.0-140/quickcontrol/serv/RunRRACommand'
   | '/myhome/28.0.0-57/quickcontrol/serv/RunRRACommand'
-  | '/myhome/29.0.0-28/quickcontrol/serv/RunRRACommand';
+  | '/myhome/29.0.0-28/quickcontrol/serv/RunRRACommand'
+  | '/myhome/30.0.0-61/quickcontrol/serv/RunRRACommand';
 
 /**
  * Portal panel note.
@@ -380,4 +381,5 @@ export type PortalVersion =
   | '26.0.0-32'
   | '27.0.0-140'
   | '28.0.0-57'
-  | '29.0.0-28';
+  | '29.0.0-28'
+  | '30.0.0-61';
