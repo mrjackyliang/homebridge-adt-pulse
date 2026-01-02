@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
 import os from 'node:os';
 import util from 'node:util';
 
@@ -10,7 +11,6 @@ import _ from 'lodash';
 import { DateTime } from 'luxon';
 import semver from 'semver';
 
-import packageJson from '../../package.json' assert { type: 'json' };
 import {
   collectionDoSubmitHandlers,
   collectionOrbSecurityButtons,
@@ -740,6 +740,9 @@ export function getDetectReportUrl(): GetDetectReportUrlReturns {
  * @since 1.0.0
  */
 export function getPackageVersion(): GetPackageVersionReturns {
+  const require = createRequire(import.meta.url);
+  const packageJson = require('../../package.json');
+
   return packageJson.version;
 }
 
