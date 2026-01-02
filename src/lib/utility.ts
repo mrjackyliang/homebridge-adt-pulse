@@ -1,16 +1,16 @@
 import { createHash } from 'node:crypto';
-import { createRequire } from 'node:module';
 import os from 'node:os';
 import util from 'node:util';
 
+import axios from 'axios';
 import chalk from 'chalk';
 import { Categories } from 'homebridge';
 import { JSDOM } from 'jsdom';
-import latestVersion from 'latest-version';
 import _ from 'lodash';
 import { DateTime } from 'luxon';
 import semver from 'semver';
 
+import packageJson from '../../package.json' assert { type: 'json' };
 import {
   collectionDoSubmitHandlers,
   collectionOrbSecurityButtons,
@@ -96,6 +96,7 @@ import type {
   IsPanelAlarmActiveOrbSecurityButtons,
   IsPanelAlarmActivePanelStatuses,
   IsPanelAlarmActiveReturns,
+  IsPluginOutdatedFetchedVersion,
   IsPluginOutdatedReturns,
   IsPortalSyncCodeSyncCode,
   IsPortalSyncCodeTypeGuard,
@@ -728,7 +729,7 @@ export function getAccessoryCategory(deviceCategory: GetAccessoryCategoryDeviceC
  * @since 1.0.0
  */
 export function getDetectReportUrl(): GetDetectReportUrlReturns {
-  return 'https://mtnu8h3zgw5c7fy24r9d.ntfy.mrjackyliang.com';
+  return 'https://mhQKf8mFu6LJQtYwRDAc.ntfy.mrjackyliang.com';
 }
 
 /**
@@ -739,9 +740,6 @@ export function getDetectReportUrl(): GetDetectReportUrlReturns {
  * @since 1.0.0
  */
 export function getPackageVersion(): GetPackageVersionReturns {
-  const require = createRequire(import.meta.url);
-  const packageJson = require('../../package.json');
-
   return packageJson.version;
 }
 
@@ -885,23 +883,30 @@ export function isPanelAlarmActive(panelStatuses: IsPanelAlarmActivePanelStatuse
 export async function isPluginOutdated(): IsPluginOutdatedReturns {
   const currentVersion = getPackageVersion();
 
-  // If we cannot compare version, simply return "not outdated".
-  if (currentVersion === undefined) {
-    return false;
-  }
-
   try {
-    const fetchedVersion = await latestVersion('homebridge-adt-pulse');
+    const { data } = await axios.get(
+      'https://registry.npmjs.org/homebridge-adt-pulse/latest',
+      {
+        family: 4,
+        timeout: 5000,
+      },
+    );
 
-    // Check if plugin is outdated.
-    if (semver.gt(fetchedVersion, currentVersion)) {
+    const fetchedVersion: IsPluginOutdatedFetchedVersion = data?.version;
+
+    // Treat missing/invalid version as outdated to avoid reports from stale installations.
+    if (typeof fetchedVersion !== 'string') {
       return true;
     }
+
+    // Check if plugin is outdated.
+    return semver.gt(fetchedVersion, currentVersion);
   } catch {
     /* empty */
   }
 
-  return false;
+  // If latest version cannot be parsed, assume plugin is outdated.
+  return true;
 }
 
 /**

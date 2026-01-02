@@ -2059,6 +2059,8 @@ export type IsPanelAlarmActiveReturns = boolean;
  */
 export type IsPluginOutdatedReturns = Promise<boolean>;
 
+export type IsPluginOutdatedFetchedVersion = string | undefined;
+
 /**
  * Is portal sync code.
  *
