@@ -975,7 +975,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
           const newStatus = newCache.sensorsInfo[i].status;
 
           if (configuredSensor !== undefined && oldStatus !== newStatus) {
-            this.#log.info(`${chalk.underline(configuredSensor.name)} status changed (old: "${oldStatus}", new: "${newStatus}").`);
+            this.#log.info(`${chalk.underline(configuredSensor.name ?? configuredSensor.adtName)} status changed (old: "${oldStatus}", new: "${newStatus}").`);
           }
         }
       } else {
@@ -1002,7 +1002,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
           const newStatus = newCache.sensorsStatus[i].statuses.join(', ');
 
           if (configuredSensor !== undefined && oldStatus !== newStatus) {
-            this.#log.info(`${chalk.underline(configuredSensor.name)} state changed (old: "${oldStatus}", new: "${newStatus}").`);
+            this.#log.info(`${chalk.underline(configuredSensor.name ?? configuredSensor.adtName)} state changed (old: "${oldStatus}", new: "${newStatus}").`);
           }
         }
       } else {
