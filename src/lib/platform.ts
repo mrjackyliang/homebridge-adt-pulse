@@ -1153,7 +1153,7 @@ export class ADTPulsePlatform implements ADTPulsePlatformPlugin {
 
         // If sensor was not found, it could be that the config was wrong.
         if (sensor === undefined) {
-          this.#log.warn(`Attempted to add or update ${chalk.underline(name)} (adtName: ${adtName}, adtZone: ${adtZone}, adtType: ${adtType}) accessory that does not exist on the portal.`);
+          this.#log.warn(`Attempted to add or update ${chalk.underline(name ?? adtName)} (adtName: ${adtName}, adtZone: ${adtZone}, adtType: ${adtType}) accessory that does not exist on the portal.`);
 
           continue;
         }
