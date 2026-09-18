@@ -1,0 +1,98 @@
+---
+id: operational-mode
+title: Operational Mode
+description: Switch between Normal, Paused, and Reset modes to control how the ADT Pulse plugin runs, pauses device responses, or removes accessories.
+sidebar_position: 1
+keywords:
+  - homebridge adt pulse
+  - operational mode
+  - normal
+  - paused
+  - reset
+  - accessories
+tags:
+  - configuration
+  - modes
+---
+
+import { Terminology } from '@cbnventures/docusaurus-preset-nova/blocks';
+
+Switch between Normal, Paused, and Reset <Terminology title="the plugin's normal, paused, or reset setting" to="/docs/reference/terminology#operational-mode">modes</Terminology> to control how the plugin runs or removes accessories.
+
+## Modes
+
+The plugin offers three <Terminology title="the plugin's normal, paused, or reset setting" to="/docs/reference/terminology#operational-mode">operational modes</Terminology>, selected through the `mode` field in `config.json`.
+
+| Value      | Mode   | Behavior                                                           |
+|------------|--------|--------------------------------------------------------------------|
+| `"normal"` | Normal | Runs the plugin as usual for regular operation.                    |
+| `"paused"` | Paused | Keeps accessories in place, but all devices become non-responsive. |
+| `"reset"`  | Reset  | Removes the accessories associated with this plugin.               |
+
+## Config Field
+
+| Field  | Description                                                                                                                                                                                                                                         |
+|--------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `mode` | <Terminology title="the plugin's normal, paused, or reset setting" to="/docs/reference/terminology#operational-mode">Operational mode</Terminology> for the plugin. Required. Accepts `"normal"`, `"paused"`, or `"reset"`. Defaults to `"normal"`. |
+
+Set the field inside your <Terminology title="this plugin's settings object in config.json" to="/docs/reference/terminology#platform-block">platform block</Terminology>:
+
+```json title="config.json"
+{
+  "platforms": [
+    {
+      "platform": "ADTPulse",
+      "name": "ADT Pulse",
+      "mode": "normal"
+    }
+  ]
+}
+```
+
+## Normal
+
+Set `mode` to `"normal"` for regular operation.
+
+This is the default and the value you use for everyday monitoring and control.
+
+```json title="config.json"
+{
+  "mode": "normal"
+}
+```
+
+## Paused
+
+Set `mode` to `"paused"` to pause the plugin.
+
+While paused, all devices become non-responsive, so the <Terminology title="the alarm panel accessory for arming and disarming" to="/docs/reference/terminology#security-panel">security panel</Terminology> and <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology> stop reacting from within the Home app.
+
+```json title="config.json"
+{
+  "mode": "paused"
+}
+```
+
+## Reset
+
+Set `mode` to `"reset"` to remove the accessories associated with this plugin.
+
+When the plugin starts in Reset mode, it begins a countdown with warnings before removing anything.
+
+:::danger
+You have approximately 40 seconds to reverse the `mode` setting and restart Homebridge before all accessories related to this plugin are removed.
+:::
+
+This countdown exists to guard against unintended resets, which would otherwise force you to reconfigure automations and accessories from scratch.
+
+```json title="config.json"
+{
+  "mode": "reset"
+}
+```
+
+## Related
+
+- [Synchronization Speed](/docs/configuration/synchronization-speed/) tunes how often the plugin checks for updates.
+- [Advanced Options](/docs/configuration/advanced-options/) deactivates specific plugin behaviors.
+- [Sensors and Zones](/docs/configuration/sensors-and-zones/) declares the <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology> exposed to HomeKit.

@@ -1,115 +1,55 @@
 {
-  "name": "homebridge-adt-pulse",
-  "displayName": "Homebridge ADT Pulse",
-  "version": "3.4.20",
-  "description": "Homebridge security system platform for ADT Pulse",
-  "main": "./build/index.js",
-  "exports": "./build/index.js",
-  "type": "module",
-  "private": false,
-  "scripts": {
-    "start": "homebridge --debug --keep-orphans --plugin-path $(pwd)",
-    "start-ui": "vite serve",
-    "build": "npm-run-all --sequential build:*",
-    "build:reset": "rimraf ./build",
-    "build:lint": "npx eslint ./src",
-    "build:tsc": "tsc --project tsconfig.json",
-    "build:fix-paths": "tsconfig-replace-paths --project tsconfig.json",
-    "build:cleanup": "rimraf ./build/config-ui/vite",
-    "build:ui": "vite build",
-    "repl": "node ./build/scripts/repl.js",
-    "test-api": "node ./build/scripts/test-api.js",
-    "postinstall": "node postinstall.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/mrjackyliang/homebridge-adt-pulse.git"
-  },
-  "funding": [
-    {
-      "type": "github",
-      "url": "https://github.com/sponsors/mrjackyliang"
-    },
-    {
-      "type": "custom",
-      "url": "https://liang.nyc/paypal"
-    }
-  ],
-  "keywords": [
-    "homebridge",
-    "homebridge-plugin",
-    "homekit",
-    "adt",
-    "adt-pulse",
-    "icontrol",
-    "security",
-    "security-system"
-  ],
-  "author": {
-    "name": "Jacky Liang",
-    "email": "hello@mrjackyliang.com",
-    "url": "https://www.mrjackyliang.com"
-  },
+  "name": "homebridge-adt-pulse-project",
+  "version": "0.0.0",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/mrjackyliang/homebridge-adt-pulse/issues"
+  "private": true,
+  "scripts": {
+    "dev": "nova utility run-scripts --parallel 'dev:*'",
+    "dev:workspaces": "turbo run dev",
+    "prod": "nova utility run-scripts --sequential 'prod:*'",
+    "prod:workspaces": "turbo run prod",
+    "check": "nova utility run-scripts --sequential 'check:*'",
+    "check:workspaces": "turbo run check --concurrency=2",
+    "check:lint": "eslint . --max-warnings=0",
+    "check:types-config": "nova utility type-check --project tsconfig.config.json",
+    "check:types-scripts": "nova utility type-check --project tsconfig.scripts.json",
+    "check:types-tests": "nova utility type-check --project tsconfig.tests.json",
+    "check:test": "vitest run",
+    "build": "nova utility run-scripts --sequential 'build:*'",
+    "build:workspaces": "turbo run build --concurrency=2",
+    "deploy": "nova utility run-scripts --sequential 'deploy:*'",
+    "deploy:workspaces": "turbo run deploy --concurrency=2",
+    "clean": "nova utility run-scripts --parallel 'clean:*'",
+    "clean:workspaces": "turbo run clean",
+    "changelog": "nova utility changelog",
+    "recipes": "nova utility run-recipes --replace-file",
+    "postinstall": "node ./scripts/link-nova.mjs"
   },
-  "files": [
-    "./build",
-    "config.schema.json",
-    "postinstall.js"
+  "allowScripts": {
+    "core-js": false,
+    "es5-ext": false,
+    "esbuild": false,
+    "unrs-resolver": false
+  },
+  "workspaces": [
+    "./apps/*",
+    "./packages/*"
   ],
-  "homepage": "https://github.com/mrjackyliang/homebridge-adt-pulse",
+  "packageManager": "npm@11.18.0",
   "engines": {
-    "homebridge": "^1.11.0 || ^2.0.0-beta.0",
     "node": "^22 || ^24"
   },
   "dependencies": {
-    "@faker-js/faker": "9.3.0",
-    "@homebridge/plugin-ui-utils": "2.0.0",
-    "@hookform/resolvers": "3.10.0",
-    "axios": "1.12.0",
-    "axios-cookiejar-support": "5.0.5",
-    "chalk": "5.4.1",
-    "jsdom": "25.0.1",
-    "lodash": "4.17.21",
-    "luxon": "3.5.0",
-    "react": "19.0.0",
-    "react-dom": "19.0.0",
-    "react-hook-form": "7.54.2",
-    "semver": "7.6.3",
-    "serialize-error": "12.0.0",
-    "tough-cookie": "5.0.0",
-    "ua-parser-js": "2.0.0",
-    "zod": "3.24.1"
+    "@cbnventures/nova": "0.27.1"
   },
   "devDependencies": {
-    "@eslint/js": "9.17.0",
-    "@stylistic/eslint-plugin": "2.12.1",
-    "@types/jsdom": "21.1.7",
-    "@types/lodash": "4.17.14",
-    "@types/luxon": "3.4.2",
-    "@types/node": "22.18.11",
-    "@types/react": "19.0.3",
-    "@types/react-dom": "19.0.2",
-    "@types/semver": "7.5.8",
-    "@types/tough-cookie": "4.0.5",
-    "@typescript-eslint/eslint-plugin": "8.19.1",
-    "@typescript-eslint/parser": "8.19.1",
-    "@vitejs/plugin-react": "5.0.4",
-    "eslint": "9.17.0",
-    "eslint-import-resolver-typescript": "3.7.0",
-    "eslint-plugin-import": "2.31.0",
-    "eslint-plugin-jsx-a11y": "6.10.2",
-    "eslint-plugin-react": "7.37.3",
-    "eslint-plugin-react-hooks": "5.1.0",
-    "globals": "15.14.0",
-    "homebridge": "1.8.5",
-    "npm-run-all": "4.1.5",
-    "rimraf": "6.0.1",
-    "tsconfig-replace-paths": "0.0.14",
-    "typescript": "5.7.2",
-    "vite": "7.1.10",
-    "vite-tsconfig-paths": "5.1.4"
+    "jiti": "2.7.0",
+    "turbo": "2.10.11",
+    "typescript": "6.0.3",
+    "vitest": "4.1.11"
+  },
+  "overrides": {
+    "vite": "7.3.6",
+    "webpack": ">=5.95.0 <5.106.0"
   }
 }

@@ -1,0 +1,62 @@
+---
+id: temperature-sensors
+title: Temperature Sensors
+description: Convert binary normal or abnormal temperature sensor statuses into degree values through the HAP protocol so they appear in the Home app.
+sidebar_position: 3
+keywords:
+  - homebridge adt pulse
+  - temperature sensors
+  - hap protocol
+  - degrees
+  - sensor status
+  - homekit
+tags:
+  - arming
+  - sensors
+---
+
+import { Terminology } from '@cbnventures/docusaurus-preset-nova/blocks';
+
+Convert a temperature <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology>'s binary normal or abnormal status into degree values through the <Terminology title="HomeKit Accessory Protocol" to="/docs/reference/terminology#hap">HAP</Terminology> protocol so it can appear in the Home app.
+
+## Why the Mapping Exists
+
+The Temperature Sensor (`temperature`) processes <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> statuses differently from standard contact <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology>.
+
+A typical contact <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> conveys an open or closed status. The temperature <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> exposed in the Home app uses the <Terminology title="HomeKit Accessory Protocol" to="/docs/reference/terminology#hap">HAP</Terminology> protocol, which operates with temperature values rather than open or closed states.
+
+To bridge that difference, the accessory converts the <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology>'s binary status into a corresponding temperature in degrees.
+
+## Status to Degree Mapping
+
+The plugin maps each status to a fixed temperature value:
+
+| Status   | Reading |
+|----------|---------|
+| Normal   | `0` C   |
+| Abnormal | `100` C |
+
+A reading of `0` C indicates a normal status, and a reading of `100` C indicates an abnormal status. These are the only two values the accessory reports.
+
+## Adding a Temperature Sensor
+
+A temperature <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> is exposed in read-only mode and must be listed explicitly in your configuration. Set its `adtType` to `temperature` in the <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> object:
+
+```json title="config.json"
+{
+  "sensors": [
+    {
+      "name": "Basement Temperature",
+      "adtName": "Basement Temperature Sensor",
+      "adtZone": 12,
+      "adtType": "temperature"
+    }
+  ]
+}
+```
+
+The `adtName` and `adtZone` values must match the "Name" and "Zone" columns shown under the <Terminology title="the portal's tab listing sensor name, zone, and type" to="/docs/reference/terminology#system-tab">"System" tab</Terminology> of the ADT Pulse <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology>.
+
+:::info
+For the full list of accessories the plugin can expose and the requirements for each <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> object, see [Supported Devices](/docs/getting-started/supported-devices/) and [Sensors and Zones](/docs/configuration/sensors-and-zones/).
+:::

@@ -1,0 +1,14 @@
+import type { Styles } from '../../types/config-ui.d.ts';
+
+/**
+ * Styles - Pages - Setup Welcome - Styles.
+ *
+ * @returns {Styles}
+ *
+ * @since 1.0.0
+ */
+export const styles: Styles = {
+  image: {
+    height: 110,
+  },
+};

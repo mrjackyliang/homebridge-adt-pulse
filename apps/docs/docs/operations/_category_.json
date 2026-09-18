@@ -1,0 +1,10 @@
+{
+  "label": "Operations and Troubleshooting",
+  "position": 5,
+  "collapsible": true,
+  "collapsed": true,
+  "link": {
+    "type": "generated-index",
+    "description": "Enable debug logging, review privacy redaction, run troubleshooting scripts, and protect accessories from unexpected removal."
+  }
+}

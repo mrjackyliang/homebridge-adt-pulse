@@ -1,0 +1,76 @@
+---
+id: hoobs
+title: HOOBS Support
+description: Configure the plugin manually on HOOBS where the config UI may be outdated and not rendering correctly, or migrate to Homebridge for full support.
+sidebar_position: 1
+keywords:
+  - homebridge adt pulse
+  - hoobs
+  - config ui
+  - manual configuration
+  - migration
+tags:
+  - platform-support
+  - hoobs
+---
+
+import { Terminology } from '@cbnventures/docusaurus-preset-nova/blocks';
+
+Configure the plugin manually on <Terminology title="Homebridge Out Of the Box System" to="/docs/reference/terminology#hoobs">HOOBS</Terminology> where the <Terminology title="third-party web UI for managing Homebridge" to="/docs/reference/terminology#homebridge-config-ui">config UI</Terminology> may be outdated, or migrate to Homebridge for a fully supported setup.
+
+## Why the HOOBS Config UI May Not Work
+
+<Terminology title="Homebridge Out Of the Box System" to="/docs/reference/terminology#hoobs">HOOBS</Terminology> may ship an outdated <Terminology title="third-party web UI for managing Homebridge" to="/docs/reference/terminology#homebridge-config-ui">configuration UI</Terminology>, so the plugin's setup screen might not render the way it does on Homebridge.
+
+- This issue was reported to the <Terminology title="Homebridge Out Of the Box System" to="/docs/reference/terminology#hoobs">HOOBS</Terminology> team and remains unresolved.
+- Full details are tracked in the [HOOBS GitHub issue](https://github.com/hoobs-org/HOOBS/issues/1873).
+
+## Configuring Manually
+
+Until the <Terminology title="third-party web UI for managing Homebridge" to="/docs/reference/terminology#homebridge-config-ui">config UI</Terminology> is fixed, <Terminology title="Homebridge Out Of the Box System" to="/docs/reference/terminology#hoobs">HOOBS</Terminology> users should configure the plugin by hand instead of relying on the setup screen.
+
+- Edit the <Terminology title="this plugin's settings object in config.json" to="/docs/reference/terminology#platform-block">platform block</Terminology> in your `config.json` directly.
+- Follow the [sample configuration](/docs/getting-started/configuration/) for the exact structure and field values.
+
+Here is the <Terminology title="this plugin's settings object in config.json" to="/docs/reference/terminology#platform-block">platform block</Terminology> that goes inside the `platforms` array of your `config.json`:
+
+```json title="config.json"
+{
+  "platforms": [
+    {
+      "platform": "ADTPulse",
+      "name": "ADT Pulse",
+      "subdomain": "portal",
+      "username": "user@example.com",
+      "password": "Mys7r0nG!P@ssw0rd",
+      "fingerprint": "VGhpc0lzQVNlY3VyZVBhc3N3b3JkMTIzIQ==",
+      "mode": "normal",
+      "speed": 1,
+      "options": [],
+      "sensors": [
+        {
+          "name": "Family Room Couch Window 1",
+          "adtName": "Family Room Window (99)",
+          "adtZone": 99,
+          "adtType": "doorWindow"
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Migrating to Homebridge
+
+If you are technically inclined, replacing <Terminology title="Homebridge Out Of the Box System" to="/docs/reference/terminology#hoobs">HOOBS</Terminology> with Homebridge gives you the plugin's full, up-to-date configuration experience.
+
+- Homebridge runs the same plugin with a working <Terminology title="third-party web UI for managing Homebridge" to="/docs/reference/terminology#homebridge-config-ui">config UI</Terminology>.
+- Follow the official [Homebridge wiki](https://github.com/homebridge/homebridge/wiki) to install and set it up.
+
+## Support Status
+
+Support for <Terminology title="Homebridge Out Of the Box System" to="/docs/reference/terminology#hoobs">HOOBS</Terminology> is pulled until HOOBS decides to fix this issue.
+
+:::warning
+Based on user complaints on [Reddit](https://www.reddit.com/r/HOOBS/), it appears that <Terminology title="Homebridge Out Of the Box System" to="/docs/reference/terminology#hoobs">HOOBS</Terminology> developers have stopped working on the product.
+:::

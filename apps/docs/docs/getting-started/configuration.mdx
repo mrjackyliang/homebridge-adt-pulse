@@ -1,0 +1,129 @@
+---
+id: configuration
+title: Configuration
+description: Configure the ADT Pulse platform block in config.json with your portal credentials, operational mode, sync speed, advanced options, and sensor declarations.
+sidebar_position: 2
+keywords:
+  - homebridge adt pulse
+  - configuration
+  - config.json
+  - platform
+  - credentials
+  - sensors
+tags:
+  - getting-started
+  - configuration
+---
+
+import { Terminology } from '@cbnventures/docusaurus-preset-nova/blocks';
+
+Configure the ADT Pulse <Terminology title="this plugin's settings object in config.json" to="/docs/reference/terminology#platform-block">platform block</Terminology> in `config.json` with your credentials and device settings.
+
+## Sample Configuration
+
+The plugin reads a single <Terminology title="this plugin's settings object in config.json" to="/docs/reference/terminology#platform-block">platform block</Terminology> from your Homebridge `config.json`. Place it inside the `platforms` array alongside any other Homebridge <Terminology title="the Homebridge plugin type this project registers" to="/docs/reference/terminology#platform">platforms</Terminology>.
+
+```json title="config.json"
+{
+  "platforms": [
+    {
+      "platform": "ADTPulse",
+      "name": "ADT Pulse",
+      "subdomain": "portal",
+      "username": "user@example.com",
+      "password": "Mys7r0nG!P@ssw0rd",
+      "fingerprint": "VGhpc0lzQVNlY3VyZVBhc3N3b3JkMTIzIQ==",
+      "mode": "normal",
+      "speed": 1,
+      "options": [],
+      "sensors": [
+        {
+          "name": "Family Room Couch Window 1",
+          "adtName": "Family Room Window (99)",
+          "adtZone": 99,
+          "adtType": "doorWindow"
+        }
+      ]
+    }
+  ]
+}
+```
+
+Customize the values above to match your own setup. If you prefer a guided experience, the <Terminology title="third-party web UI for managing Homebridge" to="/docs/reference/terminology#homebridge-config-ui">Homebridge Config UI</Terminology> exposes the same fields under the "Plugins" tab.
+
+## Platform Fields
+
+Every field in the <Terminology title="this plugin's settings object in config.json" to="/docs/reference/terminology#platform-block">platform block</Terminology> is required except where noted. The `platform` value must be exactly `ADTPulse` so Homebridge can match the plugin.
+
+| Field         | Type       | Description                                                                                                                                                                                                                                                                                                                           |
+|---------------|------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `platform`    | `string`   | Plugin identifier. Must be `"ADTPulse"`.                                                                                                                                                                                                                                                                                              |
+| `name`        | `string`   | Display name used in Homebridge logs. 1 to 50 characters.                                                                                                                                                                                                                                                                             |
+| `subdomain`   | `string`   | <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">Portal</Terminology> region. One of `"portal"` or `"portal-ca"`.                                                                                                                                                          |
+| `username`    | `string`   | The username you use to log in to the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology>. 1 to 100 characters.                                                                                                                                          |
+| `password`    | `string`   | The password you use to log in to the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology>. 1 to 300 characters.                                                                                                                                          |
+| `fingerprint` | `string`   | Device <Terminology title="device fingerprint required for portal login" to="/docs/reference/terminology#fingerprint">fingerprint</Terminology> required for two-factor authentication. 1 to 10240 characters.                                                                                                                        |
+| `mode`        | `string`   | <Terminology title="the plugin's normal, paused, or reset setting" to="/docs/reference/terminology#operational-mode">Operational mode</Terminology>. One of `"normal"`, `"paused"`, or `"reset"`.                                                                                                                                     |
+| `speed`       | `number`   | Synchronization speed. One of `1`, `0.75`, `0.5`, or `0.25`.                                                                                                                                                                                                                                                                          |
+| `options`     | `string[]` | Advanced options that disable specific features. Defaults to an empty array.                                                                                                                                                                                                                                                          |
+| `sensors`     | `object[]` | <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">Sensors</Terminology> to expose in the Home app. Each entry describes one <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology>. Defaults to an empty array. |
+
+:::tip
+Search for `adt-pulse` in the <Terminology title="third-party web UI for managing Homebridge" to="/docs/reference/terminology#homebridge-config-ui">Homebridge Config UI</Terminology> to configure these fields through a form instead of editing `config.json` by hand.
+:::
+
+## Credentials
+
+The `username` and `password` values are the same credentials you use to sign in to the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">ADT Pulse Web Portal</Terminology>.
+
+- **`subdomain`** — Selects the United States (`portal`) or Canada (`portal-ca`) <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology>. See [Portal Region](/docs/getting-started/portal-region/) for how to choose.
+- **`fingerprint`** — Required since ADT introduced two-factor authentication. See [Device Fingerprint](/docs/getting-started/fingerprint/) for how the <Terminology title="guided flow that configures the plugin for you" to="/docs/reference/terminology#setup-wizard">setup wizard</Terminology> creates it.
+
+## Behavior Settings
+
+Three fields control how the plugin runs day to day. Each has a dedicated page with the full list of choices and their tradeoffs.
+
+- **`mode`** — Switches between normal operation, a paused state, and a reset that removes accessories. See [Operational Mode](/docs/configuration/operational-mode/).
+- **`speed`** — Adjusts how often the plugin polls the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology>, which helps on older hardware or slower routers. See [Synchronization Speed](/docs/configuration/synchronization-speed/).
+- **`options`** — Disables specific features such as the <Terminology title="switch that silences a ringing alarm" to="/docs/reference/terminology#alarm-ringing-switch">alarm ringing switch</Terminology>. See [Advanced Options](/docs/configuration/advanced-options/).
+
+:::warning
+Running with a non-normal `mode`, a reduced `speed`, or a non-empty `options` array triggers a startup warning that cannot be disabled.
+:::
+
+## Sensors
+
+Each object in the `sensors` array describes one <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> you want to expose in the Home app. You must specify each <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> explicitly; the plugin no longer auto-detects them.
+
+| Field     | Type     | Required | Description                                                                                                                                                                                                                                                                                                                                            |
+|-----------|----------|:--------:|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `name`    | `string` |    No    | Display name for the <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology>. Up to 50 characters. Helps identify the <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> after a reset.                       |
+| `adtName` | `string` |   Yes    | The exact name shown in the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology>'s <Terminology title="the portal's tab listing sensor name, zone, and type" to="/docs/reference/terminology#system-tab">"System" tab</Terminology>. 1 to 100 characters.                  |
+| `adtZone` | `number` |   Yes    | The exact zone shown in the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology>'s <Terminology title="the portal's tab listing sensor name, zone, and type" to="/docs/reference/terminology#system-tab">"System" tab</Terminology>. Supported zones are `1` through `99`. |
+| `adtType` | `string` |   Yes    | The <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> type. Must match one of the supported device types listed below.                                                                                                                                                         |
+
+The `adtType` value must be one of the supported <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> types:
+
+| Value         | Sensor Type                                           |
+|---------------|-------------------------------------------------------|
+| `co`          | Carbon Monoxide Detector                              |
+| `doorWindow`  | Door/Window Sensor, Door Sensor, or Window Sensor     |
+| `fire`        | Fire (Smoke/Heat) Detector                            |
+| `flood`       | Water/Flood Sensor                                    |
+| `glass`       | Glass Break Detector                                  |
+| `heat`        | Heat (Rate-of-Rise) Detector                          |
+| `motion`      | Motion Sensor, or Motion Sensor (Notable Events Only) |
+| `shock`       | Shock Sensor                                          |
+| `temperature` | Temperature Sensor                                    |
+
+For a walkthrough of matching the name, zone, and type from the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology>, see [Sensors and Zones](/docs/configuration/sensors-and-zones/). For the full list of exposed accessories, see [Supported Devices](/docs/getting-started/supported-devices/).
+
+:::info
+Leave `sensors` as an empty array (`[]`) if you do not want to add any <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology>. Including your supported <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology> is recommended, since having none does not optimize plugin performance.
+:::
+
+## Next Steps
+
+- **[Configuration Schema](/docs/reference/config-schema/)** — Field-by-field reference with every constraint and enum value.
+- **[Operational Mode](/docs/configuration/operational-mode/)** — Understand normal, paused, and reset behavior before changing `mode`.
+- **[Sensors and Zones](/docs/configuration/sensors-and-zones/)** — Match each <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology>'s name, zone, and type from the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology>.

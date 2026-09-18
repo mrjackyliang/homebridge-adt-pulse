@@ -1,0 +1,58 @@
+---
+id: debug-mode
+title: Debug Mode
+description: Enable plugin debug logging by turning on Homebridge debug mode so verbose output stays isolated per bridge and bug reports include complete detail.
+sidebar_position: 1
+keywords:
+  - homebridge adt pulse
+  - debug mode
+  - homebridge debug
+  - logging
+  - troubleshooting
+  - bug reports
+tags:
+  - operations
+  - troubleshooting
+---
+
+import { Terminology } from '@cbnventures/docusaurus-preset-nova/blocks';
+
+Enable plugin debug logging by turning on Homebridge debug mode so verbose output stays isolated per bridge.
+
+## How Debug Mode Works
+
+The plugin no longer has its own debug setting. Debug logging is now tied directly to Homebridge, and it turns on only when Homebridge debug mode is enabled.
+
+- **Homebridge controls it** — There is no separate field in `config.json` to switch the plugin into debug mode.
+- **Per-bridge isolation** — Because logging follows Homebridge, output can be separated for each bridge you run.
+
+## Why It Changed
+
+Earlier versions exposed a plugin setting to switch on debug mode. Over time that setting made resolving issues harder rather than easier.
+
+The common failure was partial setup. Consumers would enable the plugin's debug mode but forget to also enable Homebridge debug mode, which left contributors without the detailed logs needed to reproduce and fix bug reports.
+
+Tying debug logging to Homebridge removes that gap. A single switch now controls verbose output, so the logs attached to a bug report are complete.
+
+## Enabling Debug Mode
+
+Turn on debug mode in Homebridge itself, then restart so the plugin picks up the new log level.
+
+- **Homebridge UI** — Enable debug mode from the Homebridge settings, then restart Homebridge.
+- **Command line** — Start Homebridge with its debug flag so verbose logging is active for the session.
+
+```bash
+# Start Homebridge with debug logging enabled.
+homebridge -D
+```
+
+Once Homebridge debug mode is active, the plugin emits its detailed logs alongside the rest of the Homebridge output.
+
+:::tip
+Enable debug mode before reproducing an issue so the captured logs include the full detail contributors need to resolve a bug report.
+:::
+
+## Related
+
+- [Test and REPL Scripts](/docs/operations/scripts/) confirm the plugin is communicating with the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology> when logs alone are not enough.
+- [Operational Mode](/docs/configuration/operational-mode/) selects how the plugin runs; debug logging is separate and controlled only by Homebridge.

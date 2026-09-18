@@ -1,0 +1,77 @@
+---
+id: portal-region
+title: Portal Region
+description: Set the subdomain value in your platform configuration to point the plugin at the United States or Canada ADT Pulse portal for your account.
+sidebar_position: 4
+keywords:
+  - homebridge adt pulse
+  - portal region
+  - subdomain
+  - united states
+  - canada
+  - portal-ca
+tags:
+  - getting-started
+  - configuration
+---
+
+import { Terminology } from '@cbnventures/docusaurus-preset-nova/blocks';
+
+Set the `subdomain` value in your platform configuration to point the plugin at the United States or Canada ADT Pulse <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology>.
+
+## Why This Matters
+
+ADT Pulse is available to consumers in either the United States or Canada, and each country is served by a different <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology> host.
+
+- The `subdomain` value tells the plugin which <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology> to sign in to.
+- Choosing the wrong region points the plugin at a <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology> that does not recognize your account.
+
+## Choosing a Region
+
+Pick the value that matches the country where your ADT service is subscribed.
+
+| Region        | `subdomain` value | Description                                           |
+|---------------|-------------------|-------------------------------------------------------|
+| United States | `portal`          | Use this if you are an ADT Pulse customer in the U.S. |
+| Canada        | `portal-ca`       | Use this if you are an ADT Pulse customer in Canada.  |
+
+The `subdomain` field is required and defaults to `portal`.
+
+## Example
+
+Add the `subdomain` value to your <Terminology title="this plugin's settings object in config.json" to="/docs/reference/terminology#platform-block">platform block</Terminology> in `config.json`:
+
+```json title="config.json"
+{
+  "platforms": [
+    {
+      "platform": "ADTPulse",
+      "name": "ADT Pulse",
+      "subdomain": "portal"
+    }
+  ]
+}
+```
+
+Canadian customers set the value to `portal-ca` instead:
+
+```json title="config.json"
+{
+  "platforms": [
+    {
+      "platform": "ADTPulse",
+      "name": "ADT Pulse",
+      "subdomain": "portal-ca"
+    }
+  ]
+}
+```
+
+:::info
+The ability to switch between countries is determined by the ADT region you are subscribed to, so select the value that matches your subscription.
+:::
+
+## Related
+
+- See the [Configuration](/docs/getting-started/configuration/) page for the full <Terminology title="this plugin's settings object in config.json" to="/docs/reference/terminology#platform-block">platform block</Terminology>.
+- See the [Config Schema](/docs/reference/config-schema/) reference for every field and its accepted values.

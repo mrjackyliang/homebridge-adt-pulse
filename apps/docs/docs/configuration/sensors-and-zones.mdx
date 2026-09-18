@@ -1,0 +1,133 @@
+---
+id: sensors-and-zones
+title: Sensors and Zones
+description: Declare each ADT Pulse sensor with its name, ADT name, zone, and type in the sensors array to expose it to HomeKit as a read-only accessory.
+sidebar_position: 4
+keywords:
+  - homebridge adt pulse
+  - sensors
+  - zones
+  - adtName
+  - adtZone
+  - adtType
+tags:
+  - configuration
+  - sensors
+---
+
+import { Terminology } from '@cbnventures/docusaurus-preset-nova/blocks';
+
+Declare each <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> you want in HomeKit inside the `sensors` array so the plugin exposes exactly the devices you list.
+
+## How Sensors Are Added
+
+Older versions of the plugin detected <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology> automatically and managed their addition and removal on their own.
+
+That approach caused problems. If the plugin failed to detect a <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> or the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology> returned irregular data, it could remove every <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> at once and reset your setup by mistake.
+
+An earlier setting (before `v3.0.0`) tried to prevent the removal of obsolete zones, but over time it felt more like a workaround than a real fix.
+
+The current plugin instead asks you to list every <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> you want to integrate. Each <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> is one object inside the `sensors` array in your `config.json`.
+
+## Sensor Fields
+
+Every object in the `sensors` array accepts the following fields.
+
+| Field     | Description                                                                                                                                                                                                                                                                                                                                                                                              |
+|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `name`    | Optional display name for the <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology>. Offers clarity in the event of an unforeseen reset and helps you tell <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology> apart from the names ADT technicians assigned. |
+| `adtName` | Required. Must match the name shown under the "Name" column in the <Terminology title="the portal's tab listing sensor name, zone, and type" to="/docs/reference/terminology#system-tab">"System" tab</Terminology> when you are logged in to the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology>.                      |
+| `adtZone` | Required. Must match the zone shown under the "Zone" column in the <Terminology title="the portal's tab listing sensor name, zone, and type" to="/docs/reference/terminology#system-tab">"System" tab</Terminology>. Only zones 1 through 99 are supported for compatibility reasons.                                                                                                                    |
+| `adtType` | Required. Must match the device shown under the "Device Type" column in the <Terminology title="the portal's tab listing sensor name, zone, and type" to="/docs/reference/terminology#system-tab">"System" tab</Terminology>, mapped to one of the supported type values below.                                                                                                                          |
+
+:::tip
+Copy the `adtName` value directly from the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology> and double-check that no extra characters slipped in during the copy. A mismatch means the <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> will not be found.
+:::
+
+If you set a custom `name`, use 2 to 50 characters that start and end with a letter or number. Spaces, apostrophes, and common punctuation are allowed between them, but emojis and unsupported symbols are not.
+
+Leave `name` blank or omit it to use an ADT-derived display name. Keep `adtName` exactly as shown in the portal, even if it contains parentheses.
+
+## Supported Types
+
+The `adtType` value selects how the plugin interprets a <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology>'s status, so it needs to match the device type shown on the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology>.
+
+| Value         | Device Type on the Portal                             |
+|---------------|-------------------------------------------------------|
+| `co`          | Carbon Monoxide Detector                              |
+| `doorWindow`  | Door/Window Sensor, Door Sensor, or Window Sensor     |
+| `fire`        | Fire (Smoke/Heat) Detector                            |
+| `flood`       | Water/Flood Sensor                                    |
+| `glass`       | Glass Break Detector                                  |
+| `heat`        | Heat (Rate-of-Rise) Detector                          |
+| `motion`      | Motion Sensor, or Motion Sensor (Notable Events Only) |
+| `shock`       | Shock Sensor                                          |
+| `temperature` | Temperature Sensor                                    |
+
+For example, if the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology> shows a device type of "Door/Window Sensor", set `adtType` to `doorWindow`. See [Supported Devices](/docs/getting-started/supported-devices/) for the full list of accessories the plugin can expose.
+
+:::info
+If your device type is not listed, the plugin notifies the maintainer automatically. It is recommended that you do not open a separate GitHub issue for it, since support is added once enough information is gathered about how the status appears on the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology>.
+:::
+
+## Example Configuration
+
+Add each <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> as an object inside the `sensors` array of your <Terminology title="this plugin's settings object in config.json" to="/docs/reference/terminology#platform-block">platform block</Terminology>.
+
+```json title="config.json"
+{
+  "platforms": [
+    {
+      "platform": "ADTPulse",
+      "name": "ADT Pulse",
+      "sensors": [
+        {
+          "name": "Family Room Couch Window 1",
+          "adtName": "Family Room Window (99)",
+          "adtZone": 99,
+          "adtType": "doorWindow"
+        }
+      ]
+    }
+  ]
+}
+```
+
+You can list as many <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology> as you have, each as its own object.
+
+```json title="config.json"
+{
+  "sensors": [
+    {
+      "name": "Kitchen Motion",
+      "adtName": "Kitchen Motion (12)",
+      "adtZone": 12,
+      "adtType": "motion"
+    },
+    {
+      "name": "Basement Flood",
+      "adtName": "Basement Water Sensor (34)",
+      "adtZone": 34,
+      "adtType": "flood"
+    }
+  ]
+}
+```
+
+## Adding No Sensors
+
+Assign an empty array if you do not want to add any <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology>.
+
+```json title="config.json"
+{
+  "sensors": []
+}
+```
+
+Including all of your supported <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology> is recommended, since a setup with none does not help the plugin perform at its best.
+
+## Related
+
+- [Supported Devices](/docs/getting-started/supported-devices/) lists every accessory type and the exposed defaults.
+- [Configuration](/docs/getting-started/configuration/) shows the full `config.json` structure and where the `sensors` array fits.
+- [Operational Mode](/docs/configuration/operational-mode/) controls whether the plugin runs, pauses, or removes accessories.

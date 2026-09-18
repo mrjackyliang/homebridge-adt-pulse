@@ -1,0 +1,10 @@
+{
+  "label": "Alarm and Arming",
+  "position": 4,
+  "collapsible": true,
+  "collapsed": true,
+  "link": {
+    "type": "generated-index",
+    "description": "Control Arm Away, Arm Stay, and Arm Night from HomeKit, and learn how force arming and temperature sensor conversion behave."
+  }
+}

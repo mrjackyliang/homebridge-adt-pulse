@@ -1,0 +1,132 @@
+---
+id: faq
+title: FAQ
+description: Answer common questions about ADT Pulse plugin operational modes, sensor setup, force arming, privacy redaction, and platform support.
+sidebar_position: 2
+keywords:
+  - homebridge adt pulse
+  - faq
+  - questions
+  - troubleshooting
+  - support
+tags:
+  - reference
+  - faq
+---
+
+import { Terminology } from '@cbnventures/docusaurus-preset-nova/blocks';
+
+Find answers to common questions about the plugin's <Terminology title="the plugin's normal, paused, or reset setting" to="/docs/reference/terminology#operational-mode">operational modes</Terminology>, <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> setup, <Terminology title="automatic bypass of open or active sensors when arming" to="/docs/reference/terminology#force-arm">force arming</Terminology>, privacy redaction, and platform support.
+
+## Operational Modes
+
+### What operational modes does the plugin support?
+
+The plugin runs in one of three <Terminology title="the plugin's normal, paused, or reset setting" to="/docs/reference/terminology#operational-mode">modes</Terminology>, set through the `mode` field. Each <Terminology title="the plugin's normal, paused, or reset setting" to="/docs/reference/terminology#operational-mode">mode</Terminology> changes how the plugin behaves at startup.
+
+| Mode     | Description                                               |
+|----------|-----------------------------------------------------------|
+| `normal` | Regular operation with all configured devices responsive. |
+| `paused` | Pauses the plugin so all devices become non-responsive.   |
+| `reset`  | Removes the accessories associated with the plugin.       |
+
+See [Operational Mode](/docs/configuration/operational-mode/) for the full field reference.
+
+### What happens when I set the mode to reset?
+
+Reset mode begins a countdown with warnings before it removes every accessory the plugin created. You have approximately 40 seconds to reverse the setting and restart Homebridge before the removal happens.
+
+:::danger
+Leaving the plugin in `reset` mode removes all associated accessories after the countdown, which can undo automations and customizations tied to them.
+:::
+
+## Sensors and Zones
+
+### Which sensors can the plugin expose?
+
+The plugin exposes a fixed set of read-only <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> types, selected through the `adtType` field on each <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology>. The supported types are `co`, `doorWindow`, `fire`, `flood`, `glass`, `heat`, `motion`, `shock`, and `temperature`.
+
+See [Supported Devices](/docs/getting-started/supported-devices/) for what each type maps to.
+
+### Why do I have to list every sensor manually?
+
+Earlier versions detected <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology> automatically and managed their addition and removal, but <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology> irregularities could remove all <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology> and cause an unintended reset. To avoid this, you now explicitly specify each <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> you want to integrate into Homebridge.
+
+Each <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> is an object with four fields:
+
+| Field     | Description                                                                                                                                                                                                                                                                                                                                 |
+|-----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `name`    | Display name used for clarity, shown in the event of an unforeseen reset.                                                                                                                                                                                                                                                                   |
+| `adtName` | Must match the name shown under the "Name" column in the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology> <Terminology title="the portal's tab listing sensor name, zone, and type" to="/docs/reference/terminology#system-tab">"System" tab</Terminology>. |
+| `adtZone` | Must match the "Zone" column in the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology>. Only zones 1 through 99 are supported.                                                                                                                                |
+| `adtType` | Must match the "Device Type" column, mapped to a supported type such as `doorWindow`.                                                                                                                                                                                                                                                       |
+
+See [Sensors and Zones](/docs/configuration/sensors-and-zones/) for the full setup.
+
+### What if my sensor type is not listed?
+
+If you do not find your type listed, the plugin notifies the author automatically so support can be added once enough information is gathered. It is recommended that you do not create a separate GitHub issue for an unsupported type.
+
+## Arming
+
+### Why does the plugin force arm my system?
+
+The Home app relies on the <Terminology title="HomeKit Accessory Protocol" to="/docs/reference/terminology#hap">HAP</Terminology> protocol to establish arm states, and that protocol expects the arm request to succeed. To satisfy it, the plugin <Terminology title="automatic bypass of open or active sensors when arming" to="/docs/reference/terminology#force-arm">force arms</Terminology> whenever it detects active motion or open <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology>.
+
+<Terminology title="automatic bypass of open or active sensors when arming" to="/docs/reference/terminology#force-arm">Force arming</Terminology> is always on and cannot be disabled, because turning it off would cause arming failures without alert notifications.
+
+:::warning
+If you automate arming, you accept the risk that the system may not fully arm when a <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> is active or open at the time of the request.
+:::
+
+See [Force Arming](/docs/arming/force-arming/) for how to check your <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology> before arming.
+
+### Can I use Arm Night?
+
+Arm Night on ADT Pulse systems is only available through the <Terminology title="the alarm panel accessory for arming and disarming" to="/docs/reference/terminology#security-panel">panel</Terminology> itself and is not visible on the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">Web Portal</Terminology> or the mobile app. You can still place your system into Arm Night mode with this plugin.
+
+See [Arm Night Support](/docs/arming/arm-night/) for details.
+
+### Why does my temperature sensor show 0 degrees or 100 degrees?
+
+The Temperature Sensor works with temperature values in the <Terminology title="HomeKit Accessory Protocol" to="/docs/reference/terminology#hap">HAP</Terminology> protocol rather than open or closed states, so the accessory converts its binary status into degrees. Normal temperatures are represented as 0 degrees Celsius, and abnormal temperatures are represented as 100 degrees Celsius.
+
+See [Temperature Sensors](/docs/arming/temperature-sensors/) for more on this conversion.
+
+## Privacy
+
+### Does the plugin track me?
+
+The plugin adheres to the [verified Homebridge plugin](https://github.com/homebridge/homebridge/wiki/verified-Plugins#verified-plugins) requirements, so it does not track you in any way. Its detection feature only notifies the author when it encounters an undocumented <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> or <Terminology title="the alarm panel accessory for arming and disarming" to="/docs/reference/terminology#security-panel">panel</Terminology> status.
+
+### What information is sent, and is it redacted?
+
+Personally identifiable details are redacted before any <Terminology title="redacted anomaly payload sent to the plugin author" to="/docs/reference/terminology#detect-report">report</Terminology> leaves your system, replaced with the literal string `*** REDACTED FOR PRIVACY ***`. Redacted fields include IP addresses, MAC addresses, serial numbers, update timestamps, the security panel's master code, and session tokens.
+
+A privacy warning is shown when you run the included <Terminology title="bundled commands for troubleshooting portal connectivity" to="/docs/reference/terminology#test-scripts">scripts</Terminology>, when the plugin starts, and when it is about to notify the author.
+
+See [Detection and Privacy](/docs/operations/detection-and-privacy/) for the full redaction reference and an example <Terminology title="redacted anomaly payload sent to the plugin author" to="/docs/reference/terminology#detect-report">report</Terminology>.
+
+### Can I opt out of detection reports?
+
+You can prevent detection <Terminology title="redacted anomaly payload sent to the plugin author" to="/docs/reference/terminology#detect-report">reports</Terminology> by blocking the URL that the plugin uses to notify the author. If you block that URL, the author will not be able to offer assistance or support, since the plugin can no longer report the undocumented statuses it needs to diagnose issues.
+
+## Platform Support
+
+### Does the plugin work on HOOBS?
+
+<Terminology title="Homebridge Out Of the Box System" to="/docs/reference/terminology#hoobs">HOOBS</Terminology> may use an outdated <Terminology title="third-party web UI for managing Homebridge" to="/docs/reference/terminology#homebridge-config-ui">configuration UI</Terminology> that has not been resolved by the <Terminology title="Homebridge Out Of the Box System" to="/docs/reference/terminology#hoobs">HOOBS</Terminology> team. <Terminology title="Homebridge Out Of the Box System" to="/docs/reference/terminology#hoobs">HOOBS</Terminology> users should manually configure the plugin using the sample configuration rather than relying on the <Terminology title="third-party web UI for managing Homebridge" to="/docs/reference/terminology#homebridge-config-ui">config UI</Terminology>.
+
+:::info
+Support for <Terminology title="Homebridge Out Of the Box System" to="/docs/reference/terminology#hoobs">HOOBS</Terminology> is offered on a best-effort basis. See [HOOBS Support](/docs/platform-support/hoobs/) for the current status and manual configuration guidance.
+:::
+
+### Is my country supported?
+
+ADT Pulse is available to consumers in either the United States or Canada, selected through the `subdomain` field. Set `subdomain` to `portal` for the United States or `portal-ca` for Canada.
+
+See [Portal Region](/docs/getting-started/portal-region/) for details.
+
+### Does the plugin support Z-Wave accessories?
+
+Z-Wave accessories connected to the ADT Pulse <Terminology title="the ADT Pulse gateway device" to="/docs/reference/terminology#gateway">gateway</Terminology> are not supported and are not planned, due to implementation complexity and platform instability. See the [Supported Devices](/docs/getting-started/supported-devices/) page for alternative suggestions.

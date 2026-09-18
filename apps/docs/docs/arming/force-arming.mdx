@@ -1,0 +1,58 @@
+---
+id: force-arming
+title: Force Arming
+description: Force arm Away, Stay, and Night requests automatically whenever the plugin detects active motion or open sensors on your system.
+sidebar_position: 1
+keywords:
+  - homebridge adt pulse
+  - force arming
+  - arm away
+  - arm stay
+  - arm night
+  - hap protocol
+tags:
+  - arming
+  - behavior
+---
+
+import { Terminology } from '@cbnventures/docusaurus-preset-nova/blocks';
+
+Complete Away, Stay, and Night arm requests automatically through <Terminology title="automatic bypass of open or active sensors when arming" to="/docs/reference/terminology#force-arm">force arming</Terminology> whenever the plugin detects active motion or open <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology>.
+
+## How Force Arming Works
+
+The Home app relies on the <Terminology title="HomeKit Accessory Protocol" to="/docs/reference/terminology#hap">HAP</Terminology> protocol to establish arm states, and that protocol expects an arm request to succeed. To satisfy it, the plugin <Terminology title="automatic bypass of open or active sensors when arming" to="/docs/reference/terminology#force-arm">force arms</Terminology> whenever it detects active motion or open <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology>.
+
+<Terminology title="automatic bypass of open or active sensors when arming" to="/docs/reference/terminology#force-arm">Force arming</Terminology> applies to every arm state exposed through HomeKit:
+
+- **Arm Away** — Arms the system while treating triggering <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology> as <Terminology title="automatic bypass of open or active sensors when arming" to="/docs/reference/terminology#force-arm">force-armed</Terminology>.
+- **Arm Stay** — Arms the system while treating triggering <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology> as <Terminology title="automatic bypass of open or active sensors when arming" to="/docs/reference/terminology#force-arm">force-armed</Terminology>.
+- **Arm Night** — Arms the system while treating triggering <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology> as <Terminology title="automatic bypass of open or active sensors when arming" to="/docs/reference/terminology#force-arm">force-armed</Terminology>.
+
+## This Behavior Cannot Be Disabled
+
+<Terminology title="automatic bypass of open or active sensors when arming" to="/docs/reference/terminology#force-arm">Force arming</Terminology> is always on. Disabling it is not possible, because doing so would result in arming failures without alert notifications.
+
+:::warning
+<Terminology title="automatic bypass of open or active sensors when arming" to="/docs/reference/terminology#force-arm">Force arming</Terminology> is a fixed behavior with no configuration option to turn it off. There is no field in `config.schema.json` that controls it.
+:::
+
+## Check Your Sensors Before Arming
+
+If you are concerned about arming with active motion or open <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology>, check the status of the <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology> in your home before you arm the system.
+
+To review which <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology> need attention:
+
+1. Open the Home app.
+2. Tap the dotted circle (`...`) located on the top right of the screen.
+3. View the <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology> that require attention and resolve those issues.
+
+Resolving flagged <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology> first lets you arm with everything in the expected state, rather than relying on the <Terminology title="automatic bypass of open or active sensors when arming" to="/docs/reference/terminology#force-arm">force arm</Terminology> to complete the request.
+
+## Automation Considerations
+
+If you have set up automation that arms the system, you acknowledge that <Terminology title="automatic bypass of open or active sensors when arming" to="/docs/reference/terminology#force-arm">force arming</Terminology> will happen. You accept the risk of the system not completely arming itself when a <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> is active or open at the time of the request.
+
+:::info
+Arm Night is only available through the <Terminology title="the alarm panel accessory for arming and disarming" to="/docs/reference/terminology#security-panel">panel</Terminology> itself on ADT Pulse systems, but you can still place your system into Arm Night mode with this plugin. See [Arm Night Support](/docs/arming/arm-night/) for details.
+:::

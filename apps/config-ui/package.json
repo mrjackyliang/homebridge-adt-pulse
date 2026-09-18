@@ -1,0 +1,49 @@
+{
+  "name": "homebridge-adt-pulse-app-config-ui",
+  "version": "3.5.0",
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "nova utility run-scripts --parallel 'dev:*'",
+    "dev:start": "vite",
+    "check": "nova utility run-scripts --sequential 'check:*'",
+    "check:lint": "eslint ./ --max-warnings=0",
+    "check:types": "nova utility type-check --project tsconfig.json",
+    "check:types-config": "nova utility type-check --project tsconfig.config.json",
+    "check:types-tests": "nova utility type-check --project tsconfig.tests.json",
+    "check:test": "vitest run",
+    "build": "nova utility run-scripts --sequential 'build:*'",
+    "build:app": "vite build"
+  },
+  "engines": {
+    "node": "^22 || ^24"
+  },
+  "dependencies": {
+    "@cbnventures/nova": "0.27.1",
+    "@hookform/resolvers": "5.9.1",
+    "bootstrap": "5.3.8",
+    "lodash": "4.18.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-hook-form": "7.86.0",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@homebridge/plugin-ui-utils": "2.0.0",
+    "@types/lodash": "4.17.25",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "@vitejs/plugin-react": "5.0.4",
+    "eslint": "9.39.5",
+    "@types/eslint-plugin-jsx-a11y": "6.10.1",
+    "eslint-plugin-jsx-a11y": "6.10.2",
+    "eslint-plugin-react": "7.37.5",
+    "eslint-plugin-react-hooks": "7.0.1",
+    "globals": "15.15.0",
+    "jsdom": "25.0.1",
+    "typescript": "6.0.3",
+    "vite": "7.3.6",
+    "vitest": "4.1.11"
+  }
+}

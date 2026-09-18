@@ -1,0 +1,86 @@
+---
+id: overview
+title: Overview
+description: Control your ADT Pulse security system and view sensor status in the Home app with this verified Homebridge plugin using the HAP protocol.
+sidebar_position: 1
+keywords:
+  - homebridge adt pulse
+  - overview
+  - adt pulse
+  - homekit
+  - security system
+  - homebridge plugin
+  - hap protocol
+tags:
+  - overview
+  - getting-started
+---
+
+import { Terminology } from '@cbnventures/docusaurus-preset-nova/blocks';
+
+Control your ADT Pulse security system and view <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> status through the Home app using the <Terminology title="HomeKit Accessory Protocol" to="/docs/reference/terminology#hap">HAP</Terminology> protocol.
+
+## What Is This?
+
+ADT Pulse for Homebridge is a [verified Homebridge plugin](https://github.com/homebridge/homebridge/wiki/verified-Plugins#verified-plugins) for ADT Pulse customers. It lets homeowners control their security system and view <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> status through the Home app.
+
+The plugin talks to the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">ADT Pulse Web Portal</Terminology>, which is powered by Icontrol One and owned by ICN Acquisition LLC, an indirect subsidiary of [Alarm.com](https://alarm.com).
+
+## Getting Started
+
+Setting up the plugin takes three simple steps:
+
+1. Run `npm install homebridge-adt-pulse`.
+2. Configure the plugin using the sample provided in the [Configuration](/docs/getting-started/configuration/) guide.
+3. Restart Homebridge and see the magic happen.
+
+Another option is to search for `adt-pulse` using oznu's [Homebridge Config UI](https://github.com/oznu/homebridge-config-ui-x). Afterward, you can configure the plugin through the <Terminology title="third-party web UI for managing Homebridge" to="/docs/reference/terminology#homebridge-config-ui">configuration UI</Terminology> available in the "Plugins" tab.
+
+See the [Installation](/docs/getting-started/installation/) guide for the full walkthrough.
+
+## Default Accessories
+
+The plugin exposes these devices by default:
+
+| Accessory                                                                                                                                            | Type          |
+|------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
+| <Terminology title="the ADT Pulse gateway device" to="/docs/reference/terminology#gateway">Gateway</Terminology>                                     | `gateway`     |
+| <Terminology title="the alarm panel accessory for arming and disarming" to="/docs/reference/terminology#security-panel">Security Panel</Terminology> | `panel`       |
+| <Terminology title="switch that silences a ringing alarm" to="/docs/reference/terminology#alarm-ringing-switch">Alarm Ringing Switch</Terminology>   | `panelSwitch` |
+
+## Configurable Sensors
+
+The plugin can expose these <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology> in read-only mode, based on your configuration:
+
+| Sensor Type   | Description                                          |
+|---------------|------------------------------------------------------|
+| `co`          | Carbon Monoxide Detector                             |
+| `doorWindow`  | Door/Window Sensor :: Door Sensor :: Window Sensor   |
+| `fire`        | Fire (Smoke/Heat) Detector                           |
+| `flood`       | Water/Flood Sensor                                   |
+| `glass`       | Glass Break Detector                                 |
+| `heat`        | Heat (Rate-of-Rise) Detector                         |
+| `motion`      | Motion Sensor :: Motion Sensor (Notable Events Only) |
+| `shock`       | Shock Sensor                                         |
+| `temperature` | Temperature Sensor                                   |
+
+For the complete breakdown of default and configurable accessories, see [Supported Devices](/docs/getting-started/supported-devices/).
+
+:::info
+While named "ADT Pulse for Homebridge," this plugin accommodates only the accessories listed above. It does not serve as a comprehensive substitute for the [official ADT Pulse app](https://www.adt.com/help/faq/adt-pulse/adt-pulse-mobile-app).
+:::
+
+## Z-Wave Accessories
+
+Z-Wave accessories connected to the ADT Pulse <Terminology title="the ADT Pulse gateway device" to="/docs/reference/terminology#gateway">gateway</Terminology> are not supported, and support is not planned. This is due to implementation complexity and platform instability.
+
+If you rely on Z-Wave accessories, consider one of these alternatives:
+
+- Purchase the [Hubitat Hub](https://hubitat.com) for a seamless setup experience.
+- Read about the [Home Assistant Z-Wave](https://www.home-assistant.io/integrations/zwave_js/) integration.
+
+## Next Steps
+
+- **[Installation](/docs/getting-started/installation/)** — Install the plugin via npm or the <Terminology title="third-party web UI for managing Homebridge" to="/docs/reference/terminology#homebridge-config-ui">Homebridge Config UI</Terminology>.
+- **[Configuration](/docs/getting-started/configuration/)** — Set up your `config.json` with a working sample.
+- **[Supported Devices](/docs/getting-started/supported-devices/)** — Review every accessory the plugin can expose.

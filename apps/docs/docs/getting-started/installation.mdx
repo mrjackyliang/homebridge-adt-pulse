@@ -1,0 +1,64 @@
+---
+id: installation
+title: Installation
+description: Install the Homebridge ADT Pulse plugin via npm or the Homebridge Config UI, then restart Homebridge to begin controlling your security system.
+sidebar_position: 1
+keywords:
+  - homebridge adt pulse
+  - installation
+  - npm install
+  - homebridge config ui
+  - setup
+tags:
+  - getting-started
+  - installation
+---
+
+import { Terminology } from '@cbnventures/docusaurus-preset-nova/blocks';
+
+Install the plugin through npm or the <Terminology title="third-party web UI for managing Homebridge" to="/docs/reference/terminology#homebridge-config-ui">Homebridge Config UI</Terminology>, then restart Homebridge to begin controlling your ADT Pulse security system from the Home app.
+
+## Prerequisites
+
+Before you install, make sure the following are in place:
+
+- **Homebridge** — A working Homebridge installation that you can restart after adding the plugin.
+- **ADT Pulse account** — Active credentials for the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">ADT Pulse Web Portal</Terminology>, subscribed in either the United States or Canada.
+
+:::info
+This is a <Terminology title="Homebridge's formal review status for best-practice plugins" to="/docs/reference/terminology#verified-plugin">verified</Terminology> Homebridge plugin for ADT Pulse customers. It lets homeowners control their security system and view <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> status through the Home app over the <Terminology title="HomeKit Accessory Protocol" to="/docs/reference/terminology#hap">HAP</Terminology> protocol.
+:::
+
+## Install with npm
+
+The quickest path is a three-step flow: install, configure, restart.
+
+1. Run `npm install homebridge-adt-pulse` to add the plugin.
+2. Configure the plugin using the sample on the [Configuration](/docs/getting-started/configuration/) page for guidance.
+3. Restart Homebridge and see the magic happen.
+
+```bash
+npm install homebridge-adt-pulse
+```
+
+## Install with Homebridge Config UI
+
+If you prefer a graphical setup, install the plugin through oznu's [Homebridge Config UI](https://github.com/oznu/homebridge-config-ui-x).
+
+1. Open the <Terminology title="third-party web UI for managing Homebridge" to="/docs/reference/terminology#homebridge-config-ui">Homebridge Config UI</Terminology> and go to the plugin search.
+2. Search for `adt-pulse` and install the plugin from the results.
+3. Configure the plugin through the <Terminology title="third-party web UI for managing Homebridge" to="/docs/reference/terminology#homebridge-config-ui">configuration UI</Terminology> available in the "Plugins" tab.
+
+:::tip
+The <Terminology title="third-party web UI for managing Homebridge" to="/docs/reference/terminology#homebridge-config-ui">Config UI</Terminology> ships a dedicated <Terminology title="guided flow that configures the plugin for you" to="/docs/reference/terminology#setup-wizard">setup wizard</Terminology>. Starting from `v3.4.0`, <Terminology title="guided flow that configures the plugin for you" to="/docs/reference/terminology#setup-wizard">the wizard</Terminology> creates your [device fingerprint](/docs/getting-started/fingerprint/) for you, so you no longer need an external tool for two-factor authentication.
+:::
+
+## After Installing
+
+Once the plugin is installed, a few settings get you to a working configuration.
+
+- **Set your <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology> region** — Choose the United States or Canada <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology> on the [Portal Region](/docs/getting-started/portal-region/) page.
+- **Add your credentials and <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology>** — Fill in your login and define each <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> you want in the Home app on the [Configuration](/docs/getting-started/configuration/) page.
+- **Review supported accessories** — Confirm which devices the plugin can expose on the [Supported Devices](/docs/getting-started/supported-devices/) page.
+
+Restart Homebridge after any configuration change so the plugin picks up the new settings.

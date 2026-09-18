@@ -1,0 +1,22 @@
+{
+  "extends": [
+    "@cbnventures/nova/presets/tsconfig/dx-essentials.json",
+    "@cbnventures/nova/presets/tsconfig/dx-strict.json",
+    "@cbnventures/nova/presets/tsconfig/fw-docusaurus.json"
+  ],
+  "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
+    "noEmit": true,
+    "types": [
+      "@types/node"
+    ]
+  },
+  "include": [
+    "./docusaurus.config.ts",
+    "./eslint.config.mts",
+    "./sidebars.ts",
+    "./vitest.config.mts",
+    "./vitest.setup.ts"
+  ]
+}

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mrjackyliang.github.io/homebridge-adt-pulse/sitemap.xml

@@ -1,0 +1,117 @@
+---
+id: "terminology"
+title: "Terminology"
+sidebar_position: 4
+description: "Review the terminology used throughout the Homebridge ADT Pulse documentation, from portal sessions and sync checks to force arming and operational modes."
+keywords:
+  - "homebridge adt pulse"
+  - "terminology"
+  - "glossary"
+  - "concepts"
+  - "definitions"
+tags:
+  - "reference"
+  - "terminology"
+---
+
+Define the terms and concepts used throughout this documentation.
+
+## ADT Pulse
+
+The ADT home security service this plugin integrates with.
+
+## Portal
+
+The ADT Pulse Web Portal (powered by Icontrol One), the plugin's only data source. The `subdomain` setting selects `portal` (United States) or `portal-ca` (Canada).
+
+## HAP
+
+HomeKit Accessory Protocol, the protocol the Home app speaks. Homebridge exposes this plugin's accessories over it.
+
+## Homebridge
+
+The Node.js server that hosts this plugin (`^1.11.0` or `^2.0.0-beta.0` per `engines`).
+
+## HOOBS
+
+Homebridge Out Of the Box System, a standalone Homebridge distribution with its own UI and bridge management. The plugin supports HOOBS with adjusted installation steps.
+
+## Homebridge Config UI
+
+The third-party web interface (`homebridge-config-ui-x`) for managing Homebridge plugins, accessories, and settings through a browser.
+
+## Setup Wizard
+
+The guided flow in Homebridge Config UI that logs into the portal, completes 2-factor verification, creates a fingerprint, registers a trusted device, and writes the plugin config.
+
+## Verified Plugin
+
+The formal Homebridge program status confirming a plugin has been reviewed by the Homebridge project team and meets its best-practice requirements. This plugin holds verified status.
+
+## Platform
+
+The Homebridge plugin type this project registers: `ADTPulse`, implemented by `ADTPulsePlatform`.
+
+## Platform Block
+
+The JSON object inside `config.json`'s `platforms` array, identified by `"platform": "ADTPulse"`, that holds this plugin's settings.
+
+## Gateway
+
+The ADT Pulse gateway device, exposed by default alongside the security panel and Alarm Ringing switch.
+
+## Security Panel
+
+The alarm panel accessory that supports Arm Away, Arm Stay, Arm Night, and Disarm.
+
+## Alarm Ringing Switch
+
+The `panelSwitch` accessory used to silence a ringing alarm while the system is in "Disarmed" mode.
+
+## Sensor
+
+A portal device declared explicitly in config via `name`, `adtName`, `adtZone`, and `adtType`. Zones 1 through 99 are supported.
+
+## System Tab
+
+The "System" tab in the ADT Pulse portal, listing the Name, Zone, and Device Type columns used to configure sensors in the plugin.
+
+## Condensed Sensor Type
+
+One of the nine `adtType` slugs: `co`, `doorWindow`, `fire`, `flood`, `glass`, `heat`, `motion`, `shock`, `temperature`.
+
+## Fingerprint
+
+The base64 device fingerprint the portal requires for 2-factor logins. Created by the setup wizard and saved in the plugin configuration.
+
+## MFA / Trusted Device
+
+The portal's 2-factor flow: request an SMS or email one-time passcode, validate it, and register a trusted device.
+
+## Sync Check
+
+The periodic portal signal that reports whether device state changed. Dispatched on the platform's interval, scaled by the `speed` setting.
+
+## Keep-Alive
+
+The periodic portal signal that keeps the logged-in session from expiring.
+
+## Force Arm
+
+The plugin's automatic bypass of open or active sensors when arming, required because the HAP protocol cannot prompt the user.
+
+## Detect Report
+
+A redacted anomaly payload sent to the plugin author when unknown devices or statuses are parsed. Personally identifiable information is automatically removed.
+
+## Operational Mode
+
+The `mode` setting: `normal`, `paused` (devices non-responsive), or `reset` (removes plugin accessories after an approximately 40-second warning window).
+
+## Stale Accessory
+
+A cached Homebridge accessory that a plugin no longer claims on startup. Homebridge can remove stale accessories unless you retain them with the `-K` or `--keep-orphans` flag.
+
+## Test Scripts
+
+The bundled `hap-test-api` and `hap-repl` commands for troubleshooting portal connectivity and inspecting live API responses.

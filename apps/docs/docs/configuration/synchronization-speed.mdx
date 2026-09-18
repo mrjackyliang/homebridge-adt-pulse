@@ -1,0 +1,74 @@
+---
+id: synchronization-speed
+title: Synchronization Speed
+description: Tune the sync check firing interval with the speed field to ease network load and CPU usage on older routers and resource-limited devices.
+sidebar_position: 2
+keywords:
+  - homebridge adt pulse
+  - synchronization speed
+  - sync check
+  - performance
+  - cpu usage
+  - keep-alive
+tags:
+  - configuration
+  - performance
+---
+
+import { Terminology } from '@cbnventures/docusaurus-preset-nova/blocks';
+
+Slow down the <Terminology title="periodic portal signal reporting whether device state changed" to="/docs/reference/terminology#sync-check">sync check</Terminology> firing interval so the plugin puts less strain on older routers and devices.
+
+## Overview
+
+By default, the plugin fires every second to assess whether <Terminology title="periodic portal signal reporting whether device state changed" to="/docs/reference/terminology#sync-check">sync check</Terminology> signals or <Terminology title="periodic portal signal that keeps your session logged in" to="/docs/reference/terminology#keep-alive">keep-alive</Terminology> signals should be dispatched. This keeps device states in the Home app as fresh as possible.
+
+That pace is not always ideal. On some consumer routers the constant polling can cause a network slowdown, and on older devices that are incompatible with newer OpenSSL versions (`v3.1`), it can result in sustained 100% CPU usage.
+
+The `speed` value adjusts the firing interval to address both issues. Lowering it trades faster updates for lighter load.
+
+## Speed Values
+
+The `speed` field is a number that maps to one of four preset intervals. The default is `1`.
+
+| Value  | Label    | Description                                                           |
+|--------|----------|-----------------------------------------------------------------------|
+| `1`    | Normal   | Fires every second. The default and fastest option.                   |
+| `0.75` | Moderate | Slows the firing interval slightly to reduce load.                    |
+| `0.5`  | Slower   | Slows the firing interval further for more constrained setups.        |
+| `0.25` | Slowest  | The slowest option, for the most resource-limited routers or devices. |
+
+Lower values reduce network and CPU pressure but may result in slower device updates in the Home app.
+
+## Configuration
+
+Set the `speed` field inside the <Terminology title="this plugin's settings object in config.json" to="/docs/reference/terminology#platform-block">platform block</Terminology> of your `config.json`. This example uses the slowest interval:
+
+```json title="config.json"
+{
+  "platforms": [
+    {
+      "platform": "ADTPulse",
+      "name": "ADT Pulse",
+      "speed": 0.25
+    }
+  ]
+}
+```
+
+## Startup Warning
+
+If the plugin does not run at `1` (Normal) speed, a warning is issued on every startup. This warning cannot be disabled.
+
+:::warning
+Any `speed` value other than `1` triggers a startup warning that cannot be turned off. Only lower the speed if you are experiencing router slowdowns or high CPU usage.
+:::
+
+## When to Lower the Speed
+
+The default speed is recommended for most setups. Consider a lower value only when you observe one of these symptoms:
+
+- **Network slowdown** — The router struggles under the plugin's constant polling.
+- **Sustained 100% CPU** — An older device incompatible with OpenSSL `v3.1` stays pinned at full CPU usage.
+
+The `speed` field sits alongside the other <Terminology title="the Homebridge plugin type this project registers" to="/docs/reference/terminology#platform">platform</Terminology> settings. See [Operational Mode](/docs/configuration/operational-mode/) for pausing or resetting the plugin, and [Advanced Options](/docs/configuration/advanced-options/) for disabling specific behaviors.

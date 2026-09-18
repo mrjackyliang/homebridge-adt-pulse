@@ -1,55 +1,14 @@
 {
-  "compilerOptions": {
-    "allowJs": false,
-    "allowSyntheticDefaultImports": true,
-    "baseUrl": "./",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "incremental": false,
-    "isolatedModules": false,
-    "jsx": "preserve",
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ESNext"
-    ],
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "noEmit": false,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitAny": true,
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
-    "outDir": "./build",
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+  "references": [
+    {
+      "path": "./tsconfig.config.json"
     },
-    "plugins": [],
-    "removeComments": true,
-    "resolveJsonModule": true,
-    "rootDir": "./src",
-    "skipLibCheck": false,
-    "sourceMap": true,
-    "strict": true,
-    "target": "ESNext",
-    "types": [
-      "node",
-      "jsdom",
-      "lodash",
-      "luxon",
-      "react",
-      "react-dom",
-      "semver",
-      "tough-cookie"
-    ]
-  },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx"
+    {
+      "path": "./tsconfig.scripts.json"
+    },
+    {
+      "path": "./tsconfig.tests.json"
+    }
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "files": []
 }

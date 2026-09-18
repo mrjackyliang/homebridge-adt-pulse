@@ -1,0 +1,106 @@
+{
+  "name": "homebridge-adt-pulse",
+  "displayName": "Homebridge ADT Pulse",
+  "version": "3.5.0",
+  "description": "Control your ADT Pulse security system and view sensor status through the Home app",
+  "keywords": [
+    "homebridge",
+    "homebridge-plugin",
+    "homekit",
+    "adt",
+    "adt-pulse",
+    "icontrol",
+    "security",
+    "security-system"
+  ],
+  "license": "MIT",
+  "homepage": "https://mrjackyliang.github.io/homebridge-adt-pulse/",
+  "bugs": {
+    "email": "bugs@mrjackyliang.com",
+    "url": "https://github.com/mrjackyliang/homebridge-adt-pulse/issues"
+  },
+  "author": {
+    "name": "Jacky Liang",
+    "email": "hello@mrjackyliang.com",
+    "url": "https://www.mrjackyliang.com/"
+  },
+  "funding": [
+    "https://github.com/sponsors/mrjackyliang",
+    "https://liang.nyc/paypal"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mrjackyliang/homebridge-adt-pulse.git",
+    "directory": "packages/homebridge-adt-pulse"
+  },
+  "exports": {
+    ".": {
+      "default": "./build/index.js"
+    }
+  },
+  "main": "./build/index.js",
+  "type": "module",
+  "files": [
+    "./bin",
+    "./build",
+    "config.schema.json"
+  ],
+  "bin": {
+    "hap-repl": "bin/hap-repl.mjs",
+    "hap-test-api": "bin/hap-test-api.mjs"
+  },
+  "private": false,
+  "scripts": {
+    "check": "nova utility run-scripts --sequential 'check:*'",
+    "check:lint": "eslint ./ --max-warnings=0",
+    "check:types": "nova utility type-check --project tsconfig.source.json",
+    "check:types-config": "nova utility type-check --project tsconfig.config.json",
+    "check:types-tests": "nova utility type-check --project tsconfig.tests.json",
+    "check:test": "vitest run",
+    "build": "nova utility run-scripts --sequential 'build:*'",
+    "build:reset": "shx rm -rf ./build",
+    "build:transpile": "nova utility transpile --project tsconfig.source.json",
+    "build:identity-snapshot": "node ./build/cli/generate-identity-snapshot.js",
+    "build:browser-snapshot": "node ./build/cli/generate-browser-snapshot.js",
+    "build:fix-perms": "shx chmod +x ./build/cli/repl.js ./build/cli/test-api.js",
+    "build:copy-ui": "shx cp -r ../../apps/config-ui/build ./build/config-ui/public",
+    "start": "homebridge --debug --keep-orphans --plugin-path $(pwd)",
+    "repl": "node ./build/cli/repl.js",
+    "test-api": "node ./build/cli/test-api.js"
+  },
+  "engines": {
+    "homebridge": "^1.11.0 || ^2.0.0-beta.0",
+    "node": "^22 || ^24"
+  },
+  "dependencies": {
+    "@cbnventures/nova": "0.27.1",
+    "@faker-js/faker": "9.3.0",
+    "@homebridge/plugin-ui-utils": "2.0.0",
+    "axios": "1.12.0",
+    "axios-cookiejar-support": "5.0.5",
+    "chalk": "5.6.2",
+    "jsdom": "25.0.1",
+    "lodash": "4.18.1",
+    "luxon": "3.5.0",
+    "semver": "7.6.3",
+    "serialize-error": "12.0.0",
+    "tough-cookie": "5.0.0",
+    "ua-parser-js": "2.0.0",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "homebridge-adt-pulse-app-config-ui": "*",
+    "@types/jsdom": "21.1.7",
+    "@types/lodash": "4.17.25",
+    "@types/luxon": "3.4.2",
+    "@types/node": "24.9.1",
+    "@types/semver": "7.5.8",
+    "@types/tough-cookie": "4.0.5",
+    "@vitest/coverage-v8": "4.1.11",
+    "eslint": "9.39.5",
+    "homebridge": "1.8.5",
+    "shx": "0.4.0",
+    "typescript": "6.0.3",
+    "vitest": "4.1.11"
+  }
+}

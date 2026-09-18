@@ -1,0 +1,314 @@
+.hero {
+  overflow-x: clip;
+}
+
+.heroInner {
+  max-width: var(--nova-grid-container-max);
+  margin-inline: auto;
+  padding-inline: var(--nova-grid-padding);
+  padding-block: clamp(3rem, 8vh, 5rem);
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+}
+
+/* =====================================================================
+   Hero content (left column)
+   ===================================================================== */
+
+.heroContent {
+  flex: 65;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.75rem, 1.5vw, 1rem);
+}
+
+.heroContent :global(.nova-hero-eyebrow),
+.heroContent :global(.nova-hero-heading),
+.heroContent :global(.nova-hero-tagline),
+.heroContent :global(.nova-hero-actions) {
+  margin: 0;
+}
+
+.heroContent :global(.nova-hero-tagline) {
+  max-width: none;
+}
+
+.heroActions {
+  justify-content: flex-start;
+}
+
+/* =====================================================================
+   Home Room — Apple Home-style accessory tiles (right column)
+   ===================================================================== */
+
+.homeRoom {
+  --state-ok: #16a34a;
+  --state-active: var(--nova-color-primary-500);
+
+  flex: 35;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* =====================================================================
+   Security panel tile (full-width)
+   ===================================================================== */
+
+.panelTile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border-radius: 14px 4px 14px 4px;
+  background: var(--nova-color-surface-raised);
+  border: 1px solid var(--nova-color-border);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.07);
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+
+.panelTile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 12px -2px rgb(0 0 0 / 0.1);
+  border-color: color-mix(in srgb, var(--state-ok) 30%, var(--nova-color-border));
+}
+
+.panelTileIcon {
+  font-size: 1.75rem;
+  color: var(--state-ok);
+  flex-shrink: 0;
+}
+
+.panelTileInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.0625rem;
+  text-align: left;
+  flex: 1;
+}
+
+.panelTileName {
+  font-family: var(--nova-font-body);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--nova-color-text);
+}
+
+.panelTileState {
+  font-family: var(--nova-font-body);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--state-ok);
+}
+
+.panelTileDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--state-ok);
+  flex-shrink: 0;
+}
+
+/* =====================================================================
+   Sensor grid (3-column, square tiles)
+   ===================================================================== */
+
+.sensorGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.sensorTile {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.75rem;
+  aspect-ratio: 1;
+  border-radius: 4px 14px 4px 14px;
+  background: var(--nova-color-surface-raised);
+  border: 1px solid var(--nova-color-border);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.07);
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+
+.sensorTile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 12px -2px rgb(0 0 0 / 0.1);
+  border-color: color-mix(in srgb, var(--nova-color-primary-500) 30%, var(--nova-color-border));
+}
+
+.sensorTileActive {
+  background: color-mix(in srgb, var(--nova-color-primary-500) 6%, var(--nova-color-surface-raised));
+  border-color: color-mix(in srgb, var(--nova-color-primary-500) 25%, var(--nova-color-border));
+}
+
+.sensorTileTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.sensorTileIcon {
+  font-size: 1.5rem;
+  color: var(--nova-color-text-muted);
+}
+
+.iconActive {
+  color: var(--state-active);
+}
+
+.sensorTileDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 0.25rem;
+  flex-shrink: 0;
+}
+
+.dotOk {
+  background: var(--state-ok);
+}
+
+.dotActive {
+  background: var(--state-active);
+}
+
+.sensorTileBottom {
+  display: flex;
+  flex-direction: column;
+  gap: 0.0625rem;
+}
+
+.sensorTileName {
+  font-family: var(--nova-font-body);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--nova-color-text);
+  line-height: 1.3;
+}
+
+.sensorTileStatus {
+  font-family: var(--nova-font-body);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.statusOk {
+  color: var(--state-ok);
+}
+
+.statusActive {
+  color: var(--state-active);
+}
+
+/* =====================================================================
+   Animation — staggered tile fade-in
+   ===================================================================== */
+
+@keyframes tileIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .panelTile,
+  .sensorTile {
+    opacity: 0;
+    animation: tileIn 0.35s ease-out forwards;
+  }
+
+  .panelTile {
+    animation-delay: 0.15s;
+  }
+
+  .sensorTile:nth-child(1) {
+    animation-delay: 0.3s;
+  }
+
+  .sensorTile:nth-child(2) {
+    animation-delay: 0.4s;
+  }
+
+  .sensorTile:nth-child(3) {
+    animation-delay: 0.5s;
+  }
+
+  .sensorTile:nth-child(4) {
+    animation-delay: 0.6s;
+  }
+
+  .sensorTile:nth-child(5) {
+    animation-delay: 0.7s;
+  }
+
+  .sensorTile:nth-child(6) {
+    animation-delay: 0.8s;
+  }
+
+  .sensorTile:nth-child(7) {
+    animation-delay: 0.9s;
+  }
+
+  .sensorTile:nth-child(8) {
+    animation-delay: 1s;
+  }
+
+  .sensorTile:nth-child(9) {
+    animation-delay: 1.1s;
+  }
+}
+
+/* =====================================================================
+   Mobile — stack vertically
+   ===================================================================== */
+
+/* =====================================================================
+   Dark mode — brighter state colors
+   ===================================================================== */
+
+:global([data-theme="dark"]) .homeRoom {
+  --state-ok: #4ade80;
+  --state-active: var(--nova-color-primary-400);
+}
+
+/* =====================================================================
+   Mobile — stack vertically
+   ===================================================================== */
+
+@media (max-width: 1024px) {
+  .heroInner {
+    flex-direction: column;
+    gap: 1.5rem;
+    text-align: center;
+  }
+
+  .heroActions {
+    justify-content: center;
+  }
+
+  .homeRoom {
+    max-width: 24rem;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .sensorGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .sensorTile:nth-child(n+5) {
+    display: none;
+  }
+}

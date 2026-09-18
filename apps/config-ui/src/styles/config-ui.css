@@ -1,0 +1,132 @@
+/**
+ * ============================
+ * Isolated Plugin Canvas
+ * ============================
+ */
+.adt-pulse-app {
+  --adt-accent: #673ab7;
+  --adt-accent-contrast: #fff;
+
+  display: block;
+  min-width: 0;
+  min-height: 100%;
+  padding: 1rem;
+
+  font-family: var(--bs-body-font-family);
+  font-size: var(--bs-body-font-size);
+  line-height: var(--bs-body-line-height);
+  color: var(--bs-body-color);
+
+  background: var(--bs-body-bg);
+}
+
+/**
+ * ============================
+ * Homebridge Accent
+ * ============================
+ */
+.adt-pulse-app .btn-primary {
+  --bs-btn-color: var(--adt-accent-contrast);
+  --bs-btn-bg: var(--adt-accent);
+  --bs-btn-border-color: var(--adt-accent);
+  --bs-btn-hover-color: var(--adt-accent-contrast);
+  --bs-btn-hover-bg: color-mix(in srgb, var(--adt-accent), #000 12%);
+  --bs-btn-hover-border-color: color-mix(in srgb, var(--adt-accent), #000 12%);
+  --bs-btn-active-color: var(--adt-accent-contrast);
+  --bs-btn-active-bg: color-mix(in srgb, var(--adt-accent), #000 20%);
+  --bs-btn-active-border-color: color-mix(in srgb, var(--adt-accent), #000 20%);
+  --bs-btn-disabled-color: var(--adt-accent-contrast);
+  --bs-btn-disabled-bg: var(--adt-accent);
+  --bs-btn-disabled-border-color: var(--adt-accent);
+}
+
+.adt-pulse-app .verified-badge {
+  color: var(--adt-accent-contrast);
+
+  background-color: var(--adt-accent);
+}
+
+.adt-pulse-app .nav-link,
+.adt-pulse-app a {
+  color: var(--adt-accent);
+}
+
+.adt-pulse-app .nav-link:hover,
+.adt-pulse-app a:hover {
+  color: color-mix(in srgb, var(--adt-accent), #000 18%);
+}
+
+.adt-pulse-app .nav-tabs .nav-link.active {
+  color: var(--bs-emphasis-color);
+}
+
+.adt-pulse-app .form-control:focus,
+.adt-pulse-app .form-select:focus,
+.adt-pulse-app .form-check-input:focus {
+  border-color: var(--adt-accent);
+  box-shadow: 0 0 0 .2rem color-mix(in srgb, var(--adt-accent), transparent 80%);
+}
+
+.adt-pulse-app .form-check-input:checked {
+  background-color: var(--adt-accent);
+  border-color: var(--adt-accent);
+}
+
+.adt-pulse-app .accordion-button:not(.collapsed) {
+  color: var(--adt-accent);
+  background-color: color-mix(in srgb, var(--adt-accent), transparent 90%);
+  box-shadow: inset 0 -1px 0 var(--bs-border-color);
+}
+
+.adt-pulse-app .accordion-button:focus {
+  box-shadow: 0 0 0 .2rem color-mix(in srgb, var(--adt-accent), transparent 80%);
+}
+
+/**
+ * ============================
+ * Settings Layout
+ * ============================
+ */
+.adt-pulse-app .nav-tabs {
+  flex-wrap: wrap;
+  gap: .25rem;
+}
+
+.adt-pulse-app .nav-tabs .nav-item {
+  flex: 1 1 auto;
+}
+
+.adt-pulse-app .nav-tabs .nav-link {
+  width: 100%;
+}
+
+.adt-pulse-app .form-check {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding-left: 0;
+}
+
+.adt-pulse-app .form-check-input {
+  flex: none;
+  margin: 0;
+}
+
+.adt-pulse-app .form-check-label {
+  min-width: 0;
+}
+
+.adt-pulse-app .settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.adt-pulse-app .accordion-button .sensor-header {
+  width: 100%;
+  min-width: 0;
+}
+
+.adt-pulse-app .table-responsive {
+  max-width: 100%;
+}

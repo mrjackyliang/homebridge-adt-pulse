@@ -1,0 +1,50 @@
+---
+id: stale-accessories
+title: Stale Accessory Protection
+description: Guard against accidental removal of accessories by enabling Homebridge orphan retention and backing up your Home setup with the Home+ app.
+sidebar_position: 4
+keywords:
+  - homebridge adt pulse
+  - stale accessories
+  - keep orphans
+  - backup
+  - home+
+  - accessories
+tags:
+  - operations
+  - troubleshooting
+---
+
+import { Terminology } from '@cbnventures/docusaurus-preset-nova/blocks';
+
+Guard against accidental accessory removal by keeping orphaned accessories in place and backing up your Home setup before making changes.
+
+## Why This Matters
+
+Homebridge can automatically remove <Terminology title="a cached accessory the plugin no longer claims" to="/docs/reference/terminology#stale-accessory">outdated accessories</Terminology> when a plugin fails to initialize. Losing those accessories can disrupt the automations and customizations you have built around them.
+
+While these precautions are not mandatory, it's highly advisable to take them in case of unexpected events such as a plugin failing to start.
+
+## Keep Orphaned Accessories
+
+Homebridge can retain accessories that belong to a disabled or uninstalled <Terminology title="the Homebridge plugin type this project registers" to="/docs/reference/terminology#platform">platform</Terminology> plugin, so a failed startup does not wipe them out.
+
+- **<Terminology title="third-party web UI for managing Homebridge" to="/docs/reference/terminology#homebridge-config-ui">Config UI</Terminology>** — Enable the **Keep Accessories Of Disabled/Uninstalled Platform Plugins** setting in Homebridge.
+- **Command line** — Add the `-K` or `--keep-orphans` option when starting Homebridge from the command line.
+
+Both approaches achieve the same result; use whichever matches how you run Homebridge.
+
+| Flag                 | Description                                                                                                                                                                                               |
+|----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `-K, --keep-orphans` | Keep accessories that belong to a disabled or uninstalled <Terminology title="the Homebridge plugin type this project registers" to="/docs/reference/terminology#platform">platform</Terminology> plugin. |
+
+## Back Up Your Home Setup
+
+Create a backup of your Home configuration after making changes so you can restore accessories, rooms, and automations if something goes wrong.
+
+- Use the [Home+](https://hochgatterer.me/home+/) app by Matthias Hochgatterer to capture a backup.
+- Make the backup after any change that adds, removes, or reconfigures accessories.
+
+:::tip
+Combining the keep-orphans setting with a Home+ backup gives you both automatic retention and a manual restore point.
+:::

@@ -1,0 +1,114 @@
+---
+id: detection-and-privacy
+title: Detection and Privacy
+description: Report undocumented sensor and panel statuses back to the plugin author automatically, with personally identifiable fields redacted before anything is sent.
+sidebar_position: 3
+keywords:
+  - homebridge adt pulse
+  - detection
+  - privacy
+  - redaction
+  - detect report
+  - undocumented status
+tags:
+  - operations
+  - privacy
+---
+
+import { Terminology } from '@cbnventures/docusaurus-preset-nova/blocks';
+
+Report undocumented <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> and <Terminology title="the alarm panel accessory for arming and disarming" to="/docs/reference/terminology#security-panel">panel</Terminology> statuses back to the author so support for new devices can be added, with personally identifiable fields automatically redacted before anything is sent.
+
+## How Detection Works
+
+The plugin has a built-in feature that notifies the author when it detects anomalies in <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> states and <Terminology title="the alarm panel accessory for arming and disarming" to="/docs/reference/terminology#security-panel">panel</Terminology> statuses.
+
+- Notifications are triggered when a status is encountered that the plugin does not yet recognize.
+- Undocumented statuses are the primary trigger, since the author needs the raw values to add support for new devices and states.
+
+The plugin adheres to the [verified Homebridge plugin](https://github.com/homebridge/homebridge/wiki/verified-Plugins#verified-plugins) requirements, so it does not track you in any way.
+
+## Privacy Redaction
+
+Any personally identifiable details in a <Terminology title="redacted anomaly payload sent to the plugin author" to="/docs/reference/terminology#detect-report">report</Terminology> are redacted before the information leaves your system.
+
+Redacted fields are replaced with the literal string `*** REDACTED FOR PRIVACY ***`, because these values are not needed to improve the plugin.
+
+| Field type     | Description                                                                                                                                                                                                                                                                                                                  |
+|----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| IP addresses   | Broadband, device, and router LAN/WAN addresses.                                                                                                                                                                                                                                                                             |
+| MAC addresses  | Broadband and device hardware addresses.                                                                                                                                                                                                                                                                                     |
+| Serial numbers | Hardware serial numbers reported by the <Terminology title="the ADT Pulse gateway device" to="/docs/reference/terminology#gateway">gateway</Terminology>.                                                                                                                                                                    |
+| Update times   | Last and next scheduled update timestamps.                                                                                                                                                                                                                                                                                   |
+| Master code    | The <Terminology title="the alarm panel accessory for arming and disarming" to="/docs/reference/terminology#security-panel">security panel</Terminology>'s master access code shown on the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology>. |
+| Session tokens | The `sat` authentication token embedded in scraped portal requests.                                                                                                                                                                                                                                                          |
+
+### Privacy Warnings
+
+A warning is issued each time you might send a <Terminology title="redacted anomaly payload sent to the plugin author" to="/docs/reference/terminology#detect-report">report</Terminology>, so the redaction behavior is never a surprise.
+
+- The warning appears when you use the included <Terminology title="bundled commands for troubleshooting portal connectivity" to="/docs/reference/terminology#test-scripts">scripts</Terminology>, when the plugin starts, and when the plugin is about to notify the author.
+- The reminder restates that identifying fields are redacted before any information is sent.
+
+## Example Report
+
+Here is an example of the information the author sees when the plugin detects unknown statuses from the <Terminology title="the ADT Pulse gateway device" to="/docs/reference/terminology#gateway">gateway</Terminology>.
+
+```json
+{
+  "communication": {
+    "broadbandConnectionStatus": "Active",
+    "cellularConnectionStatus": "N/A",
+    "cellularSignalStrength": "N/A",
+    "primaryConnectionType": "Broadband"
+  },
+  "manufacturer": "ADT Pulse Gateway",
+  "model": "PGZNG1",
+  "network": {
+    "broadband": {
+      "ip": "*** REDACTED FOR PRIVACY ***",
+      "mac": "*** REDACTED FOR PRIVACY ***"
+    },
+    "device": {
+      "ip": "*** REDACTED FOR PRIVACY ***",
+      "mac": "*** REDACTED FOR PRIVACY ***"
+    },
+    "router": {
+      "lanIp": "*** REDACTED FOR PRIVACY ***",
+      "wanIp": "*** REDACTED FOR PRIVACY ***"
+    }
+  },
+  "serialNumber": "*** REDACTED FOR PRIVACY ***",
+  "status": "Online",
+  "update": {
+    "last": "*** REDACTED FOR PRIVACY ***",
+    "next": "*** REDACTED FOR PRIVACY ***"
+  },
+  "versions": {
+    "firmware": "1.0.0-9",
+    "hardware": "HW=2, BL=1.0.0, PL=1.0.0, SKU=12345"
+  }
+}
+```
+
+The unredacted fields, such as connection status, model, firmware, and hardware version, are the values that describe the undocumented status itself.
+
+## Raw HTML Reports
+
+In some scenarios, the plugin identifies anomalies while parsing <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology> data rather than reading a known status.
+
+- These <Terminology title="redacted anomaly payload sent to the plugin author" to="/docs/reference/terminology#detect-report">reports</Terminology> may contain raw HTML data, which is redacted in your local logs.
+- The raw HTML sent to the author remains unfiltered, so undocumented <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology> layouts can be updated promptly.
+
+## Opting Out
+
+You can prevent this functionality by blocking the URL that the plugin uses to notify the author.
+
+:::warning
+If you block the notification URL, the author will not be able to offer assistance or support, since the plugin can no longer report the undocumented statuses it needs to diagnose issues.
+:::
+
+## Related Pages
+
+- **[Test and REPL Scripts](/docs/operations/scripts/)** — The bundled <Terminology title="bundled commands for troubleshooting portal connectivity" to="/docs/reference/terminology#test-scripts">scripts</Terminology> that also surface the privacy warning when run.
+- **[Debug Mode](/docs/operations/debug-mode/)** — Isolate plugin logs per bridge when troubleshooting a detected anomaly.

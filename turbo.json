@@ -1,0 +1,73 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": [
+    "package-lock.json",
+    ".env"
+  ],
+  "noUpdateNotifier": true,
+  "tasks": {
+    "dev": {
+      "cache": false,
+      "dependsOn": [],
+      "inputs": [],
+      "outputs": [],
+      "persistent": true
+    },
+    "prod": {
+      "cache": false,
+      "dependsOn": [
+        "check",
+        "build"
+      ],
+      "inputs": [],
+      "outputs": [],
+      "persistent": true
+    },
+    "check": {
+      "cache": false,
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "!./.*/**/*",
+        "!./build/**",
+        "./**/*"
+      ],
+      "outputs": [],
+      "persistent": false
+    },
+    "build": {
+      "cache": false,
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "!./.*/**/*",
+        "!./build/**",
+        "./**/*"
+      ],
+      "outputs": [
+        "./build/**"
+      ],
+      "persistent": false
+    },
+    "deploy": {
+      "cache": false,
+      "dependsOn": [
+        "check",
+        "build"
+      ],
+      "inputs": [],
+      "outputs": [],
+      "persistent": false
+    },
+    "clean": {
+      "cache": false,
+      "dependsOn": [],
+      "inputs": [],
+      "outputs": [],
+      "persistent": false
+    }
+  },
+  "ui": "tui"
+}

@@ -1,0 +1,10 @@
+{
+  "label": "Reference",
+  "position": 7,
+  "collapsible": true,
+  "collapsed": true,
+  "link": {
+    "type": "generated-index",
+    "description": "Look up every config field, common questions, glossary terms, and the contributors who helped build this plugin."
+  }
+}

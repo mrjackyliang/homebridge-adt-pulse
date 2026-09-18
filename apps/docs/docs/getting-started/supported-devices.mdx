@@ -1,0 +1,92 @@
+---
+id: supported-devices
+title: Supported Devices
+description: Review which ADT Pulse accessories the plugin exposes to HomeKit, including the gateway, security panel, alarm ringing switch, and read-only sensors.
+sidebar_position: 3
+keywords:
+  - homebridge adt pulse
+  - supported devices
+  - sensors
+  - security panel
+  - gateway
+  - z-wave
+tags:
+  - getting-started
+  - reference
+---
+
+import { Terminology } from '@cbnventures/docusaurus-preset-nova/blocks';
+
+Review the ADT Pulse accessories this plugin exposes to HomeKit and the <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> types you can add through your configuration.
+
+## What This Plugin Covers
+
+Despite the name "ADT Pulse for Homebridge," this plugin exposes only the accessories listed on this page. It is not a full replacement for the [official ADT Pulse app](https://www.adt.com/help/faq/adt-pulse/adt-pulse-mobile-app).
+
+<Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">Sensors</Terminology> are exposed in read-only mode, so their status appears in the Home app but cannot be changed from HomeKit.
+
+## Default Accessories
+
+These accessories are always exposed, without any extra configuration:
+
+| Accessory                                                                                                                                            | Type          | Description                                                                                                                                                                                                                                                                                       |
+|------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| <Terminology title="the ADT Pulse gateway device" to="/docs/reference/terminology#gateway">Gateway</Terminology>                                     | `gateway`     | The <Terminology title="the ADT Pulse gateway device" to="/docs/reference/terminology#gateway">gateway</Terminology> that connects your ADT Pulse system to the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology>. |
+| <Terminology title="the alarm panel accessory for arming and disarming" to="/docs/reference/terminology#security-panel">Security Panel</Terminology> | `panel`       | The alarm control <Terminology title="the alarm panel accessory for arming and disarming" to="/docs/reference/terminology#security-panel">panel</Terminology> for arming and disarming your system.                                                                                               |
+| <Terminology title="switch that silences a ringing alarm" to="/docs/reference/terminology#alarm-ringing-switch">Alarm Ringing Switch</Terminology>   | `panelSwitch` | A switch used to silence a ringing alarm.                                                                                                                                                                                                                                                         |
+
+:::info
+The <Terminology title="switch that silences a ringing alarm" to="/docs/reference/terminology#alarm-ringing-switch">Alarm Ringing switch</Terminology> can be turned off through your configuration. See [Advanced Options](/docs/configuration/advanced-options/) for the caveats.
+:::
+
+## Configurable Sensors
+
+The following <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> types can be exposed based on your configuration. Each is added by declaring it in the `sensors` array with the matching `adtType` value.
+
+| `adtType`     | Sensor                                                |
+|---------------|-------------------------------------------------------|
+| `co`          | Carbon Monoxide Detector                              |
+| `doorWindow`  | Door/Window Sensor, Door Sensor, or Window Sensor     |
+| `fire`        | Fire (Smoke/Heat) Detector                            |
+| `flood`       | Water/Flood Sensor                                    |
+| `glass`       | Glass Break Detector                                  |
+| `heat`        | Heat (Rate-of-Rise) Detector                          |
+| `motion`      | Motion Sensor, or Motion Sensor (Notable Events Only) |
+| `shock`       | Shock Sensor                                          |
+| `temperature` | Temperature Sensor                                    |
+
+To add a <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology>, provide its display name, ADT name, ADT zone, and one of the `adtType` values above:
+
+```json title="config.json"
+{
+  "sensors": [
+    {
+      "name": "Family Room Couch Window 1",
+      "adtName": "Family Room Window (99)",
+      "adtZone": 99,
+      "adtType": "doorWindow"
+    }
+  ]
+}
+```
+
+For the full set of <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> fields and how to find your ADT name and zone, see [Sensors and Zones](/docs/configuration/sensors-and-zones/).
+
+:::info
+The Temperature Sensor (`temperature`) reports its state as degree values rather than open or closed, because that is how the <Terminology title="HomeKit Accessory Protocol" to="/docs/reference/terminology#hap">HAP</Terminology> protocol handles temperature. See [Temperature Sensors](/docs/arming/temperature-sensors/) for details.
+:::
+
+## Z-Wave Accessories
+
+Z-Wave accessories connected to the ADT Pulse <Terminology title="the ADT Pulse gateway device" to="/docs/reference/terminology#gateway">gateway</Terminology> are not supported, and support is not planned. This is due to implementation complexity and platform instability.
+
+If you rely on Z-Wave devices, consider one of these alternatives:
+
+- **[Hubitat Hub](https://hubitat.com)** — A local hub for a seamless setup experience.
+- **[Home Assistant Z-Wave](https://www.home-assistant.io/integrations/zwave_js/)** — The Z-Wave JS integration for Home Assistant.
+
+## Adding a New Sensor Type
+
+If your <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> type is not listed here, the plugin reports the unknown status back to the maintainer automatically. It is recommended that you do not open a separate GitHub issue for it.
+
+Support is added once enough information is gathered to determine the statuses the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology> displays.

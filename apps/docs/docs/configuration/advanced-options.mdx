@@ -1,0 +1,111 @@
+---
+id: advanced-options
+title: Advanced Options
+description: Disable the Alarm Ringing switch or ignore Sensor Problem statuses through the options array in your platform configuration, with caveats for each toggle.
+sidebar_position: 3
+keywords:
+  - homebridge adt pulse
+  - advanced options
+  - alarm ringing switch
+  - sensor problem
+  - options array
+tags:
+  - configuration
+  - options
+---
+
+import { Terminology } from '@cbnventures/docusaurus-preset-nova/blocks';
+
+Deactivate specific plugin behaviors through the `options` array when the defaults do not match how your alarm system is set up.
+
+## Overview
+
+Each alarm system is uniquely designed, and at times a plugin behavior may not align with your preferences. The `options` array lets you turn off specific aspects of the plugin.
+
+These options remove functionality on purpose, so it is recommended to exercise caution. Disabling a behavior may result in the loss of expected functionality, as noted for each option below.
+
+## Available Options
+
+The `options` field is an array of strings. Each string you include enables one advanced option.
+
+| Value                       | Behavior                                                                                                                                                                                             |
+|-----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `disableAlarmRingingSwitch` | Disables the <Terminology title="switch that silences a ringing alarm" to="/docs/reference/terminology#alarm-ringing-switch">"Alarm Ringing" switch</Terminology> that the plugin exposes.           |
+| `ignoreSensorProblemStatus` | Ignores "Sensor Problem" and "Sensor Problems" <Terminology title="the alarm panel accessory for arming and disarming" to="/docs/reference/terminology#security-panel">panel</Terminology> statuses. |
+
+By default, the array is empty, and every behavior stays enabled.
+
+## Disable the Alarm Ringing Switch
+
+Include the `"disableAlarmRingingSwitch"` value in the `options` array to disable the <Terminology title="switch that silences a ringing alarm" to="/docs/reference/terminology#alarm-ringing-switch">"Alarm Ringing" switch</Terminology>.
+
+:::warning
+Enabling this option prevents you from being able to silence a ringing alarm when the system is in "Disarmed" mode.
+:::
+
+```json title="config.json"
+{
+  "platforms": [
+    {
+      "platform": "ADTPulse",
+      "name": "ADT Pulse",
+      "options": [
+        "disableAlarmRingingSwitch"
+      ]
+    }
+  ]
+}
+```
+
+## Ignore Sensor Problem Statuses
+
+Include the `"ignoreSensorProblemStatus"` value in the `options` array to ignore "Sensor Problem" statuses.
+
+:::warning
+Enabling this option prevents you from being able to silence a ringing alarm triggered by a "Sensor Problem" or "Sensor Problems" status.
+:::
+
+```json title="config.json"
+{
+  "platforms": [
+    {
+      "platform": "ADTPulse",
+      "name": "ADT Pulse",
+      "options": [
+        "ignoreSensorProblemStatus"
+      ]
+    }
+  ]
+}
+```
+
+## Combining Options
+
+You can enable both options at once by listing each value in the `options` array.
+
+```json title="config.json"
+{
+  "platforms": [
+    {
+      "platform": "ADTPulse",
+      "name": "ADT Pulse",
+      "options": [
+        "disableAlarmRingingSwitch",
+        "ignoreSensorProblemStatus"
+      ]
+    }
+  ]
+}
+```
+
+## Startup Warning
+
+If the `options` array is not empty, a warning is displayed upon every startup. This warning cannot be disabled.
+
+Leaving `options` as an empty array (`[]`) keeps all functionality enabled and avoids the startup warning.
+
+## Related
+
+- [Operational Mode](/docs/configuration/operational-mode/) switches the plugin between Normal, Paused, and Reset.
+- [Synchronization Speed](/docs/configuration/synchronization-speed/) tunes how often the plugin checks for updates.
+- [Sensors and Zones](/docs/configuration/sensors-and-zones/) declares the <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology> exposed to HomeKit.

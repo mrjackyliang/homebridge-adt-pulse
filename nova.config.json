@@ -1,0 +1,476 @@
+{
+  "project": {
+    "name": {
+      "title": "Homebridge ADT Pulse",
+      "slug": "homebridge-adt-pulse"
+    },
+    "description": {
+      "short": "Control your ADT Pulse security system and view sensor status through the Home app",
+      "long": "Homebridge ADT Pulse is a Homebridge platform plugin that connects an ADT Pulse security system to Apple HomeKit. It exposes the security panel and its sensors as HomeKit accessories, so the system can be armed or disarmed and sensor status monitored from the Home app."
+    },
+    "keywords": [
+      "homebridge",
+      "homebridge-plugin",
+      "homekit",
+      "adt",
+      "adt-pulse",
+      "icontrol",
+      "security",
+      "security-system"
+    ],
+    "legalName": "Jacky Liang",
+    "pronouns": "personal",
+    "platforms": [
+      "nodejs"
+    ],
+    "startingYear": 2019,
+    "license": "MIT"
+  },
+  "entities": [
+    {
+      "name": "Jacky Liang",
+      "email": "hello@mrjackyliang.com",
+      "url": "https://www.mrjackyliang.com/",
+      "roles": [
+        "author"
+      ]
+    }
+  ],
+  "emails": {
+    "bugs": "bugs@mrjackyliang.com"
+  },
+  "github": {
+    "owner": "mrjackyliang",
+    "repo": "homebridge-adt-pulse",
+    "topics": [
+      "homebridge",
+      "homebridge-plugin",
+      "homekit",
+      "adt",
+      "adt-pulse",
+      "icontrol",
+      "security",
+      "security-system"
+    ],
+    "features": {
+      "issues": true,
+      "wiki": false,
+      "projects": false,
+      "discussions": false,
+      "sponsorships": true
+    },
+    "policies": {
+      "visibility": "public",
+      "defaultBranch": "main",
+      "mergeMethods": {
+        "merge": true,
+        "squash": true,
+        "rebase": true
+      },
+      "mergeCommit": {
+        "title": "merge-message",
+        "message": "pull-request-title"
+      },
+      "squashMerge": {
+        "title": "commit-or-pull-request-title",
+        "message": "commit-messages"
+      },
+      "autoDeleteHeadBranch": true,
+      "autoMerge": false,
+      "allowUpdateBranch": false,
+      "webCommitSignoffRequired": false
+    },
+    "security": {
+      "vulnerabilityAlerts": true,
+      "dependabotSecurityUpdates": false,
+      "secretScanning": true,
+      "pushProtection": false
+    },
+    "actions": {
+      "enabled": true,
+      "allowedActions": "all",
+      "shaPinningRequired": false,
+      "defaultWorkflowPermissions": "read",
+      "canApprovePullRequestReviews": false,
+      "artifactRetentionDays": 90
+    },
+    "labels": [
+      {
+        "name": "bug",
+        "color": "d73a4a",
+        "description": "Something isn't working"
+      },
+      {
+        "name": "documentation",
+        "color": "0075ca",
+        "description": "Improvements or additions to documentation"
+      },
+      {
+        "name": "duplicate",
+        "color": "cfd3d7",
+        "description": "This issue or pull request already exists"
+      },
+      {
+        "name": "enhancement",
+        "color": "a2eeef",
+        "description": "New feature or request"
+      },
+      {
+        "name": "good first issue",
+        "color": "7057ff",
+        "description": "Good for newcomers"
+      },
+      {
+        "name": "help wanted",
+        "color": "008672",
+        "description": "Extra attention is needed"
+      },
+      {
+        "name": "invalid",
+        "color": "e4e669",
+        "description": "This doesn't seem right"
+      },
+      {
+        "name": "question",
+        "color": "d876e3",
+        "description": "Further information is requested"
+      },
+      {
+        "name": "wontfix",
+        "color": "ffffff",
+        "description": "This will not be worked on"
+      }
+    ]
+  },
+  "workflows": [
+    {
+      "template": "check-sponsor-gated-issues",
+      "name": "sponsor-check",
+      "triggers": [
+        "issue-comment",
+        "issues"
+      ]
+    },
+    {
+      "template": "lock-inactive-issues",
+      "name": "lock-inactive",
+      "triggers": [
+        "schedule-weekly"
+      ]
+    },
+    {
+      "template": "publish",
+      "name": "project",
+      "triggers": [
+        "release"
+      ],
+      "build": [
+        "./apps/config-ui",
+        "./apps/docs",
+        "./packages/homebridge-adt-pulse"
+      ],
+      "deploy": [
+        {
+          "to": "npm",
+          "path": "./packages/homebridge-adt-pulse"
+        },
+        {
+          "to": "github-packages",
+          "path": "./packages/homebridge-adt-pulse"
+        },
+        {
+          "to": "github-pages-docusaurus",
+          "path": "./apps/docs"
+        }
+      ]
+    }
+  ],
+  "urls": {
+    "homepage": "https://mrjackyliang.github.io/homebridge-adt-pulse/",
+    "repository": "git+https://github.com/mrjackyliang/homebridge-adt-pulse.git",
+    "bugs": "https://github.com/mrjackyliang/homebridge-adt-pulse/issues",
+    "license": "https://github.com/mrjackyliang/homebridge-adt-pulse/blob/HEAD/LICENSE",
+    "logo": "https://mrjackyliang.github.io/homebridge-adt-pulse/images/logo.svg",
+    "documentation": "https://mrjackyliang.github.io/homebridge-adt-pulse/",
+    "npm": "https://www.npmjs.com/package/homebridge-adt-pulse",
+    "fundSources": [
+      "https://github.com/sponsors/mrjackyliang",
+      "https://liang.nyc/paypal"
+    ]
+  },
+  "workspaces": {
+    "./": {
+      "role": "project",
+      "policy": "freezable",
+      "name": "homebridge-adt-pulse-project"
+    },
+    "./apps/config-ui": {
+      "role": "app",
+      "policy": "trackable",
+      "name": "homebridge-adt-pulse-app-config-ui"
+    },
+    "./apps/docs": {
+      "role": "docs",
+      "policy": "freezable",
+      "name": "homebridge-adt-pulse-docs"
+    },
+    "./packages/homebridge-adt-pulse": {
+      "role": "package",
+      "policy": "distributable",
+      "name": "homebridge-adt-pulse"
+    }
+  },
+  "gitignore": {
+    "projectExcludes": [
+      "graphify-out/"
+    ]
+  },
+  "agents": [
+    "claude-code",
+    "codex"
+  ],
+  "recipes": {
+    "github": {
+      "sync-actions": {
+        "enabled": true
+      },
+      "sync-features": {
+        "enabled": true
+      },
+      "sync-identity": {
+        "enabled": true
+      },
+      "sync-labels": {
+        "enabled": true
+      },
+      "sync-policies": {
+        "enabled": true
+      },
+      "sync-rulesets": {
+        "enabled": false
+      },
+      "sync-security": {
+        "enabled": true
+      }
+    },
+    "license": {
+      "update-copyright": {
+        "enabled": true
+      }
+    },
+    "read-me": {
+      "update-badges": {
+        "enabled": true
+      },
+      "update-credits": {
+        "enabled": true
+      },
+      "update-documentation": {
+        "enabled": true
+      },
+      "update-header": {
+        "enabled": true
+      },
+      "update-introduction": {
+        "enabled": true
+      }
+    },
+    "package-json": {
+      "./": {
+        "cleanup": {
+          "enabled": true,
+          "settings": {
+            "removeUnknownKeys": true,
+            "reorderKeys": true
+          }
+        },
+        "normalize-artifacts": {
+          "enabled": true
+        },
+        "normalize-bundler": {
+          "enabled": true
+        },
+        "normalize-dependencies": {
+          "enabled": true,
+          "settings": {
+            "pinDependencyVersions": true,
+            "pinDevDependencyVersions": true
+          }
+        },
+        "normalize-modules": {
+          "enabled": true
+        },
+        "normalize-tooling": {
+          "enabled": true
+        },
+        "sync-environment": {
+          "enabled": true,
+          "settings": {
+            "trackNodeLtsVersions": true
+          }
+        },
+        "sync-identity": {
+          "enabled": true
+        },
+        "sync-ownership": {
+          "enabled": true
+        }
+      },
+      "./packages/homebridge-adt-pulse": {
+        "cleanup": {
+          "enabled": true,
+          "settings": {
+            "removeUnknownKeys": true,
+            "reorderKeys": true
+          }
+        },
+        "normalize-artifacts": {
+          "enabled": true
+        },
+        "normalize-bundler": {
+          "enabled": true
+        },
+        "normalize-dependencies": {
+          "enabled": true,
+          "settings": {
+            "pinDependencyVersions": true,
+            "pinDevDependencyVersions": true
+          }
+        },
+        "normalize-modules": {
+          "enabled": true
+        },
+        "normalize-tooling": {
+          "enabled": true
+        },
+        "sync-environment": {
+          "enabled": true,
+          "settings": {
+            "trackNodeLtsVersions": true
+          }
+        },
+        "sync-identity": {
+          "enabled": true,
+          "settings": {
+            "description": true,
+            "keywords": true,
+            "displayName": true
+          }
+        },
+        "sync-ownership": {
+          "enabled": true,
+          "settings": {
+            "homepage": true,
+            "bugs": true,
+            "author": true,
+            "contributors": true,
+            "funding": true,
+            "repository": true
+          }
+        }
+      },
+      "./apps/config-ui": {
+        "cleanup": {
+          "enabled": true,
+          "settings": {
+            "removeUnknownKeys": true,
+            "reorderKeys": true
+          }
+        },
+        "normalize-artifacts": {
+          "enabled": true
+        },
+        "normalize-bundler": {
+          "enabled": true
+        },
+        "normalize-dependencies": {
+          "enabled": true,
+          "settings": {
+            "pinDependencyVersions": true,
+            "pinDevDependencyVersions": true
+          }
+        },
+        "normalize-modules": {
+          "enabled": true
+        },
+        "normalize-tooling": {
+          "enabled": true
+        },
+        "sync-environment": {
+          "enabled": true,
+          "settings": {
+            "trackNodeLtsVersions": true
+          }
+        },
+        "sync-identity": {
+          "enabled": true
+        },
+        "sync-ownership": {
+          "enabled": true
+        }
+      },
+      "./apps/docs": {
+        "cleanup": {
+          "enabled": true,
+          "settings": {
+            "removeUnknownKeys": true,
+            "reorderKeys": true
+          }
+        },
+        "normalize-artifacts": {
+          "enabled": true
+        },
+        "normalize-bundler": {
+          "enabled": true
+        },
+        "normalize-dependencies": {
+          "enabled": true,
+          "settings": {
+            "pinDependencyVersions": true,
+            "pinDevDependencyVersions": true
+          }
+        },
+        "normalize-modules": {
+          "enabled": true
+        },
+        "normalize-tooling": {
+          "enabled": true
+        },
+        "sync-environment": {
+          "enabled": true,
+          "settings": {
+            "trackNodeLtsVersions": true
+          }
+        },
+        "sync-identity": {
+          "enabled": true
+        },
+        "sync-ownership": {
+          "enabled": true
+        }
+      }
+    }
+  },
+  "environment": {
+    "project": {
+      "prefix": "PROJECT_"
+    },
+    "workspaces": {
+      "./": {
+        "prefix": "ROOT_"
+      },
+      "./apps/docs": {
+        "prefix": "DOCS_"
+      }
+    },
+    "workflows": {
+      "sponsor-check": {
+        "prefix": "SGS_"
+      }
+    }
+  },
+  "settings": {
+    "lockStepVersioning": true,
+    "versionStrategy": "semver"
+  }
+}

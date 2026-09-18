@@ -1,0 +1,10 @@
+{
+  "label": "Configuration Options",
+  "position": 3,
+  "collapsible": true,
+  "collapsed": true,
+  "link": {
+    "type": "generated-index",
+    "description": "Configure operational mode, synchronization speed, advanced options, and sensor declarations for the ADT Pulse platform block."
+  }
+}

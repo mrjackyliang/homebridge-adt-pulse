@@ -1,0 +1,35 @@
+{
+  "extends": [
+    "@cbnventures/nova/presets/tsconfig/dx-essentials.json",
+    "@cbnventures/nova/presets/tsconfig/dx-strict.json",
+    "@cbnventures/nova/presets/tsconfig/fw-docusaurus.json"
+  ],
+  "compilerOptions": {
+    "noEmit": false,
+    "noEmitOnError": false,
+    "outDir": "./build",
+    "paths": {
+      "@site/*": [
+        "./*"
+      ]
+    },
+    "rootDir": "./",
+    "types": [
+      "@cbnventures/docusaurus-preset-nova/types/theme",
+      "@docusaurus/module-type-aliases",
+      "@docusaurus/types",
+      "@types/node",
+      "@types/react",
+      "@types/react-dom"
+    ]
+  },
+  "include": [
+    "./src/**/*"
+  ],
+  "exclude": [
+    "./.docusaurus/**",
+    "./build/**",
+    "./node_modules/**",
+    "./src/tests/**"
+  ]
+}
