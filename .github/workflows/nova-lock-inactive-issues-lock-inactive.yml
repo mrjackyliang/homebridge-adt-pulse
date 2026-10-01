@@ -21,6 +21,7 @@ on:
 
 permissions:
   issues: "write"
+  pull-requests: "write"
 
 concurrency:
   group: "${{ github.workflow }}"

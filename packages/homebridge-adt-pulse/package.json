@@ -1,7 +1,7 @@
 {
   "name": "homebridge-adt-pulse",
   "displayName": "Homebridge ADT Pulse",
-  "version": "3.5.0",
+  "version": "3.5.1",
   "description": "Control your ADT Pulse security system and view sensor status through the Home app",
   "keywords": [
     "homebridge",
@@ -73,7 +73,7 @@
     "node": "^22 || ^24"
   },
   "dependencies": {
-    "@cbnventures/nova": "0.27.1",
+    "@cbnventures/nova": "0.27.3",
     "@faker-js/faker": "9.3.0",
     "@homebridge/plugin-ui-utils": "2.0.0",
     "axios": "1.12.0",

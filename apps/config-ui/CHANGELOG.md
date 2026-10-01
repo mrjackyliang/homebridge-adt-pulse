@@ -1,5 +1,10 @@
 # homebridge-adt-pulse-app-config-ui
 
+## 3.5.1 - 2026-09-23
+
+### UPDATED
+- Updated Nova to 0.27.3 and granted the generated inactive-thread workflow write access to pull requests.
+
 ## 3.5.0 - 2026-09-17
 
 ### UPDATED

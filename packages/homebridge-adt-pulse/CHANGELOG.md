@@ -1,5 +1,10 @@
 # homebridge-adt-pulse
 
+## 3.5.1 - 2026-09-23
+
+### UPDATED
+- Updated Nova and its Docusaurus preset to 0.27.3 across the project, plugin, configuration UI, and docs, granted the generated inactive-thread workflow write access to pull requests, and approved the optional `fsevents` install script used by macOS file watchers.
+
 ## 3.5.0 - 2026-09-17
 
 ### UPDATED

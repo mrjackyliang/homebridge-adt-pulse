@@ -1,6 +1,6 @@
 {
   "name": "homebridge-adt-pulse-app-config-ui",
-  "version": "3.5.0",
+  "version": "3.5.1",
   "license": "MIT",
   "type": "module",
   "private": true,
@@ -20,7 +20,7 @@
     "node": "^22 || ^24"
   },
   "dependencies": {
-    "@cbnventures/nova": "0.27.1",
+    "@cbnventures/nova": "0.27.3",
     "@hookform/resolvers": "5.9.1",
     "bootstrap": "5.3.8",
     "lodash": "4.18.1",

@@ -29,6 +29,7 @@
     "core-js": false,
     "es5-ext": false,
     "esbuild": false,
+    "fsevents": true,
     "unrs-resolver": false
   },
   "workspaces": [
@@ -40,7 +41,7 @@
     "node": "^22 || ^24"
   },
   "dependencies": {
-    "@cbnventures/nova": "0.27.1"
+    "@cbnventures/nova": "0.27.3"
   },
   "devDependencies": {
     "jiti": "2.7.0",
