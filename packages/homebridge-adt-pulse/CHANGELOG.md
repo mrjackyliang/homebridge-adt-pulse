@@ -96,18 +96,12 @@
 
 ## 3.4.11 - 2025-04-09
 
-### FIXED
-- Restored the `postinstall` script, which was missing from the previous release and could prevent installation from completing.
-
-## 3.4.10 - 2025-04-09
-
-### UPDATED
-- The `postinstall` script now only rebuilds the plugin automatically when `devDependencies` are installed, simplified from an earlier check that also looked for a missing `build` folder.
-
-## 3.4.9 - 2025-04-09
-
 ### UPDATED
 - Added an empty-string arm state to the orb security button detection to account for a portal inconsistency.
+- The `postinstall` script now only rebuilds the plugin automatically when `devDependencies` are installed, simplified from an earlier check that also looked for a missing `build` folder.
+
+### FIXED
+- Restored the `postinstall` script after it was omitted during release preparation, which could prevent installation from completing.
 
 ## 3.4.8 - 2025-02-28
 
@@ -1052,13 +1046,11 @@ The first v3 beta: a complete rewrite of the plugin from JavaScript to TypeScrip
 
 ## 1.8.4 - 2020-03-21
 
-### FIXED
-- Fixed incorrect zone type matching caused by confusing string and array `includes` behavior.
-
-## 1.8.3 - 2020-03-21
-
 ### UPDATED
 - Improved zone accessory type detection for sensor names containing "DR", "WIN", "SLIDER", "NOOK", "MOTION", and "SMOKE".
+
+### FIXED
+- Fixed incorrect zone type matching caused by confusing string and array `includes` behavior.
 
 ## 1.8.2 - 2020-03-21
 
@@ -1107,13 +1099,9 @@ The first v3 beta: a complete rewrite of the plugin from JavaScript to TypeScrip
 ## 1.7.3 - 2020-01-15
 
 ### FIXED
+- Fixed offline devices and sensors showing incorrect status instead of "Not Available".
 - Fixed sensors showing "No Response" in HomeKit when closed or not detecting motion.
 - Fixed the security panel showing "No Response" when armed to stay.
-
-## 1.7.2 - 2020-01-15
-
-### FIXED
-- Fixed offline devices and sensors showing incorrect status instead of "Not Available".
 
 ## 1.7.1 - 2020-01-09
 
