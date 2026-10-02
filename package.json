@@ -41,7 +41,7 @@
     "node": "^22 || ^24"
   },
   "dependencies": {
-    "@cbnventures/nova": "0.27.3"
+    "@cbnventures/nova": "0.27.4"
   },
   "devDependencies": {
     "jiti": "2.7.0",

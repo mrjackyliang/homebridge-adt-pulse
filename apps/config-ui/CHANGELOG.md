@@ -1,5 +1,10 @@
 # homebridge-adt-pulse-app-config-ui
 
+## 3.5.2 - 2026-10-01
+
+### UPDATED
+- Updated Nova to 0.27.4 and adopted its corrected optional Vitest peer dependency metadata.
+
 ## 3.5.1 - 2026-09-23
 
 ### UPDATED

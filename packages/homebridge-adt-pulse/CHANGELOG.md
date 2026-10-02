@@ -1,5 +1,10 @@
 # homebridge-adt-pulse
 
+## 3.5.2 - 2026-10-01
+
+### FIXED
+- Updated Nova to 0.27.4 so plugin installations no longer resolve Nova's test-only Vitest and Vite peer graph, preventing npm Arborist crashes during upgrades.
+
 ## 3.5.1 - 2026-09-23
 
 ### UPDATED
