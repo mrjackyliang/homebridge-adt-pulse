@@ -104,9 +104,11 @@ export type Lib_Platform_ADTPulsePlatform_Config = z.infer<typeof platformConfig
  *
  * @since 1.0.0
  */
-export type Lib_Platform_ADTPulsePlatform_ConfigureAccessory_Accessory = PlatformAccessory<Shared_Device>;
+export type Lib_Platform_ADTPulsePlatform_ConfigureAccessory_Accessory = PlatformAccessory;
 
 export type Lib_Platform_ADTPulsePlatform_ConfigureAccessory_Returns = void;
+
+export type Lib_Platform_ADTPulsePlatform_ConfigureAccessory_TypedAccessory = PlatformAccessory<Shared_Device>;
 
 /**
  * Lib - Platform.

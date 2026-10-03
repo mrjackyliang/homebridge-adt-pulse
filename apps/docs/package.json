@@ -4,9 +4,9 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "dev": "nova utility run-scripts --parallel 'dev:*'",
+    "dev": "nova utility run-scripts --parallel --node-env development 'dev:*'",
     "dev:start": "PORTLESS_PORT=3000 portless dev-adt-pulse-docs docusaurus start --host 0.0.0.0 --no-open",
-    "prod": "nova utility run-scripts --sequential 'prod:*'",
+    "prod": "nova utility run-scripts --sequential --node-env production 'prod:*'",
     "prod:serve": "PORTLESS_PORT=3000 portless prod-adt-pulse-docs docusaurus serve --host 0.0.0.0 --no-open",
     "check": "nova utility run-scripts --sequential 'check:*'",
     "check:lint": "eslint ./ --max-warnings=0",
@@ -14,7 +14,7 @@
     "check:types-config": "nova utility type-check --project tsconfig.config.json",
     "check:types-tests": "nova utility type-check --project tsconfig.tests.json",
     "check:test": "vitest run",
-    "build": "nova utility run-scripts --sequential 'build:*'",
+    "build": "nova utility run-scripts --sequential --node-env production 'build:*'",
     "build:build": "docusaurus build",
     "build:transpile-app": "nova utility transpile --project tsconfig.app.json",
     "clean": "nova utility run-scripts --parallel 'clean:*'",
@@ -29,8 +29,8 @@
     "node": "^22 || ^24"
   },
   "dependencies": {
-    "@cbnventures/docusaurus-preset-nova": "0.27.4",
-    "@cbnventures/nova": "0.27.4",
+    "@cbnventures/docusaurus-preset-nova": "0.28.0",
+    "@cbnventures/nova": "0.28.0",
     "@docusaurus/core": "3.10.2",
     "@iconify/react": "6.0.2",
     "react": "19.2.8",

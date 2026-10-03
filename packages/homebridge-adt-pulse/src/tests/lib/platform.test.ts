@@ -13,7 +13,10 @@ import type {
   Logger,
   PlatformConfig,
 } from 'homebridge';
-import type { Lib_Platform_ADTPulsePlatform_ConfigureAccessory_Accessory } from '../../types/lib/platform.d.ts';
+import type {
+  Lib_Platform_ADTPulsePlatform_Accessory,
+  Lib_Platform_ADTPulsePlatform_ConfigureAccessory_Accessory,
+} from '../../types/lib/platform.d.ts';
 
 const apiConstructor = vi.hoisted(() => vi.fn());
 const accessoryMocks = vi.hoisted(() => ({
@@ -99,7 +102,7 @@ function createApiMock() {
       }
     },
     registerPlatformAccessories: methods.registerPlatformAccessories,
-    serverVersion: '1.8.5',
+    serverVersion: '2.4.0',
     unregisterPlatformAccessories: methods.unregisterPlatformAccessories,
     updatePlatformAccessories: methods.updatePlatformAccessories,
   };
@@ -316,12 +319,8 @@ describe('ADTPulsePlatform', () => {
       apiMock.api,
     );
     const accessory = {
-      context: {
-        id: 'sensor-1',
-        name: 'Front Door',
-        uuid: 'fixture-uuid',
-      },
-    } as unknown as Lib_Platform_ADTPulsePlatform_ConfigureAccessory_Accessory;
+      context: createDevice(),
+    } as unknown as Lib_Platform_ADTPulsePlatform_Accessory;
 
     platform.configureAccessory(accessory);
     platform.removeAccessory(accessory, 'fixture cleanup');

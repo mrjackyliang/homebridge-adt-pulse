@@ -1,5 +1,11 @@
 # homebridge-adt-pulse
 
+## 3.5.3 - 2026-10-03
+
+### UPDATED
+- Update Nova and the Docusaurus preset to 0.28.0 and run development, production, build, and deployment script groups with explicit child process environments
+- Develop and validate the plugin against stable Homebridge 2.4 while retaining compatibility with Homebridge 1.11
+
 ## 3.5.2 - 2026-10-01
 
 ### FIXED

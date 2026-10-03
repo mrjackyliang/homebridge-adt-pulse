@@ -39,6 +39,7 @@ import type {
   Lib_Platform_ADTPulsePlatform_Config,
   Lib_Platform_ADTPulsePlatform_ConfigureAccessory_Accessory,
   Lib_Platform_ADTPulsePlatform_ConfigureAccessory_Returns,
+  Lib_Platform_ADTPulsePlatform_ConfigureAccessory_TypedAccessory,
   Lib_Platform_ADTPulsePlatform_Constants,
   Lib_Platform_ADTPulsePlatform_Constructor_Api,
   Lib_Platform_ADTPulsePlatform_Constructor_Config,
@@ -498,10 +499,14 @@ export class ADTPulsePlatform implements Lib_Platform_ADTPulsePlatform_Plugin {
    * @since 1.0.0
    */
   public configureAccessory(accessory: Lib_Platform_ADTPulsePlatform_ConfigureAccessory_Accessory): Lib_Platform_ADTPulsePlatform_ConfigureAccessory_Returns {
-    this.#log.info(`Configuring cached accessory for ${chalk.underline(accessory.context['name'])} (id: ${accessory.context['id']}, uuid: ${accessory.context['uuid']}) ...`);
+    // Homebridge restores this untyped boundary from disk. The context was
+    // originally written by this plugin when the accessory was registered.
+    const typedAccessory: Lib_Platform_ADTPulsePlatform_ConfigureAccessory_TypedAccessory = accessory as Lib_Platform_ADTPulsePlatform_ConfigureAccessory_TypedAccessory;
+
+    this.#log.info(`Configuring cached accessory for ${chalk.underline(typedAccessory.context['name'])} (id: ${typedAccessory.context['id']}, uuid: ${typedAccessory.context['uuid']}) ...`);
 
     // Add the restored accessory to the accessories cache.
-    this.#accessories.push(accessory);
+    this.#accessories.push(typedAccessory);
 
     return;
   }
