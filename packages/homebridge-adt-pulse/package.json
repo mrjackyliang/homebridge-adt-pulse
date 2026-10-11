@@ -84,7 +84,7 @@
     "luxon": "3.7.2",
     "semver": "7.8.5",
     "serialize-error": "12.0.0",
-    "tough-cookie": "5.0.0",
+    "tough-cookie": "5.1.2",
     "ua-parser-js": "2.0.10",
     "zod": "4.4.3"
   },
