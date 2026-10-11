@@ -16,6 +16,9 @@
   <h1>Homebridge ADT Pulse</h1>
 <!-- nova-region-end: header -->
 <!-- nova-region: badges -->
+  <a href="https://github.com/homebridge/homebridge/wiki/Verified-Plugins">
+    <img alt="Verified Homebridge Plugin" src="https://img.shields.io/badge/homebridge-verified-blueviolet?color=%23491F59&style=for-the-badge&logoColor=%23FFFFFF&logo=homebridge">
+  </a>
   <a href="https://www.npmjs.com/package/homebridge-adt-pulse">
     <img alt="npm Package" src="https://img.shields.io/npm/v/homebridge-adt-pulse?style=for-the-badge&logo=npm&logoColor=%23ffffff&color=%23b25da6">
   </a>

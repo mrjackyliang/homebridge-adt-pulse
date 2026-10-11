@@ -2,6 +2,7 @@
   "name": "homebridge-adt-pulse-project",
   "version": "0.0.0",
   "license": "MIT",
+  "type": "module",
   "private": true,
   "scripts": {
     "dev": "nova utility run-scripts --parallel --node-env development 'dev:*'",
@@ -41,7 +42,7 @@
     "node": "^22 || ^24"
   },
   "dependencies": {
-    "@cbnventures/nova": "0.28.0"
+    "@cbnventures/nova": "0.29.0"
   },
   "devDependencies": {
     "jiti": "2.7.0",

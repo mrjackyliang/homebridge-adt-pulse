@@ -1,6 +1,6 @@
 {
   "name": "homebridge-adt-pulse-app-config-ui",
-  "version": "3.5.3",
+  "version": "3.5.4",
   "license": "MIT",
   "type": "module",
   "private": true,
@@ -20,17 +20,17 @@
     "node": "^22 || ^24"
   },
   "dependencies": {
-    "@cbnventures/nova": "0.28.0",
+    "@cbnventures/nova": "0.29.0",
     "@hookform/resolvers": "5.9.1",
     "bootstrap": "5.3.8",
     "lodash": "4.18.1",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "react-hook-form": "7.86.0",
+    "react-hook-form": "7.89.0",
     "zod": "4.4.3"
   },
   "devDependencies": {
-    "@homebridge/plugin-ui-utils": "2.0.0",
+    "@homebridge/plugin-ui-utils": "2.2.6",
     "@types/lodash": "4.17.25",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
@@ -39,7 +39,7 @@
     "@types/eslint-plugin-jsx-a11y": "6.10.1",
     "eslint-plugin-jsx-a11y": "6.10.2",
     "eslint-plugin-react": "7.37.5",
-    "eslint-plugin-react-hooks": "7.0.1",
+    "eslint-plugin-react-hooks": "7.1.1",
     "globals": "15.15.0",
     "jsdom": "25.0.1",
     "typescript": "6.0.3",

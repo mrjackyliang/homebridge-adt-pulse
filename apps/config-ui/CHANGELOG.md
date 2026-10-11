@@ -1,5 +1,11 @@
 # homebridge-adt-pulse-app-config-ui
 
+## 3.5.4 - 2026-10-11
+
+### UPDATED
+- Updated Nova to 0.29.0 and adopted its shared Nova rule bundle with complete JavaScript, TypeScript, browser, and Vite preset coverage.
+- Updated Homebridge UI utilities, React Hook Form, and React Hooks linting to their latest compatible releases.
+
 ## 3.5.3 - 2026-10-03
 
 No changes.

@@ -49,6 +49,7 @@ import type {
   Lib_BrowserReleases_FetchStableBrowserRelease_Version,
   Lib_BrowserReleases_FetchStableBrowserRelease_Versions,
   Lib_BrowserReleases_FetchStableBrowserRelease_Xml,
+  Lib_BrowserReleases_ReadKnownGoodBrowserSnapshot_Returns,
   Lib_BrowserReleases_ReadPackagedBrowserSnapshot_Returns,
   Lib_BrowserReleases_ReadPackagedBrowserSnapshot_SnapshotUrl,
   Lib_BrowserReleases_ResolveBrowserRelease_Browser,
@@ -60,6 +61,7 @@ import type {
   Lib_BrowserReleases_ResolveBrowserRelease_Returns,
   Lib_BrowserReleases_ResolveBrowserRelease_TemporaryPath,
   Lib_BrowserReleases_ResolveBrowserRelease_Updated,
+  Lib_BrowserReleases_ResolveBuildBrowserSnapshot_Returns,
 } from '../types/lib/browser-releases.d.ts';
 
 /**
@@ -117,6 +119,42 @@ const sources = {
 } as const;
 
 /**
+ * Lib - Browser Releases - Read Known Good Browser Snapshot.
+ *
+ * Provides the verified source fallback used by unbuilt checkouts and offline
+ * release builds.
+ *
+ * @returns {Lib_BrowserReleases_Snapshot}
+ *
+ * @since 3.5.4
+ */
+export function readKnownGoodBrowserSnapshot(): Lib_BrowserReleases_ReadKnownGoodBrowserSnapshot_Returns {
+  return snapshotSchema.parse({
+    schemaVersion: 1,
+    generatedAt: '2026-09-17T00:00:00.000Z',
+    releases: {
+      chrome: {
+        browser: 'chrome',
+        version: '153.0.8010.47',
+      },
+      edge: {
+        browser: 'edge',
+        version: '153.0.4234.32',
+      },
+      firefox: {
+        browser: 'firefox',
+        version: '156.0',
+      },
+      opera: {
+        browser: 'opera',
+        version: '136.0.6008.22',
+        chromiumVersion: '152.0.7977.120',
+      },
+    },
+  });
+}
+
+/**
  * Lib - Browser Releases - Read Packaged Browser Snapshot.
  *
  * Uses the build-produced JSON in the installed package. Source-mode tests and
@@ -134,29 +172,7 @@ export function readPackagedBrowserSnapshot(): Lib_BrowserReleases_ReadPackagedB
       throw new Error('Packaged browser release snapshot is missing');
     }
 
-    return {
-      schemaVersion: 1,
-      generatedAt: '2026-09-17T00:00:00.000Z',
-      releases: {
-        chrome: {
-          browser: 'chrome',
-          version: '153.0.8010.47',
-        },
-        edge: {
-          browser: 'edge',
-          version: '153.0.4234.32',
-        },
-        firefox: {
-          browser: 'firefox',
-          version: '156.0',
-        },
-        opera: {
-          browser: 'opera',
-          version: '136.0.6008.22',
-          chromiumVersion: '152.0.7977.120',
-        },
-      },
-    };
+    return readKnownGoodBrowserSnapshot();
   }
 
   return snapshotSchema.parse(JSON.parse(readFileSync(snapshotUrl, 'utf8')));
@@ -318,6 +334,25 @@ export async function fetchBrowserSnapshot(): Lib_BrowserReleases_FetchBrowserSn
       opera: releases[3],
     },
   });
+}
+
+/**
+ * Lib - Browser Releases - Resolve Build Browser Snapshot.
+ *
+ * Uses a fresh complete Stable snapshot when every vendor feed succeeds. If
+ * any feed is unavailable or malformed, it returns the verified source
+ * fallback so offline builds still package a complete snapshot.
+ *
+ * @returns {Promise<Lib_BrowserReleases_Snapshot>}
+ *
+ * @since 3.5.4
+ */
+export async function resolveBuildBrowserSnapshot(): Lib_BrowserReleases_ResolveBuildBrowserSnapshot_Returns {
+  try {
+    return await fetchBrowserSnapshot();
+  } catch {
+    return readKnownGoodBrowserSnapshot();
+  }
 }
 
 /**

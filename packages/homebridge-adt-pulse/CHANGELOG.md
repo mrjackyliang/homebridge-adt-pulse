@@ -1,5 +1,17 @@
 # homebridge-adt-pulse
 
+## 3.5.4 - 2026-10-11
+
+### UPDATED
+- Updated Nova and the Docusaurus preset to 0.29.0 across the project, plugin, configuration UI, and docs.
+- Completed JavaScript, TypeScript, browser, Node.js, Vite, and Docusaurus preset coverage, and consolidated custom Nova lint rules into the shared rule bundle while preserving workspace-specific overrides.
+- Declared the root workspace as ESM and expanded Vitest configuration and setup type checking.
+- Updated Homebridge UI utilities, Axios, Luxon, SemVer, UA Parser, and their type definitions to their latest compatible releases.
+- Recorded README badges plus Node.js, plugin, and Homebridge bug-report fields explicitly in Nova configuration.
+
+### FIXED
+- Kept production builds reproducible offline by packaging the verified browser-version fallback when vendor release feeds are unavailable.
+
 ## 3.5.3 - 2026-10-03
 
 ### UPDATED

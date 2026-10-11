@@ -66,6 +66,22 @@ body:
       placeholder: "e.g. 24.13.1"
     validations:
       required: true
+  - type: "input"
+    id: "plugin-version"
+    attributes:
+      label: "Plugin version"
+      description: "What version of the plugin are you using? If you are using the Homebridge Config UI, you may find this information in the \"Plugins\" tab."
+      placeholder: "e.g. 3.0.0"
+    validations:
+      required: true
+  - type: "input"
+    id: "homebridge-version"
+    attributes:
+      label: "Homebridge version"
+      description: "What version of Homebridge are you using? You may find this information in the \"System Information\" widget when using the Homebridge Config UI or by running the `homebridge -V` command."
+      placeholder: "e.g. 1.11.2"
+    validations:
+      required: true
   - type: "textarea"
     id: "logs"
     attributes:

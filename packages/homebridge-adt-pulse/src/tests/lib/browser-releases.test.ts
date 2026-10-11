@@ -13,7 +13,9 @@ import {
 import {
   fetchBrowserSnapshot,
   fetchStableBrowserRelease,
+  readKnownGoodBrowserSnapshot,
   readPackagedBrowserSnapshot,
+  resolveBuildBrowserSnapshot,
   resolveBrowserRelease,
 } from '../../lib/browser-releases.js';
 
@@ -57,6 +59,12 @@ describe('browser release sources', () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ channels: {} }))));
 
     await expect(fetchStableBrowserRelease('chrome')).rejects.toThrow();
+  });
+
+  it('uses the known-good snapshot when a build cannot reach vendor feeds', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('offline'); }));
+
+    await expect(resolveBuildBrowserSnapshot()).resolves.toEqual(readKnownGoodBrowserSnapshot());
   });
 
   it('falls back to the last verified cache, then the package snapshot', async () => {

@@ -21,7 +21,8 @@
     "legalName": "Jacky Liang",
     "pronouns": "personal",
     "platforms": [
-      "nodejs"
+      "nodejs",
+      "homebridge"
     ],
     "startingYear": 2019,
     "license": "MIT"
@@ -140,7 +141,13 @@
         "color": "ffffff",
         "description": "This will not be worked on"
       }
-    ]
+    ],
+    "issueTemplate": {
+      "bugReportFields": [
+        "nodejs",
+        "homebridge"
+      ]
+    }
   },
   "workflows": [
     {
@@ -196,6 +203,17 @@
     "fundSources": [
       "https://github.com/sponsors/mrjackyliang",
       "https://liang.nyc/paypal"
+    ]
+  },
+  "readme": {
+    "badges": [
+      "homebridge-verified",
+      "npm-version",
+      "npm-downloads",
+      "github-release",
+      "github-top-language",
+      "github-license",
+      "funding"
     ]
   },
   "workspaces": {

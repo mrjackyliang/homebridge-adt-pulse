@@ -115,6 +115,13 @@ export type Lib_BrowserReleases_FetchStableBrowserRelease_Versions = string[];
 export type Lib_BrowserReleases_FetchStableBrowserRelease_ArchiveMatch = RegExpExecArray | null;
 
 /**
+ * Lib - Browser Releases - Read Known Good Browser Snapshot.
+ *
+ * @since 3.5.4
+ */
+export type Lib_BrowserReleases_ReadKnownGoodBrowserSnapshot_Returns = Shared_BrowserReleaseSnapshot;
+
+/**
  * Lib - Browser Releases - Read Packaged Browser Snapshot.
  *
  * @since 3.5.0
@@ -145,3 +152,10 @@ export type Lib_BrowserReleases_ResolveBrowserRelease_Release = Shared_BrowserRe
 export type Lib_BrowserReleases_ResolveBrowserRelease_Updated = Shared_BrowserReleaseSnapshot;
 
 export type Lib_BrowserReleases_ResolveBrowserRelease_TemporaryPath = string;
+
+/**
+ * Lib - Browser Releases - Resolve Build Browser Snapshot.
+ *
+ * @since 3.5.4
+ */
+export type Lib_BrowserReleases_ResolveBuildBrowserSnapshot_Returns = Promise<Shared_BrowserReleaseSnapshot>;
