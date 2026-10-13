@@ -62,4 +62,13 @@ If you find value in the ongoing development of this project and wish to express
 
 - Become my supporter on [GitHub Sponsors](https://github.com/sponsors/mrjackyliang)
 - Support me at [https://liang.nyc/paypal](https://liang.nyc/paypal)
+
+A special thanks to my contributors and supporters:
+
+- [@Danimal4326](https://github.com/Danimal4326)
+- [@hapinstance](https://github.com/hapinstance)
+- [@kevinmhickey](https://github.com/kevinmhickey)
+- [@rlippmann](https://github.com/rlippmann)
+- [@sapireli](https://github.com/sapireli)
+- [@thcooley](https://github.com/thcooley)
 <!-- nova-region-end: credits -->

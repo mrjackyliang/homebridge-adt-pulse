@@ -1,5 +1,16 @@
 # homebridge-adt-pulse
 
+## 3.5.5 - 2026-10-12
+
+### UPDATED
+- Updated Nova and Docusaurus Preset Nova to 0.30.1.
+- Adopted role-based TypeScript preset layers.
+- Standardized root-owned tests under the shared project layout.
+- Aligned configuration UI JSDoc hierarchies with the function-level contract.
+
+### ADDED
+- Added configured contributors to generated credits and publishable package metadata.
+
 ## 3.5.4 - 2026-10-11
 
 ### UPDATED

@@ -34,7 +34,7 @@ import type {
 } from '../types/config-ui.d.ts';
 
 /**
- * Pages - Settings.
+ * Pages - Settings - Settings.
  *
  * Renders the tabbed settings editor for the plugin config UI and keeps the
  * Homebridge plugin config synchronized with the form as users make changes.

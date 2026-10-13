@@ -2,12 +2,10 @@
   "extends": [
     "@cbnventures/nova/presets/tsconfig/dx-essentials.json",
     "@cbnventures/nova/presets/tsconfig/dx-strict.json",
+    "@cbnventures/nova/presets/tsconfig/role-config.json",
     "@cbnventures/nova/presets/tsconfig/runtime-node.json"
   ],
   "compilerOptions": {
-    "declaration": false,
-    "declarationMap": false,
-    "noEmit": true,
     "types": [
       "@types/node"
     ]

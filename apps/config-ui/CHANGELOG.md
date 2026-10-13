@@ -1,5 +1,15 @@
 # homebridge-adt-pulse-app-config-ui
 
+## 3.5.5 - 2026-10-12
+
+### UPDATED
+- Updated Nova to 0.30.1.
+- Adopted role-based TypeScript preset layers.
+- Aligned configuration UI JSDoc hierarchies with the function-level contract.
+
+### ADDED
+- Added configured contributors to the generated project credits.
+
 ## 3.5.4 - 2026-10-11
 
 ### UPDATED

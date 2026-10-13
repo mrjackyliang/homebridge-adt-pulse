@@ -15,7 +15,7 @@ import type {
 } from './types/config-ui.d.ts';
 
 /**
- * Router.
+ * Router - Router.
  *
  * Decides which top-level screen the plugin UI should render by checking
  * whether a plugin configuration already exists, then routes the user to

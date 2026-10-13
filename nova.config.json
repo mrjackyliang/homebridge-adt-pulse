@@ -35,6 +35,48 @@
       "roles": [
         "author"
       ]
+    },
+    {
+      "name": "@kevinmhickey",
+      "url": "https://github.com/kevinmhickey",
+      "roles": [
+        "contributor"
+      ]
+    },
+    {
+      "name": "@rlippmann",
+      "url": "https://github.com/rlippmann",
+      "roles": [
+        "contributor"
+      ]
+    },
+    {
+      "name": "@Danimal4326",
+      "url": "https://github.com/Danimal4326",
+      "roles": [
+        "contributor"
+      ]
+    },
+    {
+      "name": "@sapireli",
+      "url": "https://github.com/sapireli",
+      "roles": [
+        "contributor"
+      ]
+    },
+    {
+      "name": "@hapinstance",
+      "url": "https://github.com/hapinstance",
+      "roles": [
+        "contributor"
+      ]
+    },
+    {
+      "name": "@thcooley",
+      "url": "https://github.com/thcooley",
+      "roles": [
+        "contributor"
+      ]
     }
   ],
   "emails": {

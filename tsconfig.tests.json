@@ -2,18 +2,17 @@
   "extends": [
     "@cbnventures/nova/presets/tsconfig/dx-essentials.json",
     "@cbnventures/nova/presets/tsconfig/dx-strict.json",
+    "@cbnventures/nova/presets/tsconfig/role-tests.json",
     "@cbnventures/nova/presets/tsconfig/runtime-node.json"
   ],
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "noEmit": true,
     "types": [
       "@types/node"
     ]
   },
   "include": [
-    "./src/tests/**/*",
-    "./vitest.setup.ts"
+    "./tests/**/*"
   ]
 }

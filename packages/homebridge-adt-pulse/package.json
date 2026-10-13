@@ -1,7 +1,7 @@
 {
   "name": "homebridge-adt-pulse",
   "displayName": "Homebridge ADT Pulse",
-  "version": "3.5.4",
+  "version": "3.5.5",
   "description": "Control your ADT Pulse security system and view sensor status through the Home app",
   "keywords": [
     "homebridge",
@@ -24,6 +24,32 @@
     "email": "hello@mrjackyliang.com",
     "url": "https://www.mrjackyliang.com/"
   },
+  "contributors": [
+    {
+      "name": "@Danimal4326",
+      "url": "https://github.com/Danimal4326"
+    },
+    {
+      "name": "@hapinstance",
+      "url": "https://github.com/hapinstance"
+    },
+    {
+      "name": "@kevinmhickey",
+      "url": "https://github.com/kevinmhickey"
+    },
+    {
+      "name": "@rlippmann",
+      "url": "https://github.com/rlippmann"
+    },
+    {
+      "name": "@sapireli",
+      "url": "https://github.com/sapireli"
+    },
+    {
+      "name": "@thcooley",
+      "url": "https://github.com/thcooley"
+    }
+  ],
   "funding": [
     "https://github.com/sponsors/mrjackyliang",
     "https://liang.nyc/paypal"
@@ -73,7 +99,7 @@
     "node": "^22 || ^24"
   },
   "dependencies": {
-    "@cbnventures/nova": "0.29.0",
+    "@cbnventures/nova": "0.30.1",
     "@faker-js/faker": "9.3.0",
     "@homebridge/plugin-ui-utils": "2.2.6",
     "axios": "1.20.0",

@@ -158,7 +158,7 @@ src/lib/utility.ts            → src/types/lib/utility.d.ts
 src/lib/utility.ts            → src/tests/lib/utility.test.ts
 src/toolkit/markdown-table.ts → src/types/toolkit/markdown-table.d.ts
 src/cli/utility/changelog.ts  → src/types/cli/utility/changelog.d.ts
-src/cli/utility/initialize.ts → src/types/cli/utility/initialize.d.ts
+src/cli/utility/configure.ts  → src/types/cli/utility/configure.d.ts
 ```
 
 ### Type Layering

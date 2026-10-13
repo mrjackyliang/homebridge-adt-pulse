@@ -2,11 +2,11 @@
   "extends": [
     "@cbnventures/nova/presets/tsconfig/dx-essentials.json",
     "@cbnventures/nova/presets/tsconfig/dx-strict.json",
+    "@cbnventures/nova/presets/tsconfig/role-tests.json",
     "@cbnventures/nova/presets/tsconfig/runtime-node.json",
     "@cbnventures/nova/presets/tsconfig/fw-homebridge.json"
   ],
   "compilerOptions": {
-    "noEmit": true,
     "lib": [
       "DOM",
       "DOM.Iterable",

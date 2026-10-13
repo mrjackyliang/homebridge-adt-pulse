@@ -25,7 +25,7 @@ import type {
 } from '../types/config-ui.d.ts';
 
 /**
- * Pages - Setup.
+ * Pages - Setup - Setup.
  *
  * Coordinates the multi-step setup wizard by tracking the active page and the
  * state shared between steps, showing only the pane that matches the current

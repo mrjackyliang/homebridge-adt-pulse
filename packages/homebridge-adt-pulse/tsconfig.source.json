@@ -2,11 +2,11 @@
   "extends": [
     "@cbnventures/nova/presets/tsconfig/dx-essentials.json",
     "@cbnventures/nova/presets/tsconfig/dx-strict.json",
+    "@cbnventures/nova/presets/tsconfig/role-source.json",
     "@cbnventures/nova/presets/tsconfig/runtime-node.json",
     "@cbnventures/nova/presets/tsconfig/fw-homebridge.json"
   ],
   "compilerOptions": {
-    "noEmit": false,
     "noEmitOnError": false,
     "outDir": "./build",
     "rootDir": "./src",
