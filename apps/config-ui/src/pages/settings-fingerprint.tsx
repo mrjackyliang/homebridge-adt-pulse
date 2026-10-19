@@ -2,7 +2,11 @@ import React from 'react';
 
 import FingerprintTable from '../components/fingerprint-table';
 
-import type { SettingsFingerprintProps, SettingsFingerprintProps_Fingerprint } from '../types/config-ui.d.ts';
+import type {
+  SettingsFingerprintProps,
+  SettingsFingerprintProps_Fingerprint,
+  SettingsFingerprintReturns,
+} from '../types/config-ui.d.ts';
 
 /**
  * Pages - Settings Fingerprint - Settings Fingerprint.
@@ -13,9 +17,11 @@ import type { SettingsFingerprintProps, SettingsFingerprintProps_Fingerprint } f
  *
  * @constructor
  *
+ * @returns {SettingsFingerprintReturns}
+ *
  * @since 1.0.0
  */
-function SettingsFingerprint(props: SettingsFingerprintProps) {
+function SettingsFingerprint(props: SettingsFingerprintProps): SettingsFingerprintReturns {
   const fingerprint: SettingsFingerprintProps_Fingerprint = props['fingerprint'];
 
   if (fingerprint !== '' || import.meta.env.DEV === true) {

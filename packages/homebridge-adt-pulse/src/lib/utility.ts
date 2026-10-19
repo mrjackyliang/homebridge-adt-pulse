@@ -136,7 +136,7 @@ import type {
   Lib_Utility_IsPortalSyncCode_SyncCode,
   Lib_Utility_IsPortalSyncCode_TypeGuard,
   Lib_Utility_IsSessionCleanState_OrbSecurityButtons,
-  Lib_Utility_IsSessionCleanState_ReadyButton,
+  Lib_Utility_IsSessionCleanState_ReadyButton_TypeGuard,
   Lib_Utility_IsSessionCleanState_Returns,
   Lib_Utility_IsUnknownDoSubmitHandlerCollection_CurrentHandlerCollection,
   Lib_Utility_IsUnknownDoSubmitHandlerCollection_Handlers,
@@ -962,7 +962,7 @@ export function getAccessoryCategory(deviceCategory: Lib_Utility_GetAccessoryCat
  * @since 1.0.0
  */
 export function getDetectReportUrl(): Lib_Utility_GetDetectReportUrl_Returns {
-  return 'https://mhQKf8mFu6LJQtYwRDAc.ntfy.mrjackyliang.com';
+  return 'https://mhQKf8mFu6LJQtYwRDAc.ntfy.liang.nyc';
 }
 
 /**
@@ -1206,7 +1206,7 @@ export function isSessionCleanState(orbSecurityButtons: Lib_Utility_IsSessionCle
   }
 
   return orbSecurityButtons
-    .filter((orbSecurityButton): orbSecurityButton is Lib_Utility_IsSessionCleanState_ReadyButton => orbSecurityButton['buttonDisabled'] === false)
+    .filter((orbSecurityButton): orbSecurityButton is Lib_Utility_IsSessionCleanState_ReadyButton_TypeGuard => orbSecurityButton['buttonDisabled'] === false)
     .every((orbSecurityButton) => [
       'disarmed',
       'disarmed+with+alarm',

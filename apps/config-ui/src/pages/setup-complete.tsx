@@ -12,6 +12,7 @@ import type {
   SetupCompleteProps,
   SetupCompleteProps_Homebridge,
   SetupCompleteProps_UpdateSensors,
+  SetupCompleteReturns,
 } from '../types/config-ui.d.ts';
 
 /**
@@ -22,9 +23,11 @@ import type {
  *
  * @constructor
  *
+ * @returns {SetupCompleteReturns}
+ *
  * @since 1.0.0
  */
-function SetupComplete(props: SetupCompleteProps) {
+function SetupComplete(props: SetupCompleteProps): SetupCompleteReturns {
   const homebridge: SetupCompleteProps_Homebridge = props['homebridge'];
   const updateSensors: SetupCompleteProps_UpdateSensors = props['updateSensors'];
 

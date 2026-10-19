@@ -57,12 +57,12 @@ jobs:
 
       - name: "Check project"
         run: |
-          npx turbo run check --filter=// --filter=homebridge-adt-pulse-app-config-ui --filter=homebridge-adt-pulse-docs --filter=homebridge-adt-pulse --concurrency=2
+          npm run check
         working-directory: "${{ env.ROOT_DIR }}"
 
       - name: "Build project"
         run: |
-          npx turbo run build --filter=homebridge-adt-pulse-app-config-ui --filter=homebridge-adt-pulse-docs --filter=homebridge-adt-pulse --concurrency=2
+          npm run build:workspaces -- --workspace homebridge-adt-pulse-app-config-ui --workspace homebridge-adt-pulse-docs --workspace homebridge-adt-pulse
         working-directory: "${{ env.ROOT_DIR }}"
 
       - name: "Upload build artifacts (npm/packages-homebridge-adt-pulse)"
@@ -92,7 +92,7 @@ jobs:
   publish-npm-packages-homebridge-adt-pulse:
     needs: "build"
     runs-on: "ubuntu-latest"
-    timeout-minutes: 10
+    timeout-minutes: 15
     permissions:
       contents: "read"
       id-token: "write"
@@ -153,7 +153,7 @@ jobs:
   publish-github-packages-packages-homebridge-adt-pulse:
     needs: "build"
     runs-on: "ubuntu-latest"
-    timeout-minutes: 10
+    timeout-minutes: 15
     permissions:
       contents: "read"
       packages: "write"
@@ -238,7 +238,7 @@ jobs:
   publish-github-pages-docusaurus-apps-docs:
     needs: "build"
     runs-on: "ubuntu-latest"
-    timeout-minutes: 10
+    timeout-minutes: 15
     permissions:
       contents: "read"
       pages: "write"

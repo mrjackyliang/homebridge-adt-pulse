@@ -9,7 +9,9 @@ export type Lib_Theme_Watch_Returns = () => void;
 
 export type Lib_Theme_Watch_SourceDocument = Document;
 
-export type Lib_Theme_Watch_Synchronize = () => void;
+export type Lib_Theme_Watch_Synchronize_Returns = void;
+
+export type Lib_Theme_Watch_Synchronize = () => Lib_Theme_Watch_Synchronize_Returns;
 
 export type Lib_Theme_Watch_Observer = MutationObserver;
 

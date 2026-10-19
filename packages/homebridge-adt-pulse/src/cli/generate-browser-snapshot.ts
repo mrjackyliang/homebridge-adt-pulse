@@ -10,6 +10,8 @@ import type { Cli_GenerateBrowserSnapshot_Main_Output, Cli_GenerateBrowserSnapsh
  * Refreshes the verified Stable browser data in the packaged build output.
  * Offline builds package the verified source fallback.
  *
+ * @returns {Cli_GenerateBrowserSnapshot_Main_Returns}
+ *
  * @since 3.5.0
  */
 async function main(): Cli_GenerateBrowserSnapshot_Main_Returns {

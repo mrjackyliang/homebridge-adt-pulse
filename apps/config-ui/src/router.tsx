@@ -9,6 +9,7 @@ import type {
   RouterConfigs,
   RouterProps,
   RouterProps_Homebridge,
+  RouterReturns,
   RouterSetView,
   RouterView,
   RouterViewState,
@@ -23,9 +24,11 @@ import type {
  *
  * @constructor
  *
+ * @returns {RouterReturns}
+ *
  * @since 1.0.0
  */
-function Router(props: RouterProps) {
+function Router(props: RouterProps): RouterReturns {
   const homebridge: RouterProps_Homebridge = props['homebridge'];
 
   const viewState: RouterViewState = useState<RouterView>();

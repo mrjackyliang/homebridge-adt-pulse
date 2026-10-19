@@ -17,6 +17,7 @@ import type {
   SettingsSensorsProps,
   SettingsSensorsProps_Control,
   SettingsSensorsRemove,
+  SettingsSensorsReturns,
   SettingsSensorsSensors,
   SettingsSensorsSetOpenSensor,
   SettingsSensorsWatch,
@@ -31,9 +32,11 @@ import type {
  *
  * @constructor
  *
+ * @returns {SettingsSensorsReturns}
+ *
  * @since 1.0.0
  */
-function SettingsSensors(props: SettingsSensorsProps) {
+function SettingsSensors(props: SettingsSensorsProps): SettingsSensorsReturns {
   const control: SettingsSensorsProps_Control = props['control'];
 
   const fieldArray: SettingsSensorsFieldArray = useFieldArray({

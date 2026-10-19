@@ -7,7 +7,7 @@
 - **Project name:** Homebridge ADT Pulse (published to npm as `homebridge-adt-pulse`; the monorepo root manifest is named `homebridge-adt-pulse-project`)
 - **Description:** Control your ADT Pulse security system and view sensor status through the Home app.
 - **Primary language:** TypeScript
-- **Framework / runtime:** Turborepo-orchestrated npm workspaces monorepo containing a Homebridge platform plugin (Node.js), a Vite + React 19 custom config UI, and a Docusaurus 3.10 documentation site
+- **Framework / runtime:** Nova-orchestrated npm workspaces monorepo containing a Homebridge platform plugin, a Vite + React custom config UI, and a Docusaurus documentation site
 - **Ownership:** Personally authored and owned by Jacky Liang (`mrjackyliang`) under the MIT license. CBN Ventures supports the project by supplying its build tooling and conventions through `@cbnventures/nova` and `@cbnventures/docusaurus-preset-nova`.
 
 ### Repository URL
@@ -20,8 +20,8 @@
 homebridge-adt-pulse/
 ├── .github/                    — GitHub Actions workflows and issue templates
 ├── apps/
-│   ├── config-ui/              — Plugin's custom config UI (Vite + React 19 frontend)
-│   └── docs/                   — Documentation site (Docusaurus 3.10 + Nova preset)
+│   ├── config-ui/              — Plugin's custom config UI (Vite + React frontend)
+│   └── docs/                   — Documentation site (Docusaurus + Nova preset)
 ├── conventions/                — Nova-generated coding convention files (do not edit)
 ├── packages/
 │   └── homebridge-adt-pulse/   — The published Homebridge plugin
@@ -34,7 +34,7 @@ homebridge-adt-pulse/
 ├── eslint.config.mts            — Root ESLint flat config (covers scripts/ only; apps/ and packages/ are excluded and lint themselves)
 ├── LICENSE                      — MIT license
 ├── nova.config.json             — Nova project, workspace, and workflow configuration
-├── package.json                 — Workspace root manifest and turbo scripts
+├── package.json                 — Workspace root manifest and Nova orchestration scripts
 ├── package-lock.json            — Local npm lockfile shared by every workspace (not committed)
 ├── PROJECT_RULES.md             — This file
 ├── README.md                    — Project overview and badges
@@ -42,7 +42,6 @@ homebridge-adt-pulse/
 ├── tsconfig.json                — Root TypeScript project references
 ├── tsconfig.config.json         — Type-checks eslint.config.mts
 ├── tsconfig.scripts.json        — Type-checks scripts/**/*.mjs
-├── turbo.json                   — Turborepo pipeline configuration
 └── VISION.md                    — Purpose, marketing copy, and glossary
 ```
 
@@ -166,55 +165,54 @@ apps/docs/
 
 ## Key Files
 
-| File                                                    | Purpose                                              | When to modify                                             |
-|---------------------------------------------------------|------------------------------------------------------|------------------------------------------------------------|
-| `packages/homebridge-adt-pulse/src/index.ts`            | Plugin entry point; registers the platform           | Almost never                                               |
-| `packages/homebridge-adt-pulse/src/lib/platform.ts`     | Plugin lifecycle, accessory cache, polling           | Changing lifecycle, polling, or state handling             |
-| `packages/homebridge-adt-pulse/src/lib/api.ts`          | Portal driver (login, status reads, arm/disarm)      | Portal request or scraping changes                         |
-| `packages/homebridge-adt-pulse/src/lib/auth.ts`         | MFA workflow and fingerprint enrollment              | Changing the setup and verification flow                   |
-| `packages/homebridge-adt-pulse/src/lib/accessory.ts`    | Device-to-HomeKit mapping                            | Changing services or characteristics per device type       |
-| `packages/homebridge-adt-pulse/src/lib/regex.ts`        | Central regex registry for the plugin                | Any new pattern (inline regex literals are banned by lint) |
-| `packages/homebridge-adt-pulse/src/lib/schema.ts`       | Zod schemas, shared with `apps/config-ui`            | Config shape or portal response shape changes              |
-| `packages/homebridge-adt-pulse/config.schema.json`      | Homebridge config UI schema + custom UI registration | Config shape changes; keep in sync with `platformConfig`   |
-| `packages/homebridge-adt-pulse/src/config-ui/server.ts` | Config UI backend endpoints                          | Setup wizard changes                                       |
-| `apps/config-ui/src/router.tsx`                         | Chooses the setup vs. settings screen                | Changing top-level config UI routing                       |
-| `apps/docs/docusaurus.config.ts`                        | Docs site configuration                              | Navbar, footer, preset, or SEO changes                     |
-| `nova.config.json`                                      | Nova project, workspace, and workflow configuration  | Identity, workspace, workflow, or environment changes      |
-| `turbo.json`                                            | Turborepo task pipeline                              | Adding or changing a cross-workspace task                  |
-| `package.json` (root)                                   | Workspace root manifest and turbo scripts            | Adding workspaces, changing root scripts                   |
+| File                                                    | Purpose                                                | When to modify                                             |
+|---------------------------------------------------------|--------------------------------------------------------|------------------------------------------------------------|
+| `packages/homebridge-adt-pulse/src/index.ts`            | Plugin entry point; registers the platform             | Almost never                                               |
+| `packages/homebridge-adt-pulse/src/lib/platform.ts`     | Plugin lifecycle, accessory cache, polling             | Changing lifecycle, polling, or state handling             |
+| `packages/homebridge-adt-pulse/src/lib/api.ts`          | Portal driver (login, status reads, arm/disarm)        | Portal request or scraping changes                         |
+| `packages/homebridge-adt-pulse/src/lib/auth.ts`         | MFA workflow and fingerprint enrollment                | Changing the setup and verification flow                   |
+| `packages/homebridge-adt-pulse/src/lib/accessory.ts`    | Device-to-HomeKit mapping                              | Changing services or characteristics per device type       |
+| `packages/homebridge-adt-pulse/src/lib/regex.ts`        | Central regex registry for the plugin                  | Any new pattern (inline regex literals are banned by lint) |
+| `packages/homebridge-adt-pulse/src/lib/schema.ts`       | Zod schemas, shared with `apps/config-ui`              | Config shape or portal response shape changes              |
+| `packages/homebridge-adt-pulse/config.schema.json`      | Homebridge config UI schema + custom UI registration   | Config shape changes; keep in sync with `platformConfig`   |
+| `packages/homebridge-adt-pulse/src/config-ui/server.ts` | Config UI backend endpoints                            | Setup wizard changes                                       |
+| `apps/config-ui/src/router.tsx`                         | Chooses the setup vs. settings screen                  | Changing top-level config UI routing                       |
+| `apps/docs/docusaurus.config.ts`                        | Docs site configuration                                | Navbar, footer, preset, or SEO changes                     |
+| `nova.config.json`                                      | Nova project, workspace, and workflow configuration    | Identity, workspace, workflow, or environment changes      |
+| `package.json` (root)                                   | Workspace root manifest and Nova orchestration scripts | Adding workspaces, changing root scripts                   |
 
 ## Build and Tooling
 
 ### Prerequisites
 
-| Tool       | Version                                 | Purpose                                                                                             |
-|------------|-----------------------------------------|-----------------------------------------------------------------------------------------------------|
-| Node.js    | `^22` or `^24`                          | Runtime (from the root `engines` field; identical in every workspace)                               |
-| npm        | `11.18.0` (pinned via `packageManager`) | Package manager; CI enables npm through Corepack before installing                                  |
-| Turborepo  | `2.10.11`                               | Orchestrates `dev` / `prod` / `build` / `check` / `deploy` / `clean` across the three workspaces    |
-| Homebridge | `^1.11.0` or `^2.0.0-beta.0`            | Host platform (plugin's `engines` field); `1.8.5` is pinned as a dev dependency to back `npm start` |
+| Tool       | Version source                                       | Purpose                                                                                   |
+|------------|------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| Node.js    | Root `package.json` `engines`                        | Runtime shared by every workspace                                                         |
+| npm        | Root `package.json` package pin                      | Workspace-aware package manager                                                           |
+| Nova CLI   | Root package dependency                              | Orchestrates `dev`, `prod`, `build`, `check`, `deploy`, and `clean` across all workspaces |
+| Homebridge | Plugin `package.json` `engines` and development pins | Host platform and local production harness                                                |
 
-Dependency versions are pinned exactly in every workspace (no caret or tilde ranges), enforced by Nova's `normalize-dependencies` recipe. The one exception is a transitive `overrides.webpack` range (`>=5.95.0 <5.106.0`) at the root, required by the Docusaurus 3.10 toolchain. Key tooling shared across workspaces: TypeScript `6.0.3`, ESLint `9.39.5`, and `@cbnventures/nova` `0.27.1`. `apps/docs` additionally pins Docusaurus `3.10.2` and `@cbnventures/docusaurus-preset-nova` `0.27.0`; `apps/config-ui` pins Vite `7.3.6` and React `19.2.8`; the plugin pins Vitest `4.1.11`.
+Dependency versions are pinned in their owning workspace manifests and normalized by Nova. Consult those manifests and the root overrides instead of duplicating mutable tool or framework versions here.
 
 ### Commands
 
-Root-level, Turborepo-orchestrated:
+Root-level, Nova-orchestrated:
 
-| Command             | What it does                                                                                                                                                                                                      |
-|---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `npm install`       | Install every workspace's dependencies; `postinstall` runs `scripts/link-nova.mjs`, which npm-links any `@cbnventures/*` package that is already globally linked                                                  |
-| `npm run dev`       | `turbo run dev` — `apps/config-ui` runs Vite, `apps/docs` runs Docusaurus start via portless; the plugin defines no `dev` task                                                                                    |
-| `npm run prod`      | `turbo run prod` — depends on `check` + `build`, then `apps/docs` serves its built site; the other workspaces define no `prod` task                                                                               |
-| `npm run build`     | Builds all three workspaces in dependency order through Turborepo                                                                                                                                                 |
-| `npm run check`     | `turbo run check --concurrency=2` (lint + type-check + test per workspace), then root lint, config/scripts/tests type-checks, and Vitest tests                                                                    |
-| `npm run deploy`    | `turbo run deploy --concurrency=2` — depends on `check` + `build`; no workspace currently defines its own `deploy` script, so this is presently equivalent to `check` + `build`. Actual publishing happens in CI. |
-| `npm run clean`     | `turbo run clean` — only `apps/docs` defines a `clean` task (removes `build/` and clears the Docusaurus cache)                                                                                                    |
-| `npm run changelog` | `nova utility changelog` — records or releases changelog entries                                                                                                                                                  |
-| `npm run recipes`   | `nova utility run-recipes --replace-file` — applies the Nova recipes configured in `nova.config.json` (README, LICENSE, `package.json` normalization, etc.)                                                       |
+| Command             | What it does                                                                                                                                                                |
+|---------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `npm install`       | Install every workspace's dependencies; `postinstall` runs `scripts/link-nova.mjs`, which npm-links any `@cbnventures/*` package that is already globally linked            |
+| `npm run dev`       | Nova runs `apps/config-ui`'s Vite server and `apps/docs`' Docusaurus server via Portless; the plugin defines no `dev` task                                                  |
+| `npm run prod`      | Nova runs `check` + `build`, starts Homebridge with the compiled plugin, and serves the built documentation site                                                            |
+| `npm run build`     | Builds all three workspaces in dependency order through Nova                                                                                                                |
+| `npm run check`     | Nova checks workspaces with the repository-configured concurrency, then runs root lint, config/scripts/tests type-checks, and Vitest tests                                  |
+| `npm run deploy`    | Nova runs `check` + `build`; no workspace currently defines its own `deploy` script, so this is presently equivalent to `check` + `build`. Actual publishing happens in CI. |
+| `npm run clean`     | Nova runs the one `clean` task in `apps/docs`, which removes `build/` and clears the Docusaurus cache                                                                       |
+| `npm run changelog` | `nova utility changelog` — records or releases changelog entries                                                                                                            |
+| `npm run recipes`   | `nova utility run-recipes --replace-file` — applies the Nova recipes configured in `nova.config.json` (README, LICENSE, `package.json` normalization, etc.)                 |
 
 Workspace-level scripts worth knowing:
 
-- `packages/homebridge-adt-pulse`: `npm start` (`homebridge --debug --keep-orphans --plugin-path $(pwd)`), `npm run repl`, and `npm run test-api` all execute compiled files from `build/`, so run `npm run build` first. The package also exposes `hap-repl` and `hap-test-api` bins. Its build snapshots Nova identity and current Stable browser versions, then copies `apps/config-ui/build` into `build/config-ui/public`.
+- `packages/homebridge-adt-pulse`: `npm run prod --workspace homebridge-adt-pulse` builds and starts Homebridge with the compiled plugin. `npm run repl` and `npm run test-api` from the package workspace also execute compiled files from `build/`, so run `npm run build` first. The package exposes `hap-repl` and `hap-test-api` bins. Its build snapshots Nova identity and current Stable browser versions, then copies `apps/config-ui/build` into `build/config-ui/public`.
 - `apps/config-ui`: `npm run dev` (Vite dev server), `npm run build` (`vite build` into `./build`).
 - `apps/docs`: `npm run dev` (Docusaurus start on a portless-assigned port) and `npm run i18n` / `i18n:check` / `i18n:coverage` (theme-nova i18n sync).
 
@@ -257,7 +255,7 @@ JSDoc is mandatory in every workspace: every documentable block carries `@since`
 - Route new portal shapes through the catalogs in `src/lib/items.ts` and the baselines in `src/lib/detect.ts` so undocumented shapes keep triggering detect reports.
 - Redact personally identifiable information with `removePersonalIdentifiableInformation` before any detect report leaves the user's machine.
 - Run `npm run build` in `packages/homebridge-adt-pulse` before `npm run repl` or `npm run test-api`; both execute compiled files from `build/`.
-- Run `npm run check` from the root before committing; it lints, type-checks, and tests every workspace through Turborepo.
+- Run `npm run check` from the root before committing; it lints, type-checks, and tests every workspace through Nova.
 
 **Don't:**
 
@@ -268,13 +266,13 @@ JSDoc is mandatory in every workspace: every documentable block carries `@since`
 - Don't reintroduce a separate plugin debug setting; debug mode intentionally activates only when Homebridge debug mode is on.
 - Don't commit or hand-edit any workspace's `build/`; it is generated output and gitignored everywhere.
 - Don't throw from API/auth methods for expected failures; they return typed success/failure result objects and callers branch on `success`.
-- Don't add a `deploy` script to a workspace without checking `turbo.json`'s `deploy` task first; today it is a `check` + `build` alias, and actual publishing lives entirely in `nova-publish-project.yml`.
+- Don't add a `deploy` script to a workspace without accounting for Nova's `deploy` lifecycle prerequisites; today it is a `check` + `build` alias, and actual publishing lives entirely in `nova-publish-project.yml`.
 
 ## Project-Specific Patterns
 
 ### Architecture
 
-A layered Homebridge platform plugin, with its custom config UI and its documentation site split into their own Turborepo workspaces:
+A layered Homebridge platform plugin, with its custom config UI and its documentation site split into their own Nova workspaces:
 
 ```
 Homebridge (HAP)
@@ -297,7 +295,7 @@ ADTPulsePlatform (src/lib/platform.ts)
 Homebridge UI (custom config UI, customUiPath: ./build/config-ui)
   |
   v
-apps/config-ui (Vite + React 19; separate workspace) - setup wizard + settings
+apps/config-ui (Vite + React; separate workspace) - setup wizard + settings
   imports Zod schemas straight from packages/homebridge-adt-pulse/src/lib/schema
   |  built to apps/config-ui/build, then copied into
   |  packages/homebridge-adt-pulse/build/config-ui/public by build:copy-ui
@@ -309,7 +307,7 @@ packages/homebridge-adt-pulse/src/config-ui/server.ts (backend request handlers)
 Standalone CLI entry points (src/cli/repl.ts, src/cli/test-api.ts)
 drive ADTPulseAPI and ADTPulseAuth directly from the terminal.
 
-apps/docs (Docusaurus 3.10; independent workspace)
+apps/docs (Docusaurus; independent workspace)
   publishes user-facing documentation; not part of the runtime plugin
 ```
 
@@ -339,7 +337,7 @@ apps/docs (Docusaurus 3.10; independent workspace)
 
 ### Framework
 
-- **Framework:** Docusaurus `3.10.2`, themed by `@cbnventures/docusaurus-preset-nova` `0.27.0` (preset identity `lantern`), React `19.2.8`
+- **Framework:** Docusaurus themed by `@cbnventures/docusaurus-preset-nova` (preset identity `lantern`); package versions are owned by `apps/docs/package.json`
 - **Source directory:** `apps/docs`
 
 ### Site Structure
@@ -372,17 +370,17 @@ The sidebar (`sidebars.ts`) is fully autogenerated from the `docs/` directory tr
 ### Release Process
 
 1. Review the pending `.changelog/` entries against the working copy, then preview the versions and release notes with `npm run changelog -- --release --dry-run`.
-2. Run `npm run changelog -- --release` when the preview is correct. Nova consumes the entries, updates both workspace changelogs, and bumps the plugin and config UI to the same version because `settings.lockStepVersioning` is enabled. The freezable root and `apps/docs` workspaces remain at `0.0.0`; Nova stamps their `UNRELEASED` source tags without creating changelog sections for them.
+2. Run `npm run changelog -- --release` when the preview is correct. Nova consumes the entries, updates both workspace changelogs, and bumps the plugin and config UI together because `settings.lockStepVersioning` is enabled. Freezable workspaces keep their sentinel versions while Nova stamps their `UNRELEASED` source tags without creating changelog sections for them.
 3. Run `npm run check`, `npm run build`, and `npm pack --dry-run --workspace packages/homebridge-adt-pulse`. Review the resulting diff, then commit and push the release changes.
-4. Publish a GitHub Release tagged `vX.Y.Z`, using the plugin's new version. The release triggers `nova-publish-project.yml`, which runs `turbo run check` and `turbo run build` across the project, publishes the plugin to npm.js and GitHub Packages, and deploys `apps/docs` to GitHub Pages (skipped automatically if Pages isn't enabled on the repository). Manual `workflow_dispatch` runs default to a dry run unless `dry-run` is explicitly set to false.
+4. Publish a GitHub Release tagged with the plugin's new version. The release triggers `nova-publish-project.yml`, which runs the native Nova workspace checks and builds, publishes the plugin to npm.js and GitHub Packages, and deploys `apps/docs` to GitHub Pages (skipped automatically if Pages isn't enabled on the repository). Manual `workflow_dispatch` runs default to a dry run unless `dry-run` is explicitly set to false.
 
 ### CI/CD Workflows
 
-| Workflow file                                       | Trigger                                  | What it does                                                                                                                                                                                          |
-|-----------------------------------------------------|------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `nova-publish-project.yml`                          | Release published, or manual dispatch    | Turbo-builds all three workspaces, then publishes the plugin to npm.js (GitHub OIDC, `id-token: write`) and GitHub Packages (scoped to the repository owner), and deploys `apps/docs` to GitHub Pages |
-| `nova-check-sponsor-gated-issues-sponsor-check.yml` | Issues opened/closed, issue comments     | Runs the `mrjackyliang/sponsor-gated-support` action; usernames listed in `SPONSOR_EXEMPT` bypass the sponsor requirement                                                                             |
-| `nova-lock-inactive-issues-lock-inactive.yml`       | Weekly cron (Sunday), or manual dispatch | Runs the `mrjackyliang/lock-inactive-threads` action to lock issues and pull requests inactive for 30+ days                                                                                           |
+| Workflow file                                       | Trigger                                  | What it does                                                                                                                                                                                         |
+|-----------------------------------------------------|------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `nova-publish-project.yml`                          | Release published, or manual dispatch    | Nova builds all three workspaces, then publishes the plugin to npm.js (GitHub OIDC, `id-token: write`) and GitHub Packages (scoped to the repository owner), and deploys `apps/docs` to GitHub Pages |
+| `nova-check-sponsor-gated-issues-sponsor-check.yml` | Issues opened/closed, issue comments     | Runs the `mrjackyliang/sponsor-gated-support` action; usernames listed in `SPONSOR_EXEMPT` bypass the sponsor requirement                                                                            |
+| `nova-lock-inactive-issues-lock-inactive.yml`       | Weekly cron (Sunday), or manual dispatch | Runs the `mrjackyliang/lock-inactive-threads` action to lock issues and pull requests inactive for 30+ days                                                                                          |
 
 ### Environments
 

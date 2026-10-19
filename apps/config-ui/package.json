@@ -1,26 +1,26 @@
 {
   "name": "homebridge-adt-pulse-app-config-ui",
-  "version": "3.5.5",
+  "version": "3.5.6",
   "license": "MIT",
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "nova utility run-scripts --parallel --node-env development 'dev:*'",
+    "dev": "nova utility run-scripts --parallel --node-env development \"dev:*\"",
     "dev:start": "vite",
-    "check": "nova utility run-scripts --sequential 'check:*'",
+    "check": "nova utility run-scripts --sequential \"check:*\"",
     "check:lint": "eslint ./ --max-warnings=0",
     "check:types": "nova utility type-check --project tsconfig.json",
     "check:types-config": "nova utility type-check --project tsconfig.config.json",
     "check:types-tests": "nova utility type-check --project tsconfig.tests.json",
     "check:test": "vitest run",
-    "build": "nova utility run-scripts --sequential --node-env production 'build:*'",
+    "build": "nova utility run-scripts --sequential --node-env production \"build:*\"",
     "build:app": "vite build"
   },
   "engines": {
     "node": "^22 || ^24"
   },
   "dependencies": {
-    "@cbnventures/nova": "0.30.1",
+    "@cbnventures/nova": "0.33.0",
     "@hookform/resolvers": "5.9.1",
     "bootstrap": "5.3.8",
     "lodash": "4.18.1",

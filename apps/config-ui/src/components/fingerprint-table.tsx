@@ -20,6 +20,7 @@ import type {
   FingerprintTableRenderTableValueProperty,
   FingerprintTableRenderTableValueReturns,
   FingerprintTableRenderTableValueValue,
+  FingerprintTableReturns,
   FingerprintTableSetParsedObject,
   FingerprintTableSetStatus,
   FingerprintTableStatus,
@@ -35,9 +36,11 @@ import type {
  *
  * @constructor
  *
+ * @returns {FingerprintTableReturns}
+ *
  * @since 1.0.0
  */
-function FingerprintTable(props: FingerprintTableProps) {
+function FingerprintTable(props: FingerprintTableProps): FingerprintTableReturns {
   const fingerprint: FingerprintTableProps_Fingerprint = props['fingerprint'];
 
   const parsedObjectState: FingerprintTableParsedObjectState = useState<FingerprintTableParsedObject>({});

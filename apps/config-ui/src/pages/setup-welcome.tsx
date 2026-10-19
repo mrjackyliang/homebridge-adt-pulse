@@ -3,7 +3,11 @@ import React from 'react';
 import SetupLogo from '../assets/setup-logo.png';
 import { styles } from '../styles/pages/setup-welcome.js';
 
-import type { SetupWelcomeProps, SetupWelcomeProps_SetCurrentPage } from '../types/config-ui.d.ts';
+import type {
+  SetupWelcomeProps,
+  SetupWelcomeProps_SetCurrentPage,
+  SetupWelcomeReturns,
+} from '../types/config-ui.d.ts';
 
 /**
  * Pages - Setup Welcome - Setup Welcome.
@@ -14,9 +18,11 @@ import type { SetupWelcomeProps, SetupWelcomeProps_SetCurrentPage } from '../typ
  *
  * @constructor
  *
+ * @returns {SetupWelcomeReturns}
+ *
  * @since 1.0.0
  */
-function SetupWelcome(props: SetupWelcomeProps) {
+function SetupWelcome(props: SetupWelcomeProps): SetupWelcomeReturns {
   const setCurrentPage: SetupWelcomeProps_SetCurrentPage = props['setCurrentPage'];
 
   return (

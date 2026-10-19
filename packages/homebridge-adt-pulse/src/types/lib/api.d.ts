@@ -184,6 +184,8 @@ export type Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReadyButton = Shared_OrbSecurit
 
 export type Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReadyButtons = Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReadyButton[];
 
+export type Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReadyButton_TypeGuard = Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReadyButton;
+
 /**
  * Lib - API - Constructor.
  *
@@ -671,6 +673,8 @@ export type Lib_Api_ADTPulseAPI_SetPanelStatus_SecurityButtons = Shared_OrbSecur
 export type Lib_Api_ADTPulseAPI_SetPanelStatus_ReadyButton = Shared_OrbSecurityButtonBase & Shared_OrbSecurityButtonReady;
 
 export type Lib_Api_ADTPulseAPI_SetPanelStatus_ReadyButtons = Lib_Api_ADTPulseAPI_SetPanelStatus_ReadyButton[];
+
+export type Lib_Api_ADTPulseAPI_SetPanelStatus_ReadyButton_TypeGuard = Lib_Api_ADTPulseAPI_SetPanelStatus_ReadyButton;
 
 export type Lib_Api_ADTPulseAPI_SetPanelStatus_ArmDisarmResponseInfo_ForceArmRequired = boolean;
 

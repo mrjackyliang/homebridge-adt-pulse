@@ -13,6 +13,7 @@ import type {
   SettingsGeneralProps_Control,
   SettingsGeneralProps_GetValues,
   SettingsGeneralProps_SetValue,
+  SettingsGeneralReturns,
 } from '../types/config-ui.d.ts';
 
 /**
@@ -24,9 +25,11 @@ import type {
  *
  * @constructor
  *
+ * @returns {SettingsGeneralReturns}
+ *
  * @since 1.0.0
  */
-function SettingsGeneral(props: SettingsGeneralProps) {
+function SettingsGeneral(props: SettingsGeneralProps): SettingsGeneralReturns {
   const control: SettingsGeneralProps_Control = props['control'];
   const getValues: SettingsGeneralProps_GetValues = props['getValues'];
   const setValue: SettingsGeneralProps_SetValue = props['setValue'];

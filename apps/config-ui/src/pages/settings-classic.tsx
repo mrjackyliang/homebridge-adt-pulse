@@ -6,6 +6,7 @@ import type {
   SettingsClassicProps_SetView,
   SettingsClassicReady,
   SettingsClassicReadyState,
+  SettingsClassicReturns,
   SettingsClassicSetReady,
 } from '../types/config-ui.d.ts';
 
@@ -18,9 +19,11 @@ import type {
  *
  * @constructor
  *
+ * @returns {SettingsClassicReturns}
+ *
  * @since 1.0.0
  */
-function SettingsClassic(props: SettingsClassicProps) {
+function SettingsClassic(props: SettingsClassicProps): SettingsClassicReturns {
   const homebridge: SettingsClassicProps_Homebridge = props['homebridge'];
   const setView: SettingsClassicProps_SetView = props['setView'];
 

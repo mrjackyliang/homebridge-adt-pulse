@@ -422,8 +422,17 @@ describe('device and collection helpers', () => {
 });
 
 describe('status and environment helpers', () => {
+  it('keeps the detect report endpoint available', async () => {
+    const response = await fetch(getDetectReportUrl(), {
+      method: 'GET',
+      redirect: 'error',
+      signal: AbortSignal.timeout(10000),
+    });
+
+    expect(response.ok).toBe(true);
+  });
+
   it('returns fixed metadata helpers', () => {
-    expect(getDetectReportUrl()).toMatch(/^https:\/\//);
     expect(getPackageVersion()).toBe(packageJson.version);
     expect(getPluralForm(1, 'item', 'items')).toBe('item');
     expect(getPluralForm(2, 'item', 'items')).toBe('items');

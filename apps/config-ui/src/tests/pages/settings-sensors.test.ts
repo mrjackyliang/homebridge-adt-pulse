@@ -14,6 +14,7 @@ import SettingsSensors from '../../pages/settings-sensors';
 
 import type {
   Tests_Pages_SettingsSensors_SensorHarness_Form,
+  Tests_Pages_SettingsSensors_SensorHarness_Returns,
   Tests_Pages_SettingsSensors_SensorHarness_Values,
   Tests_Pages_SettingsSensors_SettingsSensors_OpensAndClosesASensorWithoutBootstrapJavaScript_Button,
   Tests_Pages_SettingsSensors_SettingsSensors_OpensAndClosesASensorWithoutBootstrapJavaScript_Container,
@@ -27,9 +28,11 @@ import type {
  * Provides a real form control so the accordion test covers React Hook Form.
  * It verifies sensor expansion without relying on the host's Bootstrap script.
  *
+ * @returns {Tests_Pages_SettingsSensors_SensorHarness_Returns}
+ *
  * @since 3.5.0
  */
-function SensorHarness() {
+function SensorHarness(): Tests_Pages_SettingsSensors_SensorHarness_Returns {
   const form: Tests_Pages_SettingsSensors_SensorHarness_Form = useForm<Tests_Pages_SettingsSensors_SensorHarness_Values>({
     defaultValues: {
       sensors: [{

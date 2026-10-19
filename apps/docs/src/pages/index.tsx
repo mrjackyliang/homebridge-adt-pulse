@@ -10,6 +10,8 @@ import Layout from '@theme/Layout';
 
 import styles from './index.module.css';
 
+import type { Pages_Index_Home_Returns } from '../types/pages/index.d.ts';
+
 /**
  * Pages - Home.
  *
@@ -18,9 +20,11 @@ import styles from './index.module.css';
  *
  * @constructor
  *
+ * @returns {Pages_Index_Home_Returns}
+ *
  * @since 0.0.0
  */
-function Home() {
+function Home(): Pages_Index_Home_Returns {
   return (
     <Layout description={translate({
       id: 'home.layout.description',

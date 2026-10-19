@@ -25,6 +25,7 @@ import type {
   SettingsReady,
   SettingsReadyState,
   SettingsReset,
+  SettingsReturns,
   SettingsSetReady,
   SettingsSetTab,
   SettingsSetValue,
@@ -41,9 +42,11 @@ import type {
  *
  * @constructor
  *
+ * @returns {SettingsReturns}
+ *
  * @since 1.0.0
  */
-function Settings(props: SettingsProps) {
+function Settings(props: SettingsProps): SettingsReturns {
   const homebridge: SettingsProps_Homebridge = props['homebridge'];
   const setView: SettingsProps_SetView = props['setView'];
 

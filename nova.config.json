@@ -22,7 +22,8 @@
     "pronouns": "personal",
     "platforms": [
       "nodejs",
-      "homebridge"
+      "homebridge",
+      "web"
     ],
     "startingYear": 2019,
     "license": "MIT"
@@ -127,7 +128,19 @@
       "vulnerabilityAlerts": true,
       "dependabotSecurityUpdates": false,
       "secretScanning": true,
-      "pushProtection": false
+      "pushProtection": true
+    },
+    "rulesets": {
+      "defaultBranch": {
+        "enforcement": "active",
+        "blockDeletions": true,
+        "blockForcePushes": true,
+        "requireLinearHistory": false,
+        "requireSignedCommits": true,
+        "requirePullRequest": false,
+        "requiredStatusChecks": [],
+        "requireBranchesToBeUpToDate": false
+      }
     },
     "actions": {
       "enabled": true,
@@ -135,7 +148,7 @@
       "shaPinningRequired": false,
       "defaultWorkflowPermissions": "read",
       "canApprovePullRequestReviews": false,
-      "artifactRetentionDays": 90
+      "artifactRetentionDays": 7
     },
     "labels": [
       {
@@ -198,14 +211,18 @@
       "triggers": [
         "issue-comment",
         "issues"
-      ]
+      ],
+      "runsOn": "ubuntu-latest",
+      "timeoutMinutes": 5
     },
     {
       "template": "lock-inactive-issues",
       "name": "lock-inactive",
       "triggers": [
         "schedule-weekly"
-      ]
+      ],
+      "runsOn": "ubuntu-latest",
+      "timeoutMinutes": 5
     },
     {
       "template": "publish",
@@ -213,6 +230,8 @@
       "triggers": [
         "release"
       ],
+      "runsOn": "ubuntu-latest",
+      "timeoutMinutes": 15,
       "build": [
         "./apps/config-ui",
         "./apps/docs",
@@ -280,10 +299,15 @@
       "name": "homebridge-adt-pulse"
     }
   },
-  "gitignore": {
-    "projectExcludes": [
-      "graphify-out/"
-    ]
+  "ignoreFiles": {
+    "./.gitignore": {
+      "bundles": [
+        "nova"
+      ],
+      "patterns": [
+        "graphify-out/"
+      ]
+    }
   },
   "agents": [
     "claude-code",
@@ -307,7 +331,7 @@
         "enabled": true
       },
       "sync-rulesets": {
-        "enabled": false
+        "enabled": true
       },
       "sync-security": {
         "enabled": true
@@ -315,6 +339,31 @@
     },
     "license": {
       "update-copyright": {
+        "enabled": true
+      }
+    },
+    "miscellaneous": {
+      "fix-markdown-tables": {
+        "enabled": true
+      },
+      "remove-operating-system-files": {
+        "enabled": true,
+        "settings": {
+          "linux": {},
+          "macos": {
+            "appleDouble": true,
+            "desktopServicesStore": true
+          },
+          "windows": {
+            "enhancedThumbnailDatabase": true,
+            "enhancedVistaThumbnailDatabase": true,
+            "thumbnailDatabase": true
+          }
+        }
+      }
+    },
+    "nova-config": {
+      "normalize-order": {
         "enabled": true
       }
     },
@@ -521,6 +570,12 @@
       },
       "./apps/docs": {
         "prefix": "DOCS_"
+      },
+      "./apps/config-ui": {
+        "prefix": "CONFIG_UI_"
+      },
+      "./packages/homebridge-adt-pulse": {
+        "prefix": "HOMEBRIDGE_ADT_PULSE_"
       }
     },
     "workflows": {
@@ -531,6 +586,21 @@
   },
   "settings": {
     "lockStepVersioning": true,
+    "runWorkspaces": {
+      "cache": {
+        "directory": "./node_modules/.cache/nova/run-workspaces",
+        "enabled": true,
+        "scripts": [
+          "build",
+          "check"
+        ]
+      },
+      "concurrency": {
+        "build": 2,
+        "check": 2,
+        "deploy": 2
+      }
+    },
     "versionStrategy": "semver"
   }
 }

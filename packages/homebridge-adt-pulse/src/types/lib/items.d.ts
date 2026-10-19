@@ -283,7 +283,7 @@ export type Lib_Items_ItemPanelStatusStatus = Constant_PortalPanelStatus;
 
 export type Lib_Items_ItemPanelStatusStatuses = Lib_Items_ItemPanelStatusStatus[];
 
-export type Lib_Items_ItemPanelStatusStatuses_SensorsOpen = `${number} Sensors Open`;
+export type Lib_Items_ItemPanelStatusStatuses_SensorsOpen_Returns = `${number} Sensors Open`;
 
 /**
  * Lib - Items - Item Portal Versions.

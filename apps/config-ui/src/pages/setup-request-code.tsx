@@ -19,6 +19,7 @@ import type {
   SetupRequestCodeProps_Homebridge,
   SetupRequestCodeProps_SetCurrentPage,
   SetupRequestCodeProps_SetSelectedMethod,
+  SetupRequestCodeReturns,
 } from '../types/config-ui.d.ts';
 
 /**
@@ -29,9 +30,11 @@ import type {
  *
  * @constructor
  *
+ * @returns {SetupRequestCodeReturns}
+ *
  * @since 1.0.0
  */
-function SetupRequestCode(props: SetupRequestCodeProps) {
+function SetupRequestCode(props: SetupRequestCodeProps): SetupRequestCodeReturns {
   const availableMethods: SetupRequestCodeProps_AvailableMethods = props['availableMethods'];
   const homebridge: SetupRequestCodeProps_Homebridge = props['homebridge'];
   const setCurrentPage: SetupRequestCodeProps_SetCurrentPage = props['setCurrentPage'];

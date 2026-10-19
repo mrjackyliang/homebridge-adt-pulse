@@ -69,7 +69,7 @@ import type {
   Lib_Api_ADTPulseAPI_ArmDisarmHandler_ForceArmResponse,
   Lib_Api_ADTPulseAPI_ArmDisarmHandler_IsAlarmActive,
   Lib_Api_ADTPulseAPI_ArmDisarmHandler_Options,
-  Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReadyButton,
+  Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReadyButton_TypeGuard,
   Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReadyButtons,
   Lib_Api_ADTPulseAPI_ArmDisarmHandler_Returns,
   Lib_Api_ADTPulseAPI_ArmDisarmHandler_SecurityButtons,
@@ -216,7 +216,7 @@ import type {
   Lib_Api_ADTPulseAPI_SetPanelStatus_ForceArmRequired,
   Lib_Api_ADTPulseAPI_SetPanelStatus_IsAlarmActive,
   Lib_Api_ADTPulseAPI_SetPanelStatus_IsAlarmCurrentlyActive,
-  Lib_Api_ADTPulseAPI_SetPanelStatus_ReadyButton,
+  Lib_Api_ADTPulseAPI_SetPanelStatus_ReadyButton_TypeGuard,
   Lib_Api_ADTPulseAPI_SetPanelStatus_ReadyButtons,
   Lib_Api_ADTPulseAPI_SetPanelStatus_Returns,
   Lib_Api_ADTPulseAPI_SetPanelStatus_SecurityButtons,
@@ -1650,7 +1650,7 @@ export class ADTPulseAPI {
       const securityButtons: Lib_Api_ADTPulseAPI_SetPanelStatus_SecurityButtons = securityButtonsResponse['info'];
 
       // Only keep all ready (enabled) orb security buttons.
-      let readyButtons: Lib_Api_ADTPulseAPI_SetPanelStatus_ReadyButtons = securityButtons.filter((securityButton): securityButton is Lib_Api_ADTPulseAPI_SetPanelStatus_ReadyButton => securityButton['buttonDisabled'] === false);
+      let readyButtons: Lib_Api_ADTPulseAPI_SetPanelStatus_ReadyButtons = securityButtons.filter((securityButton): securityButton is Lib_Api_ADTPulseAPI_SetPanelStatus_ReadyButton_TypeGuard => securityButton['buttonDisabled'] === false);
 
       // Generate "fake" ready buttons if arming tasks become stuck (backup sat code required).
       if (readyButtons.length === 0 && this.#session['backupSatCode'] !== null) {
@@ -2906,7 +2906,7 @@ export class ADTPulseAPI {
 
       const securityButtons: Lib_Api_ADTPulseAPI_ArmDisarmHandler_SecurityButtons = securityButtonsResponse['info'];
 
-      let readyButtons: Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReadyButtons = securityButtons.filter((securityButton): securityButton is Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReadyButton => securityButton['buttonDisabled'] === false);
+      let readyButtons: Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReadyButtons = securityButtons.filter((securityButton): securityButton is Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReadyButton_TypeGuard => securityButton['buttonDisabled'] === false);
 
       // Generate "fake" ready buttons if arming tasks become stuck.
       if (readyButtons.length === 0) {

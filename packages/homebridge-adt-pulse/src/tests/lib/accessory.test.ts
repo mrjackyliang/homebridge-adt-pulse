@@ -127,7 +127,11 @@ type Tests_Lib_Accessory_CreateHarness_GetRecord_Record = {
   updateValue: ReturnType<typeof vi.fn>;
 };
 
+type Tests_Lib_Accessory_CreateHarness_GetRecord_Returns = Tests_Lib_Accessory_CreateHarness_GetRecord_Record;
+
 type Tests_Lib_Accessory_CreateHarness_GetRecord_CaptureSetter = (setter: Tests_Lib_Accessory_CreateHarness_GetRecord_Setter) => Tests_Lib_Accessory_CreateHarness_GetRecord_Record;
+
+type Tests_Lib_Accessory_CreateHarness_RecordFor_Returns = Tests_Lib_Accessory_CreateHarness_GetRecord_Record;
 
 type Tests_Lib_Accessory_CreateHarness_Type = Shared_Device_Type;
 
@@ -141,7 +145,7 @@ type Tests_Lib_Accessory_CreateHarness_Options = {
 function createHarness(type: Tests_Lib_Accessory_CreateHarness_Type, options: Tests_Lib_Accessory_CreateHarness_Options = {}) {
   const records = new Map<unknown, Tests_Lib_Accessory_CreateHarness_GetRecord_Record>();
 
-  const getRecord = (key: unknown): Tests_Lib_Accessory_CreateHarness_GetRecord_Record => {
+  const getRecord = (key: unknown): Tests_Lib_Accessory_CreateHarness_GetRecord_Returns => {
     const existing = records.get(key);
 
     if (existing !== undefined) {
@@ -276,7 +280,7 @@ function createHarness(type: Tests_Lib_Accessory_CreateHarness_Type, options: Te
     loggerMethods as unknown as Lib_Accessory_ADTPulseAccessory_Constructor_Log,
   );
 
-  const recordFor = (key: unknown): Tests_Lib_Accessory_CreateHarness_GetRecord_Record => {
+  const recordFor = (key: unknown): Tests_Lib_Accessory_CreateHarness_RecordFor_Returns => {
     const record = records.get(key);
 
     if (record === undefined) {

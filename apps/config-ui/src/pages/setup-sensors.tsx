@@ -13,6 +13,7 @@ import type {
   SetupSensorsProps_Homebridge,
   SetupSensorsProps_SetCurrentPage,
   SetupSensorsProps_SetUpdateSensors,
+  SetupSensorsReturns,
   SetupSensorsSetHasExistingSensors,
 } from '../types/config-ui.d.ts';
 
@@ -24,9 +25,11 @@ import type {
  *
  * @constructor
  *
+ * @returns {SetupSensorsReturns}
+ *
  * @since 1.0.0
  */
-function SetupSensors(props: SetupSensorsProps) {
+function SetupSensors(props: SetupSensorsProps): SetupSensorsReturns {
   const homebridge: SetupSensorsProps_Homebridge = props['homebridge'];
   const setCurrentPage: SetupSensorsProps_SetCurrentPage = props['setCurrentPage'];
   const setUpdateSensors: SetupSensorsProps_SetUpdateSensors = props['setUpdateSensors'];

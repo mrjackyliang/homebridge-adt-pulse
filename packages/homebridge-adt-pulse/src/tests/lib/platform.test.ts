@@ -221,10 +221,12 @@ type Tests_Lib_Platform_LaunchPlatform_Config = PlatformConfig;
 
 type Tests_Lib_Platform_LaunchPlatform_PortalClient = Record<string, unknown>;
 
+type Tests_Lib_Platform_LaunchPlatform_IntervalCallbacks = Array<() => Promise<void>>;
+
 async function launchPlatform(config: Tests_Lib_Platform_LaunchPlatform_Config, portalClient: Tests_Lib_Platform_LaunchPlatform_PortalClient) {
   const loggerMock = createLoggerMock();
   const apiMock = createApiMock();
-  const intervalCallbacks: Array<() => Promise<void>> = [];
+  const intervalCallbacks: Tests_Lib_Platform_LaunchPlatform_IntervalCallbacks = [];
   const setIntervalSpy = vi.spyOn(globalThis, 'setInterval').mockImplementation((callback) => {
     intervalCallbacks.push(callback as () => Promise<void>);
 

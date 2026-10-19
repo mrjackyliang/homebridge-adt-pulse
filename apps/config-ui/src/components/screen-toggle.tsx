@@ -8,6 +8,7 @@ import type {
   ScreenToggleProps_Homebridge,
   ScreenToggleProps_SetView,
   ScreenToggleProps_View,
+  ScreenToggleReturns,
   ScreenToggleRoot,
   ScreenToggleSetTheme,
   ScreenToggleTheme,
@@ -22,9 +23,11 @@ import type {
  *
  * @constructor
  *
+ * @returns {ScreenToggleReturns}
+ *
  * @since 1.0.0
  */
-function ScreenToggle(props: ScreenToggleProps) {
+function ScreenToggle(props: ScreenToggleProps): ScreenToggleReturns {
   const children: ScreenToggleProps_Children = props['children'];
   const homebridge: ScreenToggleProps_Homebridge = props['homebridge'];
   const setView: ScreenToggleProps_SetView = props['setView'];

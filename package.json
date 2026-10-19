@@ -5,23 +5,23 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "nova utility run-scripts --parallel --node-env development 'dev:*'",
-    "dev:workspaces": "turbo run dev",
-    "prod": "nova utility run-scripts --sequential --node-env production 'prod:*'",
-    "prod:workspaces": "turbo run prod",
-    "check": "nova utility run-scripts --sequential 'check:*'",
-    "check:workspaces": "turbo run check --concurrency=2",
+    "dev": "nova utility run-scripts --parallel --node-env development \"dev:*\"",
+    "dev:workspaces": "nova utility run-workspaces --node-env development dev",
+    "prod": "nova utility run-scripts --sequential --node-env production \"prod:*\"",
+    "prod:workspaces": "nova utility run-workspaces --node-env production prod",
+    "check": "nova utility run-scripts --sequential \"check:*\"",
+    "check:workspaces": "nova utility run-workspaces check",
     "check:lint": "eslint . --max-warnings=0",
     "check:types-config": "nova utility type-check --project tsconfig.config.json",
     "check:types-scripts": "nova utility type-check --project tsconfig.scripts.json",
     "check:types-tests": "nova utility type-check --project tsconfig.tests.json",
     "check:test": "vitest run",
-    "build": "nova utility run-scripts --sequential --node-env production 'build:*'",
-    "build:workspaces": "turbo run build --concurrency=2",
-    "deploy": "nova utility run-scripts --sequential --node-env production 'deploy:*'",
-    "deploy:workspaces": "turbo run deploy --concurrency=2",
-    "clean": "nova utility run-scripts --parallel 'clean:*'",
-    "clean:workspaces": "turbo run clean",
+    "build": "nova utility run-scripts --sequential --node-env production \"build:*\"",
+    "build:workspaces": "nova utility run-workspaces --node-env production build",
+    "deploy": "nova utility run-scripts --sequential --node-env production \"deploy:*\"",
+    "deploy:workspaces": "nova utility run-workspaces --node-env production deploy",
+    "clean": "nova utility run-scripts --parallel \"clean:*\"",
+    "clean:workspaces": "nova utility run-workspaces clean",
     "changelog": "nova utility changelog",
     "recipes": "nova utility run-recipes --replace-file",
     "postinstall": "node ./scripts/link-nova.mjs"
@@ -42,11 +42,10 @@
     "node": "^22 || ^24"
   },
   "dependencies": {
-    "@cbnventures/nova": "0.30.1"
+    "@cbnventures/nova": "0.33.0"
   },
   "devDependencies": {
     "jiti": "2.7.0",
-    "turbo": "2.10.11",
     "typescript": "6.0.3",
     "vitest": "4.1.11"
   },

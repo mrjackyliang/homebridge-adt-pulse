@@ -217,9 +217,13 @@ export type Lib_Accessory_ADTPulseAccessory_Log = Logger;
  *
  * @since 1.0.0
  */
+export type Lib_Accessory_ADTPulseAccessory_Services_Information = Service;
+
+export type Lib_Accessory_ADTPulseAccessory_Services_Primary = Service;
+
 export type Lib_Accessory_ADTPulseAccessory_Services = {
-  Information?: Service;
-  Primary?: Service;
+  Information?: Lib_Accessory_ADTPulseAccessory_Services_Information;
+  Primary?: Lib_Accessory_ADTPulseAccessory_Services_Primary;
 };
 
 /**

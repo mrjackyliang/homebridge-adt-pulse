@@ -296,7 +296,7 @@ export type Lib_Utility_GetAccessoryCategory_Returns = number;
  *
  * @since 1.0.0
  */
-export type Lib_Utility_GetDetectReportUrl_Returns = `https://${string}.ntfy.mrjackyliang.com`;
+export type Lib_Utility_GetDetectReportUrl_Returns = `https://${string}`;
 
 /**
  * Lib - Utility - Get Package Version.
@@ -413,7 +413,7 @@ export type Lib_Utility_IsSessionCleanState_OrbSecurityButtons = Shared_OrbSecur
 
 export type Lib_Utility_IsSessionCleanState_Returns = boolean;
 
-export type Lib_Utility_IsSessionCleanState_ReadyButton = Shared_OrbSecurityButtonBase & Shared_OrbSecurityButtonReady;
+export type Lib_Utility_IsSessionCleanState_ReadyButton_TypeGuard = Shared_OrbSecurityButtonBase & Shared_OrbSecurityButtonReady;
 
 /**
  * Lib - Utility - Is Unknown Do Submit Handler Collection.

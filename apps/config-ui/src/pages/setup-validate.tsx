@@ -17,6 +17,7 @@ import type {
   SetupValidateProps_Homebridge,
   SetupValidateProps_SelectedMethod,
   SetupValidateProps_SetCurrentPage,
+  SetupValidateReturns,
 } from '../types/config-ui.d.ts';
 
 /**
@@ -27,9 +28,11 @@ import type {
  *
  * @constructor
  *
+ * @returns {SetupValidateReturns}
+ *
  * @since 1.0.0
  */
-function SetupValidate(props: SetupValidateProps) {
+function SetupValidate(props: SetupValidateProps): SetupValidateReturns {
   const homebridge: SetupValidateProps_Homebridge = props['homebridge'];
   const selectedMethod: SetupValidateProps_SelectedMethod = props['selectedMethod'];
   const setCurrentPage: SetupValidateProps_SetCurrentPage = props['setCurrentPage'];

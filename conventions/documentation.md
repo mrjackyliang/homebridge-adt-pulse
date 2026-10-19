@@ -299,8 +299,8 @@ Do not repeat the same advice across multiple admonitions on the same page. Each
 <!-- GOOD — left-aligned text columns, centered emoji columns -->
 | Feature     | macOS | Linux | Windows |
 |-------------|:-----:|:-----:|:-------:|
-| Auto-detect |   ✓   |   ✓   |    ✗    |
-| Hot reload  |   ✓   |   ✓   |    ✓    |
+| Auto-detect |   ✔   |   ✔   |    ✗    |
+| Hot reload  |   ✔   |   ✔   |    ✔    |
 ```
 
 ### Glossary Terms

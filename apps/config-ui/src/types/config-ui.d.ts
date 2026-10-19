@@ -99,6 +99,8 @@ export type FingerprintTableProps = {
   fingerprint: FingerprintTableProps_Fingerprint;
 };
 
+export type FingerprintTableReturns = React.JSX.Element;
+
 export type FingerprintTableParsedObject = object;
 
 export type FingerprintTableSetParsedObject = React.Dispatch<React.SetStateAction<FingerprintTableParsedObject>>;
@@ -161,6 +163,8 @@ export type RouterProps = {
   homebridge: RouterProps_Homebridge;
 };
 
+export type RouterReturns = React.JSX.Element;
+
 export type RouterView = CurrentView;
 
 export type RouterSetView = React.Dispatch<React.SetStateAction<RouterView>>;
@@ -191,6 +195,8 @@ export type ScreenToggleProps = {
   view: ScreenToggleProps_View;
 };
 
+export type ScreenToggleReturns = React.ReactNode;
+
 export type ScreenToggleBackground = string;
 
 export type ScreenToggleTheme = string;
@@ -216,6 +222,8 @@ export type SettingsProps = {
   homebridge: SettingsProps_Homebridge;
   setView: SettingsProps_SetView;
 };
+
+export type SettingsReturns = React.JSX.Element | null;
 
 export type SettingsForm = UseFormReturn<z.input<typeof platformConfig>, unknown, z.output<typeof platformConfig>>;
 
@@ -263,6 +271,8 @@ export type SettingsClassicProps = {
   setView: SettingsClassicProps_SetView;
 };
 
+export type SettingsClassicReturns = React.JSX.Element | null;
+
 export type SettingsClassicReady = boolean;
 
 export type SettingsClassicSetReady = React.Dispatch<React.SetStateAction<SettingsClassicReady>>;
@@ -280,6 +290,8 @@ export type SettingsFingerprintProps = {
   fingerprint: SettingsFingerprintProps_Fingerprint;
 };
 
+export type SettingsFingerprintReturns = React.JSX.Element | null;
+
 /**
  * Settings general.
  *
@@ -296,6 +308,8 @@ export type SettingsGeneralProps = {
   getValues: SettingsGeneralProps_GetValues;
   setValue: SettingsGeneralProps_SetValue;
 };
+
+export type SettingsGeneralReturns = React.JSX.Element;
 
 export type SettingsGeneralOptionsCheckbox_Id = string;
 
@@ -342,6 +356,8 @@ export type SettingsLoginProps = {
   getValues: SettingsLoginProps_GetValues;
 };
 
+export type SettingsLoginReturns = React.JSX.Element;
+
 /**
  * Settings login - Render password.
  *
@@ -382,6 +398,8 @@ export type SettingsPluginProps = {
   homebridge: SettingsPluginProps_Homebridge;
   setView: SettingsPluginProps_SetView;
 };
+
+export type SettingsPluginReturns = React.JSX.Element;
 
 export type SettingsPluginInformation_Name = string;
 
@@ -431,6 +449,8 @@ export type SettingsSensorsProps_Control = Control<z.input<typeof platformConfig
 export type SettingsSensorsProps = {
   control: SettingsSensorsProps_Control;
 };
+
+export type SettingsSensorsReturns = React.JSX.Element;
 
 export type SettingsSensorsFieldArray = UseFieldArrayReturn<z.input<typeof platformConfig>, 'sensors'>;
 
@@ -483,6 +503,8 @@ export type SetupProps = {
   homebridge: SetupProps_Homebridge;
 };
 
+export type SetupReturns = React.JSX.Element;
+
 export type SetupAvailableMethods = MfaDevice[];
 
 export type SetupSetAvailableMethods = React.Dispatch<React.SetStateAction<SetupAvailableMethods>>;
@@ -521,6 +543,8 @@ export type SetupCompleteProps = {
   updateSensors: SetupCompleteProps_UpdateSensors;
 };
 
+export type SetupCompleteReturns = React.JSX.Element;
+
 /**
  * Setup complete - On submit.
  *
@@ -552,6 +576,8 @@ export type SetupLoginProps = {
   setAvailableMethods: SetupLoginProps_SetAvailableMethods;
   setCurrentPage: SetupLoginProps_SetCurrentPage;
 };
+
+export type SetupLoginReturns = React.JSX.Element;
 
 export type SetupLoginForm = UseFormReturn<z.infer<typeof configUiLogin>>;
 
@@ -608,6 +634,8 @@ export type SetupRequestCodeProps = {
   setSelectedMethod: SetupRequestCodeProps_SetSelectedMethod;
 };
 
+export type SetupRequestCodeReturns = React.JSX.Element;
+
 export type SetupRequestCodeForm = UseFormReturn<z.infer<typeof configUiRequestCode>>;
 
 export type SetupRequestCodeControl = SetupRequestCodeForm['control'];
@@ -652,6 +680,8 @@ export type SetupSensorsProps = {
   setUpdateSensors: SetupSensorsProps_SetUpdateSensors;
 };
 
+export type SetupSensorsReturns = React.JSX.Element;
+
 export type SetupSensorsHasExistingSensors = boolean;
 
 export type SetupSensorsSetHasExistingSensors = React.Dispatch<React.SetStateAction<SetupSensorsHasExistingSensors>>;
@@ -690,6 +720,8 @@ export type SetupValidateProps = {
   setCurrentPage: SetupValidateProps_SetCurrentPage;
 };
 
+export type SetupValidateReturns = React.JSX.Element;
+
 export type SetupValidateForm = UseFormReturn<z.infer<typeof configUiValidateCode>>;
 
 export type SetupValidateControl = SetupValidateForm['control'];
@@ -725,6 +757,8 @@ export type SetupWelcomeProps_SetCurrentPage = React.Dispatch<React.SetStateActi
 export type SetupWelcomeProps = {
   setCurrentPage: SetupWelcomeProps_SetCurrentPage;
 };
+
+export type SetupWelcomeReturns = React.JSX.Element;
 
 /**
  * Styles.

@@ -22,7 +22,7 @@ import type {
   Lib_Items_ItemPanelStatusNotes,
   Lib_Items_ItemPanelStatusStates,
   Lib_Items_ItemPanelStatusStatuses,
-  Lib_Items_ItemPanelStatusStatuses_SensorsOpen,
+  Lib_Items_ItemPanelStatusStatuses_SensorsOpen_Returns,
   Lib_Items_ItemPortalVersions,
   Lib_Items_ItemSensorInformationDeviceTypes,
   Lib_Items_ItemSensorInformationStatuses,
@@ -711,7 +711,7 @@ export const itemPanelStatusStates: Lib_Items_ItemPanelStatusStates = [
  */
 export const itemPanelStatusStatuses: Lib_Items_ItemPanelStatusStatuses = [
   '1 Sensor Open',
-  ..._.range(148).map((_value, index): Lib_Items_ItemPanelStatusStatuses_SensorsOpen => `${index + 1} Sensors Open`),
+  ..._.range(148).map((_value, index): Lib_Items_ItemPanelStatusStatuses_SensorsOpen_Returns => `${index + 1} Sensors Open`),
   'All Quiet',
   'BURGLARY ALARM',
   'Carbon Monoxide Alarm',

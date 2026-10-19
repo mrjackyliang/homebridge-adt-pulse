@@ -14,6 +14,7 @@ import type {
   SetupCurrentPageState,
   SetupProps,
   SetupProps_Homebridge,
+  SetupReturns,
   SetupSelectedMethod,
   SetupSelectedMethodState,
   SetupSetAvailableMethods,
@@ -33,9 +34,11 @@ import type {
  *
  * @constructor
  *
+ * @returns {SetupReturns}
+ *
  * @since 1.0.0
  */
-function Setup(props: SetupProps) {
+function Setup(props: SetupProps): SetupReturns {
   const homebridge: SetupProps_Homebridge = props['homebridge'];
 
   const currentPageState: SetupCurrentPageState = useState<SetupCurrentPage>(0);

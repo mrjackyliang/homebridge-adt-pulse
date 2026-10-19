@@ -1,3 +1,5 @@
+import { registerPackageScriptsSuite } from '@cbnventures/nova/rules/vitest';
+import * as vitest from 'vitest';
 import {
   describe,
   expect,
@@ -21,4 +23,10 @@ describe('Project root', () => {
   });
 
   return;
+});
+
+registerPackageScriptsSuite({
+  vitest,
+  requireRootScripts: true,
+  enable: 'all',
 });

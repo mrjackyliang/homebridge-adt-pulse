@@ -11,6 +11,7 @@ import type {
   SettingsLoginRenderSubdomainFieldState,
   SettingsLoginRenderUsernameField,
   SettingsLoginRenderUsernameFieldState,
+  SettingsLoginReturns,
 } from '../types/config-ui.d.ts';
 
 /**
@@ -22,9 +23,11 @@ import type {
  *
  * @constructor
  *
+ * @returns {SettingsLoginReturns}
+ *
  * @since 1.0.0
  */
-function SettingsLogin(props: SettingsLoginProps) {
+function SettingsLogin(props: SettingsLoginProps): SettingsLoginReturns {
   const control: SettingsLoginProps_Control = props['control'];
   const getValues: SettingsLoginProps_GetValues = props['getValues'];
 

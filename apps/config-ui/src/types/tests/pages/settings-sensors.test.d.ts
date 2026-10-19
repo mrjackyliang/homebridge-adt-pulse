@@ -9,6 +9,8 @@ import type { platformConfig } from '../../../../../../packages/homebridge-adt-p
  *
  * @since 3.5.0
  */
+export type Tests_Pages_SettingsSensors_SensorHarness_Returns = React.JSX.Element;
+
 export type Tests_Pages_SettingsSensors_SensorHarness_Values = z.input<typeof platformConfig>;
 
 export type Tests_Pages_SettingsSensors_SensorHarness_Form = UseFormReturn<Tests_Pages_SettingsSensors_SensorHarness_Values>;

@@ -1,5 +1,14 @@
 # homebridge-adt-pulse
 
+## 3.5.6 - 2026-10-18
+
+### UPDATED
+- Replaced Turborepo orchestration with Nova's workspace runner across local commands and the generated publishing workflow.
+- Updated Nova and Docusaurus Preset Nova to 0.33.0, including the consolidated Nova ESLint preset entry point.
+- Migrated generated ignore settings to Nova's managed multi-file ignore configuration.
+- Updated detector reports to use the renewed ntfy.liang.nyc endpoint and verify its availability during project checks.
+- Moved the compiled Homebridge launch command under the structured production command group.
+
 ## 3.5.5 - 2026-10-12
 
 ### UPDATED

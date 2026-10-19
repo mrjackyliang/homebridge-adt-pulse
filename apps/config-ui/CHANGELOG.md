@@ -1,5 +1,10 @@
 # homebridge-adt-pulse-app-config-ui
 
+## 3.5.6 - 2026-10-18
+
+### UPDATED
+- Updated Nova to 0.33.0 and loaded Nova's custom ESLint rules through the consolidated preset entry point.
+
 ## 3.5.5 - 2026-10-12
 
 ### UPDATED

@@ -7,6 +7,7 @@ import type {
   SettingsPluginProps,
   SettingsPluginProps_Homebridge,
   SettingsPluginProps_SetView,
+  SettingsPluginReturns,
   SettingsPluginRunning,
   SettingsPluginRunningNames,
   SettingsPluginSetInformation,
@@ -21,9 +22,11 @@ import type {
  *
  * @constructor
  *
+ * @returns {SettingsPluginReturns}
+ *
  * @since 1.0.0
  */
-function SettingsPlugin(props: SettingsPluginProps) {
+function SettingsPlugin(props: SettingsPluginProps): SettingsPluginReturns {
   const homebridge: SettingsPluginProps_Homebridge = props['homebridge'];
   const setView: SettingsPluginProps_SetView = props['setView'];
 

@@ -19,6 +19,7 @@ import type {
   SetupLoginProps_Homebridge,
   SetupLoginProps_SetAvailableMethods,
   SetupLoginProps_SetCurrentPage,
+  SetupLoginReturns,
 } from '../types/config-ui.d.ts';
 
 /**
@@ -29,9 +30,11 @@ import type {
  *
  * @constructor
  *
+ * @returns {SetupLoginReturns}
+ *
  * @since 1.0.0
  */
-function SetupLogin(props: SetupLoginProps) {
+function SetupLogin(props: SetupLoginProps): SetupLoginReturns {
   const homebridge: SetupLoginProps_Homebridge = props['homebridge'];
   const setAvailableMethods: SetupLoginProps_SetAvailableMethods = props['setAvailableMethods'];
   const setCurrentPage: SetupLoginProps_SetCurrentPage = props['setCurrentPage'];

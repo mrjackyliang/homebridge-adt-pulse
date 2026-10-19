@@ -3,10 +3,10 @@ import {
   dxIgnore,
   langJavascript,
   langTypescript,
+  novaRules,
   runtimeBrowser,
   toolVite,
 } from '@cbnventures/nova/presets/eslint';
-import { novaRules } from '@cbnventures/nova/rules/eslint';
 import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';

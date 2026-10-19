@@ -11,6 +11,7 @@ import type {
   Lib_Theme_Watch_Synchronize_CurrentTheme,
   Lib_Theme_Watch_Synchronize_IsDark,
   Lib_Theme_Watch_Synchronize_Probe,
+  Lib_Theme_Watch_Synchronize_Returns,
   Lib_Theme_Watch_Synchronize_Style,
   Lib_Theme_Watch_Synchronize_ThemeClasses,
 } from '../types/lib/theme.d.ts';
@@ -45,9 +46,11 @@ export function watch(mount: Lib_Theme_Watch_Mount): Lib_Theme_Watch_Returns {
    * Updates the isolated palette whenever Homebridge changes theme classes.
    * Sampling the host's button lets new Homebridge accent palettes work too.
    *
+   * @returns {Lib_Theme_Watch_Synchronize_Returns}
+   *
    * @since 3.5.0
    */
-  const synchronize: Lib_Theme_Watch_Synchronize = () => {
+  const synchronize: Lib_Theme_Watch_Synchronize = (): Lib_Theme_Watch_Synchronize_Returns => {
     const themeClasses: Lib_Theme_Watch_Synchronize_ThemeClasses = [...sourceDocument.body.classList]
       .filter((className) => className.startsWith('config-ui-x-'));
     const currentTheme: Lib_Theme_Watch_Synchronize_CurrentTheme = themeClasses.at(-1);
