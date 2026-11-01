@@ -240,15 +240,18 @@
       "deploy": [
         {
           "to": "npm",
-          "path": "./packages/homebridge-adt-pulse"
+          "path": "./packages/homebridge-adt-pulse",
+          "artifact": "homebridge-adt-pulse"
         },
         {
           "to": "github-packages",
-          "path": "./packages/homebridge-adt-pulse"
+          "path": "./packages/homebridge-adt-pulse",
+          "artifact": "homebridge-adt-pulse"
         },
         {
-          "to": "github-pages-docusaurus",
-          "path": "./apps/docs"
+          "to": "github-pages",
+          "path": "./apps/docs",
+          "artifact": "documentation"
         }
       ]
     }
@@ -299,12 +302,62 @@
       "name": "homebridge-adt-pulse"
     }
   },
+  "artifacts": {
+    "homebridge-adt-pulse": {
+      "build": [
+        "./apps/config-ui",
+        "./packages/homebridge-adt-pulse"
+      ],
+      "sources": [
+        {
+          "from": "./packages/homebridge-adt-pulse/build",
+          "to": "./build"
+        },
+        {
+          "from": "./apps/config-ui/build",
+          "to": "./build/config-ui/public"
+        },
+        {
+          "from": "./packages/homebridge-adt-pulse/bin",
+          "to": "./bin"
+        },
+        {
+          "from": "./packages/homebridge-adt-pulse/config.schema.json",
+          "to": "./config.schema.json"
+        },
+        {
+          "from": "./packages/homebridge-adt-pulse/package.json",
+          "to": "./package.json"
+        },
+        {
+          "from": "./packages/homebridge-adt-pulse/README.md",
+          "to": "./README.md"
+        },
+        {
+          "from": "./packages/homebridge-adt-pulse/LICENSE",
+          "to": "./LICENSE"
+        }
+      ]
+    },
+    "documentation": {
+      "build": [
+        "./apps/docs"
+      ],
+      "sources": [
+        {
+          "from": "./apps/docs/build",
+          "to": "./"
+        }
+      ]
+    }
+  },
   "ignoreFiles": {
     "./.gitignore": {
       "bundles": [
         "nova"
       ],
       "patterns": [
+        "/assets/",
         "graphify-out/"
       ]
     }
@@ -588,8 +641,8 @@
     "lockStepVersioning": true,
     "runWorkspaces": {
       "cache": {
-        "directory": "./node_modules/.cache/nova/run-workspaces",
         "enabled": true,
+        "directory": "./node_modules/.cache/nova/run-workspaces",
         "scripts": [
           "build",
           "check"

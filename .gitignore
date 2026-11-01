@@ -9,10 +9,14 @@
 ################
 build/
 coverage/
+dist/
+out/
+.output/
 local.properties
 .env
 .env.*
 !.env.sample
+!.env.*.sample
 
 ##################################
 #### Operating System - Linux ####
@@ -65,6 +69,7 @@ $RECYCLE.BIN/
 #### IDE - JetBrains ####
 #########################
 .idea/
+*.iml
 
 #############################
 #### IDE - Swift / Xcode ####
@@ -73,12 +78,28 @@ xcuserdata/
 DerivedData/
 .build/
 .swiftpm/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+*.xccheckout
+*.xcscmblueprint
+*.xcuserstate
 *.xcresult
 *.moved-aside
 *.hmap
 *.ipa
 *.dSYM.zip
 *.dSYM
+
+###################
+#### IDE - Vim ####
+###################
+*.swp
 
 ##################################
 #### IDE - Visual Studio Code ####
@@ -106,10 +127,20 @@ package-lock.json
 __pycache__/
 *.pyc
 
+#########################
+#### Language - Rust ####
+#########################
+target/
+
 ###############################
 #### Language - TypeScript ####
 ###############################
 *.tsbuildinfo
+
+###########################
+#### Framework - Astro ####
+###########################
+.astro/
 
 ################################
 #### Framework - Docusaurus ####
@@ -120,6 +151,22 @@ __pycache__/
 #### Framework - Next.js ####
 #############################
 .next/
+next-env.d.ts
+
+############################
+#### Framework - Svelte ####
+############################
+.svelte-kit/
+
+############################
+#### Platform - Android ####
+############################
+captures/
+.externalNativeBuild/
+.cxx/
+*.jks
+*.keystore
+keystore.properties
 
 #############################
 #### Tooling - AI Agents ####
@@ -146,6 +193,7 @@ docs/superpowers/
 #### Tooling - Gradle ####
 ##########################
 .gradle/
+.kotlin/
 *.class
 
 ########################
@@ -153,6 +201,11 @@ docs/superpowers/
 ########################
 *.nova-backup
 *.nova-backup.*
+
+########################
+#### Tooling - Vite ####
+########################
+.vite/
 
 ###################################
 #### Web Hosting - AWS Amplify ####
@@ -171,6 +224,7 @@ src/aws-exports.js
 ##########################################
 #### Web Hosting - Cloudflare Workers ####
 ##########################################
+.dev.vars*
 .wrangler/
 worker-configuration.d.ts
 
@@ -181,7 +235,13 @@ worker-configuration.d.ts
 .firebaserc
 firebase-debug.log
 
+##############################
+#### Web Hosting - Vercel ####
+##############################
+.vercel/
+
 ##########################
 #### Project Excludes ####
 ##########################
+/assets/
 graphify-out/

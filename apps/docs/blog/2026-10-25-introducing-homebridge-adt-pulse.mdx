@@ -1,0 +1,65 @@
+---
+title: "Introducing Homebridge ADT Pulse: Your Alarm in Apple Home"
+description: Homebridge ADT Pulse is a verified Homebridge plugin that lets you arm and disarm your ADT Pulse system and view sensor status in the Home app.
+slug: introducing-homebridge-adt-pulse
+authors:
+  - mrjackyliang
+keywords:
+  - homebridge adt pulse
+  - adt pulse
+  - homekit
+  - homebridge plugin
+  - security system
+  - apple home
+tags:
+  - announcement
+  - homekit
+  - homebridge
+---
+
+ADT Pulse doesn't work with HomeKit, so your security system is missing from the Apple Home app. You can't arm or disarm it there, and you can't see what its sensors report.
+
+Homebridge ADT Pulse is my answer: a verified Homebridge plugin that brings your ADT Pulse security panel and sensors into the Home app.
+
+{/* truncate */}
+
+## Why I Built It
+
+ADT Pulse has no official API either. The only way in is the ADT Pulse Web Portal, which is built for browsers, guarded by two-factor authentication, and subject to unannounced changes.
+
+I wanted ADT Pulse customers to have their system in the Home app anyway, so I released version 1.0.0 in 2019. The plugin signs in to the portal the way a real browser does, keeps the session alive, and turns the panel and sensor states into HomeKit accessories.
+
+## What It Does
+
+Homebridge ADT Pulse is for ADT Pulse customers in the United States and Canada who run Homebridge. Once it's set up, you get:
+
+- **Full panel control** — Arm Away, Arm Stay, Arm Night, and Disarm from the Home app. Arm Night works even though the ADT Pulse Web Portal and mobile app don't offer it.
+- **Nine sensor types** — Carbon monoxide, door/window, fire, flood, glass break, heat, motion, shock, and temperature sensors appear as read-only accessories.
+- **An Alarm Ringing switch** — Silence a ringing alarm from the Home app, or remove the switch through advanced options if you don't need it.
+- **Accessories that stay put** — You list each sensor by name, zone, and type, so portal irregularities can't silently remove them.
+
+The plugin doesn't track you. When it finds a portal status it doesn't recognize, it reports the details to me so I can add support, and [Detection and Privacy](/docs/operations/detection-and-privacy/) explains what's sent and what's redacted.
+
+## How You Set It Up
+
+After you install the plugin, the rest happens in the Homebridge Config UI:
+
+1. Open the plugin's configuration screen and run the setup wizard.
+2. Sign in to the ADT Pulse Web Portal through the wizard, then complete the SMS or email verification.
+3. Add each sensor you want in the Home app, using the name, zone, and device type shown on the portal's "System" tab.
+
+The wizard creates the device fingerprint that ADT's two-factor sign-in requires and registers a trusted device, so the plugin can sign in without asking for a code each time. Restart Homebridge afterward so the plugin picks up your settings.
+
+## Try It
+
+Search for `adt-pulse` in the Homebridge Config UI, or install the plugin with npm:
+
+```bash
+npm install homebridge-adt-pulse
+```
+
+:::info
+Version 3.5.6 is the current release. It needs Homebridge 1.11 through 2.x on Node.js 22 or 24, plus an ADT Pulse account subscribed in the United States or Canada.
+:::
+
+Head to [Installation](/docs/getting-started/installation/) for the full walkthrough, then [Sensors and Zones](/docs/configuration/sensors-and-zones/) to match each sensor with the portal.

@@ -44,50 +44,136 @@ jobs:
           fetch-depth: 0
 
       - name: "Setup Node.js"
-        uses: "actions/setup-node@v6"
+        uses: "actions/setup-node@v7"
         with:
           node-version-file: "${{ env.ROOT_DIR }}/package.json"
           package-manager-cache: false
 
       - name: "Install packages"
-        run: |
-          corepack enable npm
-          npm install
+        run: "npm install"
         working-directory: "${{ env.ROOT_DIR }}"
 
       - name: "Check project"
         run: |
-          npm run check
+          npm run check -- --workspace homebridge-adt-pulse-app-config-ui --workspace homebridge-adt-pulse --workspace homebridge-adt-pulse-docs
         working-directory: "${{ env.ROOT_DIR }}"
 
       - name: "Build project"
         run: |
-          npm run build:workspaces -- --workspace homebridge-adt-pulse-app-config-ui --workspace homebridge-adt-pulse-docs --workspace homebridge-adt-pulse
+          npm run build -- --workspace homebridge-adt-pulse-app-config-ui --workspace homebridge-adt-pulse --workspace homebridge-adt-pulse-docs --artifact homebridge-adt-pulse --artifact documentation
         working-directory: "${{ env.ROOT_DIR }}"
 
-      - name: "Upload build artifacts (npm/packages-homebridge-adt-pulse)"
-        uses: "actions/upload-artifact@v7"
-        with:
-          name: "build-npm-packages-homebridge-adt-pulse"
-          retention-days: 1
-          path: |
-            packages/homebridge-adt-pulse/build
+      - name: "Validate build artifacts"
+        run: |
+          set -euo pipefail
 
-      - name: "Upload build artifacts (github-packages/packages-homebridge-adt-pulse)"
-        uses: "actions/upload-artifact@v7"
-        with:
-          name: "build-github-packages-packages-homebridge-adt-pulse"
-          retention-days: 1
-          path: |
-            packages/homebridge-adt-pulse/build
+          ALLOWED_ROOT="${{ github.workspace }}"
+          ALLOWED_ROOT="$(realpath "$ALLOWED_ROOT")"
+          cd "$ALLOWED_ROOT"
 
-      - name: "Upload build artifacts (github-pages-docusaurus/apps-docs)"
+          validate_artifact_root() {
+            local artifact_root="$1"
+            local candidate
+            local candidate_parent
+            local first_file
+            local relative_candidate
+            local resolved_candidate
+            local resolved_root
+
+            if [ ! -e "$artifact_root" ] && [ ! -L "$artifact_root" ]; then
+              echo "Artifact root does not exist: $artifact_root" >&2
+              exit 1
+            fi
+
+            if ! resolved_root="$(realpath "$artifact_root")"; then
+              echo "Artifact root cannot be resolved: $artifact_root" >&2
+              exit 1
+            fi
+
+            case "$resolved_root" in
+              "$ALLOWED_ROOT"|"$ALLOWED_ROOT"/*) ;;
+              *)
+                echo "Artifact root escapes its allowed boundary: $artifact_root -> $resolved_root" >&2
+                exit 1
+                ;;
+            esac
+
+            while IFS= read -r -d '' candidate; do
+              if ! resolved_candidate="$(realpath "$candidate")"; then
+                echo "Artifact contains a broken symlink: $candidate" >&2
+                exit 1
+              fi
+
+              case "$resolved_candidate" in
+                "$resolved_root"|"$resolved_root"/*) ;;
+                *)
+                  echo "Artifact symlink escapes its root: $candidate -> $resolved_candidate" >&2
+                  exit 1
+                  ;;
+              esac
+
+              candidate_parent="$(realpath "$(dirname "$candidate")")"
+
+              case "$candidate_parent/" in
+                "$resolved_candidate"/*)
+                  echo "Artifact contains a recursive symlink: $candidate -> $resolved_candidate" >&2
+                  exit 1
+                  ;;
+              esac
+            done < <(find -H "$artifact_root" -type l -print0)
+
+            while IFS= read -r -d '' candidate; do
+              if [ "$candidate" = "$artifact_root" ]; then
+                relative_candidate="$(basename "$candidate")"
+              else
+                relative_candidate="${candidate#"$artifact_root"/}"
+              fi
+
+              case "/$relative_candidate" in
+                */.env|*/.env.*|*/.npmrc|*/.netrc|*/.ssh|*/.ssh/*|*/.aws|*/.aws/*|*/.git|*/.git/*)
+                  echo "Artifact contains a sensitive hidden path: $candidate" >&2
+                  exit 1
+                  ;;
+              esac
+            done < <(find -H "$artifact_root" -print0)
+
+            if [ -d "$artifact_root" ]; then
+              if ! first_file="$(find -L "$artifact_root" -type f -print -quit)"; then
+                echo "Artifact root could not be traversed safely: $artifact_root" >&2
+                exit 1
+              fi
+            else
+              first_file="$resolved_root"
+            fi
+
+            if [ -z "$first_file" ]; then
+              echo "Artifact root contains no files: $artifact_root" >&2
+              exit 1
+            fi
+          }
+
+          validate_artifact_root "build/homebridge-adt-pulse"
+          validate_artifact_root "build/documentation"
+
+      - name: "Upload assembled artifact (homebridge-adt-pulse)"
         uses: "actions/upload-artifact@v7"
         with:
-          name: "build-github-pages-docusaurus-apps-docs"
+          name: "artifact-homebridge-adt-pulse"
           retention-days: 1
+          include-hidden-files: true
+          if-no-files-found: "error"
           path: |
-            apps/docs/build
+            build/homebridge-adt-pulse
+
+      - name: "Upload assembled artifact (documentation)"
+        uses: "actions/upload-artifact@v7"
+        with:
+          name: "artifact-documentation"
+          retention-days: 1
+          include-hidden-files: true
+          if-no-files-found: "error"
+          path: |
+            build/documentation
 
   publish-npm-packages-homebridge-adt-pulse:
     needs: "build"
@@ -101,7 +187,7 @@ jobs:
         uses: "actions/checkout@v7"
 
       - name: "Setup Node.js"
-        uses: "actions/setup-node@v6"
+        uses: "actions/setup-node@v7"
         with:
           node-version-file: "${{ env.ROOT_DIR }}/package.json"
           package-manager-cache: false
@@ -118,8 +204,8 @@ jobs:
       - name: "Download build artifacts"
         uses: "actions/download-artifact@v8"
         with:
-          name: "build-npm-packages-homebridge-adt-pulse"
-          path: "./packages/homebridge-adt-pulse/build"
+          name: "artifact-homebridge-adt-pulse"
+          path: "build/homebridge-adt-pulse"
 
       - name: "Configure authentication"
         env:
@@ -148,7 +234,7 @@ jobs:
             echo "[Publish] Dry run."
             npm publish --dry-run
           fi
-        working-directory: "./packages/homebridge-adt-pulse"
+        working-directory: "build/homebridge-adt-pulse"
 
   publish-github-packages-packages-homebridge-adt-pulse:
     needs: "build"
@@ -163,13 +249,13 @@ jobs:
         uses: "actions/checkout@v7"
 
       - name: "Setup Node.js"
-        uses: "actions/setup-node@v6"
+        uses: "actions/setup-node@v7"
         with:
           node-version-file: "${{ env.ROOT_DIR }}/package.json"
           package-manager-cache: false
 
       - name: "Configure registry for GitHub Packages"
-        uses: "actions/setup-node@v6"
+        uses: "actions/setup-node@v7"
         with:
           node-version-file: "${{ env.ROOT_DIR }}/package.json"
           package-manager-cache: false
@@ -187,8 +273,8 @@ jobs:
       - name: "Download build artifacts"
         uses: "actions/download-artifact@v8"
         with:
-          name: "build-github-packages-packages-homebridge-adt-pulse"
-          path: "./packages/homebridge-adt-pulse/build"
+          name: "artifact-homebridge-adt-pulse"
+          path: "build/homebridge-adt-pulse"
 
       - name: "Change to scoped package name"
         run: |
@@ -209,7 +295,7 @@ jobs:
           else
             echo "[Scope] Already scoped. No changes needed."
           fi
-        working-directory: "./packages/homebridge-adt-pulse"
+        working-directory: "build/homebridge-adt-pulse"
 
       - name: "Configure authentication"
         env:
@@ -227,15 +313,15 @@ jobs:
             echo "[Publish] Dry run."
             npm publish --dry-run
           fi
-        working-directory: "./packages/homebridge-adt-pulse"
+        working-directory: "build/homebridge-adt-pulse"
 
       - name: "Restore package name"
         if: "${{ always() && env.PACKAGE_NAME }}"
         run: |
           npm pkg set name="$PACKAGE_NAME"
-        working-directory: "./packages/homebridge-adt-pulse"
+        working-directory: "build/homebridge-adt-pulse"
 
-  publish-github-pages-docusaurus-apps-docs:
+  publish-github-pages-apps-docs:
     needs: "build"
     runs-on: "ubuntu-latest"
     timeout-minutes: 15
@@ -250,8 +336,8 @@ jobs:
       - name: "Download build artifacts"
         uses: "actions/download-artifact@v8"
         with:
-          name: "build-github-pages-docusaurus-apps-docs"
-          path: "./apps/docs/build"
+          name: "artifact-documentation"
+          path: "build/documentation"
 
       - name: "Check GitHub Pages status"
         run: |
@@ -273,7 +359,7 @@ jobs:
         if: "${{ env.PUBLISH == 'true' && env.PAGES_ENABLED == 'true' }}"
         uses: "actions/upload-pages-artifact@v5"
         with:
-          path: "./apps/docs/build"
+          path: "build/documentation"
 
       - name: "Deploy to GitHub Pages"
         if: "${{ env.PUBLISH == 'true' && env.PAGES_ENABLED == 'true' }}"

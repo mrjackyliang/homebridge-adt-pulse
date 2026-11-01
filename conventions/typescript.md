@@ -2,6 +2,12 @@
 
 Quotes: Single. Indentation: 2-space. File naming: kebab-case (e.g., `markdown-table.ts`, `cli-header.d.ts`).
 
+This document is the human-readable source of truth for Nova's TypeScript and
+JavaScript style. Nova's `novaRules` ESLint preset mechanically enforces the
+applicable source rules, while `registerTypeDeclarationSuite` enforces the
+source-to-`.d.ts` contract. Rules that require architectural judgment remain
+review conventions rather than claims of automatic enforcement.
+
 ## Documentation Style
 
 - Comment syntax: `/** */`
@@ -9,6 +15,9 @@ Quotes: Single. Indentation: 2-space. File naming: kebab-case (e.g., `markdown-t
 - Param format: `@param {TypeName} name - Name.` (description matches the parameter name, capitalized, with a trailing period)
 - Return format: `@returns {TypeName}`
 - Include `@private` tag for private members.
+- Every documentable class, function, method, field, enum, interface, type, and function-valued constant requires a leading JSDoc block. Declaration mirrors in `.d.ts` files use section comments instead of per-symbol blocks.
+- After the summary and one blank line, include a 2–3 line body paragraph explaining why the declaration exists, who uses it, or when it matters. Keep each body line within 80 characters.
+- Tags use this canonical order: `@param`, `@private`, `@returns`, `@since`, `@deprecated`. Repeated tags in the same group stay adjacent; distinct groups have exactly one blank line between them.
 
 ### JSDoc `@param` Alignment
 
@@ -54,11 +63,17 @@ The example below is for the file `src/cli/utility/changelog.ts`. The class is n
 /**
  * CLI - Utility - Changelog.
  *
+ * Coordinates changelog recording and release preparation for Nova workspaces.
+ * The CLI entry point keeps release state synchronized through one workflow.
+ *
  * @since UNRELEASED
  */
 export class Runner {
   /**
    * CLI - Utility - Changelog - Run.
+   *
+   * Resolves the selected changelog mode and delegates to its implementation.
+   * Command callers use this method as the stable orchestration boundary.
    *
    * @param {Cli_Utility_Changelog_Runner_Run_Options} options - Options.
    *
@@ -72,6 +87,9 @@ export class Runner {
   /**
    * CLI - Utility - Changelog - Fetch Data.
    *
+   * Loads the release inputs needed by the active changelog operation.
+   * Keeping retrieval isolated makes orchestration failures easier to report.
+   *
    * @private
    *
    * @returns {Cli_Utility_Changelog_Runner_FetchData_Returns}
@@ -83,6 +101,9 @@ export class Runner {
 
   /**
    * CLI - Utility - Changelog - Format Line.
+   *
+   * Produces one consistently formatted line for terminal output.
+   * The helper keeps presentation details out of release orchestration.
    *
    * @param {Cli_Utility_Changelog_Runner_FormatLine_Prefix}  prefix  - Prefix.
    * @param {Cli_Utility_Changelog_Runner_FormatLine_Message} message - Message.
@@ -176,6 +197,33 @@ export type Cli_Runner_Record_SelectedCategory = EntryCategory;
 // cli/runner.ts — imports from runner.d.ts, NEVER from shared.d.ts
 import type { Cli_Runner_Record_SelectedCategory } from '@/types/cli/runner.d.ts';
 ```
+
+### Declaration Imports Are Named and Verbatim
+
+Declaration files import types through top-of-file `import type` statements.
+Do not use inline `import('...')` references, and do not rename a type imported
+from another `.d.ts` file with `as`. The imported name is already canonical.
+
+```ts
+// BAD — inline import type
+export type Cli_Runner_Options = import('@/types/shared.d.ts').Shared_Options;
+
+// BAD — canonical declaration name hidden by an alias
+import type { Shared_Options as Options } from '@/types/shared.d.ts';
+
+// GOOD — named, top-of-file, verbatim import
+import type { Shared_Options } from '@/types/shared.d.ts';
+
+export type Cli_Runner_Options = Shared_Options;
+```
+
+### Source and Declaration Section Coverage
+
+Every source section that uses named types has a corresponding section in its
+mirror `.d.ts` file, and every mirror section maps back to a real source
+section. Removing or renaming a class, method, function, function-valued
+constant, or `(string, fn)` scope requires updating its declaration section in
+the same change.
 
 ### Type Ordering in `.d.ts` Files
 
@@ -814,18 +862,18 @@ selectedCategory = matchedCategory;
 
 Groups separated by a blank line, alphabetical within each group. Specifiers within each `import { ... }` must also be alphabetical.
 
-1. Node built-ins (e.g., `child_process`, `fs`, `os`, `path`) — detected by name, `node:` prefix not required
+1. Node built-ins (e.g., `node:child_process`, `node:fs`, `node:os`, `node:path`) — always use the `node:` protocol
 2. Third-party packages (e.g., `chalk`, `prompts`)
 3. Local imports (e.g., `@/lib/utility`, `@/toolkit/logger`)
 4. `import type` from Node built-ins
 5. `import type` from third-party
 6. `import type` from local (`@/`, `./`, `../`)
 
-Type imports maintain the same node → third-party → local sub-ordering as regular imports. In practice, `.ts` source files only have group 6 (type imports from local `@/types/...`). Groups 4 and 5 only appear in `.d.ts` files (e.g., `import type { Dirent } from 'fs'`).
+Type imports maintain the same node → third-party → local sub-ordering as regular imports. In practice, `.ts` source files only have group 6 (type imports from local `@/types/...`). Groups 4 and 5 only appear in `.d.ts` files (e.g., `import type { Dirent } from 'node:fs'`).
 
 ```ts
-import { promises as fs } from 'fs';
-import { resolve } from 'path';
+import { promises as fs } from 'node:fs';
+import { resolve } from 'node:path';
 
 import chalk from 'chalk';
 import prompts from 'prompts';
@@ -878,11 +926,11 @@ When a named import conflicts with a local variable, keep the import name unchan
 
 ```ts
 // BAD — namespace import when named exports are available
-import * as path from 'path';
+import * as path from 'node:path';
 path.resolve(process.cwd(), 'config.json');
 
 // GOOD — named import (tree-shakeable)
-import { resolve } from 'path';
+import { resolve } from 'node:path';
 resolve(process.cwd(), 'config.json');
 
 // GOOD — import keeps its name, local variable gets `current` prefix
@@ -946,7 +994,7 @@ export class Runner {
 
 Instance (per-caller state) — file `src/toolkit/markdown-table.ts`:
 ```ts
-export default class Runner {
+class Runner {
   readonly #headers: Toolkit_MarkdownTable_Runner_Constructor_Headers;
 
   public constructor(headers: ..., options?: ...) {
@@ -955,6 +1003,8 @@ export default class Runner {
 
   public addRow(row: ...): ... { }
 }
+
+export default Runner;
 // Called as (consumer aliases the default import to a domain-specific local name):
 // import MarkdownTable from '@/toolkit/markdown-table.js';
 // new MarkdownTable(headers).addRow(row);
@@ -995,10 +1045,13 @@ static #populated: boolean = false;
 
 ### Export Rules
 
-- `export default class` — public API classes (barrel indexes, package `exports`).
 - `export class` — internal classes.
 - Default to `export class` (named export) — this is the preference.
-- `export default class` only for public API classes — so consumers can choose named or default import style. It's an accommodation, not a preference.
+- Public API classes may use a standalone `export default Runner;` at the end
+  of the file when a default export is part of the package contract.
+- Never attach a declaration directly to `export default`. Declare the class,
+  function, or value first, then export it in a separate statement at the
+  bottom.
 
 ### Method Ordering
 
@@ -1089,7 +1142,9 @@ private static validate(value: string | number): ValidateReturns {
 
 ### No Rest Parameters
 
-List function parameters explicitly. Rest parameters (`...args`) obscure the expected inputs and bypass arity checks. Variadic utility functions (e.g., logging wrappers) are an acceptable exception.
+List function parameters explicitly. Rest parameters (`...args`) obscure the
+expected inputs and bypass arity checks. Nova's shared preset has no allow list,
+so there are no source-level exceptions.
 
 ```ts
 // BAD — rest parameters
@@ -1112,9 +1167,12 @@ Reflect.set(target, key, value);
 target[key] = value;
 ```
 
-### Dot Notation for Method Calls
+### Property and Method Access
 
-Don't call methods using bracket notation with static string keys. Use dot notation for readability. Bracket notation for property *reads* on `Record`/plain objects is fine — this applies only to method *calls*.
+Use bracket notation for project-defined plain-object property reads. Use dot
+notation for class instances, built-in or third-party declarations, and method
+calls. Dynamic keys remain computed. Assign dynamic properties with
+`Reflect.set()` rather than bracket assignment.
 
 ```ts
 // BAD — bracket notation for method call
@@ -1130,6 +1188,9 @@ obj[methodName]();
 
 // OK — bracket notation for property reads on Record/plain objects
 const configItems = config['items'] as Runner_Filter_Items;
+
+// GOOD — project-defined plain-object property read
+const workspaceName = workspaceConfig['name'];
 ```
 
 ### No Exponentiation Operator
@@ -1148,7 +1209,8 @@ value = Math.pow(value, 10);
 
 ### No Binary, Octal, or Hexadecimal Literals
 
-Use `parseInt()` with an explicit radix instead of numeric literal prefixes. Hex literals for color codes, bit masks, and hardware registers are an acceptable exception.
+Use `parseInt()` with an explicit radix instead of numeric literal prefixes.
+Nova's shared preset disables binary, octal, and hexadecimal exceptions.
 
 ```ts
 // BAD
@@ -1322,9 +1384,12 @@ rawPaths.map((rawPath) => ...)
 allowedPolicies.map((allowedPolicy) => ...)
 ```
 
-### No Destructuring in Callback Parameters
+### No Destructuring
 
-Use the singular of the collection as the param, then access via index inside a block body with intermediate constants.
+Do not destructure variable declarations, assignments, function parameters,
+callback parameters, or `for...of` loop variables. Use the singular of the
+collection as the parameter or loop variable, then access its members through
+named intermediate constants.
 
 ```ts
 // BAD — destructuring in callback param
@@ -1345,15 +1410,18 @@ validCategories.find(
 )
 ```
 
-Note: `for...of` destructuring is used with `Object.entries()` (which returns tuples), but NOT with Maps. For Maps, use `entry[0]`/`entry[1]` pattern:
+The same rule applies to tuples from `Object.entries()` and Maps:
 ```ts
-// GOOD — Object.entries() destructuring (returns tuples)
+// BAD — destructuring in any for...of loop
 for (const [key, entry] of Object.entries(schedule)) { ... }
-
-// BAD — Map destructuring
 for (const [categoryName, categoryItems] of grouped) { ... }
 
-// GOOD — Map iteration without destructuring
+// GOOD — explicit tuple access
+for (const scheduleEntry of Object.entries(schedule)) {
+  const scheduleEntryKey = scheduleEntry[0];
+  const scheduleEntryValue = scheduleEntry[1];
+}
+
 for (const entry of grouped) {
   const entryCategory = entry[0];
   const entryItems = entry[1];
@@ -1383,6 +1451,9 @@ const eligibleConfigPolicy = eligibleConfig.policy;
 
 - **Block body** (`=> { ... return; }`): When accessing properties/elements of the callback param, or when multiple statements needed.
 - **Expression body** (`=> value`): When the callback is a direct comparison or single method call on a primitive.
+
+Concise arrow bodies may contain at most two chained calls and one nested arrow.
+Anything more complex uses a block body even when it could fit on one line.
 
 ```ts
 // Block body — accessing tuple elements, multiple properties
@@ -1485,7 +1556,10 @@ return items.filter((item) => {
 
 ### Explicit `return;` in Void Functions
 
-Every void function and method must end with an explicit `return;` statement. Arrow function callbacks, constructors, and setters are acceptable exceptions.
+Every non-empty block-bodied function or method that does not return a value
+must end with an explicit `return;` statement. This includes arrow callbacks,
+constructors, and setters. Empty bodies and concise arrows have no trailing
+statement and are therefore exempt.
 
 ```ts
 // BAD — implicit return
@@ -1652,10 +1726,12 @@ Use `Promise.all` for parallel execution. Cleaner than separate task variables, 
 // GOOD — Promise.all
 const packageJsonPath = resolve(process.cwd(), 'package.json');
 
-const [data, packageJsonRaw] = await Promise.all([
+const results: Runner_Run_Results = await Promise.all([
   Runner.fetchData(),
   fs.readFile(packageJsonPath, 'utf-8'),
 ]);
+const data: Runner_Run_Data = results[0];
+const packageJsonRaw: Runner_Run_PackageJsonRaw = results[1];
 
 // BAD — .then() chains (hard to read)
 // BAD — separate task variables (dangling promises on rejection)
@@ -1721,7 +1797,8 @@ const text = lines.join('\n');
 
 ### No `javascript:` URLs
 
-Disallow `javascript:` URLs. Legacy anchor elements that must prevent navigation without `href="#"` may use `javascript:void(0)` as an acceptable exception.
+Disallow every `javascript:` URL. Nova's shared preset has no allowed patterns.
+Use a button for actions or a real route for navigation.
 
 ```ts
 // BAD
@@ -1774,6 +1851,51 @@ const LIB_REGEX_PATTERN_DIGITS = /\d+/g;
 const LIB_REGEX_PATTERN_DIGITS = /\d+/;
 const allDigits = new RegExp(LIB_REGEX_PATTERN_DIGITS, 'g');
 ```
+
+## Mechanical Enforcement Map
+
+The convention explains intent; these registries define what Nova currently
+checks. Keep this map synchronized with `novaRules` and
+`registerTypeDeclarationSuite`. Adding, removing, or renaming an enabled rule
+requires updating this document in the same change.
+
+### Nova ESLint Rules
+
+| Area                       | Enabled rules                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+|----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Control flow and patterns  | `@cbnventures/nova/no-assign-then-return`, `@cbnventures/nova/no-await-in-loop`, `@cbnventures/nova/no-boolean-var-for-if`, `@cbnventures/nova/no-use-before-define`, `@cbnventures/nova/require-explicit-return`, `@cbnventures/nova/switch-case-blocks`                                                                                                                                                                                                                       |
+| Object and call access     | `@cbnventures/nova/no-bracket-assignment`, `@cbnventures/nova/no-bracket-method-call`, `@cbnventures/nova/require-bracket-property-access`                                                                                                                                                                                                                                                                                                                                      |
+| TypeScript contracts       | `@cbnventures/nova/no-catch-unknown-annotation`, `@cbnventures/nova/no-explicit-any`, `@cbnventures/nova/no-inline-type-annotation`, `@cbnventures/nova/no-shared-type-import`, `@cbnventures/nova/require-type-naming`, `@cbnventures/nova/require-undefined-init`                                                                                                                                                                                                             |
+| Syntax and safety          | `@cbnventures/nova/no-default-export-declaration`, `@cbnventures/nova/no-destructuring`, `@cbnventures/nova/no-implicit-boolean`, `@cbnventures/nova/no-numeric-literals`, `@cbnventures/nova/no-optional-chaining`, `@cbnventures/nova/no-rest-params`, `@cbnventures/nova/no-script-url`                                                                                                                                                                                      |
+| Formatting and readability | `@cbnventures/nova/no-complex-arrow-concise`, `@cbnventures/nova/no-multiline-strings`, `@cbnventures/nova/no-raw-text-in-code`, `@cbnventures/nova/no-template-curly-in-string`, `@cbnventures/nova/no-ternary-in-template-literal`, `@cbnventures/nova/require-import-order`, `@cbnventures/nova/require-multiline-condition-groups`, `@cbnventures/nova/require-multiline-conditions`, `@cbnventures/nova/require-padding-lines`, `@cbnventures/nova/require-ternary-parens` |
+| JSDoc                      | `@cbnventures/nova/require-jsdoc-body`, `@cbnventures/nova/require-jsdoc-hierarchy`, `@cbnventures/nova/require-jsdoc-param-alignment`, `@cbnventures/nova/require-jsdoc-param-name`, `@cbnventures/nova/require-jsdoc-presence`, `@cbnventures/nova/require-jsdoc-private`, `@cbnventures/nova/require-jsdoc-returns`, `@cbnventures/nova/require-jsdoc-since`, `@cbnventures/nova/require-jsdoc-tag-order`                                                                    |
+| Naming and modules         | `@cbnventures/nova/require-hash-private`, `@cbnventures/nova/require-kebab-case-filename`, `@cbnventures/nova/require-naming-convention`, `@cbnventures/nova/require-node-protocol`                                                                                                                                                                                                                                                                                             |
+| Nova-specific diagnostics  | `@cbnventures/nova/no-logger-dev`                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| Regular expressions        | `@cbnventures/nova/no-regex-literal-flags`, `@cbnventures/nova/no-regex-literals`                                                                                                                                                                                                                                                                                                                                                                                               |
+
+`@cbnventures/nova/no-raw-text-in-code` applies to MDX rather than TypeScript
+syntax, but remains listed because it is part of the same enabled preset.
+
+### Vitest Type-Declaration Inspectors
+
+| Toggle                                   | Contract                                                                  |
+|------------------------------------------|---------------------------------------------------------------------------|
+| `inspector-cross-section-references`     | Declaration sections only reference their own or imported types.          |
+| `inspector-dts-import-verbatim`          | Types imported from `.d.ts` files keep their canonical names.             |
+| `inspector-no-inline-import-types`       | Declaration files use top-of-file named type imports.                     |
+| `inspector-section-alphabetical`         | Declaration sections remain alphabetical.                                 |
+| `inspector-first-come-first-serve-order` | Types inside a section follow first use in source.                        |
+| `inspector-object-property-types`        | Object properties use earlier parent-prefixed named types.                |
+| `inspector-section-coverage`             | Source and declaration sections cover one another in both directions.     |
+| `inspector-variable-type-symmetry`       | Parameters, returns, and body variables use their mirrored named aliases. |
+| `inspector-identifier-vs-filename`       | Top-level identifiers do not duplicate the file name.                     |
+| `inspector-filename-validation`          | Source and declaration paths follow the supported naming grammar.         |
+| `inspector-standalone-type-files`        | Shared declarations follow the standalone type-file rules.                |
+
+Nova's other Vitest suites validate repository contracts such as environment
+variables, frontmatter, links, Markdown tables, package scripts, and
+terminology. They are intentionally documented in their own convention or rule
+pages instead of being presented as TypeScript language rules.
 
 ## TSConfig Conventions
 

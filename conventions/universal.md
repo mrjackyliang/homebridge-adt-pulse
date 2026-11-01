@@ -4,9 +4,20 @@ Rules that apply across all programming languages and platforms.
 
 ## AI Agent Behavior
 
+### Supported Agents
+
+Nova officially supports Claude Code and Codex. Follow the shared rules in this
+file on both platforms, then apply the explicitly labeled platform instructions
+when their tools or interaction models differ.
+
+Other coding agents may use these conventions, but they must translate the
+Claude Code and Codex instructions to their closest supported capabilities.
+
 ### Task Tracking
 
-Every top-level user request must be tracked as a task. Break multi-step requests into discrete sub-tasks. Mark each task as in-progress before starting and completed when done.
+Every top-level user request must be tracked as a task. Break multi-step requests
+into discrete sub-tasks. Mark each task as in progress before starting and
+completed when done.
 
 **Claude Code:**
 
@@ -17,13 +28,63 @@ Every top-level user request must be tracked as a task. Break multi-step request
 | `TaskList`   | List all tasks to find the next available work.                            |
 | `TaskUpdate` | Update status (`pending` / `in_progress` / `completed`), add dependencies. |
 
-**Codex CLI / Cursor / Other agents:**
+**Codex:**
 
-If your platform does not provide dedicated task tracking tools, maintain a checklist in your working memory or output. State what you are about to do before starting and confirm completion before moving on.
+| Tool / command | Purpose                                                                                      |
+|----------------|----------------------------------------------------------------------------------------------|
+| `update_plan`  | Create and maintain the current task's ordered steps and their progress.                     |
+| `create_goal`  | Start a persistent goal after the user explicitly requests Goal mode.                        |
+| `get_goal`     | Read the active goal's objective, status, budget, and progress.                              |
+| `update_goal`  | Complete an achieved goal, pause it when requested, or report a repeated blocking condition. |
+| `/plan`        | Let the user request investigation and planning before implementation.                       |
+| `/goal`        | Let the user start or inspect a persistent objective.                                        |
+| `/goal pause`  | Let the user pause the active goal.                                                          |
+| `/goal resume` | Let the user resume a paused goal.                                                           |
+| `/goal clear`  | Let the user remove the active goal.                                                         |
+
+Use `update_plan` for ordinary multi-step work when the tool is available. Use a
+persistent goal only when the user explicitly requests one or invokes `/goal`;
+do not create a goal for a one-off edit.
+
+**Unsupported agents:**
+
+Use the platform's closest task-tracking equivalent. If none exists, maintain a
+checklist in progress updates. State what is about to happen and confirm each
+completed checkpoint before moving on.
+
+### Scope Confirmation
+
+Confirm the understood scope and intended approach before acting on every user
+request. If the user already explicitly requested implementation, this
+confirmation is a progress update, not a second approval gate. Wait only when an
+unresolved decision would materially change the result or requires authority the
+user has not granted.
+
+Honor the platform's active permission mode. Auto or auto-accept modes allow
+explicitly authorized work to continue without repeated approval prompts; they
+do not expand the user's requested scope.
+
+### Working Copy and Authorization
+
+Inspect the working copy before material edits. Preserve unrelated user changes,
+including uncommitted and untracked files, and never revert or reformat them as
+part of another task.
+
+Do not commit, tag, push, publish, deploy, delete material data, or mutate an
+external system unless the user explicitly authorizes that action. Resolve exact
+targets with read-only checks before any destructive operation.
 
 ### Command Output Caching
 
-When a command produces output that may be referenced later, save it to a file in the agent's designated temporary directory. Read from the cached file instead of re-running the command. Do not rely on conversation memory for command output — files survive context compaction.
+Cache command output when it is expensive to reproduce, nondeterministic,
+crash-prone, likely to be truncated, or needed after a pause or context
+compaction. Examples include long builds, virtual-machine runs, crash logs,
+repository-wide audits, and release verification.
+
+Store cached output in a task-specific temporary directory, read from that file
+instead of rerunning the command, and remove it when the evidence is no longer
+needed. Do not cache trivial commands such as `pwd`, `git status`, or small
+searches.
 
 ### File Writes
 
@@ -33,7 +94,11 @@ Reading files via the shell (`cat`, `head`, `tail`, `grep`, `rg`) is fine. The r
 
 ### Command Transparency
 
-Run commands from explicit, full directory paths so every invocation is unambiguous. Prefix commands with `cd` to the target directory so the working directory is visible in the output.
+Run shell commands from explicit, full directory paths so every invocation is
+unambiguous. Prefix shell commands with `cd` to the absolute target directory so
+the working directory is visible in the output. When a native tool exposes a
+dedicated working-directory field instead of a shell, set that field and report
+the directory in the progress update.
 
 ```bash
 # BAD — ambiguous which workspace
@@ -43,15 +108,26 @@ npm run build
 cd /path/to/packages/nova && npm run build
 ```
 
-### Web Browser Debugging
+### Browser and UI Work
 
-For visual testing and web page interaction, prefer the Claude-in-Chrome MCP tools (`mcp__claude-in-chrome__*` — `tabs_*`, `navigate`, `javascript_tool`, `read_page`, `read_console_messages`, etc.) when available. They drive the user's real Chrome session and provide richer page inspection.
+Use the narrowest available capability before general computer control.
 
-If the Claude-in-Chrome MCP is not available, fall back to Vercel's `agent-browser` command for headless rendering and interaction. Run `agent-browser --help` for available commands.
+**Claude Code:**
 
-One exception to the MCP-first preference: Claude-in-Chrome screenshots are returned inline in the conversation and cannot be written to disk. When a screenshot must be saved to a file — to attach to a commit, produce an artifact, or include in a report — use `agent-browser` to capture it even when the MCP is available.
+1. Prefer a purpose-built connector or MCP tool.
+2. Use Claude in Chrome or Desktop Preview for rendered pages and interaction.
+3. Use computer use only when a narrower tool cannot complete the task.
+4. Use `agent-browser` for headless checks or screenshots that must be saved as files.
 
-Do not use `curl`, `wget`, or other plain HTTP clients for tasks that require rendering, clicking, or inspecting a page.
+**Codex:**
+
+1. Prefer a purpose-built connector or app tool.
+2. Use the Codex in-app browser or preview for rendered pages.
+3. Use browser control or computer-use automation for interaction.
+4. Use available headless browser tooling when those surfaces are unavailable or an artifact must be saved.
+
+On both platforms, use plain HTTP clients for API and transport checks, not for
+tasks that require rendering, clicking, visual inspection, or browser state.
 
 ### Web Research
 
@@ -74,26 +150,25 @@ When the user corrects you, state what you're actually updating, why the prior a
 ### Scope
 
 - **Only apply version and changelog rules to user-requested product changes.** Process-only edits, tooling updates, and non-product changes do not trigger version bumps or changelog entries.
-- **Confirm your understanding before making changes.** For each user request, state exactly what you understood and what you plan to do before starting work.
+- **Match the implementation to the requested outcome.** Do not add neighboring features, refactors, or cleanup unless they are necessary to complete the authorized task.
 
 ### Per-Change Mechanics
 
-- **Update the changelog with every change.** Add bullet points under the current version section. If the platform uses build numbers, recalculate using the bullet-count formula.
-- **Build after every change.** Run the platform build command and verify success before moving on.
+- **Use the project's changelog mechanism.** Record user-visible product changes through the repository's configured tooling. Do not manually edit generated release artifacts or infer a release format from memory.
+- **Verify every logical change.** After each approved logical change or repository batch, run proportionate focused checks and the applicable build before starting unrelated work. A multi-file implementation is one logical checkpoint, not one checkpoint per file.
 - **Do not add changelog entries for version bumps alone** or for incidental implementation fallout unless there is a clear user-visible behavior change.
 
-### Version Lifecycle
+### Version and Release Boundaries
 
-- **Keep the version unchanged while working within a release line.** Do not bump the version until the user signals a new release.
-- **Start a new version only when the working tree is clean** — all current changes committed and `git status --short` is empty.
-- **When starting a new version, ask first.** Confirm whether the bump is major, minor, or bugfix (semver). Then create a new changelog section, bump the version, and carry forward the prior build number.
-- **Do not commit a version bump by itself.** Keep version bump changes in the working copy until at least one user-requested change is included. Do not run a build when only starting a new version line.
+- **Read the repository's configured strategy before changing versions.** Do not assume semver, calver, build-number behavior, workspace release roles, or version-file locations.
+- **Do not start or cut a release without explicit authorization.** A product change does not independently authorize a version bump, release cut, commit, tag, push, publication, or deployment.
+- **Keep generated release state synchronized through project tooling.** Do not hand-edit version stamps or released changelog output unless the repository explicitly documents that workflow and the user requests it.
 
 ### Wrapping Up
 
-- **Keep working until the user says "all done."** Continue executing per-change bumps and builds until explicitly told to stop.
-- **On "all done":** consolidate the changelog, recalculate the build number (if applicable), sync the version across all version files, and commit with a thematic subject line listing 3-5 themes in imperative form (e.g. `Add reconnect action, bandwidth polish, persistent TOTP lockout, and docs screenshots`). Do not use the version number as the subject (no `1.2.0 (295)` style); the version pointer lives in the tag, not the subject. Do not add co-author credits.
-- **Keep version numbers and CHANGELOG.md synchronized** at all times before commit.
+- **Continue until the requested outcome is genuinely complete.** Stop at explicit user review, approval, or manual-intervention boundaries.
+- **Report evidence.** Summarize the changed files, checks and builds run, unresolved issues, and any manual action that remains.
+- **Do not infer commit authorization from completion.** Prepare a commit message or release notes when requested, but leave repository and remote state unchanged unless the user explicitly asks for the corresponding action.
 
 ## General Code Style
 
@@ -111,6 +186,8 @@ When the user corrects you, state what you're actually updating, why the prior a
 | Language                | Quotes                           | Indentation |
 |-------------------------|----------------------------------|-------------|
 | TypeScript / JavaScript | Single                           | 2-space     |
+| Go                      | Double (string literals)         | Tabs        |
+| Rust                    | Double (string literals)         | 4-space     |
 | Swift                   | Double (only option)             | 4-space     |
 | Java                    | Double (only option)             | 4-space     |
 | Kotlin                  | Double (only option)             | 4-space     |
@@ -123,18 +200,20 @@ When the user corrects you, state what you're actually updating, why the prior a
 
 ### File Naming
 
-| Language                | Convention                       | Example                                     |
-|-------------------------|----------------------------------|---------------------------------------------|
-| TypeScript / JavaScript | kebab-case                       | `markdown-table.ts`, `cli-header.d.ts`      |
-| Swift                   | PascalCase + role suffix         | `TunnelFormView.swift`, `TunnelModel.swift` |
-| Java                    | PascalCase matching class name   | `EntityRepository.java`                     |
-| Kotlin                  | PascalCase matching class name   | `EntityRepository.kt`                       |
-| C#                      | PascalCase matching class name   | `EntityRepository.cs`                       |
-| PHP                     | PascalCase (PSR-4) or snake_case | `EntityRepository.php`                      |
-| Python                  | snake_case (PEP 8)               | `entity_repository.py`                      |
-| CSS                     | kebab-case                       | `user-profile.css`                          |
-| Docker                  | kebab-case                       | `api-gateway.Dockerfile`                    |
-| Shell                   | kebab-case                       | `backup-config.sh`                          |
+| Language                | Convention                       | Example                                       |
+|-------------------------|----------------------------------|-----------------------------------------------|
+| TypeScript / JavaScript | kebab-case                       | `markdown-table.ts`, `cli-header.d.ts`        |
+| Go                      | lowercase snake_case             | `release_client.go`, `release_client_test.go` |
+| Rust                    | snake_case                       | `release_client.rs`                           |
+| Swift                   | PascalCase + role suffix         | `TunnelFormView.swift`, `TunnelModel.swift`   |
+| Java                    | PascalCase matching class name   | `EntityRepository.java`                       |
+| Kotlin                  | PascalCase matching class name   | `EntityRepository.kt`                         |
+| C#                      | PascalCase matching class name   | `EntityRepository.cs`                         |
+| PHP                     | PascalCase (PSR-4) or snake_case | `EntityRepository.php`                        |
+| Python                  | snake_case (PEP 8)               | `entity_repository.py`                        |
+| CSS                     | kebab-case                       | `user-profile.css`                            |
+| Docker                  | kebab-case                       | `api-gateway.Dockerfile`                      |
+| Shell                   | kebab-case                       | `backup-config.sh`                            |
 
 ## Documentation Style
 
@@ -156,73 +235,3 @@ When the user corrects you, state what you're actually updating, why the prior a
 - Members: `ClassName - MemberName.`
 - Nested types: `OuterClass.InnerClass - MemberName.`
 - Enum cases: `EnumName - CaseName.`
-
-## Platform Build Rules
-
-### Apple (Xcode)
-
-- **Version file:** `project.pbxproj` (`MARKETING_VERSION` + `CURRENT_PROJECT_VERSION`)
-- **Build number:** Yes — equals total count of changelog bullet lines across `CHANGELOG.md`
-- **Build command:** `xcodebuild build` (with project-specific scheme/destination)
-- **Changelog header:** `## X.Y.Z (build) - YYYY-MM-DD`
-
-### TypeScript / JavaScript (Node.js)
-
-- **Version file:** `package.json` `version`
-- **Build number:** No
-- **Build command:** `npm run build`
-- **Changelog header:** `## X.Y.Z - YYYY-MM-DD`
-
-### Android (Gradle)
-
-- **Version file:** `build.gradle` (`versionName` + `versionCode`)
-- **Build number:** Yes — equals total count of changelog bullet lines across `CHANGELOG.md`
-- **Build command:** `./gradlew assembleDebug`
-- **Changelog header:** `## X.Y.Z (build) - YYYY-MM-DD`
-
-### Windows (.NET)
-
-- **Version file:** `.csproj` (`Version`)
-- **Build number:** No
-- **Build command:** `dotnet build`
-- **Changelog header:** `## X.Y.Z - YYYY-MM-DD`
-
-### PHP (Composer)
-
-- **Version file:** `composer.json` `version`
-- **Build number:** No
-- **Build command:** `composer test`
-- **Changelog header:** `## X.Y.Z - YYYY-MM-DD`
-
-### Python (pip / Poetry)
-
-- **Version file:** `pyproject.toml` `version`
-- **Build number:** No
-- **Build command:** `python -m build`
-- **Changelog header:** `## X.Y.Z - YYYY-MM-DD`
-
-### Docker
-
-- **Version file:** `Dockerfile` `ARG VERSION` or none
-- **Build number:** No
-- **Build command:** `docker build .`
-- **Changelog header:** `## X.Y.Z - YYYY-MM-DD`
-
-## Release Notes Format
-
-```markdown
-## 1.2.0 - 2026-01-01
-
-### UPDATED
-- Enhanced the changelog release summary output.
-
-### FIXED
-- Fixed version bump calculation for major releases.
-
-### ADDED
-- Added dry-run mode to the release command.
-```
-
-- Use headings in this order: `### UPDATED`, `### FIXED`, `### ADDED`, `### REMOVED`.
-- Leave out any heading that has no entries.
-- Use only ASCII characters and standard US keyboard quotes.

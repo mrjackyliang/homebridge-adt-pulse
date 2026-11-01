@@ -5,7 +5,7 @@ Quotes: Double (only option). Indentation: 4-space. File naming: PascalCase matc
 ## Documentation Style
 
 - Comment syntax: `///`
-- Padding tag: `<remarks>Since v1.0.0</remarks>` (XML doc tag)
+- Padding tag: `<remarks>Since: UNRELEASED</remarks>` (XML documentation) — tag new or changed API with the sentinel; Nova stamps the real version during the workspace release, so never hand-write a version number.
 - Param format: `<param name="x">X</param>` (description matches the parameter name, capitalized, no trailing period inside XML tags)
 - Return format: `<returns>Type</returns>`
 - Blank `///` at top and bottom of every comment block.
@@ -17,13 +17,13 @@ Quotes: Double (only option). Indentation: 4-space. File naming: PascalCase matc
 ///
 /// Entity Repository.
 ///
-/// <remarks>Since v1.0.0</remarks>
+/// <remarks>Since: UNRELEASED</remarks>
 ///
 public class EntityRepository {
     ///
     /// Entity Repository - Database.
     ///
-    /// <remarks>Since v1.0.0</remarks>
+    /// <remarks>Since: UNRELEASED</remarks>
     ///
     private readonly Database _database;
 
@@ -32,7 +32,7 @@ public class EntityRepository {
     ///
     /// <param name="database">Database</param>
     ///
-    /// <remarks>Since v1.0.0</remarks>
+    /// <remarks>Since: UNRELEASED</remarks>
     ///
     public EntityRepository(Database database) { ... }
 
@@ -43,7 +43,7 @@ public class EntityRepository {
     ///
     /// <returns>Entity?</returns>
     ///
-    /// <remarks>Since v1.0.0</remarks>
+    /// <remarks>Since: UNRELEASED</remarks>
     ///
     public async Task<Entity?> FindById(Guid id) { ... }
 }

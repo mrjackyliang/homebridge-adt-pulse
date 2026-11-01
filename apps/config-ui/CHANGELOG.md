@@ -1,5 +1,10 @@
 # homebridge-adt-pulse-app-config-ui
 
+## 3.5.7 - 2026-11-01
+
+### UPDATED
+- Updated Nova to 0.38.0, added Node.js 26 support, and refreshed the setup and completion artwork with the current Homebridge ADT Pulse branding.
+
 ## 3.5.6 - 2026-10-18
 
 ### UPDATED

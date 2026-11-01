@@ -1,5 +1,17 @@
 # homebridge-adt-pulse
 
+## 3.5.7 - 2026-11-01
+
+### UPDATED
+- Updated Nova and Docusaurus Preset Nova to 0.38.0, added Node.js 26 support, and assembled the plugin, configuration UI, and documentation through verified publication artifacts.
+- Refreshed the documentation site's branding, navigation, responsive homepage, favicons, and search coverage.
+
+### FIXED
+- Corrected the documented setup-wizard availability, supported Homebridge versions, and Arm Night availability indicators.
+
+### ADDED
+- Added a searchable project blog with an introductory Homebridge ADT Pulse article and a homepage preview of recent posts.
+
 ## 3.5.6 - 2026-10-18
 
 ### UPDATED

@@ -5,7 +5,7 @@ Quotes: Double (only option). Indentation: 4-space. File naming: PascalCase + ro
 ## Documentation Style
 
 - Comment syntax: `///`
-- Padding tag: `- Since: 1.0.0` (DocC callout)
+- Padding tag: `- Since: UNRELEASED` (DocC callout; Nova stamps it during the workspace release)
 - Param format: `- Parameter name: Name.` (description matches the parameter name, capitalized, with a trailing period)
 - Return format: `- Returns: Description.`
 - Throws format: `- Throws: Description.`
@@ -18,21 +18,21 @@ Quotes: Double (only option). Indentation: 4-space. File naming: PascalCase + ro
 ///
 /// Tunnel Store.
 ///
-/// - Since: 1.0.0
+/// - Since: UNRELEASED
 ///
 @MainActor
 final class TunnelStore: ObservableObject {
     ///
     /// Tunnel Store - Managed Tunnels.
     ///
-    /// - Since: 1.0.0
+    /// - Since: UNRELEASED
     ///
     @Published private(set) var managedTunnels: [Tunnel] = []
 
     ///
     /// Tunnel Store - Constructor.
     ///
-    /// - Since: 1.0.0
+    /// - Since: UNRELEASED
     ///
     init() { ... }
 
@@ -41,14 +41,14 @@ final class TunnelStore: ObservableObject {
     ///
     /// - Parameter force: Force.
     ///
-    /// - Since: 1.0.0
+    /// - Since: UNRELEASED
     ///
     func bootstrapIfNeeded(force: Bool = false) async { ... }
 
     ///
     /// Tunnel Store - Body.
     ///
-    /// - Since: 1.0.0
+    /// - Since: UNRELEASED
     ///
     var body: some View { ... }
 }
@@ -56,13 +56,13 @@ final class TunnelStore: ObservableObject {
 ///
 /// Tunnel Status.
 ///
-/// - Since: 1.0.0
+/// - Since: UNRELEASED
 ///
 enum TunnelStatus {
     ///
     /// Tunnel Status - Active.
     ///
-    /// - Since: 1.0.0
+    /// - Since: UNRELEASED
     ///
     case active
 }

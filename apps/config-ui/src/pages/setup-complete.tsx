@@ -1,6 +1,6 @@
 import React from 'react';
 
-import CompleteLogo from '../assets/complete-logo.png';
+import CompleteLogo from '../assets/setup-complete-logo.png';
 import { styles } from '../styles/pages/setup-complete.js';
 
 import type {

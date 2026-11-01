@@ -293,6 +293,14 @@
     text-align: center;
   }
 
+  .heroContent {
+    width: 100%;
+  }
+
+  .heroContent :global(.nova-hero-eyebrow) {
+    align-self: center;
+  }
+
   .heroActions {
     justify-content: center;
   }

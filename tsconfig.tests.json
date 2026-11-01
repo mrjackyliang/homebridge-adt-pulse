@@ -6,8 +6,6 @@
     "@cbnventures/nova/presets/tsconfig/runtime-node.json"
   ],
   "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
     "types": [
       "@types/node"
     ]

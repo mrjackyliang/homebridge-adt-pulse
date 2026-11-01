@@ -24,8 +24,8 @@ FROM node
 FROM node:latest
 
 # GOOD — pinned to specific version
-FROM node:22.14.0-alpine
-FROM postgres:17.4-alpine
+FROM node:24.22.0-trixie-slim
+FROM postgres:17.11-trixie
 ```
 
 ### Multi-Stage Builds
@@ -34,14 +34,14 @@ Use named stages. Keep the final image minimal — copy only what's needed from 
 
 ```dockerfile
 # GOOD — named stages, minimal final image
-FROM node:22.14.0-alpine AS build
+FROM node:24.22.0-trixie-slim AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM node:22.14.0-alpine AS runtime
+FROM node:24.22.0-trixie-slim AS runtime
 WORKDIR /app
 COPY --from=build /app/build ./build
 COPY --from=build /app/package.json ./

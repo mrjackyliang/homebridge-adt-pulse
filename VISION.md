@@ -16,6 +16,31 @@ ADT Pulse has no official API and no HomeKit integration, so homeowners cannot c
 
 homebridge-adt-pulse is a verified Homebridge plugin that drives the ADT Pulse Web Portal like a real browser: it authenticates through the portal's 2-factor flow, keeps the session alive, and translates panel and sensor state into HomeKit accessories. A dedicated setup wizard retrieves the required device fingerprint so no external tools are needed, and explicit per-sensor configuration prevents portal irregularities from silently wiping accessories.
 
+## Product Direction
+
+No additional product-direction constraints are currently documented beyond the project purpose and existing capabilities.
+
+## Product Design
+
+The current capabilities and intended experience are described by the value proposition and key features; domain terminology is defined in the glossary.
+
+## Positioning
+
+### Differentiators
+
+| This project                                                                            | Alternatives                                                           |
+|-----------------------------------------------------------------------------------------|------------------------------------------------------------------------|
+| Controls the panel and reads sensors from the Home app via the HAP protocol             | No official ADT Pulse API or HomeKit integration exists                |
+| Setup wizard retrieves the 2FA device fingerprint for you                               | External fingerprint-extraction tools operated by hand                 |
+| Explicitly declared sensors keep accessories stable through portal irregularities       | Historical auto-detection could silently remove every sensor           |
+| Emulates a real browser session, including fabricated Dynatrace instrumentation headers | Naive scripted requests get flagged as automated clients               |
+| Debug mode activates only when Homebridge debug mode is on                              | A separate plugin debug flag users forgot to pair with Homebridge logs |
+| Undocumented portal states are auto-reported (PII redacted, no user tracking)           | Waiting for users to notice breakage and file GitHub issues            |
+
+## Risks and Future
+
+No additional risks, open questions, roadmap commitments, or success criteria are currently documented.
+
 ## Marketing Copy
 
 ### Tagline
@@ -36,17 +61,6 @@ homebridge-adt-pulse brings your ADT Pulse security system into the Apple Home a
 - **Anomaly detection with privacy redaction** - Undocumented portal statuses are reported to the plugin author so support can be added, with personally identifiable information automatically redacted.
 - **Troubleshooting scripts** - `npm run test-api` exercises the portal end to end with your own credentials; `npm run repl` opens an interactive playground over the API and auth helpers.
 
-### Differentiators
-
-| This project                                                                            | Alternatives                                                           |
-|-----------------------------------------------------------------------------------------|------------------------------------------------------------------------|
-| Controls the panel and reads sensors from the Home app via the HAP protocol             | No official ADT Pulse API or HomeKit integration exists                |
-| Setup wizard retrieves the 2FA device fingerprint for you (since v3.4.0)                | External fingerprint-extraction tools operated by hand                 |
-| Explicitly declared sensors keep accessories stable through portal irregularities       | Auto-detection (pre-v3.0.0) could silently remove every sensor         |
-| Emulates a real browser session, including fabricated Dynatrace instrumentation headers | Naive scripted requests get flagged as automated clients               |
-| Debug mode activates only when Homebridge debug mode is on                              | A separate plugin debug flag users forgot to pair with Homebridge logs |
-| Undocumented portal states are auto-reported (PII redacted, no user tracking)           | Waiting for users to notice breakage and file GitHub issues            |
-
 ## Glossary
 
 | Term                  | Definition                                                                                                                                                       |
@@ -54,7 +68,7 @@ homebridge-adt-pulse brings your ADT Pulse security system into the Apple Home a
 | ADT Pulse             | The ADT home security service this plugin integrates with.                                                                                                       |
 | Portal                | The ADT Pulse Web Portal (powered by Icontrol One), the plugin's only data source. The `subdomain` setting selects `portal` (US) or `portal-ca` (Canada).        |
 | HAP                   | HomeKit Accessory Protocol, the protocol the Home app speaks. Homebridge exposes this plugin's accessories over it.                                              |
-| Homebridge            | The Node.js server that hosts this plugin (`^1.11.0` or `^2.0.0-beta.0` per `engines`).                                                                          |
+| Homebridge            | The Node.js server that hosts this plugin; supported versions are declared by the package `engines` field.                                                       |
 | Platform              | The Homebridge plugin type this project registers: `ADTPulse`, implemented by `ADTPulsePlatform`.                                                                |
 | Gateway               | The ADT Pulse gateway device; exposed by default alongside the panel and switch.                                                                                 |
 | Security panel        | The alarm panel accessory; supports Arm Away, Arm Stay, Arm Night, and Disarm.                                                                                   |
@@ -71,3 +85,7 @@ homebridge-adt-pulse brings your ADT Pulse security system into the Apple Home a
 | Force arm             | The plugin's automatic bypass of open or active sensors when arming, required because the HAP protocol cannot prompt the user (`forceArmHandler`).               |
 | Detect report         | A redacted anomaly payload sent to the plugin author when unknown devices or statuses are parsed (`src/lib/detect.ts`, `removePersonalIdentifiableInformation`). |
 | Operational mode      | The `mode` setting: `normal`, `paused` (devices non-responsive), or `reset` (removes plugin accessories after an approximately 40-second warning window).        |
+
+## Additional Vision Notes
+
+No additional vision notes are currently documented.

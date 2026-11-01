@@ -16,19 +16,22 @@ Read and follow the conventions and rules defined in the files below.
 
 - [conventions/universal.md](conventions/universal.md) — Workflow, general code style, documentation style, platform build rules, and release notes format.
 - [conventions/documentation.md](conventions/documentation.md) — Documentation conventions (Docusaurus MDX page structure, voice, and style).
+- [conventions/nova.md](conventions/nova.md) — Nova project configuration, command boundaries, recipes, scaffolds, verification, and release handoff.
 
 ### Per Language
 
-- [conventions/typescript.md](conventions/typescript.md) — TypeScript / JavaScript conventions (type system, imports, class structure, code style, TSConfig).
-- [conventions/swift.md](conventions/swift.md) — Swift conventions (documentation style, code style).
-- [conventions/java.md](conventions/java.md) — Java conventions (documentation style, code style).
-- [conventions/kotlin.md](conventions/kotlin.md) — Kotlin conventions (documentation style, code style).
 - [conventions/csharp.md](conventions/csharp.md) — C# conventions (documentation style, code style).
-- [conventions/php.md](conventions/php.md) — PHP conventions (documentation style, code style).
-- [conventions/python.md](conventions/python.md) — Python conventions (documentation style, code style).
 - [conventions/css.md](conventions/css.md) — CSS conventions (documentation style, code style).
 - [conventions/docker.md](conventions/docker.md) — Docker conventions (documentation style, code style).
+- [conventions/go.md](conventions/go.md) — Go conventions (documentation, APIs, ownership, errors, concurrency, and tests).
+- [conventions/java.md](conventions/java.md) — Java conventions (documentation style, code style).
+- [conventions/kotlin.md](conventions/kotlin.md) — Kotlin conventions (documentation style, code style).
+- [conventions/php.md](conventions/php.md) — PHP conventions (documentation style, code style).
+- [conventions/python.md](conventions/python.md) — Python conventions (documentation style, code style).
+- [conventions/rust.md](conventions/rust.md) — Rust conventions (documentation, ownership, errors, unsafe code, and tests).
 - [conventions/shell.md](conventions/shell.md) — Shell conventions (documentation style, code style).
+- [conventions/swift.md](conventions/swift.md) — Swift conventions (documentation style, code style).
+- [conventions/typescript.md](conventions/typescript.md) — TypeScript / JavaScript conventions (type system, imports, class structure, code style, TSConfig).
 
 ## Agent Directives
 

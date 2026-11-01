@@ -5,7 +5,7 @@ Quotes: Double (Black/Google convention). Indentation: 4-space. File naming: sna
 ## Documentation Style
 
 - Comment syntax: `"""` (Google-style)
-- Padding tag: `Version:\n    1.0.0` (Google-style custom section)
+- Padding tag: `Since:\n    UNRELEASED` (Google-style custom section) — tag new or changed API with the sentinel; Nova stamps the real version during the workspace release, so never hand-write a version number.
 - Param format: `Args:\n    name: Name.` (description matches the parameter name, capitalized, with a trailing period)
 - Return format: `Returns:\n    Type.`
 - Docstring starts with `"""` then a newline before the summary line.
@@ -18,8 +18,8 @@ class EntityRepository:
     """
     Entity Repository.
 
-    Version:
-        1.0.0
+    Since:
+        UNRELEASED
     """
 
     def __init__(self, database):
@@ -29,8 +29,8 @@ class EntityRepository:
         Args:
             database: Database.
 
-        Version:
-            1.0.0
+        Since:
+            UNRELEASED
         """
         self._database = database
 
@@ -44,8 +44,8 @@ class EntityRepository:
         Returns:
             Entity.
 
-        Version:
-            1.0.0
+        Since:
+            UNRELEASED
         """
         return self._database.get(entity_id)
 ```

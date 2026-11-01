@@ -1,5 +1,5 @@
 import {
-  Canvas, Features, InstallStrip, Stats,
+  BlogPreview, Canvas, Features, InstallStrip, Stats,
 } from '@cbnventures/docusaurus-preset-nova/blocks';
 import Head from '@docusaurus/Head';
 import Link from '@docusaurus/Link';
@@ -16,7 +16,7 @@ import type { Pages_Index_Home_Returns } from '../types/pages/index.d.ts';
  * Pages - Home.
  *
  * Root landing page that composes the hero header, feature grid,
- * and stats section using theme blocks.
+ * stats section, and blog preview using theme blocks.
  *
  * @constructor
  *
@@ -320,6 +320,20 @@ function Home(): Pages_Index_Home_Returns {
               color: 'accent',
             },
           ]}
+        />
+        <BlogPreview
+          heading={translate({
+            id: 'home.blogPreview.heading',
+            message: 'From the Blog',
+            description: 'Front page Blog Preview section heading',
+          })}
+          description={translate({
+            id: 'home.blogPreview.description',
+            message: 'Release notes, setup guides, and notes on ADT Pulse and HomeKit.',
+            description: 'Front page Blog Preview section description',
+          })}
+          auto={true}
+          limit={3}
         />
       </main>
     </Layout>

@@ -5,33 +5,27 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "nova utility run-scripts --parallel --node-env development \"dev:*\"",
-    "dev:workspaces": "nova utility run-workspaces --node-env development dev",
-    "prod": "nova utility run-scripts --sequential --node-env production \"prod:*\"",
-    "prod:workspaces": "nova utility run-workspaces --node-env production prod",
-    "check": "nova utility run-scripts --sequential \"check:*\"",
-    "check:workspaces": "nova utility run-workspaces check",
+    "dev": "nova utility run-workspaces --node-env development dev",
+    "prod": "nova utility run-workspaces --node-env production prod",
+    "check": "nova utility run-workspaces check",
     "check:lint": "eslint . --max-warnings=0",
     "check:types-config": "nova utility type-check --project tsconfig.config.json",
     "check:types-scripts": "nova utility type-check --project tsconfig.scripts.json",
     "check:types-tests": "nova utility type-check --project tsconfig.tests.json",
     "check:test": "vitest run",
-    "build": "nova utility run-scripts --sequential --node-env production \"build:*\"",
-    "build:workspaces": "nova utility run-workspaces --node-env production build",
-    "deploy": "nova utility run-scripts --sequential --node-env production \"deploy:*\"",
-    "deploy:workspaces": "nova utility run-workspaces --node-env production deploy",
-    "clean": "nova utility run-scripts --parallel \"clean:*\"",
-    "clean:workspaces": "nova utility run-workspaces clean",
+    "build": "nova utility run-workspaces --node-env production build",
+    "deploy": "nova utility run-workspaces --node-env production deploy",
+    "clean": "nova utility run-workspaces clean",
     "changelog": "nova utility changelog",
     "recipes": "nova utility run-recipes --replace-file",
     "postinstall": "node ./scripts/link-nova.mjs"
   },
   "allowScripts": {
-    "core-js": false,
+    "core-js": true,
     "es5-ext": false,
-    "esbuild": false,
+    "esbuild": true,
     "fsevents": true,
-    "unrs-resolver": false
+    "unrs-resolver": true
   },
   "workspaces": [
     "./apps/*",
@@ -39,12 +33,14 @@
   ],
   "packageManager": "npm@11.18.0",
   "engines": {
-    "node": "^22 || ^24"
+    "node": "^22 || ^24 || ^26"
   },
   "dependencies": {
-    "@cbnventures/nova": "0.33.0"
+    "@cbnventures/nova": "0.38.0"
   },
   "devDependencies": {
+    "@types/node": "24.9.1",
+    "eslint": "9.39.5",
     "jiti": "2.7.0",
     "typescript": "6.0.3",
     "vitest": "4.1.11"

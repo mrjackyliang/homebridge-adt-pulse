@@ -6,7 +6,9 @@ Rules for writing Docusaurus MDX documentation pages.
 
 ### Opening Paragraph
 
-- Every page starts with a single sentence after imports, before any heading.
+- Every page begins with its visible title, followed immediately by a single-sentence opening paragraph before any section heading.
+- Documentation pages may synthesize the visible title from frontmatter and do not need an authored H1.
+- Standalone MDX pages under `src/pages` must place an explicit H1 after imports and before the opening paragraph.
 - Verb-first, states what the feature does.
 
 ```mdx
@@ -517,7 +519,7 @@ Require blank lines between specific statement patterns so code stays visually o
 Enable the rule in your ESLint flat config:
 
 ```ts title="eslint.config.ts"
-import { novaRules } from '@cbnventures/nova';
+import { novaRules } from '@cbnventures/nova/presets/eslint';
 
 export default [
   ...novaRules,

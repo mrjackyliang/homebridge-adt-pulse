@@ -14,7 +14,9 @@
 
 - **URL:** https://github.com/mrjackyliang/homebridge-adt-pulse
 
-## Repository Layout
+## Repository Structure
+
+### Repository Layout
 
 ```
 homebridge-adt-pulse/
@@ -33,7 +35,7 @@ homebridge-adt-pulse/
 ├── CLAUDE.md                    — Nova-generated agent entry point (do not edit)
 ├── eslint.config.mts            — Root ESLint flat config (covers scripts/ only; apps/ and packages/ are excluded and lint themselves)
 ├── LICENSE                      — MIT license
-├── nova.config.json             — Nova project, workspace, and workflow configuration
+├── nova.config.json             — Nova project, workspace, artifact, and workflow configuration
 ├── package.json                 — Workspace root manifest and Nova orchestration scripts
 ├── package-lock.json            — Local npm lockfile shared by every workspace (not committed)
 ├── PROJECT_RULES.md             — This file
@@ -45,11 +47,11 @@ homebridge-adt-pulse/
 └── VISION.md                    — Purpose, marketing copy, and glossary
 ```
 
-## Source Structure
+### Source Structure
 
 The repository has three workspaces, each structurally independent. Unqualified `src/` paths in the rest of this document refer to `packages/homebridge-adt-pulse/src/` unless a workspace is stated otherwise.
 
-### `packages/homebridge-adt-pulse/` — the plugin
+#### `packages/homebridge-adt-pulse/` — the plugin
 
 ```
 packages/homebridge-adt-pulse/
@@ -108,7 +110,7 @@ packages/homebridge-adt-pulse/
 └── vitest.config.mts / vitest.setup.ts
 ```
 
-### `apps/config-ui/` — the setup wizard and settings frontend
+#### `apps/config-ui/` — the setup wizard and settings frontend
 
 ```
 apps/config-ui/
@@ -132,12 +134,12 @@ apps/config-ui/
 ├── package.json
 ├── tsconfig.json
 ├── vite-env.d.ts                — Vite client type reference
-└── vite.config.mjs              — Builds to ./build; copied into the plugin at build time
+└── vite.config.mjs              — Builds independently to ./build for final artifact assembly
 ```
 
 This workspace tests theme synchronization, preview navigation, settings tabs and sensors, and type declarations with Vitest.
 
-### `apps/docs/` — documentation site
+#### `apps/docs/` — documentation site
 
 ```
 apps/docs/
@@ -163,23 +165,23 @@ apps/docs/
 └── vitest.config.mts / vitest.setup.ts
 ```
 
-## Key Files
+### Key Files
 
-| File                                                    | Purpose                                                | When to modify                                             |
-|---------------------------------------------------------|--------------------------------------------------------|------------------------------------------------------------|
-| `packages/homebridge-adt-pulse/src/index.ts`            | Plugin entry point; registers the platform             | Almost never                                               |
-| `packages/homebridge-adt-pulse/src/lib/platform.ts`     | Plugin lifecycle, accessory cache, polling             | Changing lifecycle, polling, or state handling             |
-| `packages/homebridge-adt-pulse/src/lib/api.ts`          | Portal driver (login, status reads, arm/disarm)        | Portal request or scraping changes                         |
-| `packages/homebridge-adt-pulse/src/lib/auth.ts`         | MFA workflow and fingerprint enrollment                | Changing the setup and verification flow                   |
-| `packages/homebridge-adt-pulse/src/lib/accessory.ts`    | Device-to-HomeKit mapping                              | Changing services or characteristics per device type       |
-| `packages/homebridge-adt-pulse/src/lib/regex.ts`        | Central regex registry for the plugin                  | Any new pattern (inline regex literals are banned by lint) |
-| `packages/homebridge-adt-pulse/src/lib/schema.ts`       | Zod schemas, shared with `apps/config-ui`              | Config shape or portal response shape changes              |
-| `packages/homebridge-adt-pulse/config.schema.json`      | Homebridge config UI schema + custom UI registration   | Config shape changes; keep in sync with `platformConfig`   |
-| `packages/homebridge-adt-pulse/src/config-ui/server.ts` | Config UI backend endpoints                            | Setup wizard changes                                       |
-| `apps/config-ui/src/router.tsx`                         | Chooses the setup vs. settings screen                  | Changing top-level config UI routing                       |
-| `apps/docs/docusaurus.config.ts`                        | Docs site configuration                                | Navbar, footer, preset, or SEO changes                     |
-| `nova.config.json`                                      | Nova project, workspace, and workflow configuration    | Identity, workspace, workflow, or environment changes      |
-| `package.json` (root)                                   | Workspace root manifest and Nova orchestration scripts | Adding workspaces, changing root scripts                   |
+| File                                                    | Purpose                                                       | When to modify                                                  |
+|---------------------------------------------------------|---------------------------------------------------------------|-----------------------------------------------------------------|
+| `packages/homebridge-adt-pulse/src/index.ts`            | Plugin entry point; registers the platform                    | Almost never                                                    |
+| `packages/homebridge-adt-pulse/src/lib/platform.ts`     | Plugin lifecycle, accessory cache, polling                    | Changing lifecycle, polling, or state handling                  |
+| `packages/homebridge-adt-pulse/src/lib/api.ts`          | Portal driver (login, status reads, arm/disarm)               | Portal request or scraping changes                              |
+| `packages/homebridge-adt-pulse/src/lib/auth.ts`         | MFA workflow and fingerprint enrollment                       | Changing the setup and verification flow                        |
+| `packages/homebridge-adt-pulse/src/lib/accessory.ts`    | Device-to-HomeKit mapping                                     | Changing services or characteristics per device type            |
+| `packages/homebridge-adt-pulse/src/lib/regex.ts`        | Central regex registry for the plugin                         | Any new pattern (inline regex literals are banned by lint)      |
+| `packages/homebridge-adt-pulse/src/lib/schema.ts`       | Zod schemas, shared with `apps/config-ui`                     | Config shape or portal response shape changes                   |
+| `packages/homebridge-adt-pulse/config.schema.json`      | Homebridge config UI schema + custom UI registration          | Config shape changes; keep in sync with `platformConfig`        |
+| `packages/homebridge-adt-pulse/src/config-ui/server.ts` | Config UI backend endpoints                                   | Setup wizard changes                                            |
+| `apps/config-ui/src/router.tsx`                         | Chooses the setup vs. settings screen                         | Changing top-level config UI routing                            |
+| `apps/docs/docusaurus.config.ts`                        | Docs site configuration                                       | Navbar, footer, preset, or SEO changes                          |
+| `nova.config.json`                                      | Nova project, workspace, artifact, and workflow configuration | Identity, workspace, artifact, workflow, or environment changes |
+| `package.json` (root)                                   | Workspace root manifest and Nova orchestration scripts        | Adding workspaces, changing root scripts                        |
 
 ## Build and Tooling
 
@@ -201,31 +203,33 @@ Root-level, Nova-orchestrated:
 | Command             | What it does                                                                                                                                                                |
 |---------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `npm install`       | Install every workspace's dependencies; `postinstall` runs `scripts/link-nova.mjs`, which npm-links any `@cbnventures/*` package that is already globally linked            |
-| `npm run dev`       | Nova runs `apps/config-ui`'s Vite server and `apps/docs`' Docusaurus server via Portless; the plugin defines no `dev` task                                                  |
+| `npm run dev`       | Nova runs the config UI's Vite server, the documentation site's Docusaurus server via Portless, and the plugin's TypeScript compiler in watch mode                          |
 | `npm run prod`      | Nova runs `check` + `build`, starts Homebridge with the compiled plugin, and serves the built documentation site                                                            |
 | `npm run build`     | Builds all three workspaces in dependency order through Nova                                                                                                                |
 | `npm run check`     | Nova checks workspaces with the repository-configured concurrency, then runs root lint, config/scripts/tests type-checks, and Vitest tests                                  |
 | `npm run deploy`    | Nova runs `check` + `build`; no workspace currently defines its own `deploy` script, so this is presently equivalent to `check` + `build`. Actual publishing happens in CI. |
-| `npm run clean`     | Nova runs the one `clean` task in `apps/docs`, which removes `build/` and clears the Docusaurus cache                                                                       |
+| `npm run clean`     | Nova removes generated `build/` output from all three workspaces and clears the Docusaurus cache                                                                            |
 | `npm run changelog` | `nova utility changelog` — records or releases changelog entries                                                                                                            |
 | `npm run recipes`   | `nova utility run-recipes --replace-file` — applies the Nova recipes configured in `nova.config.json` (README, LICENSE, `package.json` normalization, etc.)                 |
 
 Workspace-level scripts worth knowing:
 
-- `packages/homebridge-adt-pulse`: `npm run prod --workspace homebridge-adt-pulse` builds and starts Homebridge with the compiled plugin. `npm run repl` and `npm run test-api` from the package workspace also execute compiled files from `build/`, so run `npm run build` first. The package exposes `hap-repl` and `hap-test-api` bins. Its build snapshots Nova identity and current Stable browser versions, then copies `apps/config-ui/build` into `build/config-ui/public`.
-- `apps/config-ui`: `npm run dev` (Vite dev server), `npm run build` (`vite build` into `./build`).
+- `packages/homebridge-adt-pulse`: `npm run dev --workspace homebridge-adt-pulse` watches and transpiles the plugin source. `npm run prod --workspace homebridge-adt-pulse` builds and starts Homebridge with the compiled plugin. `npm run repl` and `npm run test-api` from the package workspace also execute compiled files from `build/`, so run `npm run build` first. The package exposes `hap-repl` and `hap-test-api` bins. Its build snapshots Nova identity and current Stable browser versions. Nova's root artifact assembly combines that output with the independently built configuration UI at `build/homebridge-adt-pulse/build/config-ui/public` for publication.
+- `apps/config-ui`: `npm run dev` (Vite dev server), `npm run build` (type-check, then `vite build` into `./build`).
 - `apps/docs`: `npm run dev` (Docusaurus start on a portless-assigned port) and `npm run i18n` / `i18n:check` / `i18n:coverage` (theme-nova i18n sync).
 
 ### Environment Variables
 
-| Scope                               | Prefix     | Where it applies                                                                                                                                   |
-|-------------------------------------|------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
-| Project (repo-wide CI secrets/vars) | `PROJECT_` | e.g. `secrets.PROJECT_NPM_TOKEN` in `nova-publish-project.yml`                                                                                     |
-| Root workspace (`./`)               | `ROOT_`    | `.env` / `.env.sample` at the repo root                                                                                                            |
-| `apps/docs` workspace               | `DOCS_`    | `apps/docs/.env` / `.env.sample`                                                                                                                   |
-| `sponsor-check` workflow            | `SGS_`     | GitHub Actions vars/secrets consumed by `nova-check-sponsor-gated-issues-sponsor-check.yml` (e.g. `SGS_ISSUE_LABELS`, `SGS_PERSONAL_ACCESS_TOKEN`) |
+| Scope                               | Prefix                  | Where it applies                                                                                                                                   |
+|-------------------------------------|-------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| Project (repo-wide CI secrets/vars) | `PROJECT_`              | e.g. `secrets.PROJECT_NPM_TOKEN` in `nova-publish-project.yml`                                                                                     |
+| Root workspace (`./`)               | `ROOT_`                 | `.env` / `.env.sample` at the repo root                                                                                                            |
+| `apps/docs` workspace               | `DOCS_`                 | `apps/docs/.env` / `.env.sample`                                                                                                                   |
+| `apps/config-ui` workspace          | `CONFIG_UI_`            | `apps/config-ui/.env` / `.env.sample`                                                                                                              |
+| `packages/homebridge-adt-pulse`     | `HOMEBRIDGE_ADT_PULSE_` | `packages/homebridge-adt-pulse/.env` / `.env.sample`                                                                                               |
+| `sponsor-check` workflow            | `SGS_`                  | GitHub Actions vars/secrets consumed by `nova-check-sponsor-gated-issues-sponsor-check.yml` (e.g. `SGS_ISSUE_LABELS`, `SGS_PERSONAL_ACCESS_TOKEN`) |
 
-Both `.env.sample` templates (root and `apps/docs`) currently define only the Node.js/Nova boilerplate (`NODE_ENV`, `LOG_LEVEL`, `LOG_TIME`) with an empty "Project - Variables" section — no project-specific variables are defined under `ROOT_` or `DOCS_` yet. The actual `.env` files are gitignored and were not inspected here. `apps/config-ui` and `packages/homebridge-adt-pulse` have no `.env` files and no configured prefix. The plugin itself reads no environment variables at runtime; all runtime configuration comes from the plugin's platform block in Homebridge's `config.json`, validated by the `platformConfig` Zod schema.
+All four `.env.sample` templates currently define only the Node.js/Nova boilerplate (`NODE_ENV`, `LOG_LEVEL`, `LOG_TIME`) with an empty "Project - Variables" section — no project-specific variables are defined under the configured workspace prefixes yet. The actual `.env` files are gitignored and were not inspected here. The plugin itself reads no environment variables at runtime; all runtime configuration comes from the plugin's platform block in Homebridge's `config.json`, validated by the `platformConfig` Zod schema.
 
 ## Workspace Rules
 
@@ -247,7 +251,7 @@ JSDoc is mandatory in every workspace: every documentable block carries `@since`
 
 **Do:**
 
-- Keep the three workspaces' roles separate. `packages/homebridge-adt-pulse` is the published npm plugin, `apps/config-ui` is its custom-UI frontend, and `apps/docs` is the documentation site. `apps/config-ui` imports the plugin's Zod schemas straight from its TypeScript source (not a built or published artifact), and the plugin copies `apps/config-ui`'s built output into its own `build/config-ui/public` at build time.
+- Keep the three workspaces' roles separate. `packages/homebridge-adt-pulse` is the published npm plugin, `apps/config-ui` is its custom-UI frontend, and `apps/docs` is the documentation site. `apps/config-ui` imports the plugin's Zod schemas straight from its TypeScript source (not a built or published artifact). Each workspace builds independently; Nova combines the plugin and configuration UI only in the root `build/homebridge-adt-pulse` publication artifact.
 - Centralize every regex in `packages/homebridge-adt-pulse/src/lib/regex.ts` and choose flags at the call site with `new RegExp(pattern, flags)`; inline regex literals and literal flags are banned by lint in every workspace (`no-regex-literals`, `no-regex-literal-flags`). `apps/config-ui` and `apps/docs` enforce the same rule but have not yet needed to create their own `regex.ts`.
 - Keep all type definitions in `.d.ts` files under each workspace's `src/types/` — mirrored one-to-one with `src/` in the plugin, a single aggregate file in `apps/config-ui`. Inline type annotations in code files are banned (`no-inline-type-annotation`).
 - Validate every external input with Zod: the platform config block, config UI form and server bodies, and portal MFA/OTP responses (`packages/homebridge-adt-pulse/src/lib/schema.ts`).
@@ -268,7 +272,7 @@ JSDoc is mandatory in every workspace: every documentable block carries `@since`
 - Don't throw from API/auth methods for expected failures; they return typed success/failure result objects and callers branch on `success`.
 - Don't add a `deploy` script to a workspace without accounting for Nova's `deploy` lifecycle prerequisites; today it is a `check` + `build` alias, and actual publishing lives entirely in `nova-publish-project.yml`.
 
-## Project-Specific Patterns
+## Architecture and Data
 
 ### Architecture
 
@@ -297,8 +301,8 @@ Homebridge UI (custom config UI, customUiPath: ./build/config-ui)
   v
 apps/config-ui (Vite + React; separate workspace) - setup wizard + settings
   imports Zod schemas straight from packages/homebridge-adt-pulse/src/lib/schema
-  |  built to apps/config-ui/build, then copied into
-  |  packages/homebridge-adt-pulse/build/config-ui/public by build:copy-ui
+  |  built independently to apps/config-ui/build, then assembled with the
+  |  plugin under build/homebridge-adt-pulse for publication
   v
 packages/homebridge-adt-pulse/src/config-ui/server.ts (backend request handlers)
   |
@@ -311,7 +315,7 @@ apps/docs (Docusaurus; independent workspace)
   publishes user-facing documentation; not part of the runtime plugin
 ```
 
-### Data Flow
+### Data Flow and Ownership
 
 1. **Registration** - Homebridge loads the plugin and calls `initialize`, which registers `ADTPulsePlatform`. Module: `packages/homebridge-adt-pulse/src/index.ts`.
 2. **Config validation** - The platform block from Homebridge's `config.json` is validated with the `platformConfig` Zod schema so misconfigured credentials, modes, or sensors fail fast. Module: `src/lib/schema.ts` (consumed by `src/lib/platform.ts`, and imported directly by `apps/config-ui` for the frontend form).
@@ -319,7 +323,7 @@ apps/docs (Docusaurus; independent workspace)
 4. **Polling** - A synchronize interval (scaled by the `speed` setting) dispatches sync checks and keep-alives, then fetches gateway, panel, and sensor information when the portal reports changes. Module: `src/lib/platform.ts`.
 5. **Parsing and detection** - Portal responses are parsed with jsdom and the shared regex patterns; parsed shapes are compared against the known catalogs, and unknown shapes are dispatched as redacted detect reports. Modules: `src/lib/api.ts`, `src/lib/regex.ts`, `src/lib/items.ts`, `src/lib/detect.ts`, `src/lib/utility.ts`.
 6. **HomeKit updates** - The platform unifies portal devices with the accessory cache (`unifyDevices`, `pollAccessories`), and each `ADTPulseAccessory` maps device state onto services and characteristics. Arm/disarm requests flow back through `ADTPulseAPI.setPanelStatus`, force-arming open sensors when needed. Modules: `src/lib/platform.ts`, `src/lib/accessory.ts`, `src/lib/api.ts`.
-7. **First-time setup (config UI)** - The `apps/config-ui` frontend (built separately and copied into the plugin's `build/config-ui/public`) walks `/initialize` -> `/get-methods` -> `/request-code` -> `/validate` -> `/generate-config`, calling into `packages/homebridge-adt-pulse/src/config-ui/server.ts`, which uses `ADTPulseAuth` to complete MFA and produce a config with the device fingerprint. Modules: `apps/config-ui/src/router.tsx`, `packages/homebridge-adt-pulse/src/config-ui/server.ts`, `src/lib/auth.ts`.
+7. **First-time setup (config UI)** - The `apps/config-ui` frontend builds independently and Nova assembles it into the final plugin artifact's `build/config-ui/public`. It walks `/initialize` -> `/get-methods` -> `/request-code` -> `/validate` -> `/generate-config`, calling into `packages/homebridge-adt-pulse/src/config-ui/server.ts`, which uses `ADTPulseAuth` to complete MFA and produce a config with the device fingerprint. Modules: `apps/config-ui/src/router.tsx`, `packages/homebridge-adt-pulse/src/config-ui/server.ts`, `src/lib/auth.ts`.
 
 ### Error Strategy
 
@@ -333,14 +337,24 @@ apps/docs (Docusaurus; independent workspace)
 | Config UI frontend (`apps/config-ui`)                                      | Form input validated with the `configUi*` Zod schemas via react-hook-form; caught errors reported through `console.error`                                                         |
 | CLI entry points (`src/cli/`)                                              | May write to the console and set process exit codes (permitted by dedicated lint overrides)                                                                                       |
 
-## Documentation Site
+## Project Guardrails
 
-### Framework
+No additional project-specific guardrails are currently documented beyond the workspace rules and shared convention files.
+
+## Testing and Verification
+
+The supported verification commands are documented under Build and Tooling. Changes must pass every check applicable to the affected workspaces and platforms.
+
+## Documentation and Ownership
+
+### Documentation Structure
+
+#### Framework
 
 - **Framework:** Docusaurus themed by `@cbnventures/docusaurus-preset-nova` (preset identity `lantern`); package versions are owned by `apps/docs/package.json`
 - **Source directory:** `apps/docs`
 
-### Site Structure
+#### Site Structure
 
 `apps/docs/docs/` holds MDX content organized into six categories plus a top-level landing page:
 
@@ -354,12 +368,12 @@ apps/docs (Docusaurus; independent workspace)
 
 The sidebar (`sidebars.ts`) is fully autogenerated from the `docs/` directory tree; category ordering comes from each folder's `_category_.json`. `src/pages/index.tsx` is the only custom (non-MDX) route. Internationalization is configured for `en` only today (`i18n.locales: ['en']`); the `theme-nova i18n` commands are wired for future locales. Search, sitemap, and analytics all flow through the Nova Docusaurus preset's config block in `docusaurus.config.ts` (local search indexing docs and pages, weekly-changefreq sitemap excluding `/docs/tags/**`).
 
-### Commands
+#### Commands
 
 | Command                                         | What it does                                                                                    |
 |-------------------------------------------------|-------------------------------------------------------------------------------------------------|
 | `npm run dev` (in `apps/docs`)                  | `docusaurus start` on a portless-assigned port (`0.0.0.0`, no auto-open)                        |
-| `npm run build`                                 | Sequential: `docusaurus build`, then transpile `src/pages` under `tsconfig.app.json`            |
+| `npm run build`                                 | Build the production Docusaurus site                                                            |
 | `npm run prod`                                  | `docusaurus serve` on a portless-assigned port                                                  |
 | `npm run check`                                 | Sequential: ESLint, type-check `tsconfig.app.json` and `tsconfig.tests.json`, then `vitest run` |
 | `npm run i18n` / `i18n:check` / `i18n:coverage` | Sync, check, or report translation coverage via `theme-nova i18n`                               |
@@ -390,3 +404,7 @@ The sidebar (`sidebars.ts`) is fully autogenerated from the `docs/` directory tr
 | GitHub Packages | `@mrjackyliang/homebridge-adt-pulse`                 | Scoped mirror publish                                                   |
 | GitHub Pages    | https://mrjackyliang.github.io/homebridge-adt-pulse/ | Documentation site (`apps/docs`), deployed by the same release workflow |
 | Homebridge      | User-installed via npm or the Homebridge Config UI   | Runtime target on end-user machines                                     |
+
+## Additional Project Rules
+
+No additional project rules are currently documented.
