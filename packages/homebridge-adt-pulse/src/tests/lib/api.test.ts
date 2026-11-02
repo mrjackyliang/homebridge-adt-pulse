@@ -791,6 +791,7 @@ describe('ADTPulseAPI', () => {
     await expect(createApi().setPanelStatus(armFrom, armTo, isAlarmActive)).resolves.toEqual({
       action: 'SET_PANEL_STATUS',
       info: {
+        confirmedArmValue: armFrom,
         forceArmRequired: false,
       },
       success: true,
@@ -862,11 +863,91 @@ describe('ADTPulseAPI', () => {
     await expect(api.setPanelStatus('off', 'away', false)).resolves.toEqual({
       action: 'SET_PANEL_STATUS',
       info: {
+        confirmedArmValue: 'away',
         forceArmRequired: false,
       },
       success: true,
     });
     expect(utilityMocks.sleep).toHaveBeenCalledWith(expectedWait);
+  });
+
+  it('accepts a real initial portal state when the cached source state is stale', async () => {
+    const api = createApi();
+    vi.spyOn(api, 'getOrbSecurityButtons').mockResolvedValueOnce({
+      action: 'GET_ORB_SECURITY_BUTTONS',
+      info: [readyButton('off', 'away')],
+      success: true,
+    } as never);
+
+    await expect(api.setPanelStatus('away', 'off', false)).resolves.toEqual({
+      action: 'SET_PANEL_STATUS',
+      info: {
+        confirmedArmValue: 'off',
+        forceArmRequired: false,
+      },
+      success: true,
+    });
+    expect(httpMocks.post).not.toHaveBeenCalled();
+    expect(utilityMocks.sleep).not.toHaveBeenCalled();
+  });
+
+  it('rejects a post-command panel state that does not match the requested target', async () => {
+    const api = createApi();
+    vi.spyOn(api, 'getOrbSecurityButtons')
+      .mockResolvedValueOnce({
+        action: 'GET_ORB_SECURITY_BUTTONS',
+        info: [readyButton('off', 'away')],
+        success: true,
+      } as never)
+      .mockResolvedValueOnce({
+        action: 'GET_ORB_SECURITY_BUTTONS',
+        info: [readyButton('stay', 'off')],
+        success: true,
+      } as never);
+    httpMocks.post.mockResolvedValueOnce(createHtmlResponse(
+      '<html><body></body></html>',
+      '/myhome/3.5.0/quickcontrol/armDisarm.jsp',
+    ));
+
+    await expect(api.setPanelStatus('off', 'away', false)).resolves.toEqual({
+      action: 'SET_PANEL_STATUS',
+      info: {
+        confirmedArmValue: 'stay',
+        message: 'The panel reported "stay" after "away" was requested',
+      },
+      success: false,
+    });
+  });
+
+  it('does not treat predicted buttons as physical panel confirmation', async () => {
+    const api = createApi();
+    vi.spyOn(api, 'getOrbSecurityButtons')
+      .mockResolvedValueOnce({
+        action: 'GET_ORB_SECURITY_BUTTONS',
+        info: [readyButton('off', 'away')],
+        success: true,
+      } as never)
+      .mockResolvedValueOnce({
+        action: 'GET_ORB_SECURITY_BUTTONS',
+        info: [{
+          buttonDisabled: true,
+          buttonId: 'security_button_0',
+          buttonText: 'Arming Away',
+        }],
+        success: true,
+      } as never);
+    httpMocks.post.mockResolvedValueOnce(createHtmlResponse(
+      '<html><body></body></html>',
+      '/myhome/3.5.0/quickcontrol/armDisarm.jsp',
+    ));
+
+    await expect(api.setPanelStatus('off', 'away', false)).resolves.toEqual({
+      action: 'SET_PANEL_STATUS',
+      info: {
+        message: 'The panel was still changing state after the arm state request',
+      },
+      success: false,
+    });
   });
 
   it('disarms an active alarm before applying the requested armed state', async () => {
@@ -900,6 +981,7 @@ describe('ADTPulseAPI', () => {
     await expect(api.setPanelStatus('away', 'stay', true)).resolves.toEqual({
       action: 'SET_PANEL_STATUS',
       info: {
+        confirmedArmValue: 'stay',
         forceArmRequired: false,
       },
       success: true,
@@ -970,6 +1052,7 @@ describe('ADTPulseAPI', () => {
     await expect(api.setPanelStatus('off', 'away', false)).resolves.toEqual({
       action: 'SET_PANEL_STATUS',
       info: {
+        confirmedArmValue: 'away',
         forceArmRequired: true,
       },
       success: true,

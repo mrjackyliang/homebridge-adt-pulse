@@ -119,7 +119,7 @@ export type Lib_Api_ADTPulseAPI_Session = {
 /**
  * Lib - API - Arm Disarm Handler.
  *
- * @since 1.0.0
+ * @since 3.5.8
  */
 export type Lib_Api_ADTPulseAPI_ArmDisarmHandler_IsAlarmActive = boolean;
 
@@ -147,9 +147,12 @@ export type Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReturnsInfo_ReadyButton = Share
 
 export type Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReturnsInfo_ReadyButtons = Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReturnsInfo_ReadyButton[];
 
+export type Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReturnsInfo_StateConfirmed = boolean;
+
 export type Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReturnsInfo = {
   forceArmRequired: Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReturnsInfo_ForceArmRequired;
   readyButtons: Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReturnsInfo_ReadyButtons;
+  stateConfirmed: Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReturnsInfo_StateConfirmed;
 };
 
 export type Lib_Api_ADTPulseAPI_ArmDisarmHandler_Returns = Promise<Shared_ApiResponse<'ARM_DISARM_HANDLER', Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReturnsInfo>>;
@@ -185,6 +188,8 @@ export type Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReadyButton = Shared_OrbSecurit
 export type Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReadyButtons = Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReadyButton[];
 
 export type Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReadyButton_TypeGuard = Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReadyButton;
+
+export type Lib_Api_ADTPulseAPI_ArmDisarmHandler_StateConfirmed = boolean;
 
 /**
  * Lib - API - Constructor.
@@ -646,7 +651,7 @@ export type Lib_Api_ADTPulseAPI_ResetSession_Returns = void;
 /**
  * Lib - API - Set Panel Status.
  *
- * @since 1.0.0
+ * @since 3.5.8
  */
 export type Lib_Api_ADTPulseAPI_SetPanelStatus_ArmFrom = Constant_PortalPanelArmValue;
 
@@ -654,13 +659,51 @@ export type Lib_Api_ADTPulseAPI_SetPanelStatus_ArmTo = Constant_PortalPanelArmVa
 
 export type Lib_Api_ADTPulseAPI_SetPanelStatus_IsAlarmActive = boolean;
 
-export type Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsInfo_ForceArmRequired = boolean;
+export type Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsSuccess_Action = 'SET_PANEL_STATUS';
 
-export type Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsInfo = {
-  forceArmRequired: Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsInfo_ForceArmRequired;
+export type Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsSuccess_Success = true;
+
+export type Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsSuccess_Info_ConfirmedArmValue = Constant_PortalPanelArmValue;
+
+export type Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsSuccess_Info_ForceArmRequired = boolean;
+
+export type Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsSuccess_Info = {
+  confirmedArmValue: Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsSuccess_Info_ConfirmedArmValue;
+  forceArmRequired: Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsSuccess_Info_ForceArmRequired;
 };
 
-export type Lib_Api_ADTPulseAPI_SetPanelStatus_Returns = Promise<Shared_ApiResponse<'SET_PANEL_STATUS', Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsInfo>>;
+export type Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsSuccess = {
+  action: Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsSuccess_Action;
+  success: Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsSuccess_Success;
+  info: Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsSuccess_Info;
+};
+
+export type Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsFail_Action = 'SET_PANEL_STATUS';
+
+export type Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsFail_Success = false;
+
+export type Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsFail_Info_ConfirmedArmValue = Constant_PortalPanelArmValue;
+
+export type Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsFail_Info_Error = ErrorObject;
+
+export type Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsFail_Info_Message = string;
+
+export type Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsFail_Info = {
+  confirmedArmValue?: Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsFail_Info_ConfirmedArmValue;
+  error?: Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsFail_Info_Error;
+  message?: Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsFail_Info_Message;
+};
+
+export type Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsFail = {
+  action: Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsFail_Action;
+  success: Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsFail_Success;
+  info: Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsFail_Info;
+};
+
+export type Lib_Api_ADTPulseAPI_SetPanelStatus_Returns = Promise<
+  Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsFail
+  | Lib_Api_ADTPulseAPI_SetPanelStatus_ReturnsSuccess
+>;
 
 export type Lib_Api_ADTPulseAPI_SetPanelStatus_ErrorObject = ErrorObject | undefined;
 
@@ -676,15 +719,20 @@ export type Lib_Api_ADTPulseAPI_SetPanelStatus_ReadyButtons = Lib_Api_ADTPulseAP
 
 export type Lib_Api_ADTPulseAPI_SetPanelStatus_ReadyButton_TypeGuard = Lib_Api_ADTPulseAPI_SetPanelStatus_ReadyButton;
 
+export type Lib_Api_ADTPulseAPI_SetPanelStatus_StateConfirmed = boolean;
+
 export type Lib_Api_ADTPulseAPI_SetPanelStatus_ArmDisarmResponseInfo_ForceArmRequired = boolean;
 
 export type Lib_Api_ADTPulseAPI_SetPanelStatus_ArmDisarmResponseInfo_ReadyButton = Shared_OrbSecurityButtonBase & Shared_OrbSecurityButtonReady;
 
 export type Lib_Api_ADTPulseAPI_SetPanelStatus_ArmDisarmResponseInfo_ReadyButtons = Lib_Api_ADTPulseAPI_SetPanelStatus_ArmDisarmResponseInfo_ReadyButton[];
 
+export type Lib_Api_ADTPulseAPI_SetPanelStatus_ArmDisarmResponseInfo_StateConfirmed = boolean;
+
 export type Lib_Api_ADTPulseAPI_SetPanelStatus_ArmDisarmResponseInfo = {
   forceArmRequired: Lib_Api_ADTPulseAPI_SetPanelStatus_ArmDisarmResponseInfo_ForceArmRequired;
   readyButtons: Lib_Api_ADTPulseAPI_SetPanelStatus_ArmDisarmResponseInfo_ReadyButtons;
+  stateConfirmed: Lib_Api_ADTPulseAPI_SetPanelStatus_ArmDisarmResponseInfo_StateConfirmed;
 };
 
 export type Lib_Api_ADTPulseAPI_SetPanelStatus_DisarmResponse = Shared_ApiResponse<'ARM_DISARM_HANDLER', Lib_Api_ADTPulseAPI_SetPanelStatus_ArmDisarmResponseInfo>;
@@ -692,3 +740,7 @@ export type Lib_Api_ADTPulseAPI_SetPanelStatus_DisarmResponse = Shared_ApiRespon
 export type Lib_Api_ADTPulseAPI_SetPanelStatus_ForceArmRequired = boolean;
 
 export type Lib_Api_ADTPulseAPI_SetPanelStatus_ArmDisarmResponse = Shared_ApiResponse<'ARM_DISARM_HANDLER', Lib_Api_ADTPulseAPI_SetPanelStatus_ArmDisarmResponseInfo>;
+
+export type Lib_Api_ADTPulseAPI_SetPanelStatus_ConfirmedArmState = '' | Constant_PortalPanelArmStateClean | Constant_PortalPanelArmStateDirty;
+
+export type Lib_Api_ADTPulseAPI_SetPanelStatus_ConfirmedArmValue = Constant_PortalPanelArmValue | undefined;

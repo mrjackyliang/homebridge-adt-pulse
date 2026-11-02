@@ -1,4 +1,5 @@
 import {
+  afterEach,
   describe,
   expect,
   it,
@@ -241,9 +242,12 @@ function createHarness(type: Tests_Lib_Accessory_CreateHarness_Type, options: Te
     reportedHashes: [],
   } as unknown as Lib_Accessory_ADTPulseAccessory_Constructor_State;
   const instanceMethods = {
-    setPanelStatus: vi.fn().mockResolvedValue({
+    setPanelStatus: vi.fn().mockImplementation((_armFrom, armTo) => Promise.resolve({
+      info: {
+        confirmedArmValue: armTo,
+      },
       success: true,
-    }),
+    })),
   };
   const loggerMethods = {
     debug: vi.fn(),
@@ -299,6 +303,10 @@ function createHarness(type: Tests_Lib_Accessory_CreateHarness_Type, options: Te
     state,
   };
 }
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 describe('ADTPulseAccessory', () => {
   it.each([
@@ -556,6 +564,291 @@ describe('ADTPulseAccessory', () => {
     );
   });
 
+  it('acknowledges a target promptly and applies delayed ADT confirmation', async () => {
+    vi.useFakeTimers();
+
+    const harness = createHarness('panel', {
+      panelStates: ['Disarmed'],
+    });
+    harness.instanceMethods.setPanelStatus.mockImplementationOnce(() => new Promise((resolve) => {
+      setTimeout(() => resolve({
+        info: {
+          confirmedArmValue: 'away',
+        },
+        success: true,
+      }), 5000);
+    }));
+    harness.handler.updater();
+
+    const setter = harness.recordFor(characteristic.SecuritySystemTargetState).setter;
+    const write = setter?.(characteristic.SecuritySystemTargetState.AWAY_ARM);
+
+    await expect(write).resolves.toBeUndefined();
+
+    harness.handler.updater();
+
+    expect(harness.recordFor(characteristic.SecuritySystemCurrentState).updateValue.mock.calls.at(-1)?.[0]).toBe(
+      characteristic.SecuritySystemCurrentState.DISARMED,
+    );
+    expect(harness.recordFor(characteristic.SecuritySystemTargetState).updateValue.mock.calls.at(-1)?.[0]).toBe(
+      characteristic.SecuritySystemTargetState.AWAY_ARM,
+    );
+
+    await vi.advanceTimersByTimeAsync(4999);
+
+    expect(harness.recordFor(characteristic.SecuritySystemCurrentState).updateValue.mock.calls.at(-1)?.[0]).toBe(
+      characteristic.SecuritySystemCurrentState.DISARMED,
+    );
+
+    await vi.advanceTimersByTimeAsync(1);
+
+    expect(harness.recordFor(characteristic.SecuritySystemCurrentState).updateValue.mock.calls.at(-1)?.[0]).toBe(
+      characteristic.SecuritySystemCurrentState.AWAY_ARM,
+    );
+    expect(harness.recordFor(characteristic.SecuritySystemTargetState).updateValue.mock.calls.at(-1)?.[0]).toBe(
+      characteristic.SecuritySystemTargetState.AWAY_ARM,
+    );
+    expect(harness.state.data.panelStatus?.panelStates).toEqual(['Armed Away']);
+  });
+
+  it('coalesces repeated targets while a panel request is in flight', async () => {
+    vi.useFakeTimers();
+
+    const harness = createHarness('panel', {
+      panelStates: ['Disarmed'],
+    });
+    harness.instanceMethods.setPanelStatus.mockImplementationOnce(() => new Promise((resolve) => {
+      setTimeout(() => resolve({
+        info: {
+          confirmedArmValue: 'away',
+        },
+        success: true,
+      }), 5000);
+    }));
+    harness.handler.updater();
+
+    const setter = harness.recordFor(characteristic.SecuritySystemTargetState).setter;
+
+    await expect(setter?.(characteristic.SecuritySystemTargetState.AWAY_ARM)).resolves.toBeUndefined();
+    await expect(setter?.(characteristic.SecuritySystemTargetState.AWAY_ARM)).resolves.toBeUndefined();
+
+    expect(harness.instanceMethods.setPanelStatus).toHaveBeenCalledOnce();
+
+    await vi.advanceTimersByTimeAsync(5000);
+  });
+
+  it('serializes conflicting targets without allowing a stale completion to replace the latest target', async () => {
+    vi.useFakeTimers();
+
+    const harness = createHarness('panel', {
+      panelStates: ['Disarmed'],
+    });
+    harness.instanceMethods.setPanelStatus
+      .mockImplementationOnce(() => new Promise((resolve) => {
+        setTimeout(() => resolve({
+          info: {
+            confirmedArmValue: 'away',
+          },
+          success: true,
+        }), 5000);
+      }))
+      .mockImplementationOnce(() => new Promise((resolve) => {
+        setTimeout(() => resolve({
+          info: {
+            confirmedArmValue: 'off',
+          },
+          success: true,
+        }), 1000);
+      }));
+    harness.handler.updater();
+
+    const setter = harness.recordFor(characteristic.SecuritySystemTargetState).setter;
+
+    await expect(setter?.(characteristic.SecuritySystemTargetState.AWAY_ARM)).resolves.toBeUndefined();
+    await expect(setter?.(characteristic.SecuritySystemTargetState.DISARM)).resolves.toBeUndefined();
+
+    harness.handler.updater();
+
+    expect(harness.instanceMethods.setPanelStatus).toHaveBeenCalledOnce();
+
+    await vi.advanceTimersByTimeAsync(5000);
+
+    expect(harness.instanceMethods.setPanelStatus).toHaveBeenCalledTimes(2);
+    expect(harness.instanceMethods.setPanelStatus).toHaveBeenLastCalledWith('away', 'off', false);
+    expect(harness.recordFor(characteristic.SecuritySystemCurrentState).updateValue.mock.calls.at(-1)?.[0]).toBe(
+      characteristic.SecuritySystemCurrentState.AWAY_ARM,
+    );
+    expect(harness.recordFor(characteristic.SecuritySystemTargetState).updateValue.mock.calls.at(-1)?.[0]).toBe(
+      characteristic.SecuritySystemTargetState.DISARM,
+    );
+
+    await vi.advanceTimersByTimeAsync(1000);
+
+    expect(harness.recordFor(characteristic.SecuritySystemCurrentState).updateValue.mock.calls.at(-1)?.[0]).toBe(
+      characteristic.SecuritySystemCurrentState.DISARMED,
+    );
+    expect(harness.recordFor(characteristic.SecuritySystemTargetState).updateValue.mock.calls.at(-1)?.[0]).toBe(
+      characteristic.SecuritySystemTargetState.DISARM,
+    );
+  });
+
+  it('surfaces background rejection, clears activity, and accepts a retry', async () => {
+    vi.useFakeTimers();
+
+    const harness = createHarness('panel', {
+      panelStates: ['Disarmed'],
+    });
+    harness.instanceMethods.setPanelStatus
+      .mockImplementationOnce(() => new Promise((_resolve, reject) => {
+        setTimeout(() => reject(new Error('Portal unavailable')), 1000);
+      }))
+      .mockImplementationOnce((_armFrom, armTo) => Promise.resolve({
+        info: {
+          confirmedArmValue: armTo,
+        },
+        success: true,
+      }));
+    harness.handler.updater();
+
+    const setter = harness.recordFor(characteristic.SecuritySystemTargetState).setter;
+
+    await expect(setter?.(characteristic.SecuritySystemTargetState.AWAY_ARM)).resolves.toBeUndefined();
+
+    await vi.advanceTimersByTimeAsync(1000);
+
+    expect(harness.loggerMethods.error).toHaveBeenCalledWith(expect.stringContaining('Portal unavailable'));
+    expect(harness.recordFor(characteristic.SecuritySystemCurrentState).updateValue.mock.calls.at(-1)?.[0]).toMatchObject({
+      hapStatus: hapStatus.SERVICE_COMMUNICATION_FAILURE,
+    });
+    expect(harness.recordFor(characteristic.SecuritySystemTargetState).updateValue.mock.calls.at(-1)?.[0]).toMatchObject({
+      hapStatus: hapStatus.SERVICE_COMMUNICATION_FAILURE,
+    });
+
+    await expect(setter?.(characteristic.SecuritySystemTargetState.STAY_ARM)).resolves.toBeUndefined();
+
+    await vi.waitFor(() => {
+      expect(harness.instanceMethods.setPanelStatus).toHaveBeenCalledTimes(2);
+    });
+    expect(harness.instanceMethods.setPanelStatus).toHaveBeenLastCalledWith('off', 'stay', false);
+  });
+
+  it('cancels a queued target after failure and restores the last confirmed state', async () => {
+    vi.useFakeTimers();
+
+    const harness = createHarness('panel', {
+      panelStates: ['Disarmed'],
+    });
+    harness.instanceMethods.setPanelStatus
+      .mockImplementationOnce(() => new Promise((resolve) => {
+        setTimeout(() => resolve({
+          info: {
+            message: 'ADT did not settle',
+          },
+          success: false,
+        }), 1000);
+      }))
+      .mockImplementationOnce((_armFrom, armTo) => Promise.resolve({
+        info: {
+          confirmedArmValue: armTo,
+        },
+        success: true,
+      }));
+    harness.handler.updater();
+
+    const setter = harness.recordFor(characteristic.SecuritySystemTargetState).setter;
+
+    await expect(setter?.(characteristic.SecuritySystemTargetState.AWAY_ARM)).resolves.toBeUndefined();
+    await expect(setter?.(characteristic.SecuritySystemTargetState.STAY_ARM)).resolves.toBeUndefined();
+
+    await vi.advanceTimersByTimeAsync(1000);
+
+    expect(harness.instanceMethods.setPanelStatus).toHaveBeenCalledOnce();
+    expect(harness.loggerMethods.error).toHaveBeenCalledWith(expect.stringContaining('ADT did not settle'));
+    expect(harness.recordFor(characteristic.SecuritySystemCurrentState).updateValue).toHaveBeenCalledWith(
+      characteristic.SecuritySystemCurrentState.DISARMED,
+    );
+    expect(harness.recordFor(characteristic.SecuritySystemTargetState).updateValue).toHaveBeenCalledWith(
+      characteristic.SecuritySystemTargetState.DISARM,
+    );
+
+    await expect(setter?.(characteristic.SecuritySystemTargetState.NIGHT_ARM)).resolves.toBeUndefined();
+
+    await vi.waitFor(() => {
+      expect(harness.instanceMethods.setPanelStatus).toHaveBeenCalledTimes(2);
+    });
+    expect(harness.instanceMethods.setPanelStatus).toHaveBeenLastCalledWith('off', 'night', false);
+  });
+
+  it('uses the confirmed panel state for a rapid follow-up request', async () => {
+    vi.useFakeTimers();
+
+    const harness = createHarness('panel', {
+      panelStates: ['Disarmed'],
+    });
+    harness.instanceMethods.setPanelStatus
+      .mockImplementationOnce(() => new Promise((resolve) => {
+        setTimeout(() => resolve({
+          info: {
+            confirmedArmValue: 'away',
+          },
+          success: true,
+        }), 1000);
+      }))
+      .mockImplementationOnce((_armFrom, armTo) => Promise.resolve({
+        info: {
+          confirmedArmValue: armTo,
+        },
+        success: true,
+      }));
+    harness.handler.updater();
+
+    const setter = harness.recordFor(characteristic.SecuritySystemTargetState).setter;
+
+    await expect(setter?.(characteristic.SecuritySystemTargetState.AWAY_ARM)).resolves.toBeUndefined();
+    await vi.advanceTimersByTimeAsync(1000);
+    await expect(setter?.(characteristic.SecuritySystemTargetState.DISARM)).resolves.toBeUndefined();
+
+    await vi.waitFor(() => {
+      expect(harness.instanceMethods.setPanelStatus).toHaveBeenCalledTimes(2);
+    });
+    expect(harness.instanceMethods.setPanelStatus).toHaveBeenLastCalledWith('away', 'off', false);
+  });
+
+  it('reconciles a failed request to a different ADT-confirmed physical state', async () => {
+    const harness = createHarness('panel', {
+      panelStates: ['Disarmed'],
+    });
+    harness.instanceMethods.setPanelStatus.mockResolvedValueOnce({
+      info: {
+        confirmedArmValue: 'stay',
+        message: 'ADT confirmed stay instead of away',
+      },
+      success: false,
+    });
+    harness.handler.updater();
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    await expect(harness.recordFor(characteristic.SecuritySystemTargetState).setter?.(
+      characteristic.SecuritySystemTargetState.AWAY_ARM,
+    )).resolves.toBeUndefined();
+
+    await vi.waitFor(() => {
+      expect(harness.recordFor(characteristic.SecuritySystemTargetState).updateValue.mock.calls.at(-1)?.[0]).toMatchObject({
+        hapStatus: hapStatus.OPERATION_TIMED_OUT,
+      });
+    });
+
+    expect(harness.state.data.panelStatus?.panelStates).toEqual(['Armed Stay']);
+    expect(harness.recordFor(characteristic.SecuritySystemCurrentState).updateValue).toHaveBeenCalledWith(
+      characteristic.SecuritySystemCurrentState.STAY_ARM,
+    );
+    expect(harness.recordFor(characteristic.SecuritySystemTargetState).updateValue).toHaveBeenCalledWith(
+      characteristic.SecuritySystemTargetState.STAY_ARM,
+    );
+
+    consoleError.mockRestore();
+  });
+
   it('does not send a request when HomeKit selects the current panel state', async () => {
     const harness = createHarness('panel', {
       panelStates: ['Disarmed'],
@@ -584,8 +877,12 @@ describe('ADTPulseAccessory', () => {
     });
     await expect(failedRequest.recordFor(characteristic.SecuritySystemTargetState).setter?.(
       characteristic.SecuritySystemTargetState.AWAY_ARM,
-    )).rejects.toMatchObject({
-      hapStatus: hapStatus.OPERATION_TIMED_OUT,
+    )).resolves.toBeUndefined();
+
+    await vi.waitFor(() => {
+      expect(failedRequest.recordFor(characteristic.SecuritySystemTargetState).updateValue.mock.calls.at(-1)?.[0]).toMatchObject({
+        hapStatus: hapStatus.OPERATION_TIMED_OUT,
+      });
     });
 
     consoleError.mockRestore();

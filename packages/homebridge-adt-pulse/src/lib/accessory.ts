@@ -31,6 +31,8 @@ import type {
   Lib_Accessory_ADTPulseAccessory_Constructor_Software,
   Lib_Accessory_ADTPulseAccessory_Constructor_State,
   Lib_Accessory_ADTPulseAccessory_Constructor_Type,
+  Lib_Accessory_ADTPulseAccessory_GetPanelCharacteristicValues_ArmValue,
+  Lib_Accessory_ADTPulseAccessory_GetPanelCharacteristicValues_Returns,
   Lib_Accessory_ADTPulseAccessory_GetPanelStatus_Context,
   Lib_Accessory_ADTPulseAccessory_GetPanelStatus_HapStatus,
   Lib_Accessory_ADTPulseAccessory_GetPanelStatus_Id,
@@ -63,8 +65,32 @@ import type {
   Lib_Accessory_ADTPulseAccessory_GetSensorStatus_Zone,
   Lib_Accessory_ADTPulseAccessory_Instance,
   Lib_Accessory_ADTPulseAccessory_Log,
+  Lib_Accessory_ADTPulseAccessory_PanelRequestRevision,
+  Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_ArmFrom,
+  Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_ArmTo,
+  Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_CharacteristicValues,
+  Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_ConfirmedArmValue,
+  Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Context,
+  Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_HapStatus,
+  Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Id,
+  Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_IsAlarmActive,
+  Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Name,
+  Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_RequestRevision,
+  Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_ResponseMessage,
+  Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Result,
+  Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Returns,
+  Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_TargetValue,
+  Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Uuid,
+  Lib_Accessory_ADTPulseAccessory_ReconcilePanelStatusFailure_CurrentCharacteristic,
+  Lib_Accessory_ADTPulseAccessory_ReconcilePanelStatusFailure_CurrentValue,
+  Lib_Accessory_ADTPulseAccessory_ReconcilePanelStatusFailure_ErrorMessage,
+  Lib_Accessory_ADTPulseAccessory_ReconcilePanelStatusFailure_HapStatus,
+  Lib_Accessory_ADTPulseAccessory_ReconcilePanelStatusFailure_Returns,
+  Lib_Accessory_ADTPulseAccessory_ReconcilePanelStatusFailure_TargetCharacteristic,
+  Lib_Accessory_ADTPulseAccessory_ReconcilePanelStatusFailure_TargetValue,
   Lib_Accessory_ADTPulseAccessory_Services,
   Lib_Accessory_ADTPulseAccessory_SetPanelStatus_Arm,
+  Lib_Accessory_ADTPulseAccessory_SetPanelStatus_BackgroundErrorMessage,
   Lib_Accessory_ADTPulseAccessory_SetPanelStatus_CondensedPanelStates,
   Lib_Accessory_ADTPulseAccessory_SetPanelStatus_Context,
   Lib_Accessory_ADTPulseAccessory_SetPanelStatus_HapStatus,
@@ -72,11 +98,9 @@ import type {
   Lib_Accessory_ADTPulseAccessory_SetPanelStatus_IsAlarmActive,
   Lib_Accessory_ADTPulseAccessory_SetPanelStatus_Name,
   Lib_Accessory_ADTPulseAccessory_SetPanelStatus_PanelStates,
-  Lib_Accessory_ADTPulseAccessory_SetPanelStatus_Result,
+  Lib_Accessory_ADTPulseAccessory_SetPanelStatus_RequestedCurrentValue,
   Lib_Accessory_ADTPulseAccessory_SetPanelStatus_Returns,
-  Lib_Accessory_ADTPulseAccessory_SetPanelStatus_SetCurrentValue,
   Lib_Accessory_ADTPulseAccessory_SetPanelStatus_Type,
-  Lib_Accessory_ADTPulseAccessory_SetPanelStatus_UnknownArmValue,
   Lib_Accessory_ADTPulseAccessory_SetPanelStatus_Uuid,
   Lib_Accessory_ADTPulseAccessory_SetPanelSwitchStatus_CondensedPanelStates,
   Lib_Accessory_ADTPulseAccessory_SetPanelSwitchStatus_Context,
@@ -124,12 +148,12 @@ export class ADTPulseAccessory {
   /**
    * Lib - Accessory - Activity.
    *
-   * Tracks whether the accessory is busy setting a panel state along with the
-   * values being set, so getters can report in-flight states to HomeKit.
+   * Tracks the last confirmed current value and latest accepted target while
+   * a serialized panel request is running in the background.
    *
    * @private
    *
-   * @since 1.0.0
+   * @since 3.5.8
    */
   #activity: Lib_Accessory_ADTPulseAccessory_Activity;
 
@@ -194,6 +218,18 @@ export class ADTPulseAccessory {
   readonly #log: Lib_Accessory_ADTPulseAccessory_Log;
 
   /**
+   * Lib - Accessory - Panel Request Revision.
+   *
+   * Identifies the latest accepted panel target so a completed portal request
+   * cannot replace a newer target that arrived while it was in flight.
+   *
+   * @private
+   *
+   * @since 3.5.8
+   */
+  #panelRequestRevision: Lib_Accessory_ADTPulseAccessory_PanelRequestRevision;
+
+  /**
    * Lib - Accessory - Services.
    *
    * Caches the HAP services registered on this accessory, keyed by role, so
@@ -247,6 +283,7 @@ export class ADTPulseAccessory {
     this.#config = config;
     this.#instance = instance;
     this.#log = log;
+    this.#panelRequestRevision = 0;
     this.#services = {};
     this.#state = state;
 
@@ -404,7 +441,7 @@ export class ADTPulseAccessory {
           .updateValue(this.getPanelStatus('target'));
 
         this.#services['Primary'].getCharacteristic(this.#characteristic.SecuritySystemTargetState)
-          .onSet(async (value) => this.setPanelStatus(value));
+          .onSet((value) => this.setPanelStatus(value));
 
         break;
       }
@@ -802,10 +839,64 @@ export class ADTPulseAccessory {
   }
 
   /**
+   * Lib - Accessory - Get Panel Characteristic Values.
+   *
+   * Converts a portal-confirmed arm value into the matching HomeKit current
+   * and target values used to reconcile the two security characteristics.
+   *
+   * @param {Lib_Accessory_ADTPulseAccessory_GetPanelCharacteristicValues_ArmValue} armValue - Arm value.
+   *
+   * @private
+   *
+   * @returns {Lib_Accessory_ADTPulseAccessory_GetPanelCharacteristicValues_Returns}
+   *
+   * @since 3.5.8
+   */
+  private getPanelCharacteristicValues(armValue: Lib_Accessory_ADTPulseAccessory_GetPanelCharacteristicValues_ArmValue): Lib_Accessory_ADTPulseAccessory_GetPanelCharacteristicValues_Returns {
+    switch (armValue) {
+      case 'away': {
+        return {
+          current: this.#characteristic.SecuritySystemCurrentState.AWAY_ARM,
+          panelState: 'Armed Away',
+          target: this.#characteristic.SecuritySystemTargetState.AWAY_ARM,
+        };
+      }
+
+      case 'night': {
+        return {
+          current: this.#characteristic.SecuritySystemCurrentState.NIGHT_ARM,
+          panelState: 'Armed Night',
+          target: this.#characteristic.SecuritySystemTargetState.NIGHT_ARM,
+        };
+      }
+
+      case 'off': {
+        return {
+          current: this.#characteristic.SecuritySystemCurrentState.DISARMED,
+          panelState: 'Disarmed',
+          target: this.#characteristic.SecuritySystemTargetState.DISARM,
+        };
+      }
+
+      case 'stay': {
+        return {
+          current: this.#characteristic.SecuritySystemCurrentState.STAY_ARM,
+          panelState: 'Armed Stay',
+          target: this.#characteristic.SecuritySystemTargetState.STAY_ARM,
+        };
+      }
+
+      default: {
+        return undefined;
+      }
+    }
+  }
+
+  /**
    * Lib - Accessory - Get Panel Status.
    *
    * Translates the polled panel state into the HomeKit security system value
-   * for the requested mode, honoring any state change still in progress.
+   * while keeping accepted targets separate from ADT-confirmed current state.
    *
    * @param {Lib_Accessory_ADTPulseAccessory_GetPanelStatus_Mode} mode - Mode.
    *
@@ -813,7 +904,7 @@ export class ADTPulseAccessory {
    *
    * @returns {Lib_Accessory_ADTPulseAccessory_GetPanelStatus_Returns}
    *
-   * @since 1.0.0
+   * @since 3.5.8
    */
   private getPanelStatus(mode: Lib_Accessory_ADTPulseAccessory_GetPanelStatus_Mode): Lib_Accessory_ADTPulseAccessory_GetPanelStatus_Returns {
     const context: Lib_Accessory_ADTPulseAccessory_GetPanelStatus_Context = this.#accessory['context'];
@@ -884,14 +975,14 @@ export class ADTPulseAccessory {
      * Find the current state for the panel (required characteristic).
      *
      * Notes:
-     * - If system is busy setting the state, HomeKit will receive the state user
-     *   has set to before it becomes officially "set".
+     * - While a request is running, HomeKit receives only the latest state that
+     *   ADT has confirmed, never the requested target as physical state.
      *
-     * @since 1.0.0
+     * @since 3.5.8
      */
     switch (true) {
       case mode === 'current'
-        && this.#activity['isBusy']
+        && this.#activity['isBusy'] === true
         && this.#activity['setCurrentValue'] !== null: {
         return this.#activity['setCurrentValue'];
       }
@@ -929,14 +1020,14 @@ export class ADTPulseAccessory {
      * Find the target state for the panel (required characteristic).
      *
      * Notes:
-     * - If system is busy setting the state, HomeKit will receive the state user
-     *   has set to before it becomes officially "set".
+     * - While a request is running, HomeKit receives the latest accepted target
+     *   even though the current characteristic remains ADT-confirmed state.
      *
-     * @since 1.0.0
+     * @since 3.5.8
      */
     switch (true) {
       case mode === 'target'
-        && this.#activity['isBusy']
+        && this.#activity['isBusy'] === true
         && this.#activity['setTargetValue'] !== null: {
         return this.#activity['setTargetValue'];
       }
@@ -1024,10 +1115,207 @@ export class ADTPulseAccessory {
   }
 
   /**
+   * Lib - Accessory - Process Panel Status.
+   *
+   * Runs one accepted target against ADT and recursively handles the latest
+   * queued target so portal operations remain strictly serialized.
+   *
+   * @param {Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_ArmFrom}       armFrom       - Arm from.
+   * @param {Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_IsAlarmActive} isAlarmActive - Is alarm active.
+   *
+   * @private
+   *
+   * @returns {Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Returns}
+   *
+   * @since 3.5.8
+   */
+  private async processPanelStatus(armFrom: Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_ArmFrom, isAlarmActive: Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_IsAlarmActive): Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Returns {
+    const context: Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Context = this.#accessory['context'];
+    const id: Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Id = context['id'];
+    const name: Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Name = context['name'];
+    const uuid: Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Uuid = context['uuid'];
+    const requestRevision: Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_RequestRevision = this.#panelRequestRevision;
+    const targetValue: Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_TargetValue = this.#activity['setTargetValue'];
+
+    if (targetValue === null) {
+      this.#activity = {
+        isBusy: false,
+        setCurrentValue: null,
+        setTargetValue: null,
+        setValue: null,
+      };
+
+      return;
+    }
+
+    let armTo: Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_ArmTo = undefined;
+    let hapStatus: Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_HapStatus = undefined;
+
+    switch (targetValue) {
+      case this.#characteristic.SecuritySystemTargetState.AWAY_ARM: {
+        armTo = 'away';
+        break;
+      }
+
+      case this.#characteristic.SecuritySystemTargetState.NIGHT_ARM: {
+        armTo = 'night';
+        break;
+      }
+
+      case this.#characteristic.SecuritySystemTargetState.DISARM: {
+        armTo = 'off';
+        break;
+      }
+
+      case this.#characteristic.SecuritySystemTargetState.STAY_ARM: {
+        armTo = 'stay';
+        break;
+      }
+
+      default: {
+        break;
+      }
+    }
+
+    if (armTo === undefined) {
+      hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.INVALID_VALUE_IN_REQUEST);
+
+      this.#log.error(`Attempted to process panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but request has unknown arm value.`);
+
+      this.reconcilePanelStatusFailure(hapStatus);
+
+      return;
+    }
+
+    const result: Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Result = await this.#instance.setPanelStatus(armFrom, armTo, isAlarmActive);
+    const confirmedArmValue: Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_ConfirmedArmValue = (result['info'] !== undefined) ? result['info']['confirmedArmValue'] : undefined;
+    let characteristicValues: Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_CharacteristicValues = undefined;
+
+    if (confirmedArmValue !== undefined) {
+      characteristicValues = this.getPanelCharacteristicValues(confirmedArmValue);
+
+      if (characteristicValues === undefined) {
+        hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+
+        this.#log.error(`Attempted to reconcile panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but ADT returned an unsupported confirmed state.`);
+
+        this.reconcilePanelStatusFailure(hapStatus);
+
+        return;
+      }
+
+      Reflect.set(this.#activity, 'setCurrentValue', characteristicValues['current']);
+
+      if (this.#state['data']['panelStatus'] !== null) {
+        Reflect.set(this.#state['data']['panelStatus'], 'panelStates', [
+          characteristicValues['panelState'],
+          ...this.#state['data']['panelStatus']['panelStates'].filter((panelState) => panelState === 'No Entry Delay'),
+        ]);
+      }
+
+      this.#services['Primary']!.getCharacteristic(this.#characteristic.SecuritySystemCurrentState)
+        .updateValue(characteristicValues['current']);
+    }
+
+    if (
+      result['success'] === false
+    ) {
+      hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.OPERATION_TIMED_OUT);
+      const responseMessage: Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_ResponseMessage = (result['info'] !== undefined && result['info']['message'] !== undefined) ? result['info']['message'] : 'Unknown ADT response';
+
+      this.#log.error(`Attempted to set panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but ADT did not confirm the requested state: ${responseMessage}.`);
+
+      stackTracer('api-response', result);
+
+      this.reconcilePanelStatusFailure(hapStatus);
+
+      return;
+    }
+
+    if (characteristicValues === undefined) {
+      hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+
+      this.#log.error(`Attempted to reconcile panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but ADT did not return a confirmed state.`);
+
+      this.reconcilePanelStatusFailure(hapStatus);
+
+      return;
+    }
+
+    // Keep the latest target intact when this completion belongs to an older request.
+    if (requestRevision !== this.#panelRequestRevision) {
+      await this.processPanelStatus(result['info']['confirmedArmValue'], false);
+
+      return;
+    }
+
+    this.#services['Primary']!.getCharacteristic(this.#characteristic.SecuritySystemTargetState)
+      .updateValue(characteristicValues['target']);
+
+    this.#activity = {
+      isBusy: false,
+      setCurrentValue: null,
+      setTargetValue: null,
+      setValue: null,
+    };
+
+    return;
+  }
+
+  /**
+   * Lib - Accessory - Reconcile Panel Status Failure.
+   *
+   * Restores the last confirmed values, marks both panel characteristics as
+   * errored for HomeKit reads, and clears all queued or in-flight activity.
+   *
+   * @param {Lib_Accessory_ADTPulseAccessory_ReconcilePanelStatusFailure_HapStatus} hapStatus - Hap status.
+   *
+   * @private
+   *
+   * @returns {Lib_Accessory_ADTPulseAccessory_ReconcilePanelStatusFailure_Returns}
+   *
+   * @since 3.5.8
+   */
+  private reconcilePanelStatusFailure(hapStatus: Lib_Accessory_ADTPulseAccessory_ReconcilePanelStatusFailure_HapStatus): Lib_Accessory_ADTPulseAccessory_ReconcilePanelStatusFailure_Returns {
+    try {
+      const currentCharacteristic: Lib_Accessory_ADTPulseAccessory_ReconcilePanelStatusFailure_CurrentCharacteristic = this.#services['Primary']!.getCharacteristic(this.#characteristic.SecuritySystemCurrentState);
+      const targetCharacteristic: Lib_Accessory_ADTPulseAccessory_ReconcilePanelStatusFailure_TargetCharacteristic = this.#services['Primary']!.getCharacteristic(this.#characteristic.SecuritySystemTargetState);
+      const currentValue: Lib_Accessory_ADTPulseAccessory_ReconcilePanelStatusFailure_CurrentValue = this.#activity['setCurrentValue'];
+
+      if (currentValue !== null) {
+        const targetValue: Lib_Accessory_ADTPulseAccessory_ReconcilePanelStatusFailure_TargetValue = convertPanelCharacteristicValue('current-to-target', this.#characteristic, currentValue);
+
+        currentCharacteristic.updateValue(currentValue);
+
+        if (targetValue !== undefined) {
+          targetCharacteristic.updateValue(targetValue);
+        }
+      }
+
+      currentCharacteristic.updateValue(hapStatus);
+
+      targetCharacteristic.updateValue(hapStatus);
+    } catch (error) {
+      const errorMessage: Lib_Accessory_ADTPulseAccessory_ReconcilePanelStatusFailure_ErrorMessage = (error instanceof Error) ? error.message : 'Unknown error';
+
+      this.#log.error(`Failed to reconcile HomeKit panel characteristics after an ADT error: ${errorMessage}.`);
+    } finally {
+      this.#activity = {
+        isBusy: false,
+        setCurrentValue: null,
+        setTargetValue: null,
+        setValue: null,
+      };
+    }
+
+    return;
+  }
+
+  /**
    * Lib - Accessory - Set Panel Status.
    *
-   * Sends an arm or disarm request to the ADT Pulse portal when HomeKit sets
-   * a new target state, marking the accessory busy while it completes.
+   * Validates and accepts a HomeKit target promptly, then starts or updates a
+   * serialized background request without treating the target as confirmed.
    *
    * @param {Lib_Accessory_ADTPulseAccessory_SetPanelStatus_Arm} arm - Arm.
    *
@@ -1035,7 +1323,7 @@ export class ADTPulseAccessory {
    *
    * @returns {Lib_Accessory_ADTPulseAccessory_SetPanelStatus_Returns}
    *
-   * @since 1.0.0
+   * @since 3.5.8
    */
   private async setPanelStatus(arm: Lib_Accessory_ADTPulseAccessory_SetPanelStatus_Arm): Lib_Accessory_ADTPulseAccessory_SetPanelStatus_Returns {
     const context: Lib_Accessory_ADTPulseAccessory_SetPanelStatus_Context = this.#accessory['context'];
@@ -1045,10 +1333,6 @@ export class ADTPulseAccessory {
     const uuid: Lib_Accessory_ADTPulseAccessory_SetPanelStatus_Uuid = context['uuid'];
 
     let hapStatus: Lib_Accessory_ADTPulseAccessory_SetPanelStatus_HapStatus = undefined;
-    let result: Lib_Accessory_ADTPulseAccessory_SetPanelStatus_Result = {
-      success: false,
-    };
-    let unknownArmValue: Lib_Accessory_ADTPulseAccessory_SetPanelStatus_UnknownArmValue = false;
 
     // If device is not a security panel.
     if (type !== 'panel') {
@@ -1057,6 +1341,28 @@ export class ADTPulseAccessory {
       this.#log.error(`Attempted to set panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but device is not a security panel.`);
 
       throw hapStatus;
+    }
+
+    const requestedCurrentValue: Lib_Accessory_ADTPulseAccessory_SetPanelStatus_RequestedCurrentValue = convertPanelCharacteristicValue('target-to-current', this.#characteristic, arm);
+
+    // Reject unsupported targets before accepting them as background work.
+    if (requestedCurrentValue === undefined) {
+      hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.INVALID_VALUE_IN_REQUEST);
+
+      this.#log.error(`Attempted to set panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but current characteristic value does not exist.`);
+
+      throw hapStatus;
+    }
+
+    // Coalesce repeats and retain only the latest conflicting target.
+    if (this.#activity['isBusy'] === true) {
+      if (this.#activity['setTargetValue'] !== arm) {
+        this.#panelRequestRevision += 1;
+
+        Reflect.set(this.#activity, 'setTargetValue', arm);
+      }
+
+      return;
     }
 
     // If panel status has not been retrieved yet.
@@ -1071,11 +1377,6 @@ export class ADTPulseAccessory {
     const panelStates: Lib_Accessory_ADTPulseAccessory_SetPanelStatus_PanelStates = this.#state['data']['panelStatus']['panelStates'];
 
     const condensedPanelStates: Lib_Accessory_ADTPulseAccessory_SetPanelStatus_CondensedPanelStates = condensePanelStates(this.#characteristic, panelStates);
-    const isAlarmActive: Lib_Accessory_ADTPulseAccessory_SetPanelStatus_IsAlarmActive = isPanelAlarmActive(
-      this.#state['data']['panelStatus']['panelStatuses'],
-      this.#state['data']['orbSecurityButtons'],
-      (this.#config !== null) ? this.#config['options'].includes('ignoreSensorProblemStatus') : false,
-    );
 
     // If panel status cannot be found or most likely "Status Unavailable".
     if (condensedPanelStates === undefined) {
@@ -1086,90 +1387,35 @@ export class ADTPulseAccessory {
       throw hapStatus;
     }
 
-    if (
-      this.#activity['isBusy'] === false // The system isn't busy setting a state.
-      && condensedPanelStates['characteristicValue']['target'] !== arm // If user is not setting to the current arm state (e.g. off to off).
-    ) {
-      const setCurrentValue: Lib_Accessory_ADTPulseAccessory_SetPanelStatus_SetCurrentValue = convertPanelCharacteristicValue('target-to-current', this.#characteristic, arm);
-
-      // If attempt to convert characteristic value "target" to "current" failed.
-      if (setCurrentValue === undefined) {
-        hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.INVALID_VALUE_IN_REQUEST);
-
-        this.#log.error(`Attempted to set panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but current characteristic value does not exist.`);
-
-        throw hapStatus;
-      }
-
-      // Set accessory activity to "busy" before arming.
-      this.#activity = {
-        isBusy: true,
-        setCurrentValue,
-        setTargetValue: arm,
-        setValue: null,
-      };
-
-      // Set the panel status.
-      switch (arm) {
-        case this.#characteristic.SecuritySystemTargetState.STAY_ARM: {
-          result = await this.#instance.setPanelStatus(condensedPanelStates['armValue'], 'stay', isAlarmActive);
-
-          break;
-        }
-
-        case this.#characteristic.SecuritySystemTargetState.AWAY_ARM: {
-          result = await this.#instance.setPanelStatus(condensedPanelStates['armValue'], 'away', isAlarmActive);
-
-          break;
-        }
-
-        case this.#characteristic.SecuritySystemTargetState.NIGHT_ARM: {
-          result = await this.#instance.setPanelStatus(condensedPanelStates['armValue'], 'night', isAlarmActive);
-
-          break;
-        }
-
-        case this.#characteristic.SecuritySystemTargetState.DISARM: {
-          result = await this.#instance.setPanelStatus(condensedPanelStates['armValue'], 'off', isAlarmActive);
-
-          break;
-        }
-
-        default: {
-          unknownArmValue = true;
-
-          break;
-        }
-      }
-
-      // Set accessory activity to "not busy" after arming.
-      this.#activity = {
-        isBusy: false,
-        setCurrentValue: null,
-        setTargetValue: null,
-        setValue: null,
-      };
-
-      // If request has unknown arm value.
-      if (unknownArmValue === true) {
-        hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.INVALID_VALUE_IN_REQUEST);
-
-        this.#log.error(`Attempted to set panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but request has unknown arm value.`);
-
-        throw hapStatus;
-      }
-
-      // If request was not successful.
-      if (result['success'] === false) {
-        hapStatus = new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.OPERATION_TIMED_OUT);
-
-        this.#log.error(`Attempted to set panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but request was not successful.`);
-
-        stackTracer('api-response', result);
-
-        throw hapStatus;
-      }
+    // Selecting the confirmed target requires no portal operation.
+    if (condensedPanelStates['characteristicValue']['target'] === arm) {
+      return;
     }
+
+    const isAlarmActive: Lib_Accessory_ADTPulseAccessory_SetPanelStatus_IsAlarmActive = isPanelAlarmActive(
+      this.#state['data']['panelStatus']['panelStatuses'],
+      this.#state['data']['orbSecurityButtons'],
+      (this.#config !== null) ? this.#config['options'].includes('ignoreSensorProblemStatus') : false,
+    );
+
+    this.#panelRequestRevision += 1;
+    this.#activity = {
+      isBusy: true,
+      setCurrentValue: condensedPanelStates['characteristicValue']['current'],
+      setTargetValue: arm,
+      setValue: null,
+    };
+
+    // A resolved write means the target was accepted, not physically confirmed.
+    void this.processPanelStatus(condensedPanelStates['armValue'], isAlarmActive).catch((error) => {
+      const backgroundErrorMessage: Lib_Accessory_ADTPulseAccessory_SetPanelStatus_BackgroundErrorMessage = (error instanceof Error) ? error.message : 'Unknown error';
+
+      this.#log.error(`Attempted to set panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but the background request failed: ${backgroundErrorMessage}.`);
+
+      this.reconcilePanelStatusFailure(new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE));
+
+      return;
+    });
 
     return;
   }

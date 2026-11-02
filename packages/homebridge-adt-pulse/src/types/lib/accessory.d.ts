@@ -10,7 +10,10 @@ import type {
 } from 'homebridge';
 
 import type { ADTPulseAPI } from '../../lib/api.js';
-import type { Constant_PortalPanelArmValue } from '../constant.d.ts';
+import type {
+  Constant_PortalPanelArmValue,
+  Constant_PortalPanelState,
+} from '../constant.d.ts';
 import type {
   Shared_Device,
   Shared_Device_Firmware,
@@ -124,6 +127,25 @@ export type Lib_Accessory_ADTPulseAccessory_Constructor_Software = Shared_Device
 export type Lib_Accessory_ADTPulseAccessory_Constructor_Type = Shared_Device_Type;
 
 /**
+ * Lib - Accessory - Get Panel Characteristic Values.
+ *
+ * @since 3.5.8
+ */
+export type Lib_Accessory_ADTPulseAccessory_GetPanelCharacteristicValues_ArmValue = Constant_PortalPanelArmValue;
+
+export type Lib_Accessory_ADTPulseAccessory_GetPanelCharacteristicValues_Returns_Current = CharacteristicValue;
+
+export type Lib_Accessory_ADTPulseAccessory_GetPanelCharacteristicValues_Returns_PanelState = Constant_PortalPanelState;
+
+export type Lib_Accessory_ADTPulseAccessory_GetPanelCharacteristicValues_Returns_Target = CharacteristicValue;
+
+export type Lib_Accessory_ADTPulseAccessory_GetPanelCharacteristicValues_Returns = {
+  current: Lib_Accessory_ADTPulseAccessory_GetPanelCharacteristicValues_Returns_Current;
+  panelState: Lib_Accessory_ADTPulseAccessory_GetPanelCharacteristicValues_Returns_PanelState;
+  target: Lib_Accessory_ADTPulseAccessory_GetPanelCharacteristicValues_Returns_Target;
+} | undefined;
+
+/**
  * Lib - Accessory - Get Panel Status.
  *
  * @since 1.0.0
@@ -213,6 +235,111 @@ export type Lib_Accessory_ADTPulseAccessory_Instance = ADTPulseAPI;
 export type Lib_Accessory_ADTPulseAccessory_Log = Logger;
 
 /**
+ * Lib - Accessory - Panel Request Revision.
+ *
+ * @since 3.5.8
+ */
+export type Lib_Accessory_ADTPulseAccessory_PanelRequestRevision = number;
+
+/**
+ * Lib - Accessory - Process Panel Status.
+ *
+ * @since 3.5.8
+ */
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_ArmFrom = Constant_PortalPanelArmValue;
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_IsAlarmActive = boolean;
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Returns = Promise<void>;
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Context = Shared_Device;
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Id = Shared_Device_Id;
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Name = Shared_Device_Name;
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Uuid = Shared_Device_Uuid;
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_RequestRevision = number;
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_TargetValue = Nullable<CharacteristicValue>;
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_ArmTo = Constant_PortalPanelArmValue | undefined;
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_HapStatus = HapStatusError | undefined;
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Result_Fail_Success = false;
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Result_Fail_Info_ConfirmedArmValue = Constant_PortalPanelArmValue;
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Result_Fail_Info_Error = unknown;
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Result_Fail_Info_Message = string;
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Result_Fail_Info = {
+  confirmedArmValue?: Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Result_Fail_Info_ConfirmedArmValue;
+  error?: Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Result_Fail_Info_Error;
+  message?: Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Result_Fail_Info_Message;
+};
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Result_Fail = {
+  success: Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Result_Fail_Success;
+  info: Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Result_Fail_Info;
+};
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Result_Success_Success = true;
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Result_Success_Info_ConfirmedArmValue = Constant_PortalPanelArmValue;
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Result_Success_Info = {
+  confirmedArmValue: Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Result_Success_Info_ConfirmedArmValue;
+};
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Result_Success = {
+  success: Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Result_Success_Success;
+  info: Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Result_Success_Info;
+};
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Result =
+  Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Result_Fail
+  | Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_Result_Success;
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_ConfirmedArmValue = Constant_PortalPanelArmValue | undefined;
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_CharacteristicValues_Current = CharacteristicValue;
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_CharacteristicValues_PanelState = Constant_PortalPanelState;
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_CharacteristicValues_Target = CharacteristicValue;
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_CharacteristicValues = {
+  current: Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_CharacteristicValues_Current;
+  panelState: Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_CharacteristicValues_PanelState;
+  target: Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_CharacteristicValues_Target;
+} | undefined;
+
+export type Lib_Accessory_ADTPulseAccessory_ProcessPanelStatus_ResponseMessage = string;
+
+/**
+ * Lib - Accessory - Reconcile Panel Status Failure.
+ *
+ * @since 3.5.8
+ */
+export type Lib_Accessory_ADTPulseAccessory_ReconcilePanelStatusFailure_HapStatus = HapStatusError;
+
+export type Lib_Accessory_ADTPulseAccessory_ReconcilePanelStatusFailure_Returns = void;
+
+export type Lib_Accessory_ADTPulseAccessory_ReconcilePanelStatusFailure_CurrentCharacteristic = Characteristic;
+
+export type Lib_Accessory_ADTPulseAccessory_ReconcilePanelStatusFailure_TargetCharacteristic = Characteristic;
+
+export type Lib_Accessory_ADTPulseAccessory_ReconcilePanelStatusFailure_CurrentValue = Nullable<CharacteristicValue>;
+
+export type Lib_Accessory_ADTPulseAccessory_ReconcilePanelStatusFailure_TargetValue = CharacteristicValue | undefined;
+
+export type Lib_Accessory_ADTPulseAccessory_ReconcilePanelStatusFailure_ErrorMessage = string;
+
+/**
  * Lib - Accessory - Services.
  *
  * @since 1.0.0
@@ -247,13 +374,7 @@ export type Lib_Accessory_ADTPulseAccessory_SetPanelStatus_Uuid = Shared_Device_
 
 export type Lib_Accessory_ADTPulseAccessory_SetPanelStatus_HapStatus = HapStatusError | undefined;
 
-export type Lib_Accessory_ADTPulseAccessory_SetPanelStatus_Result_Success = boolean;
-
-export type Lib_Accessory_ADTPulseAccessory_SetPanelStatus_Result = {
-  success: Lib_Accessory_ADTPulseAccessory_SetPanelStatus_Result_Success;
-};
-
-export type Lib_Accessory_ADTPulseAccessory_SetPanelStatus_UnknownArmValue = boolean;
+export type Lib_Accessory_ADTPulseAccessory_SetPanelStatus_RequestedCurrentValue = CharacteristicValue | undefined;
 
 export type Lib_Accessory_ADTPulseAccessory_SetPanelStatus_PanelStates = Shared_PanelStatus_PanelStates;
 
@@ -275,7 +396,7 @@ export type Lib_Accessory_ADTPulseAccessory_SetPanelStatus_CondensedPanelStates 
 
 export type Lib_Accessory_ADTPulseAccessory_SetPanelStatus_IsAlarmActive = boolean;
 
-export type Lib_Accessory_ADTPulseAccessory_SetPanelStatus_SetCurrentValue = CharacteristicValue | undefined;
+export type Lib_Accessory_ADTPulseAccessory_SetPanelStatus_BackgroundErrorMessage = string;
 
 /**
  * Lib - Accessory - Set Panel Switch Status.

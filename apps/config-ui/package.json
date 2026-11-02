@@ -1,6 +1,6 @@
 {
   "name": "homebridge-adt-pulse-app-config-ui",
-  "version": "3.5.7",
+  "version": "3.5.8",
   "license": "MIT",
   "type": "module",
   "private": true,

@@ -1,5 +1,10 @@
 # homebridge-adt-pulse
 
+## 3.5.8 - 2026-11-02
+
+### FIXED
+- Kept HomeKit panel writes responsive while ADT Pulse confirms arm and disarm changes.
+
 ## 3.5.7 - 2026-11-01
 
 ### UPDATED

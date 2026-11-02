@@ -75,6 +75,7 @@ import type {
   Lib_Api_ADTPulseAPI_ArmDisarmHandler_SecurityButtons,
   Lib_Api_ADTPulseAPI_ArmDisarmHandler_SecurityButtonsResponse,
   Lib_Api_ADTPulseAPI_ArmDisarmHandler_Sessions,
+  Lib_Api_ADTPulseAPI_ArmDisarmHandler_StateConfirmed,
   Lib_Api_ADTPulseAPI_Connection,
   Lib_Api_ADTPulseAPI_Constructor_Config,
   Lib_Api_ADTPulseAPI_Constructor_InternalConfig,
@@ -211,6 +212,8 @@ import type {
   Lib_Api_ADTPulseAPI_SetPanelStatus_ArmDisarmResponse,
   Lib_Api_ADTPulseAPI_SetPanelStatus_ArmFrom,
   Lib_Api_ADTPulseAPI_SetPanelStatus_ArmTo,
+  Lib_Api_ADTPulseAPI_SetPanelStatus_ConfirmedArmState,
+  Lib_Api_ADTPulseAPI_SetPanelStatus_ConfirmedArmValue,
   Lib_Api_ADTPulseAPI_SetPanelStatus_DisarmResponse,
   Lib_Api_ADTPulseAPI_SetPanelStatus_ErrorObject,
   Lib_Api_ADTPulseAPI_SetPanelStatus_ForceArmRequired,
@@ -221,6 +224,7 @@ import type {
   Lib_Api_ADTPulseAPI_SetPanelStatus_Returns,
   Lib_Api_ADTPulseAPI_SetPanelStatus_SecurityButtons,
   Lib_Api_ADTPulseAPI_SetPanelStatus_SecurityButtonsResponse,
+  Lib_Api_ADTPulseAPI_SetPanelStatus_StateConfirmed,
 } from '../types/lib/api.d.ts';
 
 /**
@@ -1541,7 +1545,7 @@ export class ADTPulseAPI {
    *
    * @returns {Lib_Api_ADTPulseAPI_SetPanelStatus_Returns}
    *
-   * @since 1.0.0
+   * @since 3.5.8
    */
   public async setPanelStatus(armFrom: Lib_Api_ADTPulseAPI_SetPanelStatus_ArmFrom, armTo: Lib_Api_ADTPulseAPI_SetPanelStatus_ArmTo, isAlarmActive: Lib_Api_ADTPulseAPI_SetPanelStatus_IsAlarmActive): Lib_Api_ADTPulseAPI_SetPanelStatus_Returns {
     let errorObject: Lib_Api_ADTPulseAPI_SetPanelStatus_ErrorObject = undefined;
@@ -1619,6 +1623,7 @@ export class ADTPulseAPI {
         action: 'SET_PANEL_STATUS',
         success: true,
         info: {
+          confirmedArmValue: armFrom,
           forceArmRequired: false,
         },
       };
@@ -1651,6 +1656,7 @@ export class ADTPulseAPI {
 
       // Only keep all ready (enabled) orb security buttons.
       let readyButtons: Lib_Api_ADTPulseAPI_SetPanelStatus_ReadyButtons = securityButtons.filter((securityButton): securityButton is Lib_Api_ADTPulseAPI_SetPanelStatus_ReadyButton_TypeGuard => securityButton['buttonDisabled'] === false);
+      let stateConfirmed: Lib_Api_ADTPulseAPI_SetPanelStatus_StateConfirmed = true;
 
       // Generate "fake" ready buttons if arming tasks become stuck (backup sat code required).
       if (readyButtons.length === 0 && this.#session['backupSatCode'] !== null) {
@@ -1659,6 +1665,7 @@ export class ADTPulseAPI {
           href: 'rest/adt/ui/client/security/setArmState',
           sat: this.#session['backupSatCode'],
         });
+        stateConfirmed = false;
 
         if (this.#internal['debug'] === true) {
           debugLog(this.#internal['logger'], 'api.ts / ADTPulseAPI.setPanelStatus()', 'warn', 'No security buttons were found. Replacing stuck orb security buttons with fake buttons');
@@ -1772,6 +1779,7 @@ export class ADTPulseAPI {
 
         // Update the ready buttons to the latest known state.
         readyButtons = disarmResponse['info']['readyButtons'];
+        stateConfirmed = disarmResponse['info']['stateConfirmed'];
 
         // At this point, the alarm should stop ringing, and state should be "Uncleared Alarm".
         if (isAlarmCurrentlyActive === true) {
@@ -1808,7 +1816,82 @@ export class ADTPulseAPI {
           };
         }
 
+        readyButtons = armDisarmResponse['info']['readyButtons'];
         forceArmRequired = armDisarmResponse['info']['forceArmRequired'];
+        stateConfirmed = armDisarmResponse['info']['stateConfirmed'];
+      }
+
+      // Require the post-command refresh to report the panel's physical state.
+      if (readyButtons.length < 1) {
+        return {
+          action: 'SET_PANEL_STATUS',
+          success: false,
+          info: {
+            message: 'The panel state could not be confirmed after the arm state request',
+          },
+        };
+      }
+
+      if (stateConfirmed === false) {
+        return {
+          action: 'SET_PANEL_STATUS',
+          success: false,
+          info: {
+            message: 'The panel was still changing state after the arm state request',
+          },
+        };
+      }
+
+      const confirmedArmState: Lib_Api_ADTPulseAPI_SetPanelStatus_ConfirmedArmState = readyButtons[0]!['urlParams']['armState'];
+      let confirmedArmValue: Lib_Api_ADTPulseAPI_SetPanelStatus_ConfirmedArmValue = undefined;
+
+      switch (confirmedArmState) {
+        case 'away': {
+          confirmedArmValue = 'away';
+          break;
+        }
+
+        case 'night':
+        case 'night+stay': {
+          confirmedArmValue = 'night';
+          break;
+        }
+
+        case 'off':
+        case 'disarmed': {
+          confirmedArmValue = 'off';
+          break;
+        }
+
+        case 'stay': {
+          confirmedArmValue = 'stay';
+          break;
+        }
+
+        default: {
+          break;
+        }
+      }
+
+      if (confirmedArmValue === undefined) {
+        return {
+          action: 'SET_PANEL_STATUS',
+          success: false,
+          info: {
+            message: `The panel reported an unsupported arm state of "${confirmedArmState}" after the arm state request`,
+          },
+        };
+      }
+
+      if (confirmedArmValue !== armTo) {
+        return {
+          action: 'SET_PANEL_STATUS',
+          success: false,
+          info: {
+            confirmedArmValue,
+            message: `The panel reported "${confirmedArmValue}" after "${armTo}" was requested`,
+          },
+        };
       }
 
       if (this.#internal['debug'] === true) {
@@ -1819,6 +1902,7 @@ export class ADTPulseAPI {
         action: 'SET_PANEL_STATUS',
         success: true,
         info: {
+          confirmedArmValue,
           forceArmRequired,
         },
       };
@@ -2720,7 +2804,7 @@ export class ADTPulseAPI {
    *
    * @returns {Lib_Api_ADTPulseAPI_ArmDisarmHandler_Returns}
    *
-   * @since 1.0.0
+   * @since 3.5.8
    */
   private async armDisarmHandler(isAlarmActive: Lib_Api_ADTPulseAPI_ArmDisarmHandler_IsAlarmActive, options: Lib_Api_ADTPulseAPI_ArmDisarmHandler_Options): Lib_Api_ADTPulseAPI_ArmDisarmHandler_Returns {
     let errorObject: Lib_Api_ADTPulseAPI_ArmDisarmHandler_ErrorObject = undefined;
@@ -2765,6 +2849,7 @@ export class ADTPulseAPI {
         info: {
           forceArmRequired: false,
           readyButtons: [],
+          stateConfirmed: true,
         },
       };
     }
@@ -2907,6 +2992,7 @@ export class ADTPulseAPI {
       const securityButtons: Lib_Api_ADTPulseAPI_ArmDisarmHandler_SecurityButtons = securityButtonsResponse['info'];
 
       let readyButtons: Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReadyButtons = securityButtons.filter((securityButton): securityButton is Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReadyButton_TypeGuard => securityButton['buttonDisabled'] === false);
+      let stateConfirmed: Lib_Api_ADTPulseAPI_ArmDisarmHandler_StateConfirmed = true;
 
       // Generate "fake" ready buttons if arming tasks become stuck.
       if (readyButtons.length === 0) {
@@ -2915,6 +3001,7 @@ export class ADTPulseAPI {
           href: options['href'],
           sat: options['sat'],
         });
+        stateConfirmed = false;
 
         if (this.#internal['debug'] === true) {
           debugLog(this.#internal['logger'], 'api.ts / ADTPulseAPI.armDisarmHandler()', 'warn', 'No security buttons were found. Replacing stuck orb security buttons with fake buttons');
@@ -2935,6 +3022,7 @@ export class ADTPulseAPI {
         info: {
           forceArmRequired,
           readyButtons,
+          stateConfirmed,
         },
       };
     } catch (error) {
