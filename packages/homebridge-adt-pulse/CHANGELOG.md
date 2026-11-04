@@ -1,5 +1,10 @@
 # homebridge-adt-pulse
 
+## 3.5.9 - 2026-11-04
+
+### FIXED
+- Prevented slow HomeKit security panel target write warnings by starting ADT Pulse portal work after Homebridge acknowledges the request.
+
 ## 3.5.8 - 2026-11-02
 
 ### FIXED

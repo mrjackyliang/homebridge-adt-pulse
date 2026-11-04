@@ -1,5 +1,9 @@
 # homebridge-adt-pulse-app-config-ui
 
+## 3.5.9 - 2026-11-04
+
+No changes.
+
 ## 3.5.8 - 2026-11-02
 
 No changes.

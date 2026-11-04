@@ -1406,13 +1406,18 @@ export class ADTPulseAccessory {
       setValue: null,
     };
 
-    // A resolved write means the target was accepted, not physically confirmed.
-    void this.processPanelStatus(condensedPanelStates['armValue'], isAlarmActive).catch((error) => {
-      const backgroundErrorMessage: Lib_Accessory_ADTPulseAccessory_SetPanelStatus_BackgroundErrorMessage = (error instanceof Error) ? error.message : 'Unknown error';
+    // Let Homebridge acknowledge the accepted target before any portal work
+    // begins. Physical state is still updated only after ADT confirms it.
+    setImmediate(() => {
+      void this.processPanelStatus(condensedPanelStates['armValue'], isAlarmActive).catch((error) => {
+        const backgroundErrorMessage: Lib_Accessory_ADTPulseAccessory_SetPanelStatus_BackgroundErrorMessage = (error instanceof Error) ? error.message : 'Unknown error';
 
-      this.#log.error(`Attempted to set panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but the background request failed: ${backgroundErrorMessage}.`);
+        this.#log.error(`Attempted to set panel status on ${chalk.underline(name)} (id: ${id}, uuid: ${uuid}) accessory but the background request failed: ${backgroundErrorMessage}.`);
 
-      this.reconcilePanelStatusFailure(new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE));
+        this.reconcilePanelStatusFailure(new this.#api.hap.HapStatusError(this.#api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE));
+
+        return;
+      });
 
       return;
     });

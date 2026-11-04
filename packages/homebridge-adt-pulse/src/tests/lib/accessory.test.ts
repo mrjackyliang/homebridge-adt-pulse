@@ -557,11 +557,13 @@ describe('ADTPulseAccessory', () => {
     expect(setter).toBeTypeOf('function');
     await setter?.(target);
 
-    expect(harness.instanceMethods.setPanelStatus).toHaveBeenCalledWith(
-      initialState === 'Disarmed' ? 'off' : 'away',
-      portalArm,
-      false,
-    );
+    await vi.waitFor(() => {
+      expect(harness.instanceMethods.setPanelStatus).toHaveBeenCalledWith(
+        initialState === 'Disarmed' ? 'off' : 'away',
+        portalArm,
+        false,
+      );
+    });
   });
 
   it('acknowledges a target promptly and applies delayed ADT confirmation', async () => {
@@ -584,6 +586,11 @@ describe('ADTPulseAccessory', () => {
     const write = setter?.(characteristic.SecuritySystemTargetState.AWAY_ARM);
 
     await expect(write).resolves.toBeUndefined();
+    expect(harness.instanceMethods.setPanelStatus).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(harness.instanceMethods.setPanelStatus).toHaveBeenCalledOnce();
 
     harness.handler.updater();
 
@@ -632,6 +639,10 @@ describe('ADTPulseAccessory', () => {
     await expect(setter?.(characteristic.SecuritySystemTargetState.AWAY_ARM)).resolves.toBeUndefined();
     await expect(setter?.(characteristic.SecuritySystemTargetState.AWAY_ARM)).resolves.toBeUndefined();
 
+    expect(harness.instanceMethods.setPanelStatus).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(0);
+
     expect(harness.instanceMethods.setPanelStatus).toHaveBeenCalledOnce();
 
     await vi.advanceTimersByTimeAsync(5000);
@@ -665,6 +676,7 @@ describe('ADTPulseAccessory', () => {
     const setter = harness.recordFor(characteristic.SecuritySystemTargetState).setter;
 
     await expect(setter?.(characteristic.SecuritySystemTargetState.AWAY_ARM)).resolves.toBeUndefined();
+    await vi.advanceTimersByTimeAsync(0);
     await expect(setter?.(characteristic.SecuritySystemTargetState.DISARM)).resolves.toBeUndefined();
 
     harness.handler.updater();
@@ -725,6 +737,7 @@ describe('ADTPulseAccessory', () => {
     });
 
     await expect(setter?.(characteristic.SecuritySystemTargetState.STAY_ARM)).resolves.toBeUndefined();
+    await vi.advanceTimersByTimeAsync(0);
 
     await vi.waitFor(() => {
       expect(harness.instanceMethods.setPanelStatus).toHaveBeenCalledTimes(2);
@@ -758,6 +771,7 @@ describe('ADTPulseAccessory', () => {
     const setter = harness.recordFor(characteristic.SecuritySystemTargetState).setter;
 
     await expect(setter?.(characteristic.SecuritySystemTargetState.AWAY_ARM)).resolves.toBeUndefined();
+    await vi.advanceTimersByTimeAsync(0);
     await expect(setter?.(characteristic.SecuritySystemTargetState.STAY_ARM)).resolves.toBeUndefined();
 
     await vi.advanceTimersByTimeAsync(1000);
@@ -772,6 +786,7 @@ describe('ADTPulseAccessory', () => {
     );
 
     await expect(setter?.(characteristic.SecuritySystemTargetState.NIGHT_ARM)).resolves.toBeUndefined();
+    await vi.advanceTimersByTimeAsync(0);
 
     await vi.waitFor(() => {
       expect(harness.instanceMethods.setPanelStatus).toHaveBeenCalledTimes(2);
@@ -807,6 +822,7 @@ describe('ADTPulseAccessory', () => {
     await expect(setter?.(characteristic.SecuritySystemTargetState.AWAY_ARM)).resolves.toBeUndefined();
     await vi.advanceTimersByTimeAsync(1000);
     await expect(setter?.(characteristic.SecuritySystemTargetState.DISARM)).resolves.toBeUndefined();
+    await vi.advanceTimersByTimeAsync(0);
 
     await vi.waitFor(() => {
       expect(harness.instanceMethods.setPanelStatus).toHaveBeenCalledTimes(2);
