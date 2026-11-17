@@ -17,11 +17,11 @@ tags:
 
 import { Terminology } from '@cbnventures/docusaurus-preset-nova/blocks';
 
-Slow down the <Terminology title="periodic portal signal reporting whether device state changed" to="/docs/reference/terminology#sync-check">sync check</Terminology> firing interval so the plugin puts less strain on older routers and devices.
+Slow down the <Terminology title="How the plugin learns something changed on the portal" to="/docs/reference/terminology#portal-sessions">sync check</Terminology> firing interval so the plugin puts less strain on older routers and devices.
 
 ## Overview
 
-By default, the plugin fires every second to assess whether <Terminology title="periodic portal signal reporting whether device state changed" to="/docs/reference/terminology#sync-check">sync check</Terminology> signals or <Terminology title="periodic portal signal that keeps your session logged in" to="/docs/reference/terminology#keep-alive">keep-alive</Terminology> signals should be dispatched. This keeps device states in the Home app as fresh as possible.
+By default, the plugin fires every second to assess whether <Terminology title="How the plugin learns something changed on the portal" to="/docs/reference/terminology#portal-sessions">sync check</Terminology> signals or <Terminology title="Keeps your portal login from timing out" to="/docs/reference/terminology#portal-sessions">keep-alive</Terminology> signals should be dispatched. This keeps device states in the Home app as fresh as possible.
 
 That pace is not always ideal. On some consumer routers the constant polling can cause a network slowdown, and on older devices that are incompatible with newer OpenSSL versions (`v3.1`), it can result in sustained 100% CPU usage.
 
@@ -42,7 +42,7 @@ Lower values reduce network and CPU pressure but may result in slower device upd
 
 ## Configuration
 
-Set the `speed` field inside the <Terminology title="this plugin's settings object in config.json" to="/docs/reference/terminology#platform-block">platform block</Terminology> of your `config.json`. This example uses the slowest interval:
+Set the `speed` field inside the <Terminology title="This plugin's settings object in config.json" to="/docs/reference/terminology#plugin-configuration">platform block</Terminology> of your `config.json`. This example uses the slowest interval:
 
 ```json title="config.json"
 {
@@ -71,4 +71,4 @@ The default speed is recommended for most setups. Consider a lower value only wh
 - **Network slowdown** — The router struggles under the plugin's constant polling.
 - **Sustained 100% CPU** — An older device incompatible with OpenSSL `v3.1` stays pinned at full CPU usage.
 
-The `speed` field sits alongside the other <Terminology title="the Homebridge plugin type this project registers" to="/docs/reference/terminology#platform">platform</Terminology> settings. See [Operational Mode](/docs/configuration/operational-mode/) for pausing or resetting the plugin, and [Advanced Options](/docs/configuration/advanced-options/) for disabling specific behaviors.
+The `speed` field sits alongside the other <Terminology title="The Homebridge plugin type; this one is ADTPulse" to="/docs/reference/terminology#plugin-configuration">platform</Terminology> settings. See [Operational Mode](/docs/configuration/operational-mode/) for pausing or resetting the plugin, and [Advanced Options](/docs/configuration/advanced-options/) for disabling specific behaviors.

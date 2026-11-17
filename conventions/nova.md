@@ -45,6 +45,12 @@ check and build remain the final repository contract.
 - Do not place secrets, tokens, private keys, or credential paths in
   `nova.config.json`. Use the vendor's official credential location or the
   environment contract documented for that integration.
+- Environment keys are declared without their namespace. The environment
+  manager adds the project, workspace, or workflow prefix when it syncs a value
+  to GitHub, so `RELEASE_SIGNING_KEY` under a `PFSENSE_` workspace is stored
+  and read as `PFSENSE_RELEASE_SIGNING_KEY`. Generator setup lists show the
+  declared key, not the GitHub name; run `nova utility configure --status` to
+  see the GitHub names.
 
 ## Command Boundaries
 

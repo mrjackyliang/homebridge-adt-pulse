@@ -921,13 +921,13 @@ describe('ADTPulseAPI', () => {
 
   it('does not treat predicted buttons as physical panel confirmation', async () => {
     const api = createApi();
-    vi.spyOn(api, 'getOrbSecurityButtons')
+    const getOrbSecurityButtons = vi.spyOn(api, 'getOrbSecurityButtons')
       .mockResolvedValueOnce({
         action: 'GET_ORB_SECURITY_BUTTONS',
         info: [readyButton('off', 'away')],
         success: true,
       } as never)
-      .mockResolvedValueOnce({
+      .mockResolvedValue({
         action: 'GET_ORB_SECURITY_BUTTONS',
         info: [{
           buttonDisabled: true,
@@ -936,6 +936,18 @@ describe('ADTPulseAPI', () => {
         }],
         success: true,
       } as never);
+    const getPanelStatus = vi.spyOn(api, 'getPanelStatus').mockResolvedValueOnce({
+      action: 'GET_PANEL_STATUS',
+      info: {
+        panelNotes: [],
+        panelStates: ['Disarmed'],
+        panelStatuses: ['All Quiet'],
+        rawData: {
+          node: 'Disarmed. All Quiet.',
+        },
+      },
+      success: true,
+    } as never);
     httpMocks.post.mockResolvedValueOnce(createHtmlResponse(
       '<html><body></body></html>',
       '/myhome/3.5.0/quickcontrol/armDisarm.jsp',
@@ -948,6 +960,92 @@ describe('ADTPulseAPI', () => {
       },
       success: false,
     });
+    // One read before arming, one after the arm wait, then 10 re-reads while every button stays disabled.
+    expect(getOrbSecurityButtons).toHaveBeenCalledTimes(12);
+    expect(getPanelStatus).toHaveBeenCalledTimes(1);
+  });
+
+  it('confirms the new state from the panel status line when the button stays disabled', async () => {
+    const api = createApi();
+    vi.spyOn(api, 'getOrbSecurityButtons')
+      .mockResolvedValueOnce({
+        action: 'GET_ORB_SECURITY_BUTTONS',
+        info: [readyButton('off', 'night')],
+        success: true,
+      } as never)
+      .mockResolvedValue({
+        action: 'GET_ORB_SECURITY_BUTTONS',
+        info: [{
+          buttonDisabled: true,
+          buttonId: 'security_button_0',
+          buttonText: 'Arming Night',
+        }],
+        success: true,
+      } as never);
+    vi.spyOn(api, 'getPanelStatus').mockResolvedValueOnce({
+      action: 'GET_PANEL_STATUS',
+      info: {
+        panelNotes: [],
+        panelStates: ['Armed Night'],
+        panelStatuses: ['All Quiet'],
+        rawData: {
+          node: 'Armed Night. All Quiet.',
+        },
+      },
+      success: true,
+    } as never);
+    httpMocks.post.mockResolvedValueOnce(createHtmlResponse(
+      '<html><body></body></html>',
+      '/myhome/3.5.0/quickcontrol/armDisarm.jsp',
+    ));
+
+    await expect(api.setPanelStatus('off', 'night', false)).resolves.toEqual({
+      action: 'SET_PANEL_STATUS',
+      info: {
+        confirmedArmValue: 'night',
+        forceArmRequired: false,
+      },
+      success: true,
+    });
+  });
+
+  it('keeps re-reading the buttons while the panel is still arming and confirms the new state', async () => {
+    const api = createApi();
+    const getOrbSecurityButtons = vi.spyOn(api, 'getOrbSecurityButtons')
+      .mockResolvedValueOnce({
+        action: 'GET_ORB_SECURITY_BUTTONS',
+        info: [readyButton('off', 'night')],
+        success: true,
+      } as never)
+      .mockResolvedValueOnce({
+        action: 'GET_ORB_SECURITY_BUTTONS',
+        info: [{
+          buttonDisabled: true,
+          buttonId: 'security_button_0',
+          buttonText: 'Arming Night',
+        }],
+        success: true,
+      } as never)
+      .mockResolvedValueOnce({
+        action: 'GET_ORB_SECURITY_BUTTONS',
+        info: [readyButton('night+stay', 'off')],
+        success: true,
+      } as never);
+    httpMocks.post.mockResolvedValueOnce(createHtmlResponse(
+      '<html><body></body></html>',
+      '/myhome/3.5.0/quickcontrol/armDisarm.jsp',
+    ));
+
+    await expect(api.setPanelStatus('off', 'night', false)).resolves.toEqual({
+      action: 'SET_PANEL_STATUS',
+      info: {
+        confirmedArmValue: 'night',
+        forceArmRequired: false,
+      },
+      success: true,
+    });
+    expect(getOrbSecurityButtons).toHaveBeenCalledTimes(3);
+    expect(utilityMocks.sleep).toHaveBeenCalledWith(2000);
   });
 
   it('disarms an active alarm before applying the requested armed state', async () => {

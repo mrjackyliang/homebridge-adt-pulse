@@ -10,10 +10,10 @@
 <!-- nova-region: header -->
   <a href="https://mrjackyliang.github.io/homebridge-adt-pulse/">
     <picture>
-      <img alt="Homebridge ADT Pulse" src="https://mrjackyliang.github.io/homebridge-adt-pulse/images/logo.svg" height="128">
+      <img alt="ADT Pulse for Homebridge" src="https://mrjackyliang.github.io/homebridge-adt-pulse/images/logo.svg" height="128">
     </picture>
   </a>
-  <h1>Homebridge ADT Pulse</h1>
+  <h1>ADT Pulse for Homebridge</h1>
 <!-- nova-region-end: header -->
 <!-- nova-region: badges -->
   <a href="https://github.com/homebridge/homebridge/wiki/Verified-Plugins">
@@ -46,7 +46,7 @@
 <!-- nova-region: introduction -->
 ## Introduction
 
-Homebridge ADT Pulse is a Homebridge platform plugin that connects an ADT Pulse security system to Apple HomeKit. It exposes the security panel and its sensors as HomeKit accessories, so the system can be armed or disarmed and sensor status monitored from the Home app.
+ADT Pulse for Homebridge is a Homebridge platform plugin that connects an ADT Pulse security system to Apple HomeKit. It exposes the security panel and its sensors as HomeKit accessories, so the system can be armed or disarmed and sensor status monitored from the Home app.
 <!-- nova-region-end: introduction -->
 
 <!-- nova-region: documentation -->

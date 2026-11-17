@@ -51,6 +51,7 @@ import {
   parseOrbTextSummary,
   parseSensorsTable,
   removePersonalIdentifiableInformation,
+  sendDetectReport,
   sleep,
 } from '../../lib/utility.js';
 
@@ -547,6 +548,50 @@ describe('status and environment helpers', () => {
     await expect(isPluginOutdated()).resolves.toBe(true);
 
     axiosGet.mockRestore();
+  });
+
+  it('gets a session token before sending a detect report', async () => {
+    const axiosPost = vi.spyOn(axios, 'post');
+
+    axiosPost.mockResolvedValueOnce({ data: { status: 'success', token: 'session-token', expires_in: 300 } });
+    axiosPost.mockResolvedValueOnce({ status: 200 });
+
+    await expect(sendDetectReport('Detected a new portal version (v1.0.0)', '{"version":"99.0.0-1"}')).resolves.toBeUndefined();
+
+    expect(axiosPost).toHaveBeenCalledTimes(2);
+    expect(axiosPost).toHaveBeenNthCalledWith(
+      1,
+      `${getDetectReportUrl()}/session`,
+      '',
+      expect.objectContaining({ family: 4 }),
+    );
+    expect(axiosPost).toHaveBeenNthCalledWith(
+      2,
+      getDetectReportUrl(),
+      '{"version":"99.0.0-1"}',
+      expect.objectContaining({
+        family: 4,
+        headers: {
+          'Authorization': 'Bearer session-token',
+          'User-Agent': 'homebridge-adt-pulse',
+          'X-Title': 'Detected a new portal version (v1.0.0)',
+        },
+      }),
+    );
+
+    axiosPost.mockRestore();
+  });
+
+  it('does not send a detect report without a session token', async () => {
+    const axiosPost = vi.spyOn(axios, 'post');
+
+    axiosPost.mockResolvedValueOnce({ data: { status: 'error', message: 'Too many session requests' } });
+
+    await expect(sendDetectReport('Detected a new portal version (v1.0.0)', '{}')).rejects.toThrow('Detect report session did not return a token');
+
+    expect(axiosPost).toHaveBeenCalledOnce();
+
+    axiosPost.mockRestore();
   });
 });
 

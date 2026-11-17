@@ -250,6 +250,12 @@ import type {
   Lib_Utility_RemovePersonalIdentifiableInformation_ReplaceValue_Returns,
   Lib_Utility_RemovePersonalIdentifiableInformation_ReplaceValue_Value,
   Lib_Utility_RemovePersonalIdentifiableInformation_Returns,
+  Lib_Utility_SendDetectReport_Body,
+  Lib_Utility_SendDetectReport_Returns,
+  Lib_Utility_SendDetectReport_SessionData,
+  Lib_Utility_SendDetectReport_SessionResponse,
+  Lib_Utility_SendDetectReport_Title,
+  Lib_Utility_SendDetectReport_Token,
   Lib_Utility_Sleep_Milliseconds,
   Lib_Utility_Sleep_Returns,
   Lib_Utility_StackTracer_Error,
@@ -1886,6 +1892,54 @@ export function removePersonalIdentifiableInformation(data: Lib_Utility_RemovePe
   }
 
   return replaceValue(data);
+}
+
+/**
+ * Lib - Utility - Send Detect Report.
+ *
+ * Gets a one-use session token from the report endpoint, then sends the
+ * report with it, so posts that skip the token never reach the author.
+ *
+ * @param {Lib_Utility_SendDetectReport_Title} title - Title.
+ * @param {Lib_Utility_SendDetectReport_Body}  body  - Body.
+ *
+ * @returns {Lib_Utility_SendDetectReport_Returns}
+ *
+ * @since 3.5.10
+ */
+export async function sendDetectReport(title: Lib_Utility_SendDetectReport_Title, body: Lib_Utility_SendDetectReport_Body): Lib_Utility_SendDetectReport_Returns {
+  // Both requests stay on IPv4, because a session token only works from the address that asked for it.
+  const sessionResponse: Lib_Utility_SendDetectReport_SessionResponse = await axios.post(
+    `${getDetectReportUrl()}/session`,
+    '',
+    {
+      family: 4,
+      headers: {
+        'User-Agent': 'homebridge-adt-pulse',
+      },
+    },
+  );
+  const sessionData: Lib_Utility_SendDetectReport_SessionData = sessionResponse.data;
+  const token: Lib_Utility_SendDetectReport_Token = (sessionData !== undefined && sessionData !== null) ? sessionData['token'] : undefined;
+
+  if (typeof token !== 'string') {
+    throw new Error('Detect report session did not return a token');
+  }
+
+  await axios.post(
+    getDetectReportUrl(),
+    body,
+    {
+      family: 4,
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'User-Agent': 'homebridge-adt-pulse',
+        'X-Title': title,
+      },
+    },
+  );
+
+  return;
 }
 
 /**

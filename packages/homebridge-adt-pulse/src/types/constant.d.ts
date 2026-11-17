@@ -227,7 +227,8 @@ export type Constant_PortalPanelForceArmButtonRelativeUrl =
   | '/myhome/27.0.0-140/quickcontrol/serv/RunRRACommand'
   | '/myhome/28.0.0-57/quickcontrol/serv/RunRRACommand'
   | '/myhome/29.0.0-28/quickcontrol/serv/RunRRACommand'
-  | '/myhome/30.0.0-61/quickcontrol/serv/RunRRACommand';
+  | '/myhome/30.0.0-61/quickcontrol/serv/RunRRACommand'
+  | '/myhome/31.0.0-39/quickcontrol/serv/RunRRACommand';
 
 /**
  * Constant.
@@ -382,4 +383,5 @@ export type Constant_PortalVersion =
   | '27.0.0-140'
   | '28.0.0-57'
   | '29.0.0-28'
-  | '30.0.0-61';
+  | '30.0.0-61'
+  | '31.0.0-39';

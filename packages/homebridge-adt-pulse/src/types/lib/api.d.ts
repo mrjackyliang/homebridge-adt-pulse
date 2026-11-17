@@ -14,6 +14,7 @@ import type {
   Constant_PortalPanelArmValue,
   Constant_PortalPanelForceArmButtonHref,
   Constant_PortalPanelForceArmButtonRelativeUrl,
+  Constant_PortalPanelState,
   Constant_PortalSyncCode,
   Constant_PortalVersion,
 } from '../constant.d.ts';
@@ -180,6 +181,8 @@ export type Lib_Api_ADTPulseAPI_ArmDisarmHandler_ForceArmResponseInfo = {
 export type Lib_Api_ADTPulseAPI_ArmDisarmHandler_ForceArmResponse = Shared_ApiResponse<'FORCE_ARM_HANDLER', Lib_Api_ADTPulseAPI_ArmDisarmHandler_ForceArmResponseInfo>;
 
 export type Lib_Api_ADTPulseAPI_ArmDisarmHandler_SecurityButtonsResponse = Shared_ApiResponse<'GET_ORB_SECURITY_BUTTONS', Shared_OrbSecurityButtons>;
+
+export type Lib_Api_ADTPulseAPI_ArmDisarmHandler_RefreshAttempts = number;
 
 export type Lib_Api_ADTPulseAPI_ArmDisarmHandler_SecurityButtons = Shared_OrbSecurityButtons;
 
@@ -740,6 +743,10 @@ export type Lib_Api_ADTPulseAPI_SetPanelStatus_DisarmResponse = Shared_ApiRespon
 export type Lib_Api_ADTPulseAPI_SetPanelStatus_ForceArmRequired = boolean;
 
 export type Lib_Api_ADTPulseAPI_SetPanelStatus_ArmDisarmResponse = Shared_ApiResponse<'ARM_DISARM_HANDLER', Lib_Api_ADTPulseAPI_SetPanelStatus_ArmDisarmResponseInfo>;
+
+export type Lib_Api_ADTPulseAPI_SetPanelStatus_PanelStatusResponse = Shared_ApiResponse<'GET_PANEL_STATUS', Shared_PanelStatus>;
+
+export type Lib_Api_ADTPulseAPI_SetPanelStatus_ExpectedPanelStates = Record<Constant_PortalPanelArmValue, Constant_PortalPanelState>;
 
 export type Lib_Api_ADTPulseAPI_SetPanelStatus_ConfirmedArmState = '' | Constant_PortalPanelArmStateClean | Constant_PortalPanelArmStateDirty;
 

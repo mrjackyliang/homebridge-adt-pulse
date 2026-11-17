@@ -28,16 +28,16 @@ These options remove functionality on purpose, so it is recommended to exercise 
 
 The `options` field is an array of strings. Each string you include enables one advanced option.
 
-| Value                       | Behavior                                                                                                                                                                                             |
-|-----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `disableAlarmRingingSwitch` | Disables the <Terminology title="switch that silences a ringing alarm" to="/docs/reference/terminology#alarm-ringing-switch">"Alarm Ringing" switch</Terminology> that the plugin exposes.           |
-| `ignoreSensorProblemStatus` | Ignores "Sensor Problem" and "Sensor Problems" <Terminology title="the alarm panel accessory for arming and disarming" to="/docs/reference/terminology#security-panel">panel</Terminology> statuses. |
+| Value                       | Behavior                                                                                                                                                                                                                                                             |
+|-----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `disableAlarmRingingSwitch` | Disables the <Terminology title="Turn it off to silence a ringing alarm" to="/docs/reference/terminology#accessories-and-arming">"Alarm Ringing" switch</Terminology> that the plugin exposes.                                                                       |
+| `ignoreSensorProblemStatus` | Stops "Sensor Problem" and "Sensor Problems" <Terminology title="The Home tile you use to arm and disarm" to="/docs/reference/terminology#accessories-and-arming">panel</Terminology> statuses from counting as an active alarm. Fault and tamper still report them. |
 
 By default, the array is empty, and every behavior stays enabled.
 
 ## Disable the Alarm Ringing Switch
 
-Include the `"disableAlarmRingingSwitch"` value in the `options` array to disable the <Terminology title="switch that silences a ringing alarm" to="/docs/reference/terminology#alarm-ringing-switch">"Alarm Ringing" switch</Terminology>.
+Include the `"disableAlarmRingingSwitch"` value in the `options` array to disable the <Terminology title="Turn it off to silence a ringing alarm" to="/docs/reference/terminology#accessories-and-arming">"Alarm Ringing" switch</Terminology>.
 
 :::warning
 Enabling this option prevents you from being able to silence a ringing alarm when the system is in "Disarmed" mode.
@@ -108,4 +108,4 @@ Leaving `options` as an empty array (`[]`) keeps all functionality enabled and a
 
 - [Operational Mode](/docs/configuration/operational-mode/) switches the plugin between Normal, Paused, and Reset.
 - [Synchronization Speed](/docs/configuration/synchronization-speed/) tunes how often the plugin checks for updates.
-- [Sensors and Zones](/docs/configuration/sensors-and-zones/) declares the <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology> exposed to HomeKit.
+- [Sensors and Zones](/docs/configuration/sensors-and-zones/) declares the <Terminology title="A portal device you list in config so it shows up in Home" to="/docs/reference/terminology#plugin-configuration">sensors</Terminology> exposed to HomeKit.

@@ -2,6 +2,15 @@
   overflow-x: clip;
 }
 
+/* =====================================================================
+   Homebridge UI showcase: widens the spotlight past its text column so
+   the 2x captures show near their real size
+   ===================================================================== */
+
+.shotSpotlight :global(.nova-spotlight-inner) {
+  max-width: var(--nova-grid-container-max);
+}
+
 .heroInner {
   max-width: var(--nova-grid-container-max);
   margin-inline: auto;

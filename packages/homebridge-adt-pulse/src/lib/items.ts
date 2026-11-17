@@ -515,6 +515,7 @@ export const itemDoSubmitHandlerRelativeUrls: Lib_Items_ItemDoSubmitHandlerRelat
   '/myhome/28.0.0-57/quickcontrol/serv/RunRRACommand',
   '/myhome/29.0.0-28/quickcontrol/serv/RunRRACommand',
   '/myhome/30.0.0-61/quickcontrol/serv/RunRRACommand',
+  '/myhome/31.0.0-39/quickcontrol/serv/RunRRACommand',
 ];
 
 /**
@@ -754,6 +755,7 @@ export const itemPortalVersions: Lib_Items_ItemPortalVersions = [
   '28.0.0-57',
   '29.0.0-28',
   '30.0.0-61',
+  '31.0.0-39',
 ];
 
 /**

@@ -1,0 +1,53 @@
+---
+title: "ADT Pulse for Homebridge 3.0 Reaches Canada"
+description: Version 3.0.0 rewrites the plugin in TypeScript, adds the Canada ADT Pulse portal, and adds a switch that silences a ringing alarm while disarmed.
+slug: adt-pulse-for-homebridge-3-0
+authors:
+  - mrjackyliang
+keywords:
+  - homebridge adt pulse
+  - adt pulse canada
+  - typescript
+  - alarm ringing switch
+  - homekit
+tags:
+  - release
+  - homekit
+  - homebridge
+---
+
+ADT Pulse for Homebridge 3.0.0 is a ground-up rewrite. It runs on a new TypeScript codebase, connects to the Canada ADT Pulse portal as well as the United States one, and adds a switch for silencing an alarm that rings while the system is disarmed.
+
+{/* truncate */}
+
+## Why It Matters
+
+Version 2 lived in a single JavaScript file and only knew the United States portal. ADT Pulse customers in Canada had no way into the Home app, and every portal change meant working through one large file.
+
+Version 3.0.0 came out of 24 public betas, starting December 16, 2023, with testing and hints from the community.
+
+## What's Included
+
+### Two Portal Regions
+
+The new `subdomain` setting points the plugin at `portal` for the United States or `portal-ca` for Canada.
+
+### A Modular Codebase
+
+The plugin is split into accessory, API, detection, platform, and schema modules, written in TypeScript.
+
+### Alarm Ringing Switch
+
+A carbon monoxide or smoke alarm can ring while the system is disarmed. A dedicated panel switch silences it from the Home app.
+
+### More Sensor States
+
+Sensor statuses reported by the community are supported, and a sensor's **Trouble** status is treated as a tamper.
+
+### Diagnostics
+
+The `test-api` and `repl` scripts test and debug the ADT Pulse portal from the command line.
+
+## Try It
+
+[Portal Region](/docs/getting-started/portal-region/) shows how to pick the United States or Canada portal.

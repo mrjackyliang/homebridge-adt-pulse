@@ -17,17 +17,17 @@ tags:
 
 import { Terminology } from '@cbnventures/docusaurus-preset-nova/blocks';
 
-Troubleshoot <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology> communication with the `hap-test-api` and `hap-repl` <Terminology title="bundled commands for troubleshooting portal connectivity" to="/docs/reference/terminology#test-scripts">scripts</Terminology> bundled with the plugin.
+Troubleshoot <Terminology title="The ADT website the plugin talks to for everything" to="/docs/reference/terminology#adt-pulse-and-homebridge">portal</Terminology> communication with the `hap-test-api` and `hap-repl` <Terminology title="Command-line tools to test the portal connection" to="/docs/reference/terminology#troubleshooting-and-maintenance">scripts</Terminology> bundled with the plugin.
 
 ## Why Use These Scripts?
 
-1. Tests live <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology> operations so you can separate connectivity failures from Homebridge issues.
+1. Tests live <Terminology title="The ADT website the plugin talks to for everything" to="/docs/reference/terminology#adt-pulse-and-homebridge">portal</Terminology> operations so you can separate connectivity failures from Homebridge issues.
 2. Opens a read-eval-print loop so you can inspect API and authentication behavior when something unusual happens.
 3. Runs from your terminal without requiring you to enter the plugin's installed directory.
 
 ## Available Scripts
 
-The plugin ships with two commands for diagnosing <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology> issues.
+The plugin ships with two commands for diagnosing <Terminology title="The ADT website the plugin talks to for everything" to="/docs/reference/terminology#adt-pulse-and-homebridge">portal</Terminology> issues.
 
 | Command        | Description                                                                              |
 |----------------|------------------------------------------------------------------------------------------|
@@ -74,10 +74,10 @@ The plugin's installation path varies by system. Refer to the configuration refe
 
 ## Privacy Reminder
 
-The <Terminology title="bundled commands for troubleshooting portal connectivity" to="/docs/reference/terminology#test-scripts">scripts</Terminology> share the same anomaly-reporting behavior as the running plugin, so a privacy notice appears each time you use them.
+The <Terminology title="Command-line tools to test the portal connection" to="/docs/reference/terminology#troubleshooting-and-maintenance">scripts</Terminology> share the same anomaly-reporting behavior as the running plugin, so a privacy notice appears each time you use them.
 
 :::warning
-A warning is issued every time you run the included <Terminology title="bundled commands for troubleshooting portal connectivity" to="/docs/reference/terminology#test-scripts">scripts</Terminology>, reminding you that any personally identifiable details, such as IP addresses, MAC addresses, or serial numbers, are automatically redacted before anything is sent.
+A notice appears every time you run the included <Terminology title="Command-line tools to test the portal connection" to="/docs/reference/terminology#troubleshooting-and-maintenance">scripts</Terminology>, reminding you that known identifying details, such as IP addresses, MAC addresses, or serial numbers, are automatically redacted before anything is sent. Raw portal HTML in a parser anomaly report is sent unfiltered.
 :::
 
 For the full explanation of what the plugin reports and how identifying data is redacted, see [Detection and Privacy](/docs/operations/detection-and-privacy/).

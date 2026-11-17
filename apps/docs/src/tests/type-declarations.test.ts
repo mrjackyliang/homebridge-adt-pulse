@@ -14,4 +14,5 @@ registerTypeDeclarationSuite({
   vitest,
   enable: 'all',
   typeRoots: ['src'],
+  standaloneTypeFiles: ['src/types/assets.d.ts'],
 });

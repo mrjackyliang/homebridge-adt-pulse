@@ -23,7 +23,7 @@ const config: DocusaurusNovaConfig = {
 
   // Deployment.
   url: identity['url'] ?? '',
-  baseUrl: identity['baseUrl'] ?? '',
+  baseUrl: identity['baseUrl'] ?? '/',
   organizationName: identity['organizationName'],
   projectName: identity['projectName'],
   deploymentBranch: undefined,
@@ -201,23 +201,29 @@ const config: DocusaurusNovaConfig = {
             ],
             copyright: identity['copyright'],
             limit: 20,
-            title: 'Homebridge ADT Pulse Blog',
+            title: 'ADT Pulse for Homebridge Blog',
             description: 'Release notes, setup guides, and notes on bringing ADT Pulse into the Apple Home app.',
           },
         },
-        pages: undefined,
+        pages: {
+          editUrl: 'https://github.com/mrjackyliang/homebridge-adt-pulse/tree/main/apps/docs/',
+          showLastUpdateTime: true,
+          showLastUpdateAuthor: true,
+        },
         sitemap: {
           lastmod: 'date',
           changefreq: 'weekly',
           priority: 0.5,
-          ignorePatterns: ['**/docs/tags/**'],
+          ignorePatterns: [`${identity['baseUrl'] ?? '/'}docs/tags/**`],
           filename: 'sitemap.xml',
         },
       },
 
       // Analytics.
       analytics: {
-        gtm: undefined,
+        gtm: {
+          containerId: 'GTM-NJN3C25S',
+        },
       },
 
       // Search.
@@ -248,7 +254,7 @@ const config: DocusaurusNovaConfig = {
     // Site.
     site: {
       logo: {
-        alt: 'Homebridge ADT Pulse',
+        alt: 'ADT Pulse for Homebridge',
         src: {
           light: `${identity['baseUrl'] ?? '/'}images/navbar.svg`,
           dark: undefined,
@@ -286,17 +292,54 @@ const config: DocusaurusNovaConfig = {
       hideOnScroll: false,
       items: [
         {
-          label: 'Overview',
+          label: 'Docs',
           position: 'left',
-          type: 'doc',
-          docId: 'overview',
+          type: 'dropdown',
           icon: 'lucide:book-open',
+          items: [
+            {
+              label: 'Overview',
+              to: '/docs/overview/',
+              icon: 'lucide:rocket',
+              activeBaseRegex: '^/docs/(overview/|getting-started/|category/getting-started/|tags/)',
+            },
+            {
+              label: 'Configuration Options',
+              to: '/docs/category/configuration-options/',
+              icon: 'lucide:sliders-horizontal',
+              activeBaseRegex: '^/docs/(configuration/|category/configuration-options/)',
+            },
+            {
+              label: 'Alarm and Arming',
+              to: '/docs/category/alarm-and-arming/',
+              icon: 'lucide:shield',
+              activeBaseRegex: '^/docs/(arming/|category/alarm-and-arming/)',
+            },
+            {
+              label: 'Operations and Troubleshooting',
+              to: '/docs/category/operations-and-troubleshooting/',
+              icon: 'lucide:activity',
+              activeBaseRegex: '^/docs/(operations/|category/operations-and-troubleshooting/)',
+            },
+            {
+              label: 'Platform Support',
+              to: '/docs/category/platform-support/',
+              icon: 'lucide:server',
+              activeBaseRegex: '^/docs/(platform-support/|category/platform-support/)',
+            },
+            {
+              label: 'Reference',
+              to: '/docs/category/reference/',
+              icon: 'lucide:library',
+              activeBaseRegex: '^/docs/(reference/|category/reference/)',
+            },
+          ],
         },
         {
-          label: 'Installation',
+          label: 'Quick Start',
           position: 'left',
-          type: 'doc',
-          docId: 'getting-started/installation',
+          type: undefined,
+          to: '/docs/getting-started/installation/',
           icon: 'lucide:rocket',
         },
         {
@@ -307,11 +350,27 @@ const config: DocusaurusNovaConfig = {
           icon: 'lucide:pen-line',
         },
         {
-          label: 'Sponsor',
-          position: 'right',
-          type: undefined,
-          href: 'https://github.com/sponsors/mrjackyliang',
-          icon: 'lucide:heart',
+          label: 'Resources',
+          position: 'left',
+          type: 'dropdown',
+          icon: 'lucide:life-buoy',
+          items: [
+            {
+              label: 'FAQ',
+              to: '/docs/reference/faq/',
+              icon: 'lucide:circle-help',
+            },
+            {
+              label: 'Changelog',
+              href: 'https://github.com/mrjackyliang/homebridge-adt-pulse/releases',
+              icon: 'lucide:history',
+            },
+            {
+              label: 'Report an Issue',
+              href: 'https://github.com/mrjackyliang/homebridge-adt-pulse/issues',
+              icon: 'lucide:bug',
+            },
+          ],
         },
       ],
     },
@@ -384,45 +443,75 @@ const config: DocusaurusNovaConfig = {
             href: '/docs/overview/',
           },
           {
-            label: 'Installation',
-            href: '/docs/getting-started/installation/',
+            label: 'Configuration Options',
+            href: '/docs/category/configuration-options/',
           },
           {
-            label: 'Configuration',
-            href: '/docs/getting-started/configuration/',
+            label: 'Alarm and Arming',
+            href: '/docs/category/alarm-and-arming/',
           },
           {
-            label: 'Config Schema',
-            href: '/docs/reference/config-schema/',
+            label: 'Operations and Troubleshooting',
+            href: '/docs/category/operations-and-troubleshooting/',
+          },
+          {
+            label: 'Platform Support',
+            href: '/docs/category/platform-support/',
+          },
+          {
+            label: 'Reference',
+            href: '/docs/category/reference/',
           },
         ],
-        project: [
+        resources: [
           {
             label: 'Blog',
             href: '/blog/',
           },
           {
-            label: 'GitHub',
+            label: 'FAQ',
+            href: '/docs/reference/faq/',
+          },
+          {
+            label: 'Changelog',
+            href: 'https://github.com/mrjackyliang/homebridge-adt-pulse/releases',
+          },
+          {
+            label: 'Report an Issue',
+            href: 'https://github.com/mrjackyliang/homebridge-adt-pulse/issues',
+          },
+          {
+            label: 'Source Code',
             href: 'https://github.com/mrjackyliang/homebridge-adt-pulse',
+          },
+        ],
+        project: [
+          {
+            label: 'Sponsor',
+            href: 'https://github.com/sponsors/mrjackyliang',
           },
           {
             label: 'Homebridge',
             href: 'https://github.com/homebridge/homebridge',
           },
           {
-            label: 'Report an Issue',
-            href: 'https://github.com/mrjackyliang/homebridge-adt-pulse/issues',
+            label: 'Other Projects',
+            href: 'https://www.mrjackyliang.com/work/',
           },
         ],
         legal: [{
           label: 'License',
-          href: 'https://github.com/mrjackyliang/homebridge-adt-pulse/blob/main/LICENSE',
+          href: 'https://github.com/mrjackyliang/homebridge-adt-pulse/blob/HEAD/LICENSE',
         }],
       },
       layout: {
         docs: {
           title: 'Docs',
           section: 'docs',
+        },
+        resources: {
+          title: 'Resources',
+          section: 'resources',
         },
         project: {
           title: 'Project',
@@ -435,9 +524,39 @@ const config: DocusaurusNovaConfig = {
       },
       socialLinks: [
         {
+          icon: 'ri:facebook-fill',
+          href: 'https://www.facebook.com/jackyliangofficial',
+          label: 'Facebook',
+        },
+        {
+          icon: 'ri:twitter-x-fill',
+          href: 'https://x.com/mrjackyliang',
+          label: 'X',
+        },
+        {
+          icon: 'ri:youtube-fill',
+          href: 'https://www.youtube.com/@mrjackyliang',
+          label: 'YouTube',
+        },
+        {
+          icon: 'ri:instagram-fill',
+          href: 'https://www.instagram.com/mrjackyliang/',
+          label: 'Instagram',
+        },
+        {
           icon: 'ri:github-fill',
           href: 'https://github.com/mrjackyliang',
           label: 'GitHub',
+        },
+        {
+          icon: 'ri:linkedin-fill',
+          href: 'https://www.linkedin.com/in/mrjackyliang/',
+          label: 'LinkedIn',
+        },
+        {
+          icon: 'ri:reddit-fill',
+          href: 'https://www.reddit.com/user/mrjackyliang/',
+          label: 'Reddit',
         },
         {
           icon: 'ri:heart-fill',
@@ -448,8 +567,8 @@ const config: DocusaurusNovaConfig = {
       copyright: identity['copyright'],
       credit: true,
       cta: {
-        label: 'View on GitHub',
-        href: 'https://github.com/mrjackyliang/homebridge-adt-pulse',
+        label: 'Ready to put ADT Pulse in Apple Home?',
+        href: '/docs/getting-started/installation/',
       },
     },
   },

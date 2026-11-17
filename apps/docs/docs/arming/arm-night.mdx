@@ -17,11 +17,11 @@ tags:
 
 import { Terminology } from '@cbnventures/docusaurus-preset-nova/blocks';
 
-Place your system into Arm Night mode from HomeKit even though the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">ADT Pulse Web Portal</Terminology> and mobile app hide it.
+Place your system into Arm Night mode from HomeKit even though the <Terminology title="The ADT website the plugin talks to for everything" to="/docs/reference/terminology#adt-pulse-and-homebridge">ADT Pulse Web Portal</Terminology> and mobile app hide it.
 
 ## Overview
 
-On ADT Pulse systems, Arm Night is a <Terminology title="the alarm panel accessory for arming and disarming" to="/docs/reference/terminology#security-panel">panel</Terminology>-only mode. It is not exposed on the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">ADT Pulse Web Portal</Terminology> or the official mobile app.
+On ADT Pulse systems, Arm Night is a <Terminology title="The Home tile you use to arm and disarm" to="/docs/reference/terminology#accessories-and-arming">panel</Terminology>-only mode. It is not exposed on the <Terminology title="The ADT website the plugin talks to for everything" to="/docs/reference/terminology#adt-pulse-and-homebridge">ADT Pulse Web Portal</Terminology> or the official mobile app.
 
 This plugin still lets you reach it. You can place your system into Arm Night mode through HomeKit even though ADT's own surfaces do not offer the option.
 
@@ -31,23 +31,23 @@ The table below shows where the Arm Night mode is available across the surfaces 
 
 | Surface                                                                                                                                              | Arm Night Available |
 |------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------:|
-| <Terminology title="the alarm panel accessory for arming and disarming" to="/docs/reference/terminology#security-panel">Security panel</Terminology> |          ✔          |
-| <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">ADT Pulse Web Portal</Terminology>       |          ✗          |
+| <Terminology title="The Home tile you use to arm and disarm" to="/docs/reference/terminology#accessories-and-arming">Security panel</Terminology> |          ✔          |
+| <Terminology title="The ADT website the plugin talks to for everything" to="/docs/reference/terminology#adt-pulse-and-homebridge">ADT Pulse Web Portal</Terminology>       |          ✗          |
 | ADT Pulse mobile app                                                                                                                                 |          ✗          |
 | This plugin (via HomeKit)                                                                                                                            |          ✔          |
 
 ## Using Arm Night from HomeKit
 
-The Home app maps its security modes to HomeKit target states, and this plugin translates the Night target into an Arm Night command for the <Terminology title="the alarm panel accessory for arming and disarming" to="/docs/reference/terminology#security-panel">panel</Terminology>.
+The Home app maps its security modes to HomeKit target states, and this plugin translates the Night target into an Arm Night command for the <Terminology title="The Home tile you use to arm and disarm" to="/docs/reference/terminology#accessories-and-arming">panel</Terminology>.
 
 To set Arm Night from the Home app:
 
 1. Open the Home app.
-2. Tap the <Terminology title="the alarm panel accessory for arming and disarming" to="/docs/reference/terminology#security-panel">Security Panel</Terminology> accessory.
+2. Tap the <Terminology title="The Home tile you use to arm and disarm" to="/docs/reference/terminology#accessories-and-arming">Security Panel</Terminology> accessory.
 3. Choose the Night mode.
 
 ## Force Arming Applies
 
-Like the other arm states, Arm Night is subject to <Terminology title="automatic bypass of open or active sensors when arming" to="/docs/reference/terminology#force-arm">force arming</Terminology> when the plugin detects active motion or open <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology>.
+Like the other arm states, Arm Night is subject to <Terminology title="Arms anyway by bypassing open or active sensors" to="/docs/reference/terminology#accessories-and-arming">force arming</Terminology> whenever the portal asks to arm anyway, such as for active motion or open <Terminology title="A portal device you list in config so it shows up in Home" to="/docs/reference/terminology#plugin-configuration">sensors</Terminology>.
 
-For details on that behavior and how to check your <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology> before arming, see [Force Arming](/docs/arming/force-arming/).
+For details on that behavior and how to check your <Terminology title="A portal device you list in config so it shows up in Home" to="/docs/reference/terminology#plugin-configuration">sensors</Terminology> before arming, see [Force Arming](/docs/arming/force-arming/).

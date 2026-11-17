@@ -761,6 +761,27 @@ export type Lib_Utility_RemovePersonalIdentifiableInformation_ReplaceValue_Modif
 export type Lib_Utility_RemovePersonalIdentifiableInformation_ReplaceValue_Value = unknown;
 
 /**
+ * Lib - Utility - Send Detect Report.
+ *
+ * @since 3.5.10
+ */
+export type Lib_Utility_SendDetectReport_Title = string;
+
+export type Lib_Utility_SendDetectReport_Body = string;
+
+export type Lib_Utility_SendDetectReport_Returns = Promise<void>;
+
+export type Lib_Utility_SendDetectReport_SessionResponse = AxiosResponse;
+
+export type Lib_Utility_SendDetectReport_SessionDataToken = unknown;
+
+export type Lib_Utility_SendDetectReport_SessionData = {
+  token?: Lib_Utility_SendDetectReport_SessionDataToken;
+} | null | undefined;
+
+export type Lib_Utility_SendDetectReport_Token = unknown;
+
+/**
  * Lib - Utility - Sleep.
  *
  * @since 1.0.0

@@ -1,4 +1,3 @@
-import axios from 'axios';
 import _ from 'lodash';
 import { serializeError } from 'serialize-error';
 
@@ -24,7 +23,6 @@ import {
 } from './items.js';
 import {
   debugLog,
-  getDetectReportUrl,
   getPackageVersion,
   isEmptyOrbTextSummary,
   isPluginOutdated,
@@ -33,6 +31,7 @@ import {
   isUnknownOrbSecurityButtonCollection,
   isUnknownPanelDevice,
   removePersonalIdentifiableInformation,
+  sendDetectReport,
   stackTracer,
 } from './utility.js';
 
@@ -189,17 +188,7 @@ export async function detectApiDoSubmitHandlers(handlers: Lib_Detect_DetectApiDo
     stackTracer('detect-content', cleanedData);
 
     try {
-      await axios.post(
-        getDetectReportUrl(),
-        JSON.stringify(cleanedData, null, 2),
-        {
-          family: 4,
-          headers: {
-            'User-Agent': 'homebridge-adt-pulse',
-            'X-Title': `Detected new do submit handlers (v${getPackageVersion()})`,
-          },
-        },
-      );
+      await sendDetectReport(`Detected new do submit handlers (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
 
       return true;
     } catch (error) {
@@ -274,17 +263,7 @@ export async function detectApiGatewayInformation(device: Lib_Detect_DetectApiGa
     stackTracer('detect-content', cleanedData);
 
     try {
-      await axios.post(
-        getDetectReportUrl(),
-        JSON.stringify(cleanedData, null, 2),
-        {
-          family: 4,
-          headers: {
-            'User-Agent': 'homebridge-adt-pulse',
-            'X-Title': `Detected new gateway information (v${getPackageVersion()})`,
-          },
-        },
-      );
+      await sendDetectReport(`Detected new gateway information (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
 
       return true;
     } catch (error) {
@@ -383,17 +362,7 @@ export async function detectApiOrbSecurityButtons(buttons: Lib_Detect_DetectApiO
     stackTracer('detect-content', cleanedData);
 
     try {
-      await axios.post(
-        getDetectReportUrl(),
-        JSON.stringify(cleanedData, null, 2),
-        {
-          family: 4,
-          headers: {
-            'User-Agent': 'homebridge-adt-pulse',
-            'X-Title': `Detected new orb security buttons (v${getPackageVersion()})`,
-          },
-        },
-      );
+      await sendDetectReport(`Detected new orb security buttons (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
 
       return true;
     } catch (error) {
@@ -468,17 +437,7 @@ export async function detectApiPanelInformation(device: Lib_Detect_DetectApiPane
     stackTracer('detect-content', cleanedData);
 
     try {
-      await axios.post(
-        getDetectReportUrl(),
-        JSON.stringify(cleanedData, null, 2),
-        {
-          family: 4,
-          headers: {
-            'User-Agent': 'homebridge-adt-pulse',
-            'X-Title': `Detected new panel information (v${getPackageVersion()})`,
-          },
-        },
-      );
+      await sendDetectReport(`Detected new panel information (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
 
       return true;
     } catch (error) {
@@ -555,17 +514,7 @@ export async function detectApiPanelStatus(summary: Lib_Detect_DetectApiPanelSta
     stackTracer('detect-content', cleanedData);
 
     try {
-      await axios.post(
-        getDetectReportUrl(),
-        JSON.stringify(cleanedData, null, 2),
-        {
-          family: 4,
-          headers: {
-            'User-Agent': 'homebridge-adt-pulse',
-            'X-Title': `Detected a new panel state and/or status (v${getPackageVersion()})`,
-          },
-        },
-      );
+      await sendDetectReport(`Detected a new panel state and/or status (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
 
       return true;
     } catch (error) {
@@ -645,17 +594,7 @@ export async function detectApiSensorsInformation(sensors: Lib_Detect_DetectApiS
     stackTracer('detect-content', cleanedData);
 
     try {
-      await axios.post(
-        getDetectReportUrl(),
-        JSON.stringify(cleanedData, null, 2),
-        {
-          family: 4,
-          headers: {
-            'User-Agent': 'homebridge-adt-pulse',
-            'X-Title': `Detected new sensors information (v${getPackageVersion()})`,
-          },
-        },
-      );
+      await sendDetectReport(`Detected new sensors information (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
 
       return true;
     } catch (error) {
@@ -732,17 +671,7 @@ export async function detectApiSensorsStatus(sensors: Lib_Detect_DetectApiSensor
     stackTracer('detect-content', cleanedData);
 
     try {
-      await axios.post(
-        getDetectReportUrl(),
-        JSON.stringify(cleanedData, null, 2),
-        {
-          family: 4,
-          headers: {
-            'User-Agent': 'homebridge-adt-pulse',
-            'X-Title': `Detected new sensors status (v${getPackageVersion()})`,
-          },
-        },
-      );
+      await sendDetectReport(`Detected new sensors status (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
 
       return true;
     } catch (error) {
@@ -850,17 +779,7 @@ export async function detectGlobalDebugParser(data: Lib_Detect_DetectGlobalDebug
     stackTracer('detect-content', loggedData);
 
     try {
-      await axios.post(
-        getDetectReportUrl(),
-        JSON.stringify(cleanedData, null, 2),
-        {
-          family: 4,
-          headers: {
-            'User-Agent': 'homebridge-adt-pulse',
-            'X-Title': `Detected a parser anomaly for "${data['method']}" (v${getPackageVersion()})`,
-          },
-        },
-      );
+      await sendDetectReport(`Detected a parser anomaly for "${data['method']}" (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
 
       return true;
     } catch (error) {
@@ -935,17 +854,7 @@ export async function detectGlobalPortalVersion(version: Lib_Detect_DetectGlobal
     stackTracer('detect-content', cleanedData);
 
     try {
-      await axios.post(
-        getDetectReportUrl(),
-        JSON.stringify(cleanedData, null, 2),
-        {
-          family: 4,
-          headers: {
-            'User-Agent': 'homebridge-adt-pulse',
-            'X-Title': `Detected a new portal version (v${getPackageVersion()})`,
-          },
-        },
-      );
+      await sendDetectReport(`Detected a new portal version (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
 
       return true;
     } catch (error) {
@@ -1036,17 +945,7 @@ export async function detectPlatformUnknownSensorsAction(sensors: Lib_Detect_Det
     stackTracer('detect-content', cleanedData);
 
     try {
-      await axios.post(
-        getDetectReportUrl(),
-        JSON.stringify(cleanedData, null, 2),
-        {
-          family: 4,
-          headers: {
-            'User-Agent': 'homebridge-adt-pulse',
-            'X-Title': `Detected unknown sensors action (v${getPackageVersion()})`,
-          },
-        },
-      );
+      await sendDetectReport(`Detected unknown sensors action (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
 
       return true;
     } catch (error) {

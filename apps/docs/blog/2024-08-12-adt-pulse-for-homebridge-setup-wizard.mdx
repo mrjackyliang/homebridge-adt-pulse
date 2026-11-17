@@ -1,0 +1,47 @@
+---
+title: "ADT Pulse for Homebridge Sets Itself Up With a Wizard"
+description: Version 3.3.5 adds a setup wizard that signs in to ADT Pulse, handles two-factor verification, and creates the device fingerprint for you.
+slug: adt-pulse-for-homebridge-setup-wizard
+authors:
+  - mrjackyliang
+keywords:
+  - homebridge adt pulse
+  - setup wizard
+  - device fingerprint
+  - two-factor authentication
+  - homebridge config ui
+tags:
+  - release
+  - homebridge
+  - setup
+---
+
+ADT Pulse for Homebridge 3.3.5 adds a setup wizard to the Homebridge Config UI. It signs in to the ADT Pulse portal, completes two-factor verification, and creates the device fingerprint, without an outside tool.
+
+{/* truncate */}
+
+## Why It Matters
+
+ADT Pulse requires two-factor authentication, and the plugin has to sign in as a trusted device. Before the wizard, that meant running a separate fingerprint tool in a browser, copying a long value, and pasting it into the configuration by hand.
+
+Browser changes broke that tool, so this release removed it and moved the whole sign-in into the plugin.
+
+## What's Included
+
+### Guided Sign-In
+
+The wizard logs in to the portal with your ADT Pulse username and password, then asks for the code ADT sends by SMS or email.
+
+### A Fingerprint Made for You
+
+It generates a browser fingerprint, registers it with ADT as a trusted device, and writes it into the plugin's configuration.
+
+### Another Security Panel
+
+The same release recognizes the DSC PowerSeries/ADT PremisePro security panel.
+
+A week later, version 3.4.0 added a new settings panel, with the classic one still available from the plugin's tab.
+
+## Try It
+
+[Installation](/docs/getting-started/installation/) walks through the wizard, and [Device Fingerprint](/docs/getting-started/fingerprint/) explains what it creates.

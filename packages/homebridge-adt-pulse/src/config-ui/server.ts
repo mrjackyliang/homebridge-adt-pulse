@@ -1,5 +1,4 @@
 import { HomebridgePluginUiServer } from '@homebridge/plugin-ui-utils';
-import _ from 'lodash';
 import { isErrorLike, serializeError } from 'serialize-error';
 
 import { ADTPulseAuth } from '../lib/auth.js';
@@ -13,13 +12,21 @@ import { createTrustedDeviceName, debugLog } from '../lib/utility.js';
 
 import type {
   ConfigUi_Server_ADTPulseConfigServer_Auth,
+  ConfigUi_Server_ADTPulseConfigServer_GenerateConfig_ExistingSensor,
   ConfigUi_Server_ADTPulseConfigServer_GenerateConfig_OldConfig,
   ConfigUi_Server_ADTPulseConfigServer_GenerateConfig_ParsedPayload,
   ConfigUi_Server_ADTPulseConfigServer_GenerateConfig_Payload,
+  ConfigUi_Server_ADTPulseConfigServer_GenerateConfig_PayloadSensorAdtName,
+  ConfigUi_Server_ADTPulseConfigServer_GenerateConfig_PayloadSensorAdtZone,
   ConfigUi_Server_ADTPulseConfigServer_GenerateConfig_PayloadSensors,
   ConfigUi_Server_ADTPulseConfigServer_GenerateConfig_Response,
   ConfigUi_Server_ADTPulseConfigServer_GenerateConfig_Returns,
+  ConfigUi_Server_ADTPulseConfigServer_GenerateConfig_SensorAdtName,
+  ConfigUi_Server_ADTPulseConfigServer_GenerateConfig_SensorAdtZone,
   ConfigUi_Server_ADTPulseConfigServer_GenerateConfig_SerializedError,
+  ConfigUi_Server_ADTPulseConfigServer_GenerateConfig_UnmatchedExistingSensors,
+  ConfigUi_Server_ADTPulseConfigServer_GenerateConfig_UpdatedSensors,
+  ConfigUi_Server_ADTPulseConfigServer_GenerateConfig_UsedExistingSensors,
   ConfigUi_Server_ADTPulseConfigServer_GetMethods_Response,
   ConfigUi_Server_ADTPulseConfigServer_GetMethods_Returns,
   ConfigUi_Server_ADTPulseConfigServer_GetMethods_SerializedError,
@@ -443,8 +450,46 @@ class ADTPulseConfigServer extends HomebridgePluginUiServer {
           };
         }
 
-        // Update the sensors by merging new changes (to be safe, user will manually remove sensors themselves).
-        payloadSensors = _.merge(payloadSensors, response['info']['sensors']);
+        // Preserve portal order, custom names, and existing sensors the portal omitted.
+        const usedExistingSensors: ConfigUi_Server_ADTPulseConfigServer_GenerateConfig_UsedExistingSensors = new Set();
+        const updatedSensors: ConfigUi_Server_ADTPulseConfigServer_GenerateConfig_UpdatedSensors = response['info']['sensors'].map((sensor) => {
+          const sensorAdtName: ConfigUi_Server_ADTPulseConfigServer_GenerateConfig_SensorAdtName = sensor['adtName'];
+          const sensorAdtZone: ConfigUi_Server_ADTPulseConfigServer_GenerateConfig_SensorAdtZone = sensor['adtZone'];
+          const existingSensor: ConfigUi_Server_ADTPulseConfigServer_GenerateConfig_ExistingSensor = payloadSensors.find((payloadSensor) => {
+            const payloadSensorAdtName: ConfigUi_Server_ADTPulseConfigServer_GenerateConfig_PayloadSensorAdtName = payloadSensor['adtName'];
+            const payloadSensorAdtZone: ConfigUi_Server_ADTPulseConfigServer_GenerateConfig_PayloadSensorAdtZone = payloadSensor['adtZone'];
+
+            return (
+              usedExistingSensors.has(payloadSensor) === false
+              && payloadSensorAdtName === sensorAdtName
+              && payloadSensorAdtZone === sensorAdtZone
+            );
+          });
+
+          if (existingSensor === undefined) {
+            return sensor;
+          }
+
+          usedExistingSensors.add(existingSensor);
+
+          if (existingSensor['name'] === undefined) {
+            return sensor;
+          }
+
+          return {
+            ...sensor,
+            name: existingSensor['name'],
+          };
+        });
+
+        const unmatchedExistingSensors: ConfigUi_Server_ADTPulseConfigServer_GenerateConfig_UnmatchedExistingSensors = payloadSensors.filter(
+          (payloadSensor) => usedExistingSensors.has(payloadSensor) === false,
+        );
+
+        payloadSensors = [
+          ...updatedSensors,
+          ...unmatchedExistingSensors,
+        ];
       }
 
       return {

@@ -17,11 +17,11 @@ tags:
 
 import { Terminology } from '@cbnventures/docusaurus-preset-nova/blocks';
 
-Switch between Normal, Paused, and Reset <Terminology title="the plugin's normal, paused, or reset setting" to="/docs/reference/terminology#operational-mode">modes</Terminology> to control how the plugin runs or removes accessories.
+Switch between Normal, Paused, and Reset <Terminology title="Run normally, pause the plugin, or reset its accessories" to="/docs/reference/terminology#plugin-configuration">modes</Terminology> to control how the plugin runs or removes accessories.
 
 ## Modes
 
-The plugin offers three <Terminology title="the plugin's normal, paused, or reset setting" to="/docs/reference/terminology#operational-mode">operational modes</Terminology>, selected through the `mode` field in `config.json`.
+The plugin offers three <Terminology title="Run normally, pause the plugin, or reset its accessories" to="/docs/reference/terminology#plugin-configuration">operational modes</Terminology>, selected through the `mode` field in `config.json`.
 
 | Value      | Mode   | Behavior                                                           |
 |------------|--------|--------------------------------------------------------------------|
@@ -31,11 +31,11 @@ The plugin offers three <Terminology title="the plugin's normal, paused, or rese
 
 ## Config Field
 
-| Field  | Description                                                                                                                                                                                                                                         |
-|--------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `mode` | <Terminology title="the plugin's normal, paused, or reset setting" to="/docs/reference/terminology#operational-mode">Operational mode</Terminology> for the plugin. Required. Accepts `"normal"`, `"paused"`, or `"reset"`. Defaults to `"normal"`. |
+| Field  | Description                                                                                                                                                                                                                                                        |
+|--------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `mode` | <Terminology title="Run normally, pause the plugin, or reset its accessories" to="/docs/reference/terminology#plugin-configuration">Operational mode</Terminology> for the plugin. Required. Accepts `"normal"`, `"paused"`, or `"reset"`. Defaults to `"normal"`. |
 
-Set the field inside your <Terminology title="this plugin's settings object in config.json" to="/docs/reference/terminology#platform-block">platform block</Terminology>:
+Set the field inside your <Terminology title="This plugin's settings object in config.json" to="/docs/reference/terminology#plugin-configuration">platform block</Terminology>:
 
 ```json title="config.json"
 {
@@ -65,7 +65,7 @@ This is the default and the value you use for everyday monitoring and control.
 
 Set `mode` to `"paused"` to pause the plugin.
 
-While paused, all devices become non-responsive, so the <Terminology title="the alarm panel accessory for arming and disarming" to="/docs/reference/terminology#security-panel">security panel</Terminology> and <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology> stop reacting from within the Home app.
+While paused, all devices become non-responsive, so the <Terminology title="The Home tile you use to arm and disarm" to="/docs/reference/terminology#accessories-and-arming">security panel</Terminology> and <Terminology title="A portal device you list in config so it shows up in Home" to="/docs/reference/terminology#plugin-configuration">sensors</Terminology> stop reacting from within the Home app.
 
 ```json title="config.json"
 {
@@ -95,4 +95,4 @@ This countdown exists to guard against unintended resets, which would otherwise 
 
 - [Synchronization Speed](/docs/configuration/synchronization-speed/) tunes how often the plugin checks for updates.
 - [Advanced Options](/docs/configuration/advanced-options/) deactivates specific plugin behaviors.
-- [Sensors and Zones](/docs/configuration/sensors-and-zones/) declares the <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology> exposed to HomeKit.
+- [Sensors and Zones](/docs/configuration/sensors-and-zones/) declares the <Terminology title="A portal device you list in config so it shows up in Home" to="/docs/reference/terminology#plugin-configuration">sensors</Terminology> exposed to HomeKit.

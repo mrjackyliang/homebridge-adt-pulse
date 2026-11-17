@@ -8,19 +8,14 @@ import {
 
 const detectorMocks = vi.hoisted(() => ({
   isPluginOutdated: vi.fn(),
-  post: vi.fn(),
+  sendDetectReport: vi.fn(),
   stackTracer: vi.fn(),
-}));
-
-vi.mock('axios', () => ({
-  default: {
-    post: detectorMocks.post,
-  },
 }));
 
 vi.mock('../../lib/utility.js', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../lib/utility.js')>(),
   isPluginOutdated: detectorMocks.isPluginOutdated,
+  sendDetectReport: detectorMocks.sendDetectReport,
   stackTracer: detectorMocks.stackTracer,
 }));
 
@@ -146,10 +141,8 @@ describe('detect', () => {
   beforeEach(() => {
     detectorMocks.isPluginOutdated.mockReset();
     detectorMocks.isPluginOutdated.mockResolvedValue(false);
-    detectorMocks.post.mockReset();
-    detectorMocks.post.mockResolvedValue({
-      status: 204,
-    });
+    detectorMocks.sendDetectReport.mockReset();
+    detectorMocks.sendDetectReport.mockResolvedValue(undefined);
     detectorMocks.stackTracer.mockReset();
     Object.values(loggerMethods).forEach((method) => method.mockReset());
   });
@@ -157,21 +150,16 @@ describe('detect', () => {
   it.each(knownDetections)('does not report documented %s', async (_label, detect) => {
     await expect(detect()).resolves.toBe(false);
     expect(detectorMocks.isPluginOutdated).not.toHaveBeenCalled();
-    expect(detectorMocks.post).not.toHaveBeenCalled();
+    expect(detectorMocks.sendDetectReport).not.toHaveBeenCalled();
   });
 
   it.each(unknownDetections)('reports undocumented %s', async (_label, detect) => {
     await expect(detect(detectLogger, true)).resolves.toBe(true);
     expect(detectorMocks.isPluginOutdated).toHaveBeenCalledOnce();
-    expect(detectorMocks.post).toHaveBeenCalledOnce();
-    expect(detectorMocks.post).toHaveBeenCalledWith(
+    expect(detectorMocks.sendDetectReport).toHaveBeenCalledOnce();
+    expect(detectorMocks.sendDetectReport).toHaveBeenCalledWith(
+      expect.stringMatching(/^Detected .+ \(v\d+\.\d+\.\d+.*\)$/),
       expect.any(String),
-      expect.any(String),
-      expect.objectContaining({
-        headers: expect.objectContaining({
-          'User-Agent': 'homebridge-adt-pulse',
-        }),
-      }),
     );
     expect(loggerMethods.warn).toHaveBeenCalled();
   });
@@ -182,7 +170,7 @@ describe('detect', () => {
     await expect(detect(detectLogger, true)).resolves.toBe(false);
 
     expect(loggerMethods.warn).toHaveBeenCalledWith(expect.stringContaining('older plugin version'));
-    expect(detectorMocks.post).not.toHaveBeenCalled();
+    expect(detectorMocks.sendDetectReport).not.toHaveBeenCalled();
   });
 
   it.each(unknownDetections)('retries undocumented %s after a version-check failure', async (_label, detect) => {
@@ -190,7 +178,7 @@ describe('detect', () => {
 
     await expect(detect(detectLogger, true)).resolves.toBe(false);
 
-    expect(detectorMocks.post).not.toHaveBeenCalled();
+    expect(detectorMocks.sendDetectReport).not.toHaveBeenCalled();
     expect(detectorMocks.stackTracer).toHaveBeenCalledWith(
       'serialize-error',
       expect.objectContaining({ message: 'registry unavailable' }),
@@ -198,7 +186,7 @@ describe('detect', () => {
   });
 
   it.each(unknownDetections)('retries undocumented %s after a report-delivery failure', async (_label, detect) => {
-    detectorMocks.post.mockRejectedValueOnce(new Error('report endpoint unavailable'));
+    detectorMocks.sendDetectReport.mockRejectedValueOnce(new Error('report endpoint unavailable'));
 
     await expect(detect(detectLogger, true)).resolves.toBe(false);
 
@@ -220,7 +208,7 @@ describe('detect', () => {
     } as unknown as Parameters<typeof detectGlobalPortalVersion>[0], logger, false)).resolves.toBe(false);
 
     expect(loggerMethods.warn).toHaveBeenCalledWith(expect.stringContaining('older plugin version'));
-    expect(detectorMocks.post).not.toHaveBeenCalled();
+    expect(detectorMocks.sendDetectReport).not.toHaveBeenCalled();
   });
 
   it('retries later when the version check fails', async () => {
@@ -230,7 +218,7 @@ describe('detect', () => {
       version: '99.0.0-1',
     } as unknown as Parameters<typeof detectGlobalPortalVersion>[0], null, true)).resolves.toBe(false);
 
-    expect(detectorMocks.post).not.toHaveBeenCalled();
+    expect(detectorMocks.sendDetectReport).not.toHaveBeenCalled();
     expect(detectorMocks.stackTracer).toHaveBeenCalledWith(
       'serialize-error',
       expect.objectContaining({
@@ -240,7 +228,7 @@ describe('detect', () => {
   });
 
   it('retries later when report delivery fails', async () => {
-    detectorMocks.post.mockRejectedValueOnce(new Error('report endpoint unavailable'));
+    detectorMocks.sendDetectReport.mockRejectedValueOnce(new Error('report endpoint unavailable'));
 
     await expect(detectGlobalPortalVersion({
       version: '99.0.0-1',

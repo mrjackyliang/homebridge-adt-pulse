@@ -16,20 +16,20 @@ tags:
 
 import { Terminology } from '@cbnventures/docusaurus-preset-nova/blocks';
 
-Generate the device <Terminology title="device fingerprint required for portal login" to="/docs/reference/terminology#fingerprint">fingerprint</Terminology> that ADT Pulse requires for login once two-factor authentication is enabled on your account.
+Generate the device <Terminology title="An ID for your device that the portal needs to log in" to="/docs/reference/terminology#setup-and-login">fingerprint</Terminology> that ADT Pulse requires for login once two-factor authentication is enabled on your account.
 
 ## Why the Fingerprint Is Needed
 
-Since the introduction of two-factor authentication, a device <Terminology title="device fingerprint required for portal login" to="/docs/reference/terminology#fingerprint">fingerprint</Terminology> has become a necessity during login.
+Since the introduction of two-factor authentication, a device <Terminology title="An ID for your device that the portal needs to log in" to="/docs/reference/terminology#setup-and-login">fingerprint</Terminology> has become a necessity during login.
 
-The <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">portal</Terminology> ties this <Terminology title="device fingerprint required for portal login" to="/docs/reference/terminology#fingerprint">fingerprint</Terminology> to <Terminology title="the portal's two-factor login and device trust flow" to="/docs/reference/terminology#mfa--trusted-device">a trusted device</Terminology>, which lets the plugin sign in on your behalf without repeatedly prompting for a verification code.
+The <Terminology title="The ADT website the plugin talks to for everything" to="/docs/reference/terminology#adt-pulse-and-homebridge">portal</Terminology> ties this <Terminology title="An ID for your device that the portal needs to log in" to="/docs/reference/terminology#setup-and-login">fingerprint</Terminology> to <Terminology title="The one-time code step that registers a trusted device" to="/docs/reference/terminology#setup-and-login">a trusted device</Terminology>, which lets the plugin sign in on your behalf without repeatedly prompting for a verification code.
 
 ## Creating the Fingerprint
 
-Starting from `v3.3.5`, you no longer need an external tool to create the <Terminology title="device fingerprint required for portal login" to="/docs/reference/terminology#fingerprint">fingerprint</Terminology>. The dedicated Homebridge <Terminology title="guided flow that configures the plugin for you" to="/docs/reference/terminology#setup-wizard">setup wizard</Terminology> generates it for you.
+Starting from `v3.3.5`, you no longer need an external tool to create the <Terminology title="An ID for your device that the portal needs to log in" to="/docs/reference/terminology#setup-and-login">fingerprint</Terminology>. The dedicated Homebridge <Terminology title="Logs into the portal for you and writes the plugin config" to="/docs/reference/terminology#setup-and-login">setup wizard</Terminology> generates it for you.
 
 :::tip
-Because the <Terminology title="guided flow that configures the plugin for you" to="/docs/reference/terminology#setup-wizard">setup wizard</Terminology> creates the <Terminology title="device fingerprint required for portal login" to="/docs/reference/terminology#fingerprint">fingerprint</Terminology>, you do not have to make one by hand. Run <Terminology title="guided flow that configures the plugin for you" to="/docs/reference/terminology#setup-wizard">the wizard</Terminology> from the plugin's configuration screen in the <Terminology title="third-party web UI for managing Homebridge" to="/docs/reference/terminology#homebridge-config-ui">Homebridge Config UI</Terminology>.
+Because the <Terminology title="Logs into the portal for you and writes the plugin config" to="/docs/reference/terminology#setup-and-login">setup wizard</Terminology> creates the <Terminology title="An ID for your device that the portal needs to log in" to="/docs/reference/terminology#setup-and-login">fingerprint</Terminology>, you do not have to make one by hand. Run <Terminology title="Logs into the portal for you and writes the plugin config" to="/docs/reference/terminology#setup-and-login">the wizard</Terminology> from the plugin's configuration screen in the <Terminology title="The web page where you install and set up Homebridge plugins" to="/docs/reference/terminology#adt-pulse-and-homebridge">Homebridge Config UI</Terminology>.
 :::
 
 ## Browser Profile and Trusted Device Name
@@ -37,18 +37,18 @@ Because the <Terminology title="guided flow that configures the plugin for you" 
 The wizard creates a desktop browser profile using current Stable release information for Chrome, Firefox, Microsoft Edge, or Opera. It does not copy details from the browser you use to open Homebridge.
 
 - **Offline fallback** — If the current version cannot be fetched, the wizard uses its last verified local version or the browser-version snapshot included in the installed plugin.
-- **Persistent identity** — The generated <Terminology title="device fingerprint required for portal login" to="/docs/reference/terminology#fingerprint">fingerprint</Terminology> is saved to `config.json` after setup; later browser releases do not change it automatically.
+- **Persistent identity** — The generated <Terminology title="An ID for your device that the portal needs to log in" to="/docs/reference/terminology#setup-and-login">fingerprint</Terminology> is saved to `config.json` after setup; later browser releases do not change it automatically.
 - **Portal device name** — The new trusted device appears as `<Homebridge instance name>.<UUID>`. The unique ID avoids timestamp-based name collisions, and the portal still rejects duplicate names.
 
 ## The `fingerprint` Field
 
-The generated value is stored in the `fingerprint` field of the ADT Pulse <Terminology title="this plugin's settings object in config.json" to="/docs/reference/terminology#platform-block">platform block</Terminology> in your `config.json`.
+The generated value is stored in the `fingerprint` field of the ADT Pulse <Terminology title="This plugin's settings object in config.json" to="/docs/reference/terminology#plugin-configuration">platform block</Terminology> in your `config.json`.
 
-| Field         | Description                                                                                                                                                                                                                                                                                                                                     |
-|---------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `fingerprint` | The device <Terminology title="device fingerprint required for portal login" to="/docs/reference/terminology#fingerprint">fingerprint</Terminology> generated by the <Terminology title="guided flow that configures the plugin for you" to="/docs/reference/terminology#setup-wizard">setup wizard</Terminology> and used to log in. Required. |
+| Field         | Description                                                                                                                                                                                                                                                                                                                                                                |
+|---------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `fingerprint` | The device <Terminology title="An ID for your device that the portal needs to log in" to="/docs/reference/terminology#setup-and-login">fingerprint</Terminology> generated by the <Terminology title="Logs into the portal for you and writes the plugin config" to="/docs/reference/terminology#setup-and-login">setup wizard</Terminology> and used to log in. Required. |
 
-Here is where the field sits within the <Terminology title="this plugin's settings object in config.json" to="/docs/reference/terminology#platform-block">platform block</Terminology>:
+Here is where the field sits within the <Terminology title="This plugin's settings object in config.json" to="/docs/reference/terminology#plugin-configuration">platform block</Terminology>:
 
 ```json title="config.json"
 {
@@ -67,10 +67,10 @@ Here is where the field sits within the <Terminology title="this plugin's settin
 
 ## Generating a New Fingerprint
 
-If you need a fresh <Terminology title="device fingerprint required for portal login" to="/docs/reference/terminology#fingerprint">fingerprint</Terminology>, re-run the <Terminology title="guided flow that configures the plugin for you" to="/docs/reference/terminology#setup-wizard">setup wizard</Terminology> and save its configuration. This replaces the old value only when you save.
+If you need a fresh <Terminology title="An ID for your device that the portal needs to log in" to="/docs/reference/terminology#setup-and-login">fingerprint</Terminology>, re-run the <Terminology title="Logs into the portal for you and writes the plugin config" to="/docs/reference/terminology#setup-and-login">setup wizard</Terminology> and save its configuration. This replaces the old value only when you save.
 
 ## Related Pages
 
-- **[Installation](/docs/getting-started/installation/)** — Install the plugin before running the <Terminology title="guided flow that configures the plugin for you" to="/docs/reference/terminology#setup-wizard">setup wizard</Terminology>.
-- **[Configuration](/docs/getting-started/configuration/)** — See where the `fingerprint` field fits alongside the rest of the <Terminology title="this plugin's settings object in config.json" to="/docs/reference/terminology#platform-block">platform block</Terminology>.
+- **[Installation](/docs/getting-started/installation/)** — Install the plugin before running the <Terminology title="Logs into the portal for you and writes the plugin config" to="/docs/reference/terminology#setup-and-login">setup wizard</Terminology>.
+- **[Configuration](/docs/getting-started/configuration/)** — See where the `fingerprint` field fits alongside the rest of the <Terminology title="This plugin's settings object in config.json" to="/docs/reference/terminology#plugin-configuration">platform block</Terminology>.
 - **[Configuration Schema](/docs/reference/config-schema/)** — Full field-by-field reference, including the `fingerprint` constraints.

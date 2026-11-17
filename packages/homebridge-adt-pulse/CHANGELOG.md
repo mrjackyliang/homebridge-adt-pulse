@@ -1,5 +1,17 @@
 # homebridge-adt-pulse
 
+## 3.5.10 - 2026-11-17
+
+### UPDATED
+- The product name is now ADT Pulse for Homebridge, while the homebridge-adt-pulse package and repository identifiers stay the same.
+- Nova is now 0.44.0.
+- Detection reports to the plugin author now carry a one-time session token, so posts that don't come from the plugin are turned away.
+- The latest ADT Pulse portal version (31.0.0-39) is supported.
+
+### FIXED
+- Update Sensors Data matches sensors by name and zone, so custom names stay on the right sensor and sensors the portal doesn't report are kept instead of being scrambled or wiped.
+- Arming or disarming waits up to 20 more seconds for panels that are slow to finish, such as when arming Night, then checks the panel's status line, so HomeKit no longer reports the change as failed while the panel completes it.
+
 ## 3.5.9 - 2026-11-04
 
 ### FIXED
@@ -13,42 +25,42 @@
 ## 3.5.7 - 2026-11-01
 
 ### UPDATED
-- Updated Nova and Docusaurus Preset Nova to 0.38.0, added Node.js 26 support, and assembled the plugin, configuration UI, and documentation through verified publication artifacts.
+- Nova and Docusaurus Preset Nova are now 0.38.0, Node.js 26 is supported, and the plugin, configuration UI, and documentation are assembled through verified publication artifacts.
 - Refreshed the documentation site's branding, navigation, responsive homepage, favicons, and search coverage.
 
 ### FIXED
 - Corrected the documented setup-wizard availability, supported Homebridge versions, and Arm Night availability indicators.
 
 ### ADDED
-- Added a searchable project blog with an introductory Homebridge ADT Pulse article and a homepage preview of recent posts.
+- A searchable project blog with an introductory ADT Pulse for Homebridge article and a homepage preview of recent posts.
 
 ## 3.5.6 - 2026-10-18
 
 ### UPDATED
 - Replaced Turborepo orchestration with Nova's workspace runner across local commands and the generated publishing workflow.
-- Updated Nova and Docusaurus Preset Nova to 0.33.0, including the consolidated Nova ESLint preset entry point.
+- Nova and Docusaurus Preset Nova are now 0.33.0, including the consolidated Nova ESLint preset entry point.
 - Migrated generated ignore settings to Nova's managed multi-file ignore configuration.
-- Updated detector reports to use the renewed ntfy.liang.nyc endpoint and verify its availability during project checks.
+- Detector reports use the renewed ntfy.liang.nyc endpoint and verify its availability during project checks.
 - Moved the compiled Homebridge launch command under the structured production command group.
 
 ## 3.5.5 - 2026-10-12
 
 ### UPDATED
-- Updated Nova and Docusaurus Preset Nova to 0.30.1.
+- Nova and Docusaurus Preset Nova are now 0.30.1.
 - Adopted role-based TypeScript preset layers.
 - Standardized root-owned tests under the shared project layout.
 - Aligned configuration UI JSDoc hierarchies with the function-level contract.
 
 ### ADDED
-- Added configured contributors to generated credits and publishable package metadata.
+- Generated credits and publishable package metadata include configured contributors.
 
 ## 3.5.4 - 2026-10-11
 
 ### UPDATED
-- Updated Nova and the Docusaurus preset to 0.29.0 across the project, plugin, configuration UI, and docs.
+- Nova and the Docusaurus preset are now 0.29.0 across the project, plugin, configuration UI, and docs.
 - Completed JavaScript, TypeScript, browser, Node.js, Vite, and Docusaurus preset coverage, and consolidated custom Nova lint rules into the shared rule bundle while preserving workspace-specific overrides.
 - Declared the root workspace as ESM and expanded Vitest configuration and setup type checking.
-- Updated Homebridge UI utilities, Axios, Luxon, SemVer, Tough Cookie, UA Parser, and their type definitions to their latest compatible releases.
+- Homebridge UI utilities, Axios, Luxon, SemVer, Tough Cookie, UA Parser, and their type definitions are now on their latest compatible releases.
 - Recorded README badges plus Node.js, plugin, and Homebridge bug-report fields explicitly in Nova configuration.
 
 ### FIXED
@@ -57,7 +69,7 @@
 ## 3.5.3 - 2026-10-03
 
 ### UPDATED
-- Update Nova and the Docusaurus preset to 0.28.0 and run development, production, build, and deployment script groups with explicit child process environments
+- Nova and the Docusaurus preset are now 0.28.0, and development, production, build, and deployment script groups run with explicit child process environments
 - Develop and validate the plugin against stable Homebridge 2.4 while retaining compatibility with Homebridge 1.11
 
 ## 3.5.2 - 2026-10-01
@@ -68,7 +80,7 @@
 ## 3.5.1 - 2026-09-23
 
 ### UPDATED
-- Updated Nova and its Docusaurus preset to 0.27.3 across the project, plugin, configuration UI, and docs, granted the generated inactive-thread workflow write access to pull requests, and approved the optional `fsevents` install script used by macOS file watchers.
+- Nova and its Docusaurus preset are now 0.27.3 across the project, plugin, configuration UI, and docs, the generated inactive-thread workflow has write access to pull requests, and the optional `fsevents` install script used by macOS file watchers is approved.
 
 ## 3.5.0 - 2026-09-17
 
@@ -77,34 +89,34 @@
 - Reorganized the project into a monorepo with separate plugin, configuration UI, and documentation workspaces, root-level orchestration, stricter TypeScript validation, expanded diagnostics, and Nova-managed release and support automation.
 - Declared reviewed root dependency install scripts as denied so clean npm installs have an explicit trust policy.
 - Enabled automatic cleanup of merged GitHub branches and strict package.json key validation across every workspace.
-- Updated Chalk to 5.6.2, Lodash to 4.18.1, Zod to 4.4.3, TypeScript to 6.0.3, ESLint to 9.39.5, and Vitest to 4.1.11.
+- Chalk moves to 5.6.2, Lodash to 4.18.1, Zod to 4.4.3, TypeScript to 6.0.3, ESLint to 9.39.5, and Vitest to 4.1.11.
 - Documentation site meta description is now sourced from the shared Nova identity configuration instead of a hardcoded string.
 - Normalized the package author URL to the canonical trailing-slash form.
-- Updated the plugin Vitest configuration to use the shared 30-second timeout and serial test sequencing.
+- The plugin Vitest configuration uses the shared 30-second timeout and serial test sequencing.
 - Synced PROJECT_RULES.md with the new apps/ and packages/ workspace layout, build commands, and CI workflows.
 - Rendered both diagnostic command banners with Nova CLIHeader at a consistent fixed width.
-- Updated the REPL and API tester banners to use live Nova identity in source and a packaged identity snapshot after build.
+- The REPL and API tester banners use live Nova identity in source and a packaged identity snapshot after build.
 - Named new ADT trusted devices with the Homebridge instance name and a UUID instead of a timestamp.
 
 ### FIXED
-- Fixed login flow checking the wrong HTTP response status after the sign-in POST, which caused sign-in failures to be silently ignored.
-- Fixed the runtime configuration validator accepting 148 sensors even though Homebridge reserves three of its 150 accessory slots; it now enforces the documented maximum of 147.
-- Fixed panel switch accessory permanently locking up when an arm or disarm call throws an exception.
-- Fixed trusted-device authentication requests that failed to reject HTTP error responses.
+- The login flow no longer checks the wrong HTTP response status after the sign-in POST, which caused sign-in failures to be silently ignored.
+- The runtime configuration validator no longer accepts 148 sensors even though Homebridge reserves three of its 150 accessory slots; it now enforces the documented maximum of 147.
+- The panel switch accessory no longer locks up permanently when an arm or disarm call throws an exception.
+- Trusted-device authentication requests now reject HTTP error responses.
 - Pinned the app, React plugin, and test runner to Vite 7.3.6 so the complete Vite 7 toolchain includes the upstream development server path-handling fix.
-- Fixed orb sensor parser silently including sensors with invalid zone numbers.
-- Fixed the API tester treating responses without success: true as successful, preventing false passes.
-- Fixed access code change flag always evaluating to true due to incorrect boolean string parsing.
+- The orb sensor parser no longer silently includes sensors with invalid zone numbers.
+- The API tester no longer treats responses without success: true as successful, preventing false passes.
+- The access code change flag no longer always evaluates to true due to incorrect boolean string parsing.
 - Included Nova as a runtime dependency so installed REPL and API tester commands can load their CLI header without development dependencies.
 - Validated custom sensor names against HomeKit naming rules and used ADT-derived names when the custom field is blank.
-- Fixed the API tester header spacing to match the REPL before its introductory content.
+- The API tester header spacing matches the REPL before its introductory content.
 - Used HomeKit-safe display names for ADT sensors with trailing numbered parentheses while preserving portal names and custom labels.
 - Removed a redundant CommonJS export condition from the ESM package manifest so its entry point stays unambiguous.
 
 ### ADDED
 - Generated new trusted-device fingerprints from current Stable Chrome, Edge, Firefox, or Opera releases, with a verified local cache and a packaged build snapshot when release feeds are unavailable. Kept request headers aligned with the saved browser identity and used modern Windows desktop fonts, plugins, and screen sizes.
-- Added a searchable Docusaurus documentation site with setup, configuration, operations, platform support, and reference guides backed by automated content checks.
-- Added `hap-repl` and `hap-test-api` executables so users can run diagnostics without entering the plugin's `node_modules` directory.
+- A searchable Docusaurus documentation site with setup, configuration, operations, platform support, and reference guides backed by automated content checks.
+- The `hap-repl` and `hap-test-api` executables so users can run diagnostics without entering the plugin's `node_modules` directory.
 - Enabled lock-step versioning so the plugin and its bundled configuration UI keep the same release version.
 
 ## 3.4.20 - 2026-02-19
@@ -144,7 +156,7 @@
 
 ### UPDATED
 - Bumped dependencies to resolve known vulnerabilities.
-- Updated Node.js compatibility to version 22.
+- Node.js compatibility is now version 22.
 
 ### FIXED
 - Corrected an incorrect Homebridge compatibility range.
@@ -152,7 +164,7 @@
 ## 3.4.13 - 2025-08-08
 
 ### FIXED
-- Fixed the `postinstall` script running before `devDependencies` were installed when the package was installed globally, which could break setup.
+- The `postinstall` script no longer runs before `devDependencies` are installed when the package is installed globally, which could break setup.
 
 ## 3.4.12 - 2025-06-16
 
@@ -186,7 +198,7 @@
 ## 3.4.5 - 2025-01-08
 
 ### UPDATED
-- Updated package dependencies.
+- Package dependencies are up to date.
 - Changed the detector report URL.
 - Made minor changes to the configuration UI.
 - Caught error objects are now validated before being serialized for logging.
@@ -196,14 +208,14 @@
 - Added the missing `key` prop on the setup verification method form select.
 
 ### ADDED
-- Added security panel support for "DSC Impassa/SCW".
-- Added the package version to the title of debug information sent to the plugin author.
+- Security panel support for "DSC Impassa/SCW".
+- The title of debug information sent to the plugin author includes the package version.
 
 ## 3.4.4 - 2024-11-08
 
 ### UPDATED
 - Added support for the latest ADT Pulse portal version (29.0.0-28).
-- Updated dependencies.
+- Dependencies are up to date.
 
 ## 3.4.3 - 2024-09-24
 
@@ -211,22 +223,22 @@
 - Corrected the Homebridge v2.0 beta engine version requirement.
 
 ### ADDED
-- Added the "Installing" sensor status for devices currently being installed.
-- Added the "Tripped" status for door/window sensors.
+- The "Installing" sensor status for devices currently being installed.
+- The "Tripped" status for door/window sensors.
 
 ## 3.4.2 - 2024-09-13
 
 ### UPDATED
-- Updated the sensor title design on the Sensors tab of the settings UI.
+- The sensor title design on the Sensors tab of the settings UI is refreshed.
 - Verified compatibility with Homebridge v2.0.0-beta.20.
 
 ## 3.4.1 - 2024-09-11
 
 ### UPDATED
-- Updated the settings UI sensor title design and internal `http` types.
+- The settings UI sensor title design and internal `http` types are refreshed.
 
 ### FIXED
-- Fixed the settings page failing to load in development mode.
+- The settings page no longer fails to load in development mode.
 
 ## 3.4.0 - 2024-08-19
 
@@ -238,10 +250,10 @@
 - The authentication API now properly surfaces login error messages during verification method retrieval.
 
 ### FIXED
-- Fixed `isMaintenancePeriod()` incorrectly including the next day when checking the maintenance window's end time.
+- The `isMaintenancePeriod()` function no longer incorrectly includes the next day when checking the maintenance window's end time.
 
 ### ADDED
-- Added a new settings panel, with the classic settings panel still available via Plugin tab > Classic View.
+- A new settings panel, with the classic settings panel still available via Plugin tab > Classic View.
 
 ## 3.3.5 - 2024-08-12
 
@@ -251,24 +263,24 @@
 - Made the credentials type (username, password, fingerprint) shared across the codebase.
 
 ### FIXED
-- Fixed false-positive orb security button detection caused by a wording change in the "Status Unavailable" text.
+- Orb security button detection no longer gives false positives from a wording change in the "Status Unavailable" text.
 - Renamed `syncCheckRequestPath` to `axiosSyncCheckRequestPath`.
 
 ### ADDED
-- Added a plugin setup wizard.
-- Added the `ADTPulseAuth` class for authorizing a randomly generated browser fingerprint.
-- Added security panel support for "DSC PowerSeries/ADT PremisePro".
-- Added `armState` support for sensor testing mode (`sensortest`).
-- Added "EXIT FAULT ALARM" to the panel notes.
+- A plugin setup wizard.
+- The `ADTPulseAuth` class for authorizing a randomly generated browser fingerprint.
+- Security panel support for "DSC PowerSeries/ADT PremisePro".
+- Support for sensor testing mode (`sensortest`) in `armState`.
+- The text "EXIT FAULT ALARM" is now in the panel notes.
 
 ### REMOVED
-- Removed the device fingerprint detector tool, since correct fingerprints could no longer be generated due to changes in canvas and screen resolution detection.
-- Removed `colorLog` from REPL mode in favor of the more mature `debugLog`.
+- The device fingerprint detector tool is gone, since correct fingerprints could no longer be generated due to changes in canvas and screen resolution detection.
+- The `colorLog` logger is gone from REPL mode in favor of the more mature `debugLog`.
 
 ## 3.3.1 - 2024-04-09
 
 ### REMOVED
-- Removed detection of new gateway firmware and hardware versions.
+- Detection of new gateway firmware and hardware versions is gone.
 
 ## 3.3.0 - 2024-04-02
 
@@ -282,7 +294,7 @@
 - Corrected the `sensors` field's maximum items in the configuration schema (147, not 148) to account for the "Alarm Ringing" switch.
 
 ### ADDED
-- Added support for portal version "28.0.0-57".
+- Support for portal version "28.0.0-57".
 
 ## 3.2.15 - 2024-03-29
 
@@ -331,7 +343,7 @@
 ## 3.2.9 - 2024-03-06
 
 ### UPDATED
-- Updated the TypeScript build configuration.
+- The TypeScript build configuration is revised.
 
 ### ADDED
 - Panel documentation for Ademco LYNX/ADT QuickConnect (Emergency Keys PE 95/FA 96/APA 99).
@@ -371,7 +383,7 @@
 - Improved gateway manufacturer/model naming for NETGEAR and iControl devices.
 
 ### FIXED
-- "Unknown Device Type (Notable Events Only)" was accidentally parsed as a sensor from the sensors table.
+- The "Unknown Device Type (Notable Events Only)" entry was accidentally parsed as a sensor from the sensors table.
 
 ### ADDED
 - Gateway documentation for ADT Pulse Gateway iHub-3001 (HW 3.4 / Broadband).
@@ -433,10 +445,10 @@
 ## 3.1.6 - 2024-02-17
 
 ### UPDATED
-- `removePersonalIdentifiableInformation` now also includes a device's last update and next update timing.
+- The `removePersonalIdentifiableInformation` function now also includes a device's last update and next update timing.
 
 ### FIXED
-- `removePersonalIdentifiableInformation` was not properly redacting some information stored as arrays of strings.
+- The `removePersonalIdentifiableInformation` was not properly redacting some information stored as arrays of strings.
 
 ### ADDED
 - Gateway and panel documentation for TSSC Lifestyle Module.
@@ -444,7 +456,7 @@
 ## 3.1.5 - 2024-02-16
 
 ### FIXED
-- `removePersonalIdentifiableInformation` incorrectly converted an array of strings into an object of characters.
+- The `removePersonalIdentifiableInformation` incorrectly converted an array of strings into an object of characters.
 
 ### ADDED
 - Gateway documentation for Compact SMA Protocol Gateway (Cellular mode).
@@ -453,7 +465,7 @@
 ## 3.1.4 - 2024-02-16
 
 ### FIXED
-- `removePersonalIdentifiableInformation` did not properly remove information in arrays nested inside objects.
+- The `removePersonalIdentifiableInformation` did not properly remove information in arrays nested inside objects.
 
 ### ADDED
 - Documentation for a collection of security buttons and force-arm buttons.
@@ -482,7 +494,7 @@
 ## 3.1.2 - 2024-02-02
 
 ### FIXED
-- Fixed cases where the fingerprint value could be longer than the recommended length of 5120 characters.
+- The fingerprint value no longer exceeds the recommended length of 5120 characters in some cases.
 
 ## 3.1.1 - 2024-01-29
 
@@ -491,7 +503,7 @@
 - If advanced options were specified in the configuration, the list of enabled options now prints to the log.
 
 ### FIXED
-- "Unknown Device Type" is now excluded from the sensors list since it does not report a status.
+- The "Unknown Device Type" entry is now excluded from the sensors list since it does not report a status.
 
 ### ADDED
 - Partial documentation for PowerSeries/PremisePro security panels.
@@ -500,9 +512,7 @@
 
 ### ADDED
 - New advanced options to disable the "Alarm Ringing" switch and to ignore "Sensor Problem" status. Existing configurations must add `"options": []` before upgrading, or the plugin will fail to start.
-
-### PLEASE READ
-- The configuration has changed. Please add `"options": [],` to the configuration before upgrading or you will not be able to start the plugin.
+- [PLEASE READ] The configuration has changed. Please add `"options": [],` to the configuration before upgrading or you will not be able to start the plugin.
 
 ## 3.0.6 - 2024-01-25
 
@@ -518,14 +528,14 @@
 
 ### ADDED
 - Documentation for Lynx/QuickConnect Cellular-Only Gateway.
-- "Security Panel Master Code:" and "Serial Number:" to the list of keys redacted when sending information via detectors.
+- The "Security Panel Master Code:" and "Serial Number:" keys to the list of keys redacted when sending information via detectors.
 - Acknowledgement for @rlippmann for reverse engineering the browser fingerprinting script used for ADT Pulse's two-factor authentication.
 
 ## 3.0.4 - 2024-01-19
 
 ### UPDATED
 - Simplified directory traversal toward the `./build` folder structure so it no longer includes `src`.
-- Updated README instructions to include `panelSwitch` and clearer directions for manually setting up `adtType`.
+- README instructions include `panelSwitch` and clearer directions for manually setting up `adtType`.
 - The "Alarm Ringing" switch now applies to all alarm scenarios instead of just "Disarmed" mode, since "Alarm Ringing while Disarmed" was too long a name.
 
 ## 3.0.3 - 2024-01-19
@@ -545,14 +555,14 @@
 ## 3.0.1 - 2024-01-18
 
 ### UPDATED
-- `parseSensorsTable()` now skips devices with a "System/Supervisory" device type.
+- The `parseSensorsTable()` function now skips devices with a "System/Supervisory" device type.
 - Renamed detector functions to better reflect whether they should be called from the API or the platform.
-- Updated the detector reporting URL.
+- The detector reporting URL has changed.
 - Rewrote the detector reminder message and moved it to after the report content.
 
 ### FIXED
 - Incorrect detection of "Status Tampered" in connection with a "Trouble" status.
-- `generateFakeReadyButtons()` incorrectly added an Arm Night button, which is not available in the portal.
+- The `generateFakeReadyButtons()` function incorrectly added an Arm Night button, which is not available in the portal.
 - The type for `StackTracerError` was incorrectly defined.
 
 ### ADDED
@@ -563,19 +573,18 @@
 
 ## 3.0.0 - 2024-01-14
 
-Official v3.0.0 release.
-
 ### UPDATED
 - Temperature sensors are now properly reflected as a binary response.
 - Corrected `isAlarmActive` to not accept `undefined` as a value when setting the panel status.
 - Renamed the ADT Pulse Accessory "Status" characteristic to "Activity".
 - Renamed `adtSessionMax` to `adtSessionLifespan` to better describe the time login sessions remain active before going stale.
-- `getPanelStatus` can now return `SecuritySystemCurrentState` characteristic values while the system is busy setting panel status.
+- The `getPanelStatus` function can now return `SecuritySystemCurrentState` characteristic values while the system is busy setting panel status.
 - Improved documentation throughout the panel status-setting process.
-- "Trouble" statuses from sensors now indicate a sensor tamper and are considered part of the "alarm ringing" context.
+- Sensor "Trouble" statuses now indicate a sensor tamper and are considered part of the "alarm ringing" context.
+- [NOTES] Official v3.0.0 release.
 
 ### FIXED
-- `synchronizeSyncCheck()` was detecting the response code from `syncCheck.info.message` instead of `syncCheck.info.code`.
+- The `synchronizeSyncCheck()` function was detecting the response code from `syncCheck.info.message` instead of `syncCheck.info.code`.
 
 ### ADDED
 - Acknowledgements for @Danimal4326, @sapireli, @hapinstance, and @thcooley.
@@ -618,7 +627,7 @@ Official v3.0.0 release.
 ### ADDED
 - Unknown statuses for `co`, `doorWindow`, `fire`, `glass`, and `motion` sensors.
 - Okay statuses for `flood`, `heat`, and `temperature` sensors.
-- "Bypassed, Closed" sensor action items for `doorWindow`.
+- Sensor action items "Bypassed, Closed" for `doorWindow`.
 
 ## 3.0.0-beta.22 - 2024-01-07
 
@@ -631,7 +640,7 @@ Official v3.0.0 release.
 ### REMOVED
 - Support for devices previously matched as sensors (`keypad`, `panic`, `remote`).
 - Temporarily removed "System/Supervisory" and "Unknown Device Type" support to determine whether these are legitimate sensors.
-- `rawNode` when parsing the orb text summary.
+- The `rawNode` value when parsing the orb text summary.
 
 ## 3.0.0-beta.21 - 2024-01-07
 
@@ -652,12 +661,12 @@ Official v3.0.0 release.
 - Reduced indirect alias type imports so types point directly to their source file.
 - After the plugin removes all related accessories in reset mode, the log level changed from `warn` to `info`.
 - Moved the "status" mode's accessory status fetching to the bottom so it better accommodates other optional characteristics.
-- "Status Tampered" for security panels is now temporarily set to "Not Tampered" until there are enough statuses to determine an actual tamper.
+- The "Status Tampered" state for security panels is now temporarily set to "Not Tampered" until there are enough statuses to determine an actual tamper.
 
 ### FIXED
 - Sensor and panel statuses would not refresh unless the user manually forced a retrieval/refresh (credit to @NorthernMan54).
 - Removing accessories from the configuration could cause an array-out-of-bounds error, since the removal loop iterated forward instead of backward.
-- "Status Active" for sensors was improperly detecting statuses and icons.
+- The "Status Active" value for sensors was improperly detecting statuses and icons.
 
 ### ADDED
 - Support for "Heat (Rate-of-Rise) Detector" sensors.
@@ -674,10 +683,10 @@ Official v3.0.0 release.
 ## 3.0.0-beta.19 - 2024-01-04
 
 ### UPDATED
-- Updated package dependencies.
+- Package dependencies are up to date.
 - Removed the emoji displayed next to the "Reset" title in the configuration schema.
 - Setting the operational speed will also extend the time the plugin waits after setting an arm mode.
-- Updated the definition for `/access/signin.jsp?e=&partner=adt`.
+- The definition for `/access/signin.jsp?e=&partner=adt` is revised.
 - Changed how the plugin detects its own version (using an experimental Node.js feature, which may generate warnings).
 - Shortened the analytics notice.
 
@@ -714,7 +723,7 @@ Official v3.0.0 release.
 - General Node.js support starts at v18 and onward.
 
 ### FIXED
-- `accessory.getSensorStatus` was returning an incorrect type.
+- The `accessory.getSensorStatus` method was returning an incorrect type.
 - Some logs did not properly style the accessory name and its details.
 - In `accessory.ts`, "Status Unavailable" was mistakenly written as "Service Unavailable".
 
@@ -749,7 +758,7 @@ Official v3.0.0 release.
 - Flattened sensor status text (e.g. "Low Battery, Okay" becomes separate "Low Battery" and "Okay" statuses) for stricter status detection.
 - Simplified the regular expression used to detect orb text summaries.
 - The plugin now continuously retries detector reporting after failures caused by network issues or outdated plugin versions.
-- Updated dependency and ECMAScript target versions.
+- Dependency and ECMAScript target versions are raised.
 
 ### FIXED
 - ESLint warnings on JavaScript files.
@@ -760,7 +769,7 @@ Official v3.0.0 release.
 - A dispatcher in `accessory.ts` for reporting when the plugin doesn't recognize a panel or sensor status.
 - A "No Entry Delay" panel state, a "Sensor Problems" panel status, and a "this may take several minutes" panel note.
 - A `devStatOffline` sensor status.
-- `serial` to the fields redacted by `removePersonalIdentifiableInformation`.
+- Redaction of `serial` by `removePersonalIdentifiableInformation`.
 - Error and warning log messages for accessories, to help diagnose issues in the Home app.
 - Support for additional sensor types, defaulting to occupancy sensors for types not natively supported by HomeKit.
 
@@ -799,14 +808,14 @@ Official v3.0.0 release.
 
 ## 3.0.0-beta.9 - 2023-12-20
 
+### UPDATED
+- [NOTES] HOOBS currently caches configuration UIs, so users won't be able to see the latest configuration UI. Please re-configure the plugin manually until this is fixed by the HOOBS team.
+
 ### FIXED
 - HOOBS installations could not start the plugin, because HOOBS did not support the `exports` field in `package.json`.
 
 ### ADDED
 - A panic button toggle in the configuration UI.
-
-### NOTES
-- HOOBS currently caches configuration UIs, so users won't be able to see the latest configuration UI. Please re-configure the plugin manually until this is fixed by the HOOBS team.
 
 ## 3.0.0-beta.8 - 2023-12-19
 
@@ -855,18 +864,17 @@ Official v3.0.0 release.
 
 ## 3.0.0-beta.1 - 2023-12-16
 
-The first v3 beta: a complete rewrite of the plugin from JavaScript to TypeScript.
-
 ### UPDATED
 - Rewrote the plugin from JavaScript to TypeScript, replacing the single `index.js` file with a modular source structure (`accessory`, `api`, `detect`, `platform`, `regex`, `schema`, `utility`).
 - Restructured sensor configuration so sensors must be added manually with an explicit name, type, and zone, replacing the old automatic sensor add/remove behavior.
 - The configuration UI does not yet reflect the new v3 configuration format; sensors and other settings must be configured manually in `config.json` until the schema is updated (resolved in 3.0.0-beta.6).
 - Improved the `.editorconfig` and `.gitignore` files.
+- [NOTES] The first v3 beta: a complete rewrite of the plugin from JavaScript to TypeScript.
 
 ### ADDED
 - Support for the Canada ADT Pulse portal subdomain (`portal-ca`), in addition to the US portal.
 - A standalone browser-based device fingerprint tool (`fingerprint/index.html`) for generating the two-factor authentication fingerprint value.
-- `test-api` and `repl` scripts for testing and debugging the ADT Pulse API directly from the command line.
+- The `test-api` and `repl` scripts for testing and debugging the ADT Pulse API directly from the command line.
 
 ## 2.2.0 - 2023-07-31
 
@@ -951,7 +959,7 @@ The first v3 beta: a complete rewrite of the plugin from JavaScript to TypeScrip
 ## 2.0.4 - 2021-08-18
 
 ### UPDATED
-- `.editorconfig` to support TypeScript file formatting.
+- The `.editorconfig` file to support TypeScript file formatting.
 
 ### ADDED
 - Support for web portal version `21.0.0-354`.
@@ -962,9 +970,9 @@ The first v3 beta: a complete rewrite of the plugin from JavaScript to TypeScrip
 ## 2.0.3 - 2021-07-03
 
 ### UPDATED
-- `.editorconfig` max line length increased to `200` to reduce unnecessary line wrapping.
+- The `.editorconfig` max line length increased to `200` to reduce unnecessary line wrapping.
 - README `overrideSensors` documentation to clarify it accepts an array (`overrideSensors[]`).
-- `package.json` funding URL to use `https`.
+- The `package.json` funding URL to use `https`.
 
 ### ADDED
 - Support for web portal version `21.0.0-353`.
@@ -1009,11 +1017,11 @@ The first v3 beta: a complete rewrite of the plugin from JavaScript to TypeScrip
 ## 1.9.3 - 2020-12-24
 
 ### UPDATED
-- Updated the cheerio HTML-parsing dependency to 1.0.0-rc.5.
+- The cheerio HTML-parsing dependency is now 1.0.0-rc.5.
 
 ### FIXED
-- Fixed a crash in zone status parsing caused by passing `cheerio.load` a single element instead of an array.
-- Fixed zone number parsing when the web portal output contained a non-breaking space character.
+- Zone status parsing no longer crashes from passing `cheerio.load` a single element instead of an array.
+- Zone number parsing works when the web portal output contains a non-breaking space character.
 
 ## 1.9.2 - 2020-12-24
 
@@ -1023,31 +1031,31 @@ The first v3 beta: a complete rewrite of the plugin from JavaScript to TypeScrip
 ## 1.9.1 - 2020-12-04
 
 ### ADDED
-- Added support for ADT Pulse web portal version 20.0.0-244.
+- Support for ADT Pulse web portal version 20.0.0-244.
 
 ### REMOVED
-- Removed support for the outdated web portal version 19.0.0-89.
+- Support for the outdated web portal version 19.0.0-89 is gone.
 
 ## 1.9.0 - 2020-09-12
 
 ### UPDATED
-- Updated the lodash dependency.
+- The lodash dependency is on a newer version.
 
 ### ADDED
-- Added support for ADT Pulse Canada accounts via a new `country` configuration option.
+- Support for ADT Pulse Canada accounts via a new `country` configuration option.
 
 ## 1.8.13 - 2020-08-12
 
 ### ADDED
-- Added detection support for "Kitchen Left/Right Back/Side" door sensor naming.
+- Detection support for "Kitchen Left/Right Back/Side" door sensor naming.
 
 ## 1.8.12 - 2020-07-31
 
 ### ADDED
-- Added support for ADT Pulse web portal version 20.0.0-221.
+- Support for ADT Pulse web portal version 20.0.0-221.
 
 ### REMOVED
-- Removed support for the outdated web portal version 18.0.0-78.
+- Support for the outdated web portal version 18.0.0-78 is gone.
 
 ## 1.8.11 - 2020-07-21
 
@@ -1055,18 +1063,18 @@ The first v3 beta: a complete rewrite of the plugin from JavaScript to TypeScrip
 - Improved device name detection to better handle sensors with special naming configurations.
 
 ### FIXED
-- Fixed glass break and smoke sensors being incorrectly detected as contact (door/window) sensors.
+- Glass break and smoke sensors are no longer incorrectly detected as contact (door/window) sensors.
 
 ### ADDED
-- Added detection support for "Z\*\* Service" door sensor naming.
+- Detection support for "Z\*\* Service" door sensor naming.
 
 ## 1.8.10 - 2020-06-04
 
 ### FIXED
-- Fixed SAT code retrieval when setting the device (arm/disarm) status, which could cause requests to fail.
+- SAT code retrieval when setting the device (arm/disarm) status no longer causes requests to fail.
 
 ### REMOVED
-- Removed the TypeScript type definition file that was added in the previous release.
+- The TypeScript type definition file that was added in the previous release is gone.
 
 ## 1.8.9 - 2020-06-02
 
@@ -1074,19 +1082,19 @@ The first v3 beta: a complete rewrite of the plugin from JavaScript to TypeScrip
 - Adjusted the portal sync session timer and login failure log messages.
 
 ### ADDED
-- Added a TypeScript type definition file for the plugin.
-- Added a 600-second delay before retrying the portal sync login after a failure.
+- A TypeScript type definition file for the plugin.
+- A 600-second delay before retrying the portal sync login after a failure.
 
 ## 1.8.8 - 2020-05-10
 
 ### UPDATED
-- Updated the browser user agent string sent to the ADT Pulse portal.
+- The browser user agent string sent to the ADT Pulse portal is refreshed.
 
 ### ADDED
-- Added a display name for the plugin in Homebridge Config UI X.
+- A display name for the plugin in Homebridge Config UI X.
 
 ### REMOVED
-- Removed the bundled test script from the published npm package; it remains available in the GitHub repository.
+- The bundled test script is gone from the published npm package; it remains available in the GitHub repository.
 
 ## 1.8.7 - 2020-05-04
 
@@ -1094,15 +1102,15 @@ The first v3 beta: a complete rewrite of the plugin from JavaScript to TypeScrip
 - Adjusted log priority for web portal version mismatch, disabled obsolete-zone removal, and stalled portal sync warnings.
 
 ### ADDED
-- Added support for ADT Pulse web portal version 19.0.0-89.
+- Support for ADT Pulse web portal version 19.0.0-89.
 
 ### REMOVED
-- Removed support for the outdated web portal version 17.0.0-71.
+- Support for the outdated web portal version 17.0.0-71 is gone.
 
 ## 1.8.6 - 2020-04-23
 
 ### ADDED
-- Added a `removeObsoleteZones` configuration setting to toggle automatic removal of obsolete zone accessories.
+- A `removeObsoleteZones` configuration setting to toggle automatic removal of obsolete zone accessories.
 
 ## 1.8.5 - 2020-03-26
 
@@ -1115,7 +1123,7 @@ The first v3 beta: a complete rewrite of the plugin from JavaScript to TypeScrip
 - Improved zone accessory type detection for sensor names containing "DR", "WIN", "SLIDER", "NOOK", "MOTION", and "SMOKE".
 
 ### FIXED
-- Fixed incorrect zone type matching caused by confusing string and array `includes` behavior.
+- Zone type matching no longer goes wrong because of confusing string and array `includes` behavior.
 
 ## 1.8.2 - 2020-03-21
 
@@ -1125,12 +1133,12 @@ The first v3 beta: a complete rewrite of the plugin from JavaScript to TypeScrip
 ## 1.8.1 - 2020-03-21
 
 ### FIXED
-- Fixed zone status retrieval after ADT Pulse disabled the endpoint the plugin previously relied on, by switching to the "zone status orb" endpoint.
+- Zone status retrieval works after ADT Pulse disabled the endpoint the plugin previously relied on, now using the "zone status orb" endpoint.
 
 ## 1.8.0 - 2020-02-07
 
 ### ADDED
-- Added a `logActivity` setting to log alarm and sensor activity events.
+- A `logActivity` setting to log alarm and sensor activity events.
 
 ## 1.7.7 - 2020-02-03
 
@@ -1143,12 +1151,12 @@ The first v3 beta: a complete rewrite of the plugin from JavaScript to TypeScrip
 - Improved how system error messages are displayed and how the portal sync timer is stored.
 
 ### FIXED
-- Fixed portal sync repeatedly stalling when the web portal was on version 18.0.0-78.
+- Portal sync no longer stalls repeatedly when the web portal is on version 18.0.0-78.
 
 ## 1.7.5 - 2020-01-28
 
 ### FIXED
-- Fixed error messages not being logged properly to Homebridge.
+- Error messages are now logged properly to Homebridge.
 
 ## 1.7.4 - 2020-01-27
 
@@ -1156,17 +1164,17 @@ The first v3 beta: a complete rewrite of the plugin from JavaScript to TypeScrip
 - Error messages are now displayed in order of priority when available.
 
 ### ADDED
-- Added support for ADT Pulse web portal version 18.0.0-78.
+- Support for ADT Pulse web portal version 18.0.0-78.
 
 ### REMOVED
-- Removed support for the outdated web portal version 17.0.0-69.
+- Support for the outdated web portal version 17.0.0-69 is gone.
 
 ## 1.7.3 - 2020-01-15
 
 ### FIXED
-- Fixed offline devices and sensors showing incorrect status instead of "Not Available".
-- Fixed sensors showing "No Response" in HomeKit when closed or not detecting motion.
-- Fixed the security panel showing "No Response" when armed to stay.
+- Offline devices and sensors show "Not Available" instead of an incorrect status.
+- Sensors no longer show "No Response" in HomeKit when closed or not detecting motion.
+- The security panel no longer shows "No Response" when armed to stay.
 
 ## 1.7.1 - 2020-01-09
 
@@ -1174,7 +1182,7 @@ The first v3 beta: a complete rewrite of the plugin from JavaScript to TypeScrip
 - Removing invalid accessories now fails gracefully instead of crashing Homebridge.
 
 ### ADDED
-- Added system information logging on Homebridge startup.
+- System information logging on Homebridge startup.
 
 ## 1.7.0 - 2020-01-02
 
@@ -1182,150 +1190,70 @@ The first v3 beta: a complete rewrite of the plugin from JavaScript to TypeScrip
 - Improved logging clarity when adding accessories and handling unknown errors.
 
 ### FIXED
-- Fixed a false credentials error appearing when `logLevel` was configured incorrectly.
-- Fixed potential errors when removing a large number of obsolete accessories.
+- A false credentials error no longer appears when `logLevel` is configured incorrectly.
+- Removing a large number of obsolete accessories no longer risks errors.
 
 ### ADDED
-- Added a plugin reset feature to clear cached accessory data.
+- A plugin reset feature to clear cached accessory data.
 
 ### REMOVED
-- Removed the "console.re" remote debug logging feature and its dependency.
+- The "console.re" remote debug logging feature and its dependency are gone.
 
 ## 1.6.9 - 2019-12-30
+
+### UPDATED
+- [USERS UPGRADING WITH GLASS BREAK SENSORS] If you have NOT updated to `v1.6.8`, please DO NOT update to this version or any future versions until you do. Attempts to skip the aforementioned version WILL crash Homebridge. To upgrade/downgrade to `v1.6.8` manually, please enter this command into the Terminal: `npm install homebridge-adt-pulse@1.6.8` Then proceed to restart Homebridge for the changes to take effect. Afterward, you are then safe to upgrade to the latest version.
+- [PRIVACY NOTICE] Because of unknown bugs plagued in the plugin (that people aren't reporting on GitHub), this version will contain a bug reporting tool that will send debug logs here: `https://console.re/vHeMZvGjaBWjN29b8PARrCpBNtHTWYteMGFejmxDwgUpan9SMU` Please be advised these logs are not saved, are ANONYMOUS and in no way, you will be geographically or personally identified. The information that is being sent is: a random session number (to group actions); date and time; basic system information (system and architecture version); Node version, Homebridge version, Plugin version; system status changes (e.g. `all quiet` to `motion`); set device logs (e.g. `disarmed` to `away`); and wrong web portal version messages (e.g. `17.0.0` to `18.0.0`).
 
 ### ADDED
 - Re-added glass break sensors, now exposed as occupancy sensors in HomeKit.
 
-### USERS UPGRADING WITH GLASS BREAK SENSORS
-If you have NOT updated to `v1.6.8`, please DO NOT update to this version or any future versions until you do. Attempts to skip the aforementioned version WILL crash Homebridge.
-
-To upgrade/downgrade to `v1.6.8` manually, please enter this command into the Terminal:
-
-`npm install homebridge-adt-pulse@1.6.8`
-
-Then proceed to restart Homebridge for the changes to take effect. Afterward, you are then safe to upgrade to the latest version.
-
-### PRIVACY NOTICE
-Because of unknown bugs plagued in the plugin (that people aren't reporting on GitHub), this version will contain a bug reporting tool that will send debug logs here:
-
-`https://console.re/vHeMZvGjaBWjN29b8PARrCpBNtHTWYteMGFejmxDwgUpan9SMU`
-
-Please be advised these logs are not saved, are ANONYMOUS and in no way, you will be geographically or personally identified. The information that is being sent is:
-- A random session number (to group actions).
-- Date and time.
-- Basic system information (system and architecture version).
-- Node version, Homebridge version, Plugin version.
-- System status changes (e.g. `all quiet` to `motion`).
-- Set device logs (e.g. `disarmed` to `away`).
-- Wrong web portal version messages (e.g. `17.0.0` to `18.0.0`).
-
 ## 1.6.8 - 2019-12-30
+
+### UPDATED
+- [PRIVACY NOTICE] Because of unknown bugs plagued in the plugin (that people aren't reporting on GitHub), this version will contain a bug reporting tool that will send debug logs here: `https://console.re/vHeMZvGjaBWjN29b8PARrCpBNtHTWYteMGFejmxDwgUpan9SMU` Please be advised these logs are not saved, are ANONYMOUS and in no way, you will be geographically or personally identified. The information that is being sent is: a random session number (to group actions); date and time; basic system information (system and architecture version); Node version, Homebridge version, Plugin version; system status changes (e.g. `all quiet` to `motion`); set device logs (e.g. `disarmed` to `away`); and wrong web portal version messages (e.g. `17.0.0` to `18.0.0`).
 
 ### REMOVED
 - Temporarily removed glass break sensor support while it was reworked to use HomeKit occupancy sensors (restored in the next release).
-
-### PRIVACY NOTICE
-Because of unknown bugs plagued in the plugin (that people aren't reporting on GitHub), this version will contain a bug reporting tool that will send debug logs here:
-
-`https://console.re/vHeMZvGjaBWjN29b8PARrCpBNtHTWYteMGFejmxDwgUpan9SMU`
-
-Please be advised these logs are not saved, are ANONYMOUS and in no way, you will be geographically or personally identified. The information that is being sent is:
-- A random session number (to group actions).
-- Date and time.
-- Basic system information (system and architecture version).
-- Node version, Homebridge version, Plugin version.
-- System status changes (e.g. `all quiet` to `motion`).
-- Set device logs (e.g. `disarmed` to `away`).
-- Wrong web portal version messages (e.g. `17.0.0` to `18.0.0`).
 
 ## 1.6.7 - 2019-12-29
 
 ### UPDATED
 - Improved detection of "Status Unavailable" when setting device status.
+- [PRIVACY NOTICE] Because of unknown bugs plagued in the plugin (that people aren't reporting on GitHub), this version will contain a bug reporting tool that will send debug logs here: `https://console.re/vHeMZvGjaBWjN29b8PARrCpBNtHTWYteMGFejmxDwgUpan9SMU` Please be advised these logs are not saved, are ANONYMOUS and in no way, you will be geographically or personally identified. The information that is being sent is: a random session number (to group actions); date and time; basic system information (system and architecture version); Node version, Homebridge version, Plugin version; system status changes (e.g. `all quiet` to `motion`); set device logs (e.g. `disarmed` to `away`); and wrong web portal version messages (e.g. `17.0.0` to `18.0.0`).
 
 ### FIXED
-- Fixed the "console.re" debug logging port to avoid being blocked by firewalls.
+- The "console.re" debug logging port changed to avoid being blocked by firewalls.
 
 ### ADDED
 - Accessories now show "No Response" in HomeKit when their status is unavailable.
-- Added support for reporting the security system's target state (not just current state) to HomeKit.
-
-### PRIVACY NOTICE
-Because of unknown bugs plagued in the plugin (that people aren't reporting on GitHub), this version will contain a bug reporting tool that will send debug logs here:
-
-`https://console.re/vHeMZvGjaBWjN29b8PARrCpBNtHTWYteMGFejmxDwgUpan9SMU`
-
-Please be advised these logs are not saved, are ANONYMOUS and in no way, you will be geographically or personally identified. The information that is being sent is:
-- A random session number (to group actions).
-- Date and time.
-- Basic system information (system and architecture version).
-- Node version, Homebridge version, Plugin version.
-- System status changes (e.g. `all quiet` to `motion`).
-- Set device logs (e.g. `disarmed` to `away`).
-- Wrong web portal version messages (e.g. `17.0.0` to `18.0.0`).
+- Support for reporting the security system's target state (not just current state) to HomeKit.
 
 ## 1.6.6 - 2019-12-24
 
+### UPDATED
+- [PRIVACY NOTICE] Because of unknown bugs plagued in the plugin (that people aren't reporting on GitHub), this version will contain a bug reporting tool that will send debug logs here: `https://console.re/vHeMZvGjaBWjN29b8PARrCpBNtHTWYteMGFejmxDwgUpan9SMU` Please be advised these logs are not saved, are ANONYMOUS and in no way, you will be geographically or personally identified. The information that is being sent is: a random session number (to group actions); date and time; basic system information (system and architecture version); Node version, Homebridge version, Plugin version; system status changes (e.g. `all quiet` to `motion`); set device logs (e.g. `disarmed` to `away`); and wrong web portal version messages (e.g. `17.0.0` to `18.0.0`).
+
 ### FIXED
-- Fixed a typo that prevented the security system from arming.
-
-### PRIVACY NOTICE
-Because of unknown bugs plagued in the plugin (that people aren't reporting on GitHub), this version will contain a bug reporting tool that will send debug logs here:
-
-`https://console.re/vHeMZvGjaBWjN29b8PARrCpBNtHTWYteMGFejmxDwgUpan9SMU`
-
-Please be advised these logs are not saved, are ANONYMOUS and in no way, you will be geographically or personally identified. The information that is being sent is:
-- A random session number (to group actions).
-- Date and time.
-- Basic system information (system and architecture version).
-- Node version, Homebridge version, Plugin version.
-- System status changes (e.g. `all quiet` to `motion`).
-- Set device logs (e.g. `disarmed` to `away`).
-- Wrong web portal version messages (e.g. `17.0.0` to `18.0.0`).
+- A typo that prevented the security system from arming is corrected.
 
 ## 1.6.5 - 2019-12-24
 
 ### UPDATED
 - Improved error and debug log message formatting.
+- [PRIVACY NOTICE] Because of unknown bugs plagued in the plugin (that people aren't reporting on GitHub), this version will contain a bug reporting tool that will send debug logs here: `https://console.re/vHeMZvGjaBWjN29b8PARrCpBNtHTWYteMGFejmxDwgUpan9SMU` Please be advised these logs are not saved, are ANONYMOUS and in no way, you will be geographically or personally identified. The information that is being sent is: a random session number (to group actions); date and time; basic system information (system and architecture version); Node version, Homebridge version, Plugin version; system status changes (e.g. `all quiet` to `motion`); set device logs (e.g. `disarmed` to `away`); and wrong web portal version messages (e.g. `17.0.0` to `18.0.0`).
 
 ### FIXED
-- Fixed Homebridge crashes caused by accessories with an undefined last-known state.
-
-### PRIVACY NOTICE
-Because of unknown bugs plagued in the plugin (that people aren't reporting on GitHub), this version will contain a bug reporting tool that will send debug logs here:
-
-`https://console.re/vHeMZvGjaBWjN29b8PARrCpBNtHTWYteMGFejmxDwgUpan9SMU`
-
-Please be advised these logs are not saved, are ANONYMOUS and in no way, you will be geographically or personally identified. The information that is being sent is:
-- A random session number (to group actions).
-- Date and time.
-- Basic system information (system and architecture version).
-- Node version, Homebridge version, Plugin version.
-- System status changes (e.g. `all quiet` to `motion`).
-- Set device logs (e.g. `disarmed` to `away`).
-- Wrong web portal version messages (e.g. `17.0.0` to `18.0.0`).
+- Homebridge no longer crashes because of accessories with an undefined last-known state.
 
 ## 1.6.4 - 2019-12-24
 
 ### UPDATED
 - Refined accepted zone accessory types.
+- [PRIVACY NOTICE] Because of unknown bugs plagued in the plugin (that people aren't reporting on GitHub), this version will contain a bug reporting tool that will send debug logs here: `https://console.re/vHeMZvGjaBWjN29b8PARrCpBNtHTWYteMGFejmxDwgUpan9SMU` Please be advised these logs are not saved, are ANONYMOUS and in no way, you will be geographically or personally identified. The information that is being sent is: a random session number (to group actions); date and time; basic system information (system and architecture version); Node version, Homebridge version, Plugin version; system status changes (e.g. `all quiet` to `motion`); set device logs (e.g. `disarmed` to `away`); and wrong web portal version messages (e.g. `17.0.0` to `18.0.0`).
 
 ### ADDED
-- Added firmware revision information when adding or configuring accessories.
-
-### PRIVACY NOTICE
-Because of unknown bugs plagued in the plugin (that people aren't reporting on GitHub), this version will contain a bug reporting tool that will send debug logs here:
-
-`https://console.re/vHeMZvGjaBWjN29b8PARrCpBNtHTWYteMGFejmxDwgUpan9SMU`
-
-Please be advised these logs are not saved, are ANONYMOUS and in no way, you will be geographically or personally identified. The information that is being sent is:
-- A random session number (to group actions).
-- Date and time.
-- Basic system information (system and architecture version).
-- Node version, Homebridge version, Plugin version.
-- System status changes (e.g. `all quiet` to `motion`).
-- Set device logs (e.g. `disarmed` to `away`).
-- Wrong web portal version messages (e.g. `17.0.0` to `18.0.0`).
+- Firmware revision information when adding or configuring accessories.
 
 ## 1.6.3 - 2019-12-23
 
@@ -1333,59 +1261,38 @@ Please be advised these logs are not saved, are ANONYMOUS and in no way, you wil
 - Improved parsing of the web portal version, site ID, force-arm code, and zone status responses.
 - The plugin now avoids setting device status when the ADT Pulse gateway is offline.
 - Offline devices and zones with broken data are no longer added or updated.
-
-### PRIVACY NOTICE
-Because of unknown bugs plagued in the plugin (that people aren't reporting on GitHub), this version will contain a bug reporting tool that will send debug logs here:
-
-`https://console.re/vHeMZvGjaBWjN29b8PARrCpBNtHTWYteMGFejmxDwgUpan9SMU`
-
-Please be advised these logs are not saved, are ANONYMOUS and in no way, you will be personally or geographically identified. The information that is being sent is:
-- A session number to group logs together.
-- The version of Node (or browser) you are using.
-- The operating system name.
-- Date and time of the proposed log.
-- System status changes (e.g. `all quiet` to `motion`)
-- Set device logs (e.g. `disarmed` to `away`)
+- [PRIVACY NOTICE] Because of unknown bugs plagued in the plugin (that people aren't reporting on GitHub), this version will contain a bug reporting tool that will send debug logs here: `https://console.re/vHeMZvGjaBWjN29b8PARrCpBNtHTWYteMGFejmxDwgUpan9SMU` Please be advised these logs are not saved, are ANONYMOUS and in no way, you will be personally or geographically identified. The information that is being sent is: a session number to group logs together; the version of Node (or browser) you are using; the operating system name; date and time of the proposed log; system status changes (e.g. `all quiet` to `motion`); and set device logs (e.g. `disarmed` to `away`).
 
 ## 1.6.2 - 2019-12-22
 
+### UPDATED
+- [PRIVACY NOTICE] Because of unknown bugs plagued in the plugin (that people aren't reporting on GitHub), this version will contain a bug reporting tool that will send debug logs here: `https://console.re/nsJJTsUAB6AUwcCNc4rzuPwcW9JAuCeXG8DeGtVypRpT2gFw` Please be advised these logs are not saved, are ANONYMOUS and in no way, you will be personally or geographically identified. The information that is being sent is: the version of Node (or browser) you are using; the operating system name; date and time of the proposed log; system status changes (e.g. `disarmed` to `off`); and unknown zone types (e.g. `sensor`).
+
 ### FIXED
-- Fixed incorrect zone version detection for certain zone numbers (e.g., zone 10 being read as zone 1).
-- Fixed a Homebridge crash when configuring a device accessory with an undefined state.
-- Fixed a potential crash when an error handler received an undefined message.
+- Zone version detection is correct for certain zone numbers (e.g., zone 10 is no longer read as zone 1).
+- Configuring a device accessory with an undefined state no longer crashes Homebridge.
+- An error handler receiving an undefined message no longer risks a crash.
 
 ### ADDED
-- Added optional anonymous debug log reporting to help diagnose issues.
-
-### PRIVACY NOTICE
-Because of unknown bugs plagued in the plugin (that people aren't reporting on GitHub), this version will contain a bug reporting tool that will send debug logs here:
-
-`https://console.re/nsJJTsUAB6AUwcCNc4rzuPwcW9JAuCeXG8DeGtVypRpT2gFw`
-
-Please be advised these logs are not saved, are ANONYMOUS and in no way, you will be personally or geographically identified. The information that is being sent is:
-- The version of Node (or browser) you are using.
-- The operating system name.
-- Date and time of the proposed log.
-- System status changes (e.g. `disarmed` to `off`)
-- Unknown zone types (e.g. `sensor`)
+- Optional anonymous debug log reporting to help diagnose issues.
 
 ## 1.6.1 - 2019-12-15
 
 ### FIXED
-- Fixed zone accessory information for multiples of 10 being read as "10VER1" instead of "10".
+- Zone accessory information for multiples of 10 is no longer read as "10VER1" instead of "10".
 
 ## 1.6.0 - 2019-12-15
 
-### REMOVED
-- Removed temporary workarounds for accessory display names and zone information that are no longer needed.
+### UPDATED
+- [EXISTING USERS] If you are updating this plugin from older versions, please follow the instructions [here](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/14). If you update without following the upgrade instructions, some things might become broken.
 
-### EXISTING USERS
-If you are updating this plugin from older versions, please follow the instructions [here](https://github.com/mrjackyliang/homebridge-adt-pulse/issues/14). If you update without following the upgrade instructions, some things might become broken.
+### REMOVED
+- Temporary workarounds for accessory display names and zone information that are no longer needed are gone.
 
 ## 1.5.6 - 2019-12-15
 
 ### FIXED
-- Fixed the plugin re-sending a status change request when the device was already at the requested status.
+- The plugin no longer re-sends a status change request when the device is already at the requested status.
 
 ## 1.5.5 - 2019-12-14
 
@@ -1394,10 +1301,10 @@ If you are updating this plugin from older versions, please follow the instructi
 - Adapted to updated ADT Pulse login form field names and request headers to maintain portal compatibility.
 
 ### FIXED
-- Fixed a crash in `setDeviceStatus` when the last known state was not a string.
+- The `setDeviceStatus` function no longer crashes when the last known state is not a string.
 
 ### ADDED
-- Added the ability to retrieve device information (e.g., model and serial number) when adding new accessories.
+- Device information (e.g., model and serial number) is now retrieved when adding new accessories.
 
 ## 1.5.2 - 2019-12-11
 
@@ -1410,22 +1317,22 @@ If you are updating this plugin from older versions, please follow the instructi
 ## 1.5.1 - 2019-12-09
 
 ### UPDATED
-- Updated the Homebridge Config UI X settings layout.
+- The Homebridge Config UI X settings layout is refreshed.
 
 ## 1.5.0 - 2019-12-09
 
 ### FIXED
-- Fixed the alarm triggered status not displaying in HomeKit during an active alarm event.
-- Fixed login error messages retaining HTML line breaks.
+- The alarm triggered status now displays in HomeKit during an active alarm event.
+- Login error messages no longer retain HTML line breaks.
 
 ### ADDED
-- Added a warning log when force arm is used to set the device status.
-- Added a timeout safeguard when setting device status to prevent the plugin from hanging.
+- A warning log when force arm is used to set the device status.
+- A timeout safeguard when setting device status to prevent the plugin from hanging.
 
 ## 1.4.5 - 2019-12-01
 
 ### FIXED
-- Fixed a Homebridge crash when an error response had no body.
+- An error response with no body no longer crashes Homebridge.
 
 ## 1.4.4 - 2019-12-01
 
@@ -1435,11 +1342,11 @@ If you are updating this plugin from older versions, please follow the instructi
 ## 1.4.3 - 2019-11-28
 
 ### FIXED
-- Fixed error messages retaining leftover HTML markup.
+- Error messages no longer retain leftover HTML markup.
 - Reduced duplicate arm/disarm notifications and delayed Siri responses.
 
 ### ADDED
-- Added support for configuring the plugin through Homebridge Config UI X.
+- Support for configuring the plugin through Homebridge Config UI X.
 
 ## 1.4.2 - 2019-11-27
 
@@ -1450,21 +1357,21 @@ If you are updating this plugin from older versions, please follow the instructi
 ## 1.4.1 - 2019-11-24
 
 ### FIXED
-- Fixed a Homebridge crash when accessing the error message helper.
+- Accessing the error message helper no longer crashes Homebridge.
 
 ## 1.4.0 - 2019-11-24
 
 ### UPDATED
 - Sped up sync intervals to further reduce Siri arm/disarm timeout issues.
 - Portal sync and set-status errors now include the underlying web portal error message.
-- Updated the browser user agent from Chrome 76 to Chrome 78.
+- The browser user agent moves from Chrome 76 to Chrome 78.
 
 ### FIXED
-- Fixed debug logs from the ADT Pulse script not appearing in verbose mode.
+- Debug logs from the ADT Pulse script now appear in verbose mode.
 
 ### ADDED
-- Added automatic removal of obsolete accessories.
-- Added the ability to extract and display error messages from the ADT Pulse login page.
+- Automatic removal of obsolete accessories.
+- Error messages from the ADT Pulse login page are now extracted and displayed.
 
 ## 1.3.5 - 2019-11-19
 
@@ -1474,38 +1381,38 @@ If you are updating this plugin from older versions, please follow the instructi
 ## 1.3.4 - 2019-11-17
 
 ### FIXED
-- Fixed repetitive log messages for common, auto-recoverable web portal errors.
+- Common, auto-recoverable web portal errors no longer produce repetitive log messages.
 
 ## 1.3.3 - 2019-11-17
 
 ### FIXED
-- Fixed the plugin not properly de-authenticating after a failed device status request.
+- The plugin now properly de-authenticates after a failed device status request.
 - Improved detection of failed logins, with the underlying error now logged.
 
 ## 1.3.2 - 2019-11-09
 
 ### ADDED
-- Added support for ADT Pulse web portal version 17.0.0-71.
+- Support for ADT Pulse web portal version 17.0.0-71.
 
 ### REMOVED
-- Removed support for the outdated web portal version 16.0.0-131.
+- Support for the outdated web portal version 16.0.0-131 is gone.
 
 ## 1.3.1 - 2019-11-05
 
 ### FIXED
-- Fixed "Uncleared Alarm" status incorrectly showing as "Alarm Triggered" in HomeKit.
-- Fixed a Homebridge crash caused by an unrecognized device state.
+- The "Uncleared Alarm" status no longer shows incorrectly as "Alarm Triggered" in HomeKit.
+- An unrecognized device state no longer crashes Homebridge.
 
 ### REMOVED
-- Removed the "Uncleared Alarm" check from armed away, stay, and night modes.
+- The "Uncleared Alarm" check is gone from armed away, stay, and night modes.
 
 ## 1.3.0 - 2019-11-04
 
 ### FIXED
-- Fixed default value handling in zone status formatting.
+- Default value handling in zone status formatting is corrected.
 
 ### ADDED
-- Added support for "Arm Night" mode, including force arming.
+- Support for "Arm Night" mode, including force arming.
 
 ## 1.2.8 - 2019-11-04
 
@@ -1520,35 +1427,35 @@ If you are updating this plugin from older versions, please follow the instructi
 - Debug and verbose modes now show more detailed error and response information.
 
 ### ADDED
-- Added support for ADT Pulse web portal pre-release version 17.0.0-69, alongside the current 16.0.0-131.
+- Support for ADT Pulse web portal pre-release version 17.0.0-69, alongside the current 16.0.0-131.
 
 ## 1.2.6 - 2019-10-28
 
 ### FIXED
-- Fixed arming to "Stay" mode failing when doors or windows were open.
+- Arming to "Stay" mode no longer fails when doors or windows are open.
 
 ## 1.2.5 - 2019-10-28
 
 ### FIXED
-- Fixed the web portal version mismatch warning being logged repeatedly on every sync.
+- The web portal version mismatch warning is no longer logged repeatedly on every sync.
 
 ## 1.2.4 - 2019-10-28
 
 ### FIXED
-- Fixed all requests failing on Raspberry Pi and other OpenSSL 1.1.1 systems by enforcing compatible cipher suites.
+- Requests no longer fail on Raspberry Pi and other OpenSSL 1.1.1 systems, now that compatible cipher suites are enforced.
 
 ### ADDED
-- Added logging of the full error response alongside the error message.
+- The full error response is logged alongside the error message.
 
 ## 1.2.3 - 2019-10-27
 
 ### FIXED
-- Fixed an issue where some devices could not retrieve the request path, causing errors.
+- Some devices no longer fail to retrieve the request path, which caused errors.
 
 ## 1.2.2 - 2019-10-11
 
 ### FIXED
-- Fixed Siri reporting an error response when arming or disarming.
+- Siri no longer reports an error response when arming or disarming.
 
 ## 1.2.1 - 2019-10-10
 
@@ -1556,25 +1463,25 @@ If you are updating this plugin from older versions, please follow the instructi
 - Improved accessory refresh rate.
 
 ### FIXED
-- Fixed arming or disarming triggering multiple duplicate notifications.
+- Arming or disarming no longer triggers multiple duplicate notifications.
 - Reduced Siri arm/disarm request timeouts.
 
 ### ADDED
-- Added "tamper" detection for sensors when their covers are opened or tampered with.
+- Sensors now have "tamper" detection for when their covers are opened or tampered with.
 
 ## 1.2.0 - 2019-10-07
 
 ### FIXED
-- Fixed arming to "Away" mode failing when doors, windows, or motion sensors were active.
+- Arming to "Away" mode no longer fails when doors, windows, or motion sensors are active.
 
 ### ADDED
-- Added a leveled logging system for clearer log output.
+- A leveled logging system for clearer log output.
 
 ## 1.1.1 - 2019-10-03
 
 ### FIXED
-- Fixed a race condition when setting the device status.
-- Fixed a typo in the device status response handling.
+- Setting the device status no longer has a race condition.
+- A typo in the device status response handling is corrected.
 - Removed parentheses from accessory names for cleaner display.
 
 ## 1.1.0 - 2019-09-30
@@ -1585,11 +1492,11 @@ If you are updating this plugin from older versions, please follow the instructi
 - Delayed status callbacks to prevent duplicate reverse notifications.
 
 ### REMOVED
-- Removed the `debug`, `refreshInterval`, and `syncInterval` configuration options; sync and device polling now use fixed internal intervals.
-- Removed the ADT Pulse portal version compatibility check.
+- The `debug`, `refreshInterval`, and `syncInterval` configuration options are gone; sync and device polling now use fixed internal intervals.
+- The ADT Pulse portal version compatibility check is gone.
 
 ## 1.0.0 - 2019-09-26
 
 ### ADDED
 - Initial release of the ADT Pulse plugin for Homebridge, exposing the ADT security panel and door/window, glass break, motion, carbon monoxide, and fire/smoke sensors to HomeKit.
-- Added a standalone test script (`adt-pulse-test.js`) for verifying device status, zone status, sync, and arm/disarm actions outside of Homebridge.
+- A standalone test script (`adt-pulse-test.js`) for verifying device status, zone status, sync, and arm/disarm actions outside of Homebridge.

@@ -18,13 +18,13 @@ tags:
 
 import { Terminology } from '@cbnventures/docusaurus-preset-nova/blocks';
 
-Control your ADT Pulse security system and view <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> status through the Home app using the <Terminology title="HomeKit Accessory Protocol" to="/docs/reference/terminology#hap">HAP</Terminology> protocol.
+Control your ADT Pulse security system and view <Terminology title="A portal device you list in config so it shows up in Home" to="/docs/reference/terminology#plugin-configuration">sensor</Terminology> status through the Home app using the <Terminology title="The protocol the Home app uses to talk to accessories" to="/docs/reference/terminology#adt-pulse-and-homebridge">HAP</Terminology> protocol.
 
 ## What Is This?
 
-ADT Pulse for Homebridge is a [verified Homebridge plugin](https://github.com/homebridge/homebridge/wiki/verified-Plugins#verified-plugins) for ADT Pulse customers. It lets homeowners control their security system and view <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensor</Terminology> status through the Home app.
+ADT Pulse for Homebridge is a [verified Homebridge plugin](https://github.com/homebridge/homebridge/wiki/verified-Plugins#verified-plugins) for ADT Pulse customers. It lets homeowners control their security system and view <Terminology title="A portal device you list in config so it shows up in Home" to="/docs/reference/terminology#plugin-configuration">sensor</Terminology> status through the Home app.
 
-The plugin talks to the <Terminology title="ADT Pulse Web Portal, the plugin's data source" to="/docs/reference/terminology#portal">ADT Pulse Web Portal</Terminology>, which is powered by Icontrol One and owned by ICN Acquisition LLC, an indirect subsidiary of [Alarm.com](https://alarm.com).
+The plugin talks to the <Terminology title="The ADT website the plugin talks to for everything" to="/docs/reference/terminology#adt-pulse-and-homebridge">ADT Pulse Web Portal</Terminology>, which is powered by Icontrol One and owned by ICN Acquisition LLC, an indirect subsidiary of [Alarm.com](https://alarm.com).
 
 ## Getting Started
 
@@ -34,7 +34,7 @@ Setting up the plugin takes three simple steps:
 2. Configure the plugin using the sample provided in the [Configuration](/docs/getting-started/configuration/) guide.
 3. Restart Homebridge and see the magic happen.
 
-Another option is to search for `adt-pulse` using oznu's [Homebridge Config UI](https://github.com/oznu/homebridge-config-ui-x). Afterward, you can configure the plugin through the <Terminology title="third-party web UI for managing Homebridge" to="/docs/reference/terminology#homebridge-config-ui">configuration UI</Terminology> available in the "Plugins" tab.
+Another option is to search for `adt-pulse` using oznu's [Homebridge Config UI](https://github.com/oznu/homebridge-config-ui-x). Afterward, you can configure the plugin through the <Terminology title="The web page where you install and set up Homebridge plugins" to="/docs/reference/terminology#adt-pulse-and-homebridge">configuration UI</Terminology> available in the "Plugins" tab.
 
 See the [Installation](/docs/getting-started/installation/) guide for the full walkthrough.
 
@@ -42,15 +42,15 @@ See the [Installation](/docs/getting-started/installation/) guide for the full w
 
 The plugin exposes these devices by default:
 
-| Accessory                                                                                                                                            | Type          |
-|------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
-| <Terminology title="the ADT Pulse gateway device" to="/docs/reference/terminology#gateway">Gateway</Terminology>                                     | `gateway`     |
-| <Terminology title="the alarm panel accessory for arming and disarming" to="/docs/reference/terminology#security-panel">Security Panel</Terminology> | `panel`       |
-| <Terminology title="switch that silences a ringing alarm" to="/docs/reference/terminology#alarm-ringing-switch">Alarm Ringing Switch</Terminology>   | `panelSwitch` |
+| Accessory                                                                                                                                              | Type          |
+|--------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
+| <Terminology title="The ADT Pulse gateway, shown in Home by default" to="/docs/reference/terminology#accessories-and-arming">Gateway</Terminology>     | `gateway`     |
+| <Terminology title="The Home tile you use to arm and disarm" to="/docs/reference/terminology#accessories-and-arming">Security Panel</Terminology>      | `panel`       |
+| <Terminology title="Turn it off to silence a ringing alarm" to="/docs/reference/terminology#accessories-and-arming">Alarm Ringing Switch</Terminology> | `panelSwitch` |
 
 ## Configurable Sensors
 
-The plugin can expose these <Terminology title="a portal device declared in your config" to="/docs/reference/terminology#sensor">sensors</Terminology> in read-only mode, based on your configuration:
+The plugin can expose these <Terminology title="A portal device you list in config so it shows up in Home" to="/docs/reference/terminology#plugin-configuration">sensors</Terminology> in read-only mode, based on your configuration:
 
 | Sensor Type   | Description                                          |
 |---------------|------------------------------------------------------|
@@ -72,7 +72,7 @@ While named "ADT Pulse for Homebridge," this plugin accommodates only the access
 
 ## Z-Wave Accessories
 
-Z-Wave accessories connected to the ADT Pulse <Terminology title="the ADT Pulse gateway device" to="/docs/reference/terminology#gateway">gateway</Terminology> are not supported, and support is not planned. This is due to implementation complexity and platform instability.
+Z-Wave accessories connected to the ADT Pulse <Terminology title="The ADT Pulse gateway, shown in Home by default" to="/docs/reference/terminology#accessories-and-arming">gateway</Terminology> are not supported, and support is not planned. This is due to implementation complexity and platform instability.
 
 If you rely on Z-Wave accessories, consider one of these alternatives:
 
@@ -81,6 +81,6 @@ If you rely on Z-Wave accessories, consider one of these alternatives:
 
 ## Next Steps
 
-- **[Installation](/docs/getting-started/installation/)** — Install the plugin via npm or the <Terminology title="third-party web UI for managing Homebridge" to="/docs/reference/terminology#homebridge-config-ui">Homebridge Config UI</Terminology>.
+- **[Installation](/docs/getting-started/installation/)** — Install the plugin via npm or the <Terminology title="The web page where you install and set up Homebridge plugins" to="/docs/reference/terminology#adt-pulse-and-homebridge">Homebridge Config UI</Terminology>.
 - **[Configuration](/docs/getting-started/configuration/)** — Set up your `config.json` with a working sample.
 - **[Supported Devices](/docs/getting-started/supported-devices/)** — Review every accessory the plugin can expose.

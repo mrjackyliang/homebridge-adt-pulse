@@ -144,8 +144,14 @@ class ADTPulseTest {
         for (const instanceFunction of instanceFunctions) {
           const response: Cli_TestApi_ADTPulseTest_Constructor_Response = await instanceFunction();
 
-          // If response is not successful, end the test.
+          // If response is not successful, print why and end the test.
           if (response['success'] !== true) {
+            console.info(util.inspect(response, {
+              showHidden: false,
+              depth: Infinity,
+              colors: true,
+            }));
+
             ADTPulseTest.printTestOutput(false);
 
             exit(1);

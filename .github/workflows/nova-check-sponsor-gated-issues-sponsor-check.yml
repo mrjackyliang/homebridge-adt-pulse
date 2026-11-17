@@ -38,7 +38,7 @@ env:
 
 jobs:
   check-issues:
-    runs-on: "ubuntu-latest"
+    runs-on: "ubuntu-24.04"
     timeout-minutes: 5
     permissions:
       contents: "read"
@@ -46,9 +46,11 @@ jobs:
     steps:
       - name: "Checkout repository"
         uses: "actions/checkout@v7"
+        timeout-minutes: 5
 
       - name: "Check support issues"
         uses: "mrjackyliang/sponsor-gated-support@v2"
+        timeout-minutes: 5
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           PERSONAL_ACCESS_TOKEN: "${{ secrets.SGS_PERSONAL_ACCESS_TOKEN }}"

@@ -1,0 +1,41 @@
+---
+title: "ADT Pulse for Homebridge Brings ADT Pulse to HomeKit"
+description: Version 1.0.0 puts the ADT Pulse security panel and five kinds of sensors into the Apple Home app through Homebridge.
+slug: adt-pulse-for-homebridge-first-release
+authors:
+  - mrjackyliang
+keywords:
+  - homebridge adt pulse
+  - adt pulse
+  - homekit
+  - homebridge plugin
+  - first release
+tags:
+  - release
+  - homekit
+  - homebridge
+---
+
+ADT Pulse for Homebridge 1.0.0 shipped on September 26, 2019. For the first time, an ADT Pulse security panel and its sensors showed up in the Apple Home app, next to the rest of the house.
+
+{/* truncate */}
+
+## Why It Mattered
+
+ADT Pulse has no HomeKit support and no public API. Arming the system or checking a door meant opening a separate app, and none of it could take part in Home app scenes or automations.
+
+The plugin signs in to the ADT Pulse portal and turns what it sees into HomeKit accessories.
+
+## What the First Release Did
+
+- **Security panel** — The ADT panel appears as a HomeKit security system you can arm and disarm.
+- **Sensors** — Door/window, glass break, motion, carbon monoxide, and fire/smoke sensors appear with their live status.
+- **Test script** — A standalone script checks device status, zone status, sync, and arm and disarm actions outside of Homebridge.
+
+## What Came Next
+
+Within four days, version 1.1.0 made sure an active alarm always takes priority over other panel states. The plugin went on to add Canada's portal, a rewrite in TypeScript, and a setup wizard, and it became a [verified Homebridge plugin](https://github.com/homebridge/homebridge/wiki/verified-Plugins#verified-plugins).
+
+## Where It Led
+
+Today the plugin supports nine sensor types, Arm Night, and a guided setup in the Homebridge Config UI. [Installation](/docs/getting-started/installation/) covers the current release.

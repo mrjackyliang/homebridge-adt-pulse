@@ -1,6 +1,6 @@
 {
-    "name": "Homebridge ADT Pulse",
-    "short_name": "Homebridge ADT Pulse",
+    "name": "ADT Pulse for Homebridge",
+    "short_name": "ADT Pulse",
     "icons": [
         {
             "src": "/homebridge-adt-pulse/web-app-manifest-192x192.png",

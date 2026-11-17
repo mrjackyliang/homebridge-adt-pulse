@@ -32,11 +32,12 @@ env:
 
 jobs:
   lock-inactive-issues:
-    runs-on: "ubuntu-latest"
+    runs-on: "ubuntu-24.04"
     timeout-minutes: 5
     steps:
       - name: "Lock inactive threads"
         uses: "mrjackyliang/lock-inactive-threads@v1"
+        timeout-minutes: 5
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:

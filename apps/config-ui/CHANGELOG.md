@@ -1,5 +1,10 @@
 # homebridge-adt-pulse-app-config-ui
 
+## 3.5.10 - 2026-11-17
+
+### UPDATED
+- Nova is now 0.44.0.
+
 ## 3.5.9 - 2026-11-04
 
 No changes.
@@ -11,28 +16,28 @@ No changes.
 ## 3.5.7 - 2026-11-01
 
 ### UPDATED
-- Updated Nova to 0.38.0, added Node.js 26 support, and refreshed the setup and completion artwork with the current Homebridge ADT Pulse branding.
+- Nova is now 0.38.0, Node.js 26 is supported, and the setup and completion artwork is refreshed with the current ADT Pulse for Homebridge branding.
 
 ## 3.5.6 - 2026-10-18
 
 ### UPDATED
-- Updated Nova to 0.33.0 and loaded Nova's custom ESLint rules through the consolidated preset entry point.
+- Nova is now 0.33.0, and Nova's custom ESLint rules load through the consolidated preset entry point.
 
 ## 3.5.5 - 2026-10-12
 
 ### UPDATED
-- Updated Nova to 0.30.1.
+- Nova is now 0.30.1.
 - Adopted role-based TypeScript preset layers.
 - Aligned configuration UI JSDoc hierarchies with the function-level contract.
 
 ### ADDED
-- Added configured contributors to the generated project credits.
+- The generated project credits include configured contributors.
 
 ## 3.5.4 - 2026-10-11
 
 ### UPDATED
-- Updated Nova to 0.29.0 and adopted its shared Nova rule bundle with complete JavaScript, TypeScript, browser, and Vite preset coverage.
-- Updated Homebridge UI utilities, React Hook Form, and React Hooks linting to their latest compatible releases.
+- Nova is now 0.29.0, and the project adopts its shared Nova rule bundle with complete JavaScript, TypeScript, browser, and Vite preset coverage.
+- Homebridge UI utilities, React Hook Form, and React Hooks linting are now on their latest compatible releases.
 
 ## 3.5.3 - 2026-10-03
 
@@ -41,12 +46,12 @@ No changes.
 ## 3.5.2 - 2026-10-01
 
 ### UPDATED
-- Updated Nova to 0.27.4 and adopted its corrected optional Vitest peer dependency metadata.
+- Nova is now 0.27.4, and the project adopts its corrected optional Vitest peer dependency metadata.
 
 ## 3.5.1 - 2026-09-23
 
 ### UPDATED
-- Updated Nova to 0.27.3 and granted the generated inactive-thread workflow write access to pull requests.
+- Nova is now 0.27.3, and the generated inactive-thread workflow has write access to pull requests.
 
 ## 3.5.0 - 2026-09-17
 
@@ -58,5 +63,5 @@ No changes.
 - Added spacing between paired setup actions so verification and sensor buttons no longer touch.
 - Hid standalone preview navigation inside Homebridge to avoid a duplicate heading.
 - Isolated the Homebridge settings UI from host Bootstrap styling, mirrored live theme colors, and repaired sensor accordions, option checkboxes, and Plugin action spacing.
-- Fixed horizontal scrolling in the setup login form at all widths and made the ADT Pulse sign-in action prominent.
+- The setup login form no longer scrolls horizontally at any width, and the ADT Pulse sign-in action is prominent.
 - Made the Verified badge follow the active Homebridge theme accent.

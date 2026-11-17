@@ -1,12 +1,12 @@
 {
   "project": {
     "name": {
-      "title": "Homebridge ADT Pulse",
+      "title": "ADT Pulse for Homebridge",
       "slug": "homebridge-adt-pulse"
     },
     "description": {
       "short": "Control your ADT Pulse security system and view sensor status through the Home app",
-      "long": "Homebridge ADT Pulse is a Homebridge platform plugin that connects an ADT Pulse security system to Apple HomeKit. It exposes the security panel and its sensors as HomeKit accessories, so the system can be armed or disarmed and sensor status monitored from the Home app."
+      "long": "ADT Pulse for Homebridge is a Homebridge platform plugin that connects an ADT Pulse security system to Apple HomeKit. It exposes the security panel and its sensors as HomeKit accessories, so the system can be armed or disarmed and sensor status monitored from the Home app."
     },
     "keywords": [
       "homebridge",
@@ -212,7 +212,7 @@
         "issue-comment",
         "issues"
       ],
-      "runsOn": "ubuntu-latest",
+      "runsOn": "ubuntu-24.04",
       "timeoutMinutes": 5
     },
     {
@@ -221,7 +221,7 @@
       "triggers": [
         "schedule-weekly"
       ],
-      "runsOn": "ubuntu-latest",
+      "runsOn": "ubuntu-24.04",
       "timeoutMinutes": 5
     },
     {
@@ -230,7 +230,7 @@
       "triggers": [
         "release"
       ],
-      "runsOn": "ubuntu-latest",
+      "runsOn": "ubuntu-24.04",
       "timeoutMinutes": 15,
       "build": [
         "./apps/config-ui",
@@ -282,24 +282,24 @@
   },
   "workspaces": {
     "./": {
+      "name": "homebridge-adt-pulse-project",
       "role": "project",
-      "policy": "freezable",
-      "name": "homebridge-adt-pulse-project"
+      "policy": "freezable"
     },
     "./apps/config-ui": {
+      "name": "homebridge-adt-pulse-app-config-ui",
       "role": "app",
-      "policy": "trackable",
-      "name": "homebridge-adt-pulse-app-config-ui"
+      "policy": "trackable"
     },
     "./apps/docs": {
+      "name": "homebridge-adt-pulse-docs",
       "role": "docs",
-      "policy": "freezable",
-      "name": "homebridge-adt-pulse-docs"
+      "policy": "freezable"
     },
     "./packages/homebridge-adt-pulse": {
+      "name": "homebridge-adt-pulse",
       "role": "package",
-      "policy": "distributable",
-      "name": "homebridge-adt-pulse"
+      "policy": "distributable"
     }
   },
   "artifacts": {
@@ -625,10 +625,10 @@
         "prefix": "DOCS_"
       },
       "./apps/config-ui": {
-        "prefix": "CONFIG_UI_"
+        "prefix": "UI_"
       },
       "./packages/homebridge-adt-pulse": {
-        "prefix": "HOMEBRIDGE_ADT_PULSE_"
+        "prefix": "HAP_"
       }
     },
     "workflows": {

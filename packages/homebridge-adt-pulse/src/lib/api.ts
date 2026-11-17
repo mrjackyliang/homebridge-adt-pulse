@@ -71,6 +71,7 @@ import type {
   Lib_Api_ADTPulseAPI_ArmDisarmHandler_Options,
   Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReadyButton_TypeGuard,
   Lib_Api_ADTPulseAPI_ArmDisarmHandler_ReadyButtons,
+  Lib_Api_ADTPulseAPI_ArmDisarmHandler_RefreshAttempts,
   Lib_Api_ADTPulseAPI_ArmDisarmHandler_Returns,
   Lib_Api_ADTPulseAPI_ArmDisarmHandler_SecurityButtons,
   Lib_Api_ADTPulseAPI_ArmDisarmHandler_SecurityButtonsResponse,
@@ -216,9 +217,11 @@ import type {
   Lib_Api_ADTPulseAPI_SetPanelStatus_ConfirmedArmValue,
   Lib_Api_ADTPulseAPI_SetPanelStatus_DisarmResponse,
   Lib_Api_ADTPulseAPI_SetPanelStatus_ErrorObject,
+  Lib_Api_ADTPulseAPI_SetPanelStatus_ExpectedPanelStates,
   Lib_Api_ADTPulseAPI_SetPanelStatus_ForceArmRequired,
   Lib_Api_ADTPulseAPI_SetPanelStatus_IsAlarmActive,
   Lib_Api_ADTPulseAPI_SetPanelStatus_IsAlarmCurrentlyActive,
+  Lib_Api_ADTPulseAPI_SetPanelStatus_PanelStatusResponse,
   Lib_Api_ADTPulseAPI_SetPanelStatus_ReadyButton_TypeGuard,
   Lib_Api_ADTPulseAPI_SetPanelStatus_ReadyButtons,
   Lib_Api_ADTPulseAPI_SetPanelStatus_Returns,
@@ -509,7 +512,7 @@ export class ADTPulseAPI {
        *
        * Parts not shown here will not be tracked, documented, or tested
        * (patent US20170070361A1). Known "version" values span "16.0.0-131"
-       * through "30.0.0-61" across the portal releases observed so far.
+       * through "31.0.0-39" across the portal releases observed so far.
        *
        * @since 1.0.0
        */
@@ -1833,6 +1836,37 @@ export class ADTPulseAPI {
       }
 
       if (stateConfirmed === false) {
+        // The portal can leave its button on "Arming …" after a forced arm, so check the summary status line, which HomeKit reads too.
+        const panelStatusResponse: Lib_Api_ADTPulseAPI_SetPanelStatus_PanelStatusResponse = await this.getPanelStatus();
+        const expectedPanelStates: Lib_Api_ADTPulseAPI_SetPanelStatus_ExpectedPanelStates = {
+          away: 'Armed Away',
+          night: 'Armed Night',
+          off: 'Disarmed',
+          stay: 'Armed Stay',
+        };
+
+        if (
+          panelStatusResponse['success'] === true
+          && panelStatusResponse['info']['panelStates'].includes(expectedPanelStates[armTo]) === true
+        ) {
+          if (this.#internal['debug'] === true) {
+            debugLog(this.#internal['logger'], 'api.ts / ADTPulseAPI.setPanelStatus()', 'success', `Successfully updated panel status from "${armFrom}" to "${armTo}" at "${this.#internal['baseUrl']}" (confirmed by the panel status "${panelStatusResponse['info']['rawData']['node']}")`);
+          }
+
+          return {
+            action: 'SET_PANEL_STATUS',
+            success: true,
+            info: {
+              confirmedArmValue: armTo,
+              forceArmRequired,
+            },
+          };
+        }
+
+        if (this.#internal['debug'] === true && panelStatusResponse['success'] === true) {
+          debugLog(this.#internal['logger'], 'api.ts / ADTPulseAPI.setPanelStatus()', 'warn', `The panel status reads "${panelStatusResponse['info']['rawData']['node']}" while "${armTo}" was requested`);
+        }
+
         return {
           action: 'SET_PANEL_STATUS',
           success: false,
@@ -2975,7 +3009,22 @@ export class ADTPulseAPI {
       await sleep(this.#internal['waitTimeAfterArm']);
 
       // Get the security buttons.
-      const securityButtonsResponse: Lib_Api_ADTPulseAPI_ArmDisarmHandler_SecurityButtonsResponse = await this.getOrbSecurityButtons();
+      let securityButtonsResponse: Lib_Api_ADTPulseAPI_ArmDisarmHandler_SecurityButtonsResponse = await this.getOrbSecurityButtons();
+      let refreshAttempts: Lib_Api_ADTPulseAPI_ArmDisarmHandler_RefreshAttempts = 0;
+
+      // Some panels take longer to finish arming (such as "Arming Night"), so keep re-reading every 2 seconds, for up to 20 seconds, while every button is still disabled.
+      while (
+        securityButtonsResponse['success'] === true
+        && securityButtonsResponse['info'].length > 0
+        && securityButtonsResponse['info'].every((securityButton) => securityButton['buttonDisabled'] === true) === true
+        && refreshAttempts < 10
+      ) {
+        refreshAttempts += 1;
+
+        await sleep(2000);
+
+        securityButtonsResponse = await this.getOrbSecurityButtons();
+      }
 
       if (securityButtonsResponse['success'] === false) {
         if (this.#internal['debug'] === true) {

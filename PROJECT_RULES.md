@@ -4,7 +4,7 @@
 
 ### Name and Description
 
-- **Project name:** Homebridge ADT Pulse (published to npm as `homebridge-adt-pulse`; the monorepo root manifest is named `homebridge-adt-pulse-project`)
+- **Project name:** ADT Pulse for Homebridge (published to npm as `homebridge-adt-pulse`; the monorepo root manifest is named `homebridge-adt-pulse-project`)
 - **Description:** Control your ADT Pulse security system and view sensor status through the Home app.
 - **Primary language:** TypeScript
 - **Framework / runtime:** Nova-orchestrated npm workspaces monorepo containing a Homebridge platform plugin, a Vite + React custom config UI, and a Docusaurus documentation site
@@ -220,14 +220,14 @@ Workspace-level scripts worth knowing:
 
 ### Environment Variables
 
-| Scope                               | Prefix                  | Where it applies                                                                                                                                   |
-|-------------------------------------|-------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
-| Project (repo-wide CI secrets/vars) | `PROJECT_`              | e.g. `secrets.PROJECT_NPM_TOKEN` in `nova-publish-project.yml`                                                                                     |
-| Root workspace (`./`)               | `ROOT_`                 | `.env` / `.env.sample` at the repo root                                                                                                            |
-| `apps/docs` workspace               | `DOCS_`                 | `apps/docs/.env` / `.env.sample`                                                                                                                   |
-| `apps/config-ui` workspace          | `CONFIG_UI_`            | `apps/config-ui/.env` / `.env.sample`                                                                                                              |
-| `packages/homebridge-adt-pulse`     | `HOMEBRIDGE_ADT_PULSE_` | `packages/homebridge-adt-pulse/.env` / `.env.sample`                                                                                               |
-| `sponsor-check` workflow            | `SGS_`                  | GitHub Actions vars/secrets consumed by `nova-check-sponsor-gated-issues-sponsor-check.yml` (e.g. `SGS_ISSUE_LABELS`, `SGS_PERSONAL_ACCESS_TOKEN`) |
+| Scope                               | Prefix     | Where it applies                                                                                                                                   |
+|-------------------------------------|------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| Project (repo-wide CI secrets/vars) | `PROJECT_` | e.g. `secrets.PROJECT_NPM_TOKEN` in `nova-publish-project.yml`                                                                                     |
+| Root workspace (`./`)               | `ROOT_`    | `.env` / `.env.sample` at the repo root                                                                                                            |
+| `apps/docs` workspace               | `DOCS_`    | `apps/docs/.env` / `.env.sample`                                                                                                                   |
+| `apps/config-ui` workspace          | `UI_`      | `apps/config-ui/.env` / `.env.sample`                                                                                                              |
+| `packages/homebridge-adt-pulse`     | `HAP_`     | `packages/homebridge-adt-pulse/.env` / `.env.sample`                                                                                               |
+| `sponsor-check` workflow            | `SGS_`     | GitHub Actions vars/secrets consumed by `nova-check-sponsor-gated-issues-sponsor-check.yml` (e.g. `SGS_ISSUE_LABELS`, `SGS_PERSONAL_ACCESS_TOKEN`) |
 
 All four `.env.sample` templates currently define only the Node.js/Nova boilerplate (`NODE_ENV`, `LOG_LEVEL`, `LOG_TIME`) with an empty "Project - Variables" section — no project-specific variables are defined under the configured workspace prefixes yet. The actual `.env` files are gitignored and were not inspected here. The plugin itself reads no environment variables at runtime; all runtime configuration comes from the plugin's platform block in Homebridge's `config.json`, validated by the `platformConfig` Zod schema.
 

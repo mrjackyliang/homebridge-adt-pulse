@@ -26,6 +26,7 @@ Read and follow the conventions and rules defined in the files below.
 - [conventions/go.md](conventions/go.md) — Go conventions (documentation, APIs, ownership, errors, concurrency, and tests).
 - [conventions/java.md](conventions/java.md) — Java conventions (documentation style, code style).
 - [conventions/kotlin.md](conventions/kotlin.md) — Kotlin conventions (documentation style, code style).
+- [conventions/pfsense.md](conventions/pfsense.md) — pfSense package WebGUI conventions (spacing model, page skeleton, Form API, tables, buttons, icons, help text).
 - [conventions/php.md](conventions/php.md) — PHP conventions (documentation style, code style).
 - [conventions/python.md](conventions/python.md) — Python conventions (documentation style, code style).
 - [conventions/rust.md](conventions/rust.md) — Rust conventions (documentation, ownership, errors, unsafe code, and tests).
