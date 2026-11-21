@@ -1,6 +1,6 @@
 {
   "name": "homebridge-adt-pulse-app-config-ui",
-  "version": "3.5.10",
+  "version": "3.5.11",
   "license": "MIT",
   "type": "module",
   "private": true,
@@ -13,6 +13,7 @@
     "check:types-config": "nova utility type-check --project tsconfig.config.json",
     "check:types-tests": "nova utility type-check --project tsconfig.tests.json",
     "check:test": "vitest run",
+    "check:coverage": "vitest run --coverage",
     "build": "nova utility run-scripts --sequential --node-env production \"build:*\"",
     "build:types": "nova utility type-check --project tsconfig.json",
     "build:app": "vite build",
@@ -23,7 +24,7 @@
     "node": "^22 || ^24 || ^26"
   },
   "dependencies": {
-    "@cbnventures/nova": "0.44.0",
+    "@cbnventures/nova": "0.49.0",
     "@hookform/resolvers": "5.9.1",
     "bootstrap": "5.3.8",
     "lodash": "4.18.1",
@@ -38,6 +39,7 @@
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
     "@vitejs/plugin-react": "5.0.4",
+    "@vitest/coverage-v8": "4.1.12",
     "eslint": "9.39.5",
     "@types/eslint-plugin-jsx-a11y": "6.10.1",
     "eslint-plugin-jsx-a11y": "6.10.2",
@@ -48,6 +50,6 @@
     "shx": "0.4.0",
     "typescript": "6.0.3",
     "vite": "7.3.6",
-    "vitest": "4.1.11"
+    "vitest": "4.1.12"
   }
 }

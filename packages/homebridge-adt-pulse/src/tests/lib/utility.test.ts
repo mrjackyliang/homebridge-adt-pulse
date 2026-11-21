@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { Categories } from 'homebridge';
 import { JSDOM } from 'jsdom';
 import { DateTime } from 'luxon';
@@ -11,6 +10,7 @@ import {
 
 import packageJson from '../../../package.json';
 
+import { defaultReleaseSource } from '../../lib/release-source.js';
 import {
   clearHtmlLineBreak,
   clearWhitespace,
@@ -28,7 +28,6 @@ import {
   findPanelManufacturer,
   generateHash,
   getAccessoryCategory,
-  getDetectReportUrl,
   getPackageVersion,
   getPluralForm,
   isEmptyOrbTextSummary,
@@ -43,6 +42,7 @@ import {
   isUnknownOrbSecurityButtonCollection,
   isUnknownPanelDevice,
   parseArmDisarmMessage,
+  parseDebugParserMarkup,
   parseDoSubmitHandlers,
   parseMultiFactorMethods,
   parseMultiFactorTrustedDevices,
@@ -51,7 +51,6 @@ import {
   parseOrbTextSummary,
   parseSensorsTable,
   removePersonalIdentifiableInformation,
-  sendDetectReport,
   sleep,
 } from '../../lib/utility.js';
 
@@ -423,16 +422,6 @@ describe('device and collection helpers', () => {
 });
 
 describe('status and environment helpers', () => {
-  it('keeps the detect report endpoint available', async () => {
-    const response = await fetch(getDetectReportUrl(), {
-      method: 'GET',
-      redirect: 'error',
-      signal: AbortSignal.timeout(10000),
-    });
-
-    expect(response.ok).toBe(true);
-  });
-
   it('returns fixed metadata helpers', () => {
     expect(getPackageVersion()).toBe(packageJson.version);
     expect(getPluralForm(1, 'item', 'items')).toBe('item');
@@ -494,15 +483,16 @@ describe('status and environment helpers', () => {
   });
 
   it('only treats sensor problems as alarms with trouble buttons', () => {
-    const troubleButtons = [
-      createReadyButton('Disarm'),
-      createReadyButton('Arm Away'),
-      createReadyButton('Arm Stay'),
-    ] as Parameters<typeof isPanelAlarmActive>[1];
+    const troubleActions: Parameters<typeof isPanelAlarmActive>[1] = [
+      'disarm',
+      'arm-away',
+      'arm-stay',
+    ];
 
-    expect(isPanelAlarmActive(['Sensor Problem'], troubleButtons, false)).toBe(true);
-    expect(isPanelAlarmActive(['Sensor Problem'], troubleButtons, true)).toBe(false);
-    expect(isPanelAlarmActive(['All Quiet'], troubleButtons, false)).toBe(false);
+    expect(isPanelAlarmActive(['Sensor Problem'], troubleActions, false)).toBe(true);
+    expect(isPanelAlarmActive(['Sensor Problem'], troubleActions, true)).toBe(false);
+    expect(isPanelAlarmActive(['All Quiet'], troubleActions, false)).toBe(false);
+    expect(isPanelAlarmActive(['Sensor Problem'], ['disarm', 'arm-away'], false)).toBe(false);
   });
 
   it.each([
@@ -532,70 +522,38 @@ describe('status and environment helpers', () => {
     expect(isSessionCleanState(busy)).toBe(false);
   });
 
-  it('compares the installed package version with npm metadata', async () => {
-    const axiosGet = vi.spyOn(axios, 'get');
+  it('compares the installed package version with the release source', async () => {
+    const fetchLatestPluginVersion = vi.spyOn(defaultReleaseSource, 'fetchLatestPluginVersion');
 
-    axiosGet.mockResolvedValueOnce({ data: { version: '99.0.0' } });
+    fetchLatestPluginVersion.mockResolvedValueOnce('99.0.0');
     await expect(isPluginOutdated()).resolves.toBe(true);
 
-    axiosGet.mockResolvedValueOnce({ data: { version: '1.0.0' } });
+    fetchLatestPluginVersion.mockResolvedValueOnce('1.0.0');
     await expect(isPluginOutdated()).resolves.toBe(false);
 
-    axiosGet.mockResolvedValueOnce({ data: {} });
+    fetchLatestPluginVersion.mockResolvedValueOnce(undefined);
     await expect(isPluginOutdated()).resolves.toBe(true);
 
-    axiosGet.mockRejectedValueOnce(new Error('offline'));
+    fetchLatestPluginVersion.mockRejectedValueOnce(new Error('offline'));
     await expect(isPluginOutdated()).resolves.toBe(true);
 
-    axiosGet.mockRestore();
-  });
-
-  it('gets a session token before sending a detect report', async () => {
-    const axiosPost = vi.spyOn(axios, 'post');
-
-    axiosPost.mockResolvedValueOnce({ data: { status: 'success', token: 'session-token', expires_in: 300 } });
-    axiosPost.mockResolvedValueOnce({ status: 200 });
-
-    await expect(sendDetectReport('Detected a new portal version (v1.0.0)', '{"version":"99.0.0-1"}')).resolves.toBeUndefined();
-
-    expect(axiosPost).toHaveBeenCalledTimes(2);
-    expect(axiosPost).toHaveBeenNthCalledWith(
-      1,
-      `${getDetectReportUrl()}/session`,
-      '',
-      expect.objectContaining({ family: 4 }),
-    );
-    expect(axiosPost).toHaveBeenNthCalledWith(
-      2,
-      getDetectReportUrl(),
-      '{"version":"99.0.0-1"}',
-      expect.objectContaining({
-        family: 4,
-        headers: {
-          'Authorization': 'Bearer session-token',
-          'User-Agent': 'homebridge-adt-pulse',
-          'X-Title': 'Detected a new portal version (v1.0.0)',
-        },
-      }),
-    );
-
-    axiosPost.mockRestore();
-  });
-
-  it('does not send a detect report without a session token', async () => {
-    const axiosPost = vi.spyOn(axios, 'post');
-
-    axiosPost.mockResolvedValueOnce({ data: { status: 'error', message: 'Too many session requests' } });
-
-    await expect(sendDetectReport('Detected a new portal version (v1.0.0)', '{}')).rejects.toThrow('Detect report session did not return a token');
-
-    expect(axiosPost).toHaveBeenCalledOnce();
-
-    axiosPost.mockRestore();
+    fetchLatestPluginVersion.mockRestore();
   });
 });
 
 describe('portal parsers', () => {
+  it('reads debug parser page markers into neutral flags', () => {
+    expect(parseDebugParserMarkup('<html></html>')).toEqual({
+      hasArmingForm: false,
+      hasSensorsList: false,
+      hasStatusUnavailable: false,
+    });
+    expect(parseDebugParserMarkup('<div class="p_whiteBoxMiddleCenter"></div>')['hasArmingForm']).toBe(true);
+    expect(parseDebugParserMarkup('<div class="p_armDisarmWrapper"></div>')['hasArmingForm']).toBe(true);
+    expect(parseDebugParserMarkup('<div id="orbSensorsList"></div>')['hasSensorsList']).toBe(true);
+    expect(parseDebugParserMarkup('<span>Status Unavailable</span>')['hasStatusUnavailable']).toBe(true);
+  });
+
   it('parses arm and disarm confirmation text', () => {
     const document = new JSDOM('<div id="message">  System   disarmed  </div>').window.document;
 

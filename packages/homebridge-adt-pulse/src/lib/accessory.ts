@@ -196,7 +196,7 @@ export class ADTPulseAccessory {
   /**
    * Lib - Accessory - Instance.
    *
-   * Holds the ADT Pulse API instance used to send arm and disarm requests
+   * Holds the alarm panel backend used to send arm and disarm requests
    * whenever HomeKit sets the panel or panel switch state.
    *
    * @private
@@ -944,7 +944,7 @@ export class ADTPulseAccessory {
     if (mode === 'alarmType') {
       if (isPanelAlarmActive(
         panelStatuses,
-        this.#state['data']['orbSecurityButtons'],
+        this.#state['data']['armActions'],
         (this.#config !== null) ? this.#config['options'].includes('ignoreSensorProblemStatus') : false,
       ) === true) {
         return 1;
@@ -989,7 +989,7 @@ export class ADTPulseAccessory {
 
       case mode === 'current' && isPanelAlarmActive(
         panelStatuses,
-        this.#state['data']['orbSecurityButtons'],
+        this.#state['data']['armActions'],
         (this.#config !== null) ? this.#config['options'].includes('ignoreSensorProblemStatus') : false,
       ): {
         return this.#characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
@@ -1109,7 +1109,7 @@ export class ADTPulseAccessory {
     // Only show as "On" if alarm is ringing.
     return isPanelAlarmActive(
       panelStatuses,
-      this.#state['data']['orbSecurityButtons'],
+      this.#state['data']['armActions'],
       (this.#config !== null) ? this.#config['options'].includes('ignoreSensorProblemStatus') : false,
     );
   }
@@ -1394,7 +1394,7 @@ export class ADTPulseAccessory {
 
     const isAlarmActive: Lib_Accessory_ADTPulseAccessory_SetPanelStatus_IsAlarmActive = isPanelAlarmActive(
       this.#state['data']['panelStatus']['panelStatuses'],
-      this.#state['data']['orbSecurityButtons'],
+      this.#state['data']['armActions'],
       (this.#config !== null) ? this.#config['options'].includes('ignoreSensorProblemStatus') : false,
     );
 
@@ -1484,7 +1484,7 @@ export class ADTPulseAccessory {
     const condensedPanelStates: Lib_Accessory_ADTPulseAccessory_SetPanelSwitchStatus_CondensedPanelStates = condensePanelStates(this.#characteristic, panelStates);
     const isAlarmActive: Lib_Accessory_ADTPulseAccessory_SetPanelSwitchStatus_IsAlarmActive = isPanelAlarmActive(
       this.#state['data']['panelStatus']['panelStatuses'],
-      this.#state['data']['orbSecurityButtons'],
+      this.#state['data']['armActions'],
       (this.#config !== null) ? this.#config['options'].includes('ignoreSensorProblemStatus') : false,
     );
 

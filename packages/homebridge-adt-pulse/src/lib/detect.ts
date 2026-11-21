@@ -21,6 +21,7 @@ import {
   itemSensorStatusIcons,
   itemSensorStatusStatuses,
 } from './items.js';
+import { detectReportSink } from './report-sink.js';
 import {
   debugLog,
   getPackageVersion,
@@ -31,7 +32,6 @@ import {
   isUnknownOrbSecurityButtonCollection,
   isUnknownPanelDevice,
   removePersonalIdentifiableInformation,
-  sendDetectReport,
   stackTracer,
 } from './utility.js';
 
@@ -96,6 +96,7 @@ import type {
   Lib_Detect_DetectGlobalDebugParser_GetSensorsStatusAnomaly,
   Lib_Detect_DetectGlobalDebugParser_LoggedData,
   Lib_Detect_DetectGlobalDebugParser_Logger,
+  Lib_Detect_DetectGlobalDebugParser_Markup,
   Lib_Detect_DetectGlobalDebugParser_Outdated,
   Lib_Detect_DetectGlobalDebugParser_Returns,
   Lib_Detect_DetectGlobalPortalVersion_CleanedData,
@@ -188,7 +189,7 @@ export async function detectApiDoSubmitHandlers(handlers: Lib_Detect_DetectApiDo
     stackTracer('detect-content', cleanedData);
 
     try {
-      await sendDetectReport(`Detected new do submit handlers (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
+      await detectReportSink.send(`Detected new do submit handlers (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
 
       return true;
     } catch (error) {
@@ -263,7 +264,7 @@ export async function detectApiGatewayInformation(device: Lib_Detect_DetectApiGa
     stackTracer('detect-content', cleanedData);
 
     try {
-      await sendDetectReport(`Detected new gateway information (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
+      await detectReportSink.send(`Detected new gateway information (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
 
       return true;
     } catch (error) {
@@ -362,7 +363,7 @@ export async function detectApiOrbSecurityButtons(buttons: Lib_Detect_DetectApiO
     stackTracer('detect-content', cleanedData);
 
     try {
-      await sendDetectReport(`Detected new orb security buttons (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
+      await detectReportSink.send(`Detected new orb security buttons (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
 
       return true;
     } catch (error) {
@@ -437,7 +438,7 @@ export async function detectApiPanelInformation(device: Lib_Detect_DetectApiPane
     stackTracer('detect-content', cleanedData);
 
     try {
-      await sendDetectReport(`Detected new panel information (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
+      await detectReportSink.send(`Detected new panel information (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
 
       return true;
     } catch (error) {
@@ -514,7 +515,7 @@ export async function detectApiPanelStatus(summary: Lib_Detect_DetectApiPanelSta
     stackTracer('detect-content', cleanedData);
 
     try {
-      await sendDetectReport(`Detected a new panel state and/or status (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
+      await detectReportSink.send(`Detected a new panel state and/or status (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
 
       return true;
     } catch (error) {
@@ -594,7 +595,7 @@ export async function detectApiSensorsInformation(sensors: Lib_Detect_DetectApiS
     stackTracer('detect-content', cleanedData);
 
     try {
-      await sendDetectReport(`Detected new sensors information (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
+      await detectReportSink.send(`Detected new sensors information (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
 
       return true;
     } catch (error) {
@@ -671,7 +672,7 @@ export async function detectApiSensorsStatus(sensors: Lib_Detect_DetectApiSensor
     stackTracer('detect-content', cleanedData);
 
     try {
-      await sendDetectReport(`Detected new sensors status (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
+      await detectReportSink.send(`Detected new sensors status (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
 
       return true;
     } catch (error) {
@@ -695,26 +696,26 @@ export async function detectApiSensorsStatus(sensors: Lib_Detect_DetectApiSensor
  * and reports them to the plugin author so parsing logic can be updated.
  *
  * @param {Lib_Detect_DetectGlobalDebugParser_Data}      data      - Data.
+ * @param {Lib_Detect_DetectGlobalDebugParser_Markup}    markup    - Markup.
  * @param {Lib_Detect_DetectGlobalDebugParser_Logger}    logger    - Logger.
  * @param {Lib_Detect_DetectGlobalDebugParser_DebugMode} debugMode - Debug mode.
  *
  * @returns {Lib_Detect_DetectGlobalDebugParser_Returns}
  *
- * @since 1.0.0
+ * @since 3.5.11
  */
-export async function detectGlobalDebugParser(data: Lib_Detect_DetectGlobalDebugParser_Data, logger: Lib_Detect_DetectGlobalDebugParser_Logger, debugMode: Lib_Detect_DetectGlobalDebugParser_DebugMode): Lib_Detect_DetectGlobalDebugParser_Returns {
+export async function detectGlobalDebugParser(data: Lib_Detect_DetectGlobalDebugParser_Data, markup: Lib_Detect_DetectGlobalDebugParser_Markup, logger: Lib_Detect_DetectGlobalDebugParser_Logger, debugMode: Lib_Detect_DetectGlobalDebugParser_DebugMode): Lib_Detect_DetectGlobalDebugParser_Returns {
   const forceArmHandlerAnomaly: Lib_Detect_DetectGlobalDebugParser_ForceArmHandlerAnomaly = (
     data['method'] === 'forceArmHandler'
     && isUnknownDoSubmitHandlerCollection(data['response'])
-    && data['rawHtml'].includes('p_whiteBoxMiddleCenter') === false
-    && data['rawHtml'].includes('p_armDisarmWrapper') === false
+    && markup['hasArmingForm'] === false
   );
   const generateSensorsConfigAnomaly: Lib_Detect_DetectGlobalDebugParser_GenerateSensorsConfigAnomaly = data['method'] === 'generateSensorsConfig' && data['response'].length < 1;
   const getGatewayInformationAnomaly: Lib_Detect_DetectGlobalDebugParser_GetGatewayInformationAnomaly = data['method'] === 'getGatewayInformation' && isUnknownGatewayDevice(data['response']);
   const getOrbSecurityButtonsAnomaly: Lib_Detect_DetectGlobalDebugParser_GetOrbSecurityButtonsAnomaly = (
     data['method'] === 'getOrbSecurityButtons'
     && isUnknownOrbSecurityButtonCollection(data['response'])
-    && data['rawHtml'].includes('Status Unavailable') === false
+    && markup['hasStatusUnavailable'] === false
   );
   const getPanelInformationAnomaly: Lib_Detect_DetectGlobalDebugParser_GetPanelInformationAnomaly = data['method'] === 'getPanelInformation' && isUnknownPanelDevice(data['response']);
   const getPanelStatusAnomaly: Lib_Detect_DetectGlobalDebugParser_GetPanelStatusAnomaly = data['method'] === 'getPanelStatus' && isEmptyOrbTextSummary(data['response']);
@@ -722,7 +723,7 @@ export async function detectGlobalDebugParser(data: Lib_Detect_DetectGlobalDebug
   const getSensorsStatusAnomaly: Lib_Detect_DetectGlobalDebugParser_GetSensorsStatusAnomaly = (
     data['method'] === 'getSensorsStatus'
     && data['response'].length < 1
-    && data['rawHtml'].includes('id="orbSensorsList"') === false
+    && markup['hasSensorsList'] === false
   );
 
   if (
@@ -779,7 +780,7 @@ export async function detectGlobalDebugParser(data: Lib_Detect_DetectGlobalDebug
     stackTracer('detect-content', loggedData);
 
     try {
-      await sendDetectReport(`Detected a parser anomaly for "${data['method']}" (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
+      await detectReportSink.send(`Detected a parser anomaly for "${data['method']}" (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
 
       return true;
     } catch (error) {
@@ -854,7 +855,7 @@ export async function detectGlobalPortalVersion(version: Lib_Detect_DetectGlobal
     stackTracer('detect-content', cleanedData);
 
     try {
-      await sendDetectReport(`Detected a new portal version (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
+      await detectReportSink.send(`Detected a new portal version (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
 
       return true;
     } catch (error) {
@@ -945,7 +946,7 @@ export async function detectPlatformUnknownSensorsAction(sensors: Lib_Detect_Det
     stackTracer('detect-content', cleanedData);
 
     try {
-      await sendDetectReport(`Detected unknown sensors action (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
+      await detectReportSink.send(`Detected unknown sensors action (v${getPackageVersion()})`, JSON.stringify(cleanedData, null, 2));
 
       return true;
     } catch (error) {

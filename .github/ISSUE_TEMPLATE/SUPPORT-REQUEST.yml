@@ -5,40 +5,225 @@
 # See: https://nova.cbnventures.io/docs/cli/generators/github/issue-template
 
 name: "Support Request"
-description: "Get prioritized help with environment-specific deployment, general guidance, and upgrade assistance."
+description: "Ask for help with deployment, configuration, or upgrades."
 title: "[Support]: "
 labels: [ "question" ]
 body:
   - type: "markdown"
     attributes:
-      value: "Please note that support requests are __granted solely to members__ who are my sponsors or have heavily contributed to this project (these contributors will be listed at the bottom of the `README.md` file). If you would like to sponsor me, please consider checking out my [GitHub Sponsors](https://github.com/sponsors/mrjackyliang) page."
+      value: "Please note that support requests are __granted solely to members__ who are my sponsors or have heavily contributed to this project (these contributors will be listed in the [documentation](https://mrjackyliang.github.io/homebridge-adt-pulse/)). If you would like to sponsor me, please consider checking out my [GitHub Sponsors](https://github.com/sponsors/mrjackyliang) page."
   - type: "markdown"
     attributes:
-      value: "Please __fill out the form with as much detail as possible__ to help me resolve your request in a timely fashion. Thank you!"
+      value: "Please __fill out the form with as much detail as possible__ to help me understand your request. Thank you!"
   - type: "markdown"
     attributes:
       value: "---"
   - type: "checkboxes"
     id: "pre-check"
     attributes:
-      label: "Pre-check confirmation"
-      description: "Before proceeding further, please confirm the following by checking each box. This confirmation is required. __All boxes MUST be checked; failure to comply will result in your request being closed.__"
+      label: "Support Request Confirmation"
+      description: "Confirm that you checked the available project information before requesting help."
       options:
         - label: "I am currently a sponsor or have heavily contributed to this project"
           required: true
         - label: "I have kept the original title prefix, __\"[Support]: \"__"
           required: true
+        - label: "I reviewed the README and other available documentation"
+          required: true
+        - label: "I searched open and closed issues for the same question"
+          required: true
   - type: "textarea"
-    id: "what-happened"
+    id: "help-needed"
     attributes:
-      label: "Tell me exactly what happened"
-      description: "Provide a comprehensive description of what you need help with and what result you expect."
-      placeholder: "e.g. When I was doing ..., I expected ... to happen, but I got ... instead."
+      label: "Help Needed"
+      description: "Explain the specific task or question you need help with."
     validations:
       required: true
   - type: "textarea"
+    id: "troubleshooting"
+    attributes:
+      label: "Troubleshooting Tried"
+      description: "Describe what you already tried and what happened."
+    validations:
+      required: true
+  - type: "textarea"
+    id: "desired-outcome"
+    attributes:
+      label: "Desired Outcome"
+      description: "Describe the result you are trying to reach."
+    validations:
+      required: true
+  - type: "input"
+    id: "affected-version"
+    attributes:
+      label: "Affected Version or Date"
+      description: "Enter the affected version. If no version is visible, enter the date the problem was observed."
+      placeholder: "e.g. 1.0.0"
+    validations:
+      required: true
+  - type: "input"
+    id: "node-version"
+    attributes:
+      label: "Node.js® Version"
+      description: "Enter the complete Node.js® version shown by `node --version`."
+      placeholder: "e.g. 24.13.1"
+    validations:
+      required: true
+  - type: "input"
+    id: "command"
+    attributes:
+      label: "Installation or Invocation Command"
+      description: "Enter the exact command that installs or invokes the affected package. __Remove all secrets before submitting.__"
+    validations:
+      required: false
+  - type: "input"
+    id: "homebridge-version"
+    attributes:
+      label: "Homebridge Version"
+      description: "Enter the complete Homebridge version. The Homebridge UI shows it in the \"System Information\" widget, and `homebridge -V` prints it."
+      placeholder: "e.g. 1.11.2"
+    validations:
+      required: true
+  - type: "dropdown"
+    id: "configuration-method"
+    attributes:
+      label: "Configuration Method"
+      description: "Select how the plugin was configured."
+      options:
+        - "Homebridge UI"
+        - "`config.json`"
+        - "HOOBS"
+        - "Other"
+    validations:
+      required: false
+  - type: "textarea"
+    id: "plugin-configuration"
+    attributes:
+      label: "Plugin Configuration"
+      description: "Paste only the affected plugin settings. __Replace all account details and secrets before submitting.__"
+      render: "JSON"
+    validations:
+      required: false
+  - type: "input"
+    id: "affected-url"
+    attributes:
+      label: "Affected URL or Route"
+      description: "Enter the affected public URL or route. Use only the route when the hostname is private."
+      placeholder: "e.g. /settings"
+    validations:
+      required: false
+  - type: "dropdown"
+    id: "browser"
+    attributes:
+      label: "Browser"
+      description: "Select the affected browser."
+      options:
+        - "Google Chrome"
+        - "Mozilla Firefox"
+        - "Apple Safari"
+        - "Microsoft Edge"
+        - "Other"
+    validations:
+      required: false
+  - type: "input"
+    id: "browser-version"
+    attributes:
+      label: "Browser Version"
+      description: "Enter the complete browser version."
+      placeholder: "e.g. 145.0.7632.75"
+    validations:
+      required: false
+  - type: "input"
+    id: "viewport-size"
+    attributes:
+      label: "Viewport Size"
+      description: "Enter the viewport width and height when layout affects the problem."
+      placeholder: "e.g. 390 x 844"
+    validations:
+      required: false
+  - type: "textarea"
+    id: "screenshots"
+    attributes:
+      label: "Screenshot"
+      description: "Attach a screenshot when it helps show the problem. __Remove personal and confidential information first.__"
+    validations:
+      required: false
+  - type: "dropdown"
+    id: "portal-region"
+    attributes:
+      label: "Portal Region"
+      description: "Select the ADT Pulse portal region."
+      options:
+        - "United States"
+        - "Canada"
+    validations:
+      required: true
+  - type: "dropdown"
+    id: "affected-area"
+    attributes:
+      label: "Affected Area"
+      description: "Select the plugin area involved."
+      options:
+        - "Security Panel"
+        - "Gateway"
+        - "Alarm Ringing Switch"
+        - "Sensor"
+        - "Setup Wizard"
+        - "Portal Login or MFA"
+        - "Synchronization"
+        - "Other"
+    validations:
+      required: true
+  - type: "dropdown"
+    id: "sensor-type"
+    attributes:
+      label: "Sensor Type"
+      description: "Select the affected sensor type."
+      options:
+        - "Carbon Monoxide"
+        - "Door or Window"
+        - "Fire"
+        - "Flood"
+        - "Glass Break"
+        - "Heat"
+        - "Motion"
+        - "Shock"
+        - "Temperature"
+        - "Not Applicable"
+    validations:
+      required: false
+  - type: "dropdown"
+    id: "operational-mode"
+    attributes:
+      label: "Operational Mode"
+      description: "Select the plugin mode when the problem occurred."
+      options:
+        - "Normal"
+        - "Paused"
+        - "Reset"
+        - "Not Sure"
+    validations:
+      required: false
+  - type: "textarea"
     id: "logs"
     attributes:
-      label: "Logs relevant to this issue"
-      description: "If you have any logs, you may copy and paste the logs related to this request here. This block will be automatically formatted into code, so __there is no need for backticks__ or special markup."
+      label: "Relevant Logs"
+      description: "Paste the relevant failure output when available. __Remove all secrets and personal data before submitting.__ This block is formatted as code, so there is no need for backticks."
       render: "Shell"
+    validations:
+      required: false
+  - type: "textarea"
+    id: "additional-context"
+    attributes:
+      label: "Additional Context"
+      description: "Add any other information that could help explain the submission."
+    validations:
+      required: false
+  - type: "checkboxes"
+    id: "legal"
+    attributes:
+      label: "Legal Agreements"
+      description: "By submitting a new support request, you confirm that you have read, understood, and agree to the [Terms of Use](https://github.com/mrjackyliang/mrjackyliang/blob/HEAD/TERMS.md) and [Privacy Policy](https://github.com/mrjackyliang/mrjackyliang/blob/HEAD/PRIVACY.md). If you have questions, please contact my team."
+      options:
+        - label: "I agree to the Terms of Use and Privacy Policy"
+          required: true

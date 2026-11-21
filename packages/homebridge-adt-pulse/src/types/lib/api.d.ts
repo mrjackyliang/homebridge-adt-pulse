@@ -20,12 +20,15 @@ import type {
 } from '../constant.d.ts';
 import type {
   AxiosResponseNodeJs,
+  Shared_AlarmPanel,
   Shared_ApiResponse,
+  Shared_ArmActions,
   Shared_BaseUrl,
   Shared_Config,
   Shared_Connection,
   Shared_Credentials,
   Shared_DebugParser,
+  Shared_DebugParserMarkup,
   Shared_DoSubmitHandlers,
   Shared_GatewayInformation,
   Shared_InternalConfig,
@@ -41,6 +44,13 @@ import type {
   Shared_Sessions,
   Shared_Uuid,
 } from '../shared.d.ts';
+
+/**
+ * Lib - API.
+ *
+ * @since 3.5.11
+ */
+export type Lib_Api_ADTPulseAPI_AlarmPanel = Shared_AlarmPanel;
 
 /**
  * Lib - API.
@@ -262,6 +272,19 @@ export type Lib_Api_ADTPulseAPI_ForceArmHandler_ForceArmForm = URLSearchParams;
 export type Lib_Api_ADTPulseAPI_ForceArmHandler_AxiosForceArmRequestPath = string;
 
 export type Lib_Api_ADTPulseAPI_ForceArmHandler_AxiosForceArmRequestPathValid = boolean;
+
+/**
+ * Lib - API - Get Arm Actions.
+ *
+ * @since 3.5.11
+ */
+export type Lib_Api_ADTPulseAPI_GetArmActions_ReturnsInfo = Shared_ArmActions;
+
+export type Lib_Api_ADTPulseAPI_GetArmActions_Returns = Promise<Shared_ApiResponse<'GET_ARM_ACTIONS', Lib_Api_ADTPulseAPI_GetArmActions_ReturnsInfo>>;
+
+export type Lib_Api_ADTPulseAPI_GetArmActions_OrbSecurityButtons = Shared_ApiResponse<'GET_ORB_SECURITY_BUTTONS', Shared_OrbSecurityButtons>;
+
+export type Lib_Api_ADTPulseAPI_GetArmActions_ArmActions = Shared_ArmActions;
 
 /**
  * Lib - API - Get Gateway Information.
@@ -583,6 +606,8 @@ export type Lib_Api_ADTPulseAPI_NewInformationDispatcher_Returns = Promise<void>
 export type Lib_Api_ADTPulseAPI_NewInformationDispatcher_DataHash = string;
 
 export type Lib_Api_ADTPulseAPI_NewInformationDispatcher_DetectedNew = boolean;
+
+export type Lib_Api_ADTPulseAPI_NewInformationDispatcher_Markup = Shared_DebugParserMarkup;
 
 export type Lib_Api_ADTPulseAPI_NewInformationDispatcher_DataDebugParser = Lib_Api_ADTPulseAPI_NewInformationDispatcher_DataByType<'debug-parser'>;
 

@@ -40,7 +40,6 @@ export default [
       parserOptions: {
         project: [
           './tsconfig.config.json',
-          './tsconfig.scripts.json',
           './tsconfig.tests.json',
         ],
       },

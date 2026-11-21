@@ -14,6 +14,7 @@ import type {
   Shared_Connection,
   Shared_Credentials,
   Shared_DebugParser,
+  Shared_DebugParserMarkup,
   Shared_InternalConfig,
   Shared_MfaDevice,
   Shared_MfaTrustedDevice,
@@ -339,6 +340,8 @@ export type Lib_Auth_ADTPulseAuth_NewInformationDispatcher_Returns = Promise<voi
 export type Lib_Auth_ADTPulseAuth_NewInformationDispatcher_DataHash = string;
 
 export type Lib_Auth_ADTPulseAuth_NewInformationDispatcher_DetectedNew = boolean;
+
+export type Lib_Auth_ADTPulseAuth_NewInformationDispatcher_Markup = Shared_DebugParserMarkup;
 
 export type Lib_Auth_ADTPulseAuth_NewInformationDispatcher_DataDebugParser = Lib_Auth_ADTPulseAuth_NewInformationDispatcher_DataMap<'debug-parser'>;
 

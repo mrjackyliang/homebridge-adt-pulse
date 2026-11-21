@@ -48,6 +48,7 @@ export type Shared_ApiResponseAction =
   | 'ARM_DISARM_HANDLER'
   | 'COMPLETE_SIGN_IN'
   | 'FORCE_ARM_HANDLER'
+  | 'GET_ARM_ACTIONS'
   | 'GET_GATEWAY_INFORMATION'
   | 'GET_ORB_SECURITY_BUTTONS'
   | 'GET_PANEL_INFORMATION'
@@ -123,9 +124,9 @@ export type Shared_BaseUrl = `https://${string}`;
  *
  * @since 1.0.0
  */
-export type Shared_CachedState_GatewayInfo = Shared_GatewayInformation | null;
+export type Shared_CachedState_ArmActions = Shared_ArmActions;
 
-export type Shared_CachedState_OrbSecurityButtons = Shared_OrbSecurityButtons;
+export type Shared_CachedState_GatewayInfo = Shared_GatewayInformation | null;
 
 export type Shared_CachedState_PanelInfo = Shared_PanelInformation | null;
 
@@ -142,8 +143,8 @@ export type Shared_CachedState_SensorsStatus = Shared_CachedState_SensorStatus[]
 export type Shared_CachedState_SyncCode = Constant_PortalSyncCode;
 
 export type Shared_CachedState = {
+  armActions: Shared_CachedState_ArmActions;
   gatewayInfo: Shared_CachedState_GatewayInfo;
-  orbSecurityButtons: Shared_CachedState_OrbSecurityButtons;
   panelInfo: Shared_CachedState_PanelInfo;
   panelStatus: Shared_CachedState_PanelStatus;
   sensorsInfo: Shared_CachedState_SensorsInfo;
@@ -684,6 +685,26 @@ export type Shared_DebugParser<Method extends Shared_DebugParserMethod> = {
 };
 
 /**
+ * Shared - Debug Parser Markup.
+ *
+ * The portal adapter reads its own page markers and passes these neutral flags
+ * to the detector, so portal element ids stay inside the adapter.
+ *
+ * @since 3.5.11
+ */
+export type Shared_DebugParserMarkup_HasArmingForm = boolean;
+
+export type Shared_DebugParserMarkup_HasSensorsList = boolean;
+
+export type Shared_DebugParserMarkup_HasStatusUnavailable = boolean;
+
+export type Shared_DebugParserMarkup = {
+  hasArmingForm: Shared_DebugParserMarkup_HasArmingForm;
+  hasSensorsList: Shared_DebugParserMarkup_HasSensorsList;
+  hasStatusUnavailable: Shared_DebugParserMarkup_HasStatusUnavailable;
+};
+
+/**
  * Shared - Browser Release.
  *
  * Browser identities and release snapshots are used across auth, fingerprint
@@ -741,4 +762,184 @@ export type Shared_CliIdentity_Copyright = string;
 export type Shared_CliIdentity = {
   repository: Shared_CliIdentity_Repository;
   copyright: Shared_CliIdentity_Copyright;
+};
+
+/**
+ * Shared - Arm Action.
+ *
+ * Project-owned names for the arming controls a panel currently offers. The
+ * portal adapter translates its own button labels into these values.
+ *
+ * @since 3.5.11
+ */
+export type Shared_ArmAction = 'arm-away' | 'arm-night' | 'arm-stay' | 'clear-alarm' | 'disarm';
+
+export type Shared_ArmActions = Shared_ArmAction[];
+
+/**
+ * Shared - Alarm Panel.
+ *
+ * The backend contract the platform and accessories depend on. The portal
+ * driver implements it, so a new backend only needs to satisfy this shape.
+ *
+ * @since 3.5.11
+ */
+export type Shared_AlarmPanelSession_BackupSatCode = Shared_Uuid | null;
+
+export type Shared_AlarmPanelSession_NetworkId = Shared_NetworkId | null;
+
+export type Shared_AlarmPanelSession_PortalVersion = Constant_PortalVersion | null;
+
+export type Shared_AlarmPanelSession = {
+  backupSatCode: Shared_AlarmPanelSession_BackupSatCode;
+  networkId: Shared_AlarmPanelSession_NetworkId;
+  portalVersion: Shared_AlarmPanelSession_PortalVersion;
+};
+
+export type Shared_AlarmPanelSensorsInformation_Sensors = Shared_SensorInformation[];
+
+export type Shared_AlarmPanelSensorsInformation = {
+  sensors: Shared_AlarmPanelSensorsInformation_Sensors;
+};
+
+export type Shared_AlarmPanelSensorsStatus_Sensors = Shared_SensorStatus[];
+
+export type Shared_AlarmPanelSensorsStatus = {
+  sensors: Shared_AlarmPanelSensorsStatus_Sensors;
+};
+
+export type Shared_AlarmPanelSyncCheck_SyncCode = Constant_PortalSyncCode;
+
+export type Shared_AlarmPanelSyncCheck = {
+  syncCode: Shared_AlarmPanelSyncCheck_SyncCode;
+};
+
+export type Shared_AlarmPanelSetStatusSuccess_Action = 'SET_PANEL_STATUS';
+
+export type Shared_AlarmPanelSetStatusSuccess_Success = true;
+
+export type Shared_AlarmPanelSetStatusSuccess_Info_ConfirmedArmValue = Constant_PortalPanelArmValue;
+
+export type Shared_AlarmPanelSetStatusSuccess_Info_ForceArmRequired = boolean;
+
+export type Shared_AlarmPanelSetStatusSuccess_Info = {
+  confirmedArmValue: Shared_AlarmPanelSetStatusSuccess_Info_ConfirmedArmValue;
+  forceArmRequired: Shared_AlarmPanelSetStatusSuccess_Info_ForceArmRequired;
+};
+
+export type Shared_AlarmPanelSetStatusSuccess = {
+  action: Shared_AlarmPanelSetStatusSuccess_Action;
+  success: Shared_AlarmPanelSetStatusSuccess_Success;
+  info: Shared_AlarmPanelSetStatusSuccess_Info;
+};
+
+export type Shared_AlarmPanelSetStatusFail_Action = 'SET_PANEL_STATUS';
+
+export type Shared_AlarmPanelSetStatusFail_Success = false;
+
+export type Shared_AlarmPanelSetStatusFail_Info_ConfirmedArmValue = Constant_PortalPanelArmValue;
+
+export type Shared_AlarmPanelSetStatusFail_Info_Error = ErrorObject;
+
+export type Shared_AlarmPanelSetStatusFail_Info_Message = string;
+
+export type Shared_AlarmPanelSetStatusFail_Info = {
+  confirmedArmValue?: Shared_AlarmPanelSetStatusFail_Info_ConfirmedArmValue;
+  error?: Shared_AlarmPanelSetStatusFail_Info_Error;
+  message?: Shared_AlarmPanelSetStatusFail_Info_Message;
+};
+
+export type Shared_AlarmPanelSetStatusFail = {
+  action: Shared_AlarmPanelSetStatusFail_Action;
+  success: Shared_AlarmPanelSetStatusFail_Success;
+  info: Shared_AlarmPanelSetStatusFail_Info;
+};
+
+export type Shared_AlarmPanelSetStatus = Shared_AlarmPanelSetStatusFail | Shared_AlarmPanelSetStatusSuccess;
+
+export type Shared_AlarmPanel_GetArmActions = () => Promise<Shared_ApiResponse<'GET_ARM_ACTIONS', Shared_ArmActions>>;
+
+export type Shared_AlarmPanel_GetGatewayInformation = () => Promise<Shared_ApiResponse<'GET_GATEWAY_INFORMATION', Shared_GatewayInformation>>;
+
+export type Shared_AlarmPanel_GetPanelInformation = () => Promise<Shared_ApiResponse<'GET_PANEL_INFORMATION', Shared_PanelInformation>>;
+
+export type Shared_AlarmPanel_GetPanelStatus = () => Promise<Shared_ApiResponse<'GET_PANEL_STATUS', Shared_PanelStatus>>;
+
+export type Shared_AlarmPanel_GetSensorsInformation = () => Promise<Shared_ApiResponse<'GET_SENSORS_INFORMATION', Shared_AlarmPanelSensorsInformation>>;
+
+export type Shared_AlarmPanel_GetSensorsStatus = () => Promise<Shared_ApiResponse<'GET_SENSORS_STATUS', Shared_AlarmPanelSensorsStatus>>;
+
+export type Shared_AlarmPanel_IsAuthenticated = () => boolean;
+
+export type Shared_AlarmPanel_Login = () => Promise<Shared_ApiResponse<'LOGIN', Shared_AlarmPanelSession>>;
+
+export type Shared_AlarmPanel_Logout = () => Promise<Shared_ApiResponse<'LOGOUT', Shared_AlarmPanelSession>>;
+
+export type Shared_AlarmPanel_PerformKeepAlive = () => Promise<Shared_ApiResponse<'PERFORM_KEEP_ALIVE', null>>;
+
+export type Shared_AlarmPanel_PerformSyncCheck = () => Promise<Shared_ApiResponse<'PERFORM_SYNC_CHECK', Shared_AlarmPanelSyncCheck>>;
+
+export type Shared_AlarmPanel_ResetSession = () => void;
+
+export type Shared_AlarmPanel_SetPanelStatus = (armFrom: Constant_PortalPanelArmValue, armTo: Constant_PortalPanelArmValue, isAlarmActive: boolean) => Promise<Shared_AlarmPanelSetStatus>;
+
+export type Shared_AlarmPanel = {
+  getArmActions: Shared_AlarmPanel_GetArmActions;
+  getGatewayInformation: Shared_AlarmPanel_GetGatewayInformation;
+  getPanelInformation: Shared_AlarmPanel_GetPanelInformation;
+  getPanelStatus: Shared_AlarmPanel_GetPanelStatus;
+  getSensorsInformation: Shared_AlarmPanel_GetSensorsInformation;
+  getSensorsStatus: Shared_AlarmPanel_GetSensorsStatus;
+  isAuthenticated: Shared_AlarmPanel_IsAuthenticated;
+  login: Shared_AlarmPanel_Login;
+  logout: Shared_AlarmPanel_Logout;
+  performKeepAlive: Shared_AlarmPanel_PerformKeepAlive;
+  performSyncCheck: Shared_AlarmPanel_PerformSyncCheck;
+  resetSession: Shared_AlarmPanel_ResetSession;
+  setPanelStatus: Shared_AlarmPanel_SetPanelStatus;
+};
+
+/**
+ * Shared - Report Sink.
+ *
+ * Where detection reports are delivered. The detector depends on this shape,
+ * so the delivery service can change without touching the detection logic.
+ *
+ * @since 3.5.11
+ */
+export type Shared_ReportSink_Send = (title: string, body: string) => Promise<void>;
+
+export type Shared_ReportSink = {
+  send: Shared_ReportSink_Send;
+};
+
+/**
+ * Shared - Release Source.
+ *
+ * Supplies the latest published plugin version and the raw browser release
+ * feeds, so registry and vendor endpoints are owned by one adapter.
+ *
+ * @since 3.5.11
+ */
+export type Shared_ReleaseFeed = Shared_BrowserName | 'operaArchive';
+
+export type Shared_ReleaseFeedResponse_Ok = boolean;
+
+export type Shared_ReleaseFeedResponse_Status = number;
+
+export type Shared_ReleaseFeedResponse_Body = string;
+
+export type Shared_ReleaseFeedResponse = {
+  ok: Shared_ReleaseFeedResponse_Ok;
+  status: Shared_ReleaseFeedResponse_Status;
+  body: Shared_ReleaseFeedResponse_Body;
+};
+
+export type Shared_ReleaseSource_FetchBrowserFeed = (feed: Shared_ReleaseFeed) => Promise<Shared_ReleaseFeedResponse>;
+
+export type Shared_ReleaseSource_FetchLatestPluginVersion = () => Promise<string | undefined>;
+
+export type Shared_ReleaseSource = {
+  fetchBrowserFeed: Shared_ReleaseSource_FetchBrowserFeed;
+  fetchLatestPluginVersion: Shared_ReleaseSource_FetchLatestPluginVersion;
 };

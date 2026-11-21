@@ -51,6 +51,7 @@ import {
   isPortalSyncCode,
   isSessionCleanState,
   parseArmDisarmMessage,
+  parseDebugParserMarkup,
   parseDoSubmitHandlers,
   parseOrbSecurityButtons,
   parseOrbSensors,
@@ -61,6 +62,7 @@ import {
 } from './utility.js';
 
 import type {
+  Lib_Api_ADTPulseAPI_AlarmPanel,
   Lib_Api_ADTPulseAPI_ArmDisarmHandler_ArmDisarmForm,
   Lib_Api_ADTPulseAPI_ArmDisarmHandler_AxiosSetArmModeRequestPath,
   Lib_Api_ADTPulseAPI_ArmDisarmHandler_AxiosSetArmModeRequestPathValid,
@@ -99,6 +101,9 @@ import type {
   Lib_Api_ADTPulseAPI_ForceArmHandler_Returns,
   Lib_Api_ADTPulseAPI_ForceArmHandler_Sessions,
   Lib_Api_ADTPulseAPI_ForceArmHandler_Tracker,
+  Lib_Api_ADTPulseAPI_GetArmActions_ArmActions,
+  Lib_Api_ADTPulseAPI_GetArmActions_OrbSecurityButtons,
+  Lib_Api_ADTPulseAPI_GetArmActions_Returns,
   Lib_Api_ADTPulseAPI_GetGatewayInformation_AxiosSystemGatewayRequestPath,
   Lib_Api_ADTPulseAPI_GetGatewayInformation_AxiosSystemGatewayRequestPathValid,
   Lib_Api_ADTPulseAPI_GetGatewayInformation_ErrorObject,
@@ -196,6 +201,7 @@ import type {
   Lib_Api_ADTPulseAPI_NewInformationDispatcher_DataSensorsInformation,
   Lib_Api_ADTPulseAPI_NewInformationDispatcher_DataSensorsStatus,
   Lib_Api_ADTPulseAPI_NewInformationDispatcher_DetectedNew,
+  Lib_Api_ADTPulseAPI_NewInformationDispatcher_Markup,
   Lib_Api_ADTPulseAPI_NewInformationDispatcher_Returns,
   Lib_Api_ADTPulseAPI_NewInformationDispatcher_Type,
   Lib_Api_ADTPulseAPI_PerformKeepAlive_AxiosKeepAliveRequestPath,
@@ -239,7 +245,7 @@ import type {
  *
  * @since 1.0.0
  */
-export class ADTPulseAPI {
+export class ADTPulseAPI implements Lib_Api_ADTPulseAPI_AlarmPanel {
   /**
    * ADT Pulse API - Connection.
    *
@@ -2502,6 +2508,70 @@ export class ADTPulseAPI {
   }
 
   /**
+   * Lib - API - Get Arm Actions.
+   *
+   * Reads the orb security buttons and translates their labels into arm actions
+   * so the platform and accessories never handle the portal's button vocabulary.
+   *
+   * @returns {Lib_Api_ADTPulseAPI_GetArmActions_Returns}
+   *
+   * @since 3.5.11
+   */
+  public async getArmActions(): Lib_Api_ADTPulseAPI_GetArmActions_Returns {
+    const orbSecurityButtons: Lib_Api_ADTPulseAPI_GetArmActions_OrbSecurityButtons = await this.getOrbSecurityButtons();
+
+    if (orbSecurityButtons['success'] === false) {
+      return {
+        action: 'GET_ARM_ACTIONS',
+        success: false,
+        info: orbSecurityButtons['info'],
+      };
+    }
+
+    const armActions: Lib_Api_ADTPulseAPI_GetArmActions_ArmActions = [];
+
+    // Buttons without a ready label (pending or unlabeled) do not offer an action.
+    for (const orbSecurityButton of orbSecurityButtons['info']) {
+      switch (orbSecurityButton['buttonText']) {
+        case 'Arm Away': {
+          armActions.push('arm-away');
+          break;
+        }
+
+        case 'Arm Night': {
+          armActions.push('arm-night');
+          break;
+        }
+
+        case 'Arm Stay': {
+          armActions.push('arm-stay');
+          break;
+        }
+
+        case 'Clear Alarm': {
+          armActions.push('clear-alarm');
+          break;
+        }
+
+        case 'Disarm': {
+          armActions.push('disarm');
+          break;
+        }
+
+        default: {
+          break;
+        }
+      }
+    }
+
+    return {
+      action: 'GET_ARM_ACTIONS',
+      success: true,
+      info: armActions,
+    };
+  }
+
+  /**
    * Lib - API - Perform Sync Check.
    *
    * Polls the portal sync check endpoint so the plugin knows when device
@@ -3435,7 +3505,10 @@ export class ADTPulseAPI {
       // Determine what information needs to be checked.
       switch (type) {
         case 'debug-parser': {
-          detectedNew = await detectGlobalDebugParser(data as Lib_Api_ADTPulseAPI_NewInformationDispatcher_DataDebugParser, this.#internal['logger'], this.#internal['debug']);
+          // Portal page markers are read here, so the detector only receives neutral flags.
+          const markup: Lib_Api_ADTPulseAPI_NewInformationDispatcher_Markup = parseDebugParserMarkup((data as Lib_Api_ADTPulseAPI_NewInformationDispatcher_DataDebugParser)['rawHtml']);
+
+          detectedNew = await detectGlobalDebugParser(data as Lib_Api_ADTPulseAPI_NewInformationDispatcher_DataDebugParser, markup, this.#internal['logger'], this.#internal['debug']);
           break;
         }
 

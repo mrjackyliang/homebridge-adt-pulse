@@ -3,6 +3,7 @@ import type { Logger } from 'homebridge';
 import type { Constant_PluginDeviceSensorType } from '../constant.d.ts';
 import type {
   Shared_DebugParser,
+  Shared_DebugParserMarkup,
   Shared_DoSubmitHandlers,
   Shared_GatewayInformation,
   Shared_OrbSecurityButtons,
@@ -168,6 +169,8 @@ export type Lib_Detect_DetectApiSensorsStatus_Outdated = boolean;
  * @since 1.0.0
  */
 export type Lib_Detect_DetectGlobalDebugParser_Data = Shared_DebugParser<'forceArmHandler'> | Shared_DebugParser<'generateSensorsConfig'> | Shared_DebugParser<'getGatewayInformation'> | Shared_DebugParser<'getOrbSecurityButtons'> | Shared_DebugParser<'getPanelInformation'> | Shared_DebugParser<'getPanelStatus'> | Shared_DebugParser<'getSensorsInformation'> | Shared_DebugParser<'getSensorsStatus'>;
+
+export type Lib_Detect_DetectGlobalDebugParser_Markup = Shared_DebugParserMarkup;
 
 export type Lib_Detect_DetectGlobalDebugParser_Logger = Logger | null;
 

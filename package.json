@@ -8,9 +8,9 @@
     "dev": "nova utility run-workspaces --node-env development dev",
     "prod": "nova utility run-workspaces --node-env production prod",
     "check": "nova utility run-workspaces check",
-    "check:lint": "eslint . --max-warnings=0",
+    "check:lint": "eslint ./ --max-warnings=0",
     "check:types-config": "nova utility type-check --project tsconfig.config.json",
-    "check:types-scripts": "nova utility type-check --project tsconfig.scripts.json",
+    "check:types-scripts": "nova utility type-check --project tsconfig.scripts.json --pass-with-no-inputs",
     "check:types-tests": "nova utility type-check --project tsconfig.tests.json",
     "check:test": "vitest run",
     "build": "nova utility run-workspaces --node-env production build",
@@ -36,7 +36,7 @@
     "node": "^22 || ^24 || ^26"
   },
   "dependencies": {
-    "@cbnventures/nova": "0.44.0"
+    "@cbnventures/nova": "0.49.0"
   },
   "devDependencies": {
     "@types/node": "24.9.1",

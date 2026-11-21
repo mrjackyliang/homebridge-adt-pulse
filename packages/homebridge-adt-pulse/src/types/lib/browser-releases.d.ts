@@ -2,6 +2,7 @@ import type {
   Shared_BrowserName,
   Shared_BrowserRelease,
   Shared_BrowserReleaseSnapshot,
+  Shared_ReleaseFeedResponse,
   Shared_ResolvedBrowserRelease,
 } from '../shared.d.ts';
 
@@ -23,7 +24,7 @@ export type Lib_BrowserReleases_FetchStableBrowserRelease_Browser = Shared_Brows
 
 export type Lib_BrowserReleases_FetchStableBrowserRelease_Returns = Promise<Shared_BrowserRelease>;
 
-export type Lib_BrowserReleases_FetchStableBrowserRelease_Response = Response;
+export type Lib_BrowserReleases_FetchStableBrowserRelease_Response = Shared_ReleaseFeedResponse;
 
 export type Lib_BrowserReleases_FetchStableBrowserRelease_ChromePayload = unknown;
 
@@ -106,7 +107,7 @@ export type Lib_BrowserReleases_FetchStableBrowserRelease_ChromiumMatch = RegExp
 
 export type Lib_BrowserReleases_FetchStableBrowserRelease_ChromiumVersion = string | undefined;
 
-export type Lib_BrowserReleases_FetchStableBrowserRelease_ArchiveResponse = Response;
+export type Lib_BrowserReleases_FetchStableBrowserRelease_ArchiveResponse = Shared_ReleaseFeedResponse;
 
 export type Lib_BrowserReleases_FetchStableBrowserRelease_Archive = Document;
 

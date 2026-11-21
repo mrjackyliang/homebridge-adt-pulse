@@ -9,12 +9,12 @@ import type {
   Service,
 } from 'homebridge';
 
-import type { ADTPulseAPI } from '../../lib/api.js';
 import type {
   Constant_PortalPanelArmValue,
   Constant_PortalPanelState,
 } from '../constant.d.ts';
 import type {
+  Shared_AlarmPanel,
   Shared_Device,
   Shared_Device_Firmware,
   Shared_Device_Hardware,
@@ -98,7 +98,7 @@ export type Lib_Accessory_ADTPulseAccessory_Constructor_State = Lib_Platform_ADT
 
 export type Lib_Accessory_ADTPulseAccessory_Constructor_Config = Lib_Platform_ADTPulsePlatform_Config;
 
-export type Lib_Accessory_ADTPulseAccessory_Constructor_Instance = ADTPulseAPI;
+export type Lib_Accessory_ADTPulseAccessory_Constructor_Instance = Shared_AlarmPanel;
 
 export type Lib_Accessory_ADTPulseAccessory_Constructor_Service = typeof Service;
 
@@ -225,7 +225,7 @@ export type Lib_Accessory_ADTPulseAccessory_GetSensorStatus_Statuses = Shared_Se
  *
  * @since 1.0.0
  */
-export type Lib_Accessory_ADTPulseAccessory_Instance = ADTPulseAPI;
+export type Lib_Accessory_ADTPulseAccessory_Instance = Shared_AlarmPanel;
 
 /**
  * Lib - Accessory - Log.

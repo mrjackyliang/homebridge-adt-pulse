@@ -1,4 +1,3 @@
-import type { AxiosResponse } from 'axios';
 import type { Characteristic, CharacteristicValue, Logger } from 'homebridge';
 import type { JSDOM } from 'jsdom';
 import type { DateTimeMaybeValid } from 'luxon';
@@ -34,6 +33,9 @@ import type {
   AxiosResponseNodeJs,
   Shared_ApiResponseAction,
   Shared_ApiResponseFail,
+  Shared_ArmActions,
+  Shared_DebugParserMarkup,
+  Shared_DebugParserRawHtml,
   Shared_DoSubmitHandlers,
   Shared_MfaDevice,
   Shared_MfaDevice_Type,
@@ -292,13 +294,6 @@ export type Lib_Utility_GetAccessoryCategory_DeviceCategory = Constant_PluginDev
 export type Lib_Utility_GetAccessoryCategory_Returns = number;
 
 /**
- * Lib - Utility - Get Detect Report URL.
- *
- * @since 1.0.0
- */
-export type Lib_Utility_GetDetectReportUrl_Returns = `https://${string}`;
-
-/**
  * Lib - Utility - Get Package Version.
  *
  * @since 1.0.0
@@ -366,15 +361,13 @@ export type Lib_Utility_IsMaintenancePeriod_EndTime = DateTimeMaybeValid;
  */
 export type Lib_Utility_IsPanelAlarmActive_PanelStatuses = Shared_PanelStatus_PanelStatuses;
 
-export type Lib_Utility_IsPanelAlarmActive_OrbSecurityButtons = Shared_OrbSecurityButtons;
+export type Lib_Utility_IsPanelAlarmActive_ArmActions = Shared_ArmActions;
 
 export type Lib_Utility_IsPanelAlarmActive_IgnoreSensorProblem = boolean;
 
 export type Lib_Utility_IsPanelAlarmActive_Returns = boolean;
 
 export type Lib_Utility_IsPanelAlarmActive_HasDisarmedTroubleButtons = boolean;
-
-export type Lib_Utility_IsPanelAlarmActive_OrbSecurityButtonButtonText = Constant_PortalPanelArmButtonText | Constant_PortalPanelArmButtonLoadingText | null;
 
 /**
  * Lib - Utility - Is Plugin Outdated.
@@ -384,14 +377,6 @@ export type Lib_Utility_IsPanelAlarmActive_OrbSecurityButtonButtonText = Constan
 export type Lib_Utility_IsPluginOutdated_Returns = Promise<boolean>;
 
 export type Lib_Utility_IsPluginOutdated_CurrentVersion = string;
-
-export type Lib_Utility_IsPluginOutdated_Response = AxiosResponse;
-
-export type Lib_Utility_IsPluginOutdated_ResponseDataVersion = string;
-
-export type Lib_Utility_IsPluginOutdated_ResponseData = {
-  version?: Lib_Utility_IsPluginOutdated_ResponseDataVersion;
-} | null | undefined;
 
 export type Lib_Utility_IsPluginOutdated_FetchedVersion = string | undefined;
 
@@ -502,6 +487,15 @@ export type Lib_Utility_IsUnknownPanelDevice_CurrentPanel = {
 export type Lib_Utility_ParseArmDisarmMessage_Element = Element | null;
 
 export type Lib_Utility_ParseArmDisarmMessage_Returns = string | null;
+
+/**
+ * Lib - Utility - Parse Debug Parser Markup.
+ *
+ * @since 3.5.11
+ */
+export type Lib_Utility_ParseDebugParserMarkup_RawHtml = Shared_DebugParserRawHtml;
+
+export type Lib_Utility_ParseDebugParserMarkup_Returns = Shared_DebugParserMarkup;
 
 /**
  * Lib - Utility - Parse Do Submit Handlers.
@@ -759,27 +753,6 @@ export type Lib_Utility_RemovePersonalIdentifiableInformation_ReplaceValue_Retur
 export type Lib_Utility_RemovePersonalIdentifiableInformation_ReplaceValue_ModifiedObject = Record<string, unknown>;
 
 export type Lib_Utility_RemovePersonalIdentifiableInformation_ReplaceValue_Value = unknown;
-
-/**
- * Lib - Utility - Send Detect Report.
- *
- * @since 3.5.10
- */
-export type Lib_Utility_SendDetectReport_Title = string;
-
-export type Lib_Utility_SendDetectReport_Body = string;
-
-export type Lib_Utility_SendDetectReport_Returns = Promise<void>;
-
-export type Lib_Utility_SendDetectReport_SessionResponse = AxiosResponse;
-
-export type Lib_Utility_SendDetectReport_SessionDataToken = unknown;
-
-export type Lib_Utility_SendDetectReport_SessionData = {
-  token?: Lib_Utility_SendDetectReport_SessionDataToken;
-} | null | undefined;
-
-export type Lib_Utility_SendDetectReport_Token = unknown;
 
 /**
  * Lib - Utility - Sleep.

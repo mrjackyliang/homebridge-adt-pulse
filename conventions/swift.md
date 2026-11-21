@@ -126,23 +126,25 @@ if let name = config.name {
 
 ### `switch` — Always Exhaustive with Block Scope
 
-Every `case` and `default` uses block-like separation. Switch must be exhaustive (compiler-enforced for enums, `default` required for other types).
+Every `case` and `default` wraps its body in a `do { … }` block. Switch must be exhaustive (compiler-enforced for enums, `default` required for other types).
 
 ```swift
 switch category {
-    case .added: {
+    case .added: do {
         logger.info("New feature.")
     }
 
-    case .fixed: {
+    case .fixed: do {
         logger.info("Bug fix.")
     }
 
-    default: {
+    default: do {
         logger.warn("Unknown category.")
     }
 }
 ```
+
+Write `do` after the colon. A bare `{ … }` after `case .x:` is a closure Swift never calls, so it fails with "closure expression is unused", and a `break` inside it fails with "'break' is only allowed inside a loop".
 
 ### Explicit Nil Checks — Avoid Optional Chaining
 

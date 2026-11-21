@@ -205,8 +205,8 @@ function createHarness(type: Tests_Lib_Accessory_CreateHarness_Type, options: Te
       isSyncing: false,
     },
     data: {
+      armActions: [],
       gatewayInfo: null,
-      orbSecurityButtons: [],
       panelInfo: null,
       panelStatus: {
         panelNotes: [],

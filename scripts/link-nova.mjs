@@ -1,4 +1,7 @@
-import { execFileSync } from 'node:child_process';
+import {
+  execFileSync,
+  execSync,
+} from 'node:child_process';
 import {
   existsSync,
   lstatSync,
@@ -104,16 +107,27 @@ function linkNova() {
     return;
   }
 
-  const globalModules = execFileSync(
-    'npm',
-    [
-      'root',
-      '--global',
-    ],
-    {
+  let globalModulesOutput = undefined;
+
+  if (process.platform === 'win32') {
+    // Windows ships npm as "npm.cmd", which only a shell can start. The command is fixed text, so nothing needs quoting.
+    globalModulesOutput = execSync('npm root --global', {
       encoding: 'utf-8',
-    },
-  ).trim();
+    });
+  } else {
+    globalModulesOutput = execFileSync(
+      'npm',
+      [
+        'root',
+        '--global',
+      ],
+      {
+        encoding: 'utf-8',
+      },
+    );
+  }
+
+  const globalModules = globalModulesOutput.trim();
   const linkedPackages = [];
   const missingLinks = [];
 

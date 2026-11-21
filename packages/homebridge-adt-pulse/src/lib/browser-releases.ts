@@ -14,6 +14,7 @@ import {
   operaChromiumVersion,
   operaStableTitle,
 } from './regex.js';
+import { defaultReleaseSource } from './release-source.js';
 
 import type {
   Lib_BrowserReleases_FetchBrowserSnapshot_Releases,
@@ -103,22 +104,6 @@ const snapshotSchema = z.object({
 });
 
 /**
- * Lib - Browser Releases - Sources.
- *
- * Official vendor endpoints used for Stable-channel release metadata.
- * These are queried only while creating a new fingerprint or building.
- *
- * @since 3.5.0
- */
-const sources = {
-  chrome: 'https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json',
-  edge: 'https://edgeupdates.microsoft.com/api/products?view=enterprise',
-  firefox: 'https://product-details.mozilla.org/1.0/firefox_versions.json',
-  opera: 'https://blogs.opera.com/desktop/category/stable-2/feed/',
-  operaArchive: 'https://get.opera.com/pub/opera/desktop/',
-} as const;
-
-/**
  * Lib - Browser Releases - Read Known Good Browser Snapshot.
  *
  * Provides the verified source fallback used by unbuilt checkouts and offline
@@ -188,17 +173,17 @@ export function readPackagedBrowserSnapshot(): Lib_BrowserReleases_ReadPackagedB
  *
  * @returns {Promise<Lib_BrowserReleases_Release>}
  *
- * @since 3.5.0
+ * @since 3.5.11
  */
 export async function fetchStableBrowserRelease(browser: Lib_BrowserReleases_FetchStableBrowserRelease_Browser): Lib_BrowserReleases_FetchStableBrowserRelease_Returns {
-  const response: Lib_BrowserReleases_FetchStableBrowserRelease_Response = await fetch(sources[browser], { signal: AbortSignal.timeout(10000) });
+  const response: Lib_BrowserReleases_FetchStableBrowserRelease_Response = await defaultReleaseSource.fetchBrowserFeed(browser);
 
-  if (response.ok === false) {
-    throw new Error(`${browser} stable feed returned HTTP ${response.status}`);
+  if (response['ok'] === false) {
+    throw new Error(`${browser} stable feed returned HTTP ${response['status']}`);
   }
 
   if (browser === 'chrome') {
-    const chromePayload: Lib_BrowserReleases_FetchStableBrowserRelease_ChromePayload = await response.json();
+    const chromePayload: Lib_BrowserReleases_FetchStableBrowserRelease_ChromePayload = JSON.parse(response['body']);
     const chromeParsed: Lib_BrowserReleases_FetchStableBrowserRelease_ChromeParsed = z.object({
       channels: z.object({ Stable: z.object({ version: z.string() }) }),
     }).parse(chromePayload);
@@ -210,7 +195,7 @@ export async function fetchStableBrowserRelease(browser: Lib_BrowserReleases_Fet
   }
 
   if (browser === 'firefox') {
-    const firefoxPayload: Lib_BrowserReleases_FetchStableBrowserRelease_FirefoxPayload = await response.json();
+    const firefoxPayload: Lib_BrowserReleases_FetchStableBrowserRelease_FirefoxPayload = JSON.parse(response['body']);
     const firefoxParsed: Lib_BrowserReleases_FetchStableBrowserRelease_FirefoxParsed = z.object({
       LATEST_FIREFOX_VERSION: z.string(),
     }).parse(firefoxPayload);
@@ -222,7 +207,7 @@ export async function fetchStableBrowserRelease(browser: Lib_BrowserReleases_Fet
   }
 
   if (browser === 'edge') {
-    const edgePayload: Lib_BrowserReleases_FetchStableBrowserRelease_EdgePayload = await response.json();
+    const edgePayload: Lib_BrowserReleases_FetchStableBrowserRelease_EdgePayload = JSON.parse(response['body']);
     const edgeParsed: Lib_BrowserReleases_FetchStableBrowserRelease_EdgeParsed = z.array(z.object({
       Product: z.string(),
       Releases: z.array(z.object({
@@ -249,7 +234,7 @@ export async function fetchStableBrowserRelease(browser: Lib_BrowserReleases_Fet
     });
   }
 
-  const xml: Lib_BrowserReleases_FetchStableBrowserRelease_Xml = await response.text();
+  const xml: Lib_BrowserReleases_FetchStableBrowserRelease_Xml = response['body'];
   const feed: Lib_BrowserReleases_FetchStableBrowserRelease_Feed = new JSDOM(xml, { contentType: 'text/xml' }).window.document;
   const items: Lib_BrowserReleases_FetchStableBrowserRelease_Items = Array.from(feed.querySelectorAll('item'));
   const firstItem: Lib_BrowserReleases_FetchStableBrowserRelease_FirstItem = items[0];
@@ -279,13 +264,13 @@ export async function fetchStableBrowserRelease(browser: Lib_BrowserReleases_Fet
     throw new Error('Opera Stable RSS has no matching Chromium version');
   }
 
-  const archiveResponse: Lib_BrowserReleases_FetchStableBrowserRelease_ArchiveResponse = await fetch(sources['operaArchive'], { signal: AbortSignal.timeout(10000) });
+  const archiveResponse: Lib_BrowserReleases_FetchStableBrowserRelease_ArchiveResponse = await defaultReleaseSource.fetchBrowserFeed('operaArchive');
 
-  if (archiveResponse.ok === false) {
-    throw new Error(`Opera release archive returned HTTP ${archiveResponse.status}`);
+  if (archiveResponse['ok'] === false) {
+    throw new Error(`Opera release archive returned HTTP ${archiveResponse['status']}`);
   }
 
-  const archive: Lib_BrowserReleases_FetchStableBrowserRelease_Archive = new JSDOM(await archiveResponse.text()).window.document;
+  const archive: Lib_BrowserReleases_FetchStableBrowserRelease_Archive = new JSDOM(archiveResponse['body']).window.document;
   const versions: Lib_BrowserReleases_FetchStableBrowserRelease_Versions = Array.from(archive.querySelectorAll('a'))
     .flatMap((link) => {
       const archiveMatch: Lib_BrowserReleases_FetchStableBrowserRelease_ArchiveMatch = operaArchiveVersion.exec(link.getAttribute('href') ?? '');

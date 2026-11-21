@@ -1,5 +1,12 @@
 # homebridge-adt-pulse-app-config-ui
 
+## 3.5.11 - 2026-11-21
+
+### UPDATED
+- Tests now report coverage through a `check:coverage` script, which fails when line, function, branch or statement coverage drops below the project minimum, and the README badges now include that coverage.
+- Nova 0.49.0, which runs the configuration UI's type checks, tests and coverage check, and counts its coverage toward the coverage badge the publish workflow writes.
+- README introduction, which now describes the project with its new long description.
+
 ## 3.5.10 - 2026-11-17
 
 ### UPDATED

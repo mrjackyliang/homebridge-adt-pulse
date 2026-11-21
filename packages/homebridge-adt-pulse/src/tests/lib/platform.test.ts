@@ -178,7 +178,7 @@ function createPortalClient(overrides: Tests_Lib_Platform_CreatePortalClient_Ove
       },
       success: true,
     }),
-    getOrbSecurityButtons: vi.fn().mockResolvedValue({ info: [], success: true }),
+    getArmActions: vi.fn().mockResolvedValue({ info: [], success: true }),
     getPanelInformation: vi.fn().mockResolvedValue({
       info: {
         manufacturer: 'Honeywell',
@@ -509,7 +509,7 @@ describe('ADTPulsePlatform', () => {
         },
         success: true,
       }),
-      getOrbSecurityButtons: vi.fn().mockResolvedValue({
+      getArmActions: vi.fn().mockResolvedValue({
         info: [],
         success: true,
       }),
@@ -607,7 +607,7 @@ describe('ADTPulsePlatform', () => {
     expect(portalClient.getPanelStatus).toHaveBeenCalledOnce();
     expect(portalClient.getSensorsInformation).toHaveBeenCalledOnce();
     expect(portalClient.getSensorsStatus).toHaveBeenCalledOnce();
-    expect(portalClient.getOrbSecurityButtons).toHaveBeenCalledOnce();
+    expect(portalClient.getArmActions).toHaveBeenCalledOnce();
     expect(loggerMock.methods.error.mock.calls).toEqual([]);
     expect(apiMock.methods.uuidGenerate).toHaveBeenCalledTimes(3);
     expect(accessoryMocks.updater).toHaveBeenCalledTimes(3);
@@ -1193,7 +1193,7 @@ describe('ADTPulsePlatform', () => {
       .mockRejectedValueOnce(new Error('gateway request exploded'));
     const portalClient = createPortalClient({
       getGatewayInformation: gateway,
-      getOrbSecurityButtons: vi.fn().mockResolvedValue(failedResponse),
+      getArmActions: vi.fn().mockResolvedValue(failedResponse),
       getPanelInformation: vi.fn().mockResolvedValue(failedResponse),
       getPanelStatus: vi.fn().mockResolvedValue(failedResponse),
       getSensorsInformation: vi.fn().mockResolvedValue(failedResponse),

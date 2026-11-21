@@ -34,7 +34,7 @@ env:
 jobs:
   build:
     runs-on: "ubuntu-24.04"
-    timeout-minutes: 15
+    timeout-minutes: 30
     permissions:
       contents: "read"
     steps:
@@ -52,12 +52,12 @@ jobs:
           package-manager-cache: false
 
       - name: "Install packages"
-        timeout-minutes: 15
+        timeout-minutes: 20
         run: "npm install"
         working-directory: "${{ env.ROOT_DIR }}"
 
       - name: "Check project"
-        timeout-minutes: 15
+        timeout-minutes: 30
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         run: |
@@ -65,13 +65,67 @@ jobs:
         working-directory: "${{ env.ROOT_DIR }}"
 
       - name: "Build project"
-        timeout-minutes: 15
+        timeout-minutes: 30
         run: |
           npm run build -- --workspace homebridge-adt-pulse-app-config-ui --workspace homebridge-adt-pulse --workspace homebridge-adt-pulse-docs --artifact homebridge-adt-pulse --artifact documentation
         working-directory: "${{ env.ROOT_DIR }}"
 
+      - name: "Write coverage badge"
+        timeout-minutes: 30
+        env:
+          BADGE_PATH: "build/documentation/badges/coverage.json"
+        run: |
+          node --input-type=module <<'NODE'
+          import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+          import { dirname, join } from 'node:path';
+
+          const summaryPaths = [];
+          const visit = (directory) => {
+            for (const entry of readdirSync(directory, { withFileTypes: true })) {
+              if (entry.name === 'node_modules' || entry.name === '.git') {
+                continue;
+              }
+
+              const entryPath = join(directory, entry.name);
+
+              if (entry.isDirectory() === true) {
+                visit(entryPath);
+              } else if (entry.name === 'coverage-summary.json' && directory.endsWith('coverage') === true) {
+                summaryPaths.push(entryPath);
+              }
+            }
+          };
+
+          visit('.');
+
+          let covered = 0;
+          let total = 0;
+
+          for (const summaryPath of summaryPaths) {
+            const lines = JSON.parse(readFileSync(summaryPath, 'utf-8'))['total']['lines'];
+
+            covered += lines['covered'];
+            total += lines['total'];
+          }
+
+          if (total === 0) {
+            console.log('No coverage summaries were found, so no coverage badge was written.');
+            process.exit(0);
+          }
+
+          const percent = Math.floor((covered / total) * 1000) / 10;
+          const colors = [[90, 'brightgreen'], [80, 'green'], [70, 'yellowgreen'], [60, 'yellow'], [50, 'orange']];
+          const match = colors.find((entry) => percent >= entry[0]);
+          const color = (match === undefined) ? 'red' : match[1];
+
+          mkdirSync(dirname(process.env.BADGE_PATH), { recursive: true });
+          writeFileSync(process.env.BADGE_PATH, JSON.stringify({ schemaVersion: 1, label: 'coverage', message: percent + '%', color }) + String.fromCharCode(10));
+          console.log('Wrote a ' + percent + '% coverage badge to ' + process.env.BADGE_PATH + '.');
+          NODE
+        working-directory: "${{ env.ROOT_DIR }}"
+
       - name: "Validate build artifacts"
-        timeout-minutes: 15
+        timeout-minutes: 30
         run: |
           set -euo pipefail
 
@@ -165,7 +219,7 @@ jobs:
 
       - name: "Upload assembled artifact (homebridge-adt-pulse)"
         uses: "actions/upload-artifact@v7"
-        timeout-minutes: 15
+        timeout-minutes: 30
         with:
           name: "artifact-homebridge-adt-pulse"
           retention-days: 1
@@ -176,7 +230,7 @@ jobs:
 
       - name: "Upload assembled artifact (documentation)"
         uses: "actions/upload-artifact@v7"
-        timeout-minutes: 15
+        timeout-minutes: 30
         with:
           name: "artifact-documentation"
           retention-days: 1
@@ -188,7 +242,7 @@ jobs:
   publish-npm-packages-homebridge-adt-pulse:
     needs: "build"
     runs-on: "ubuntu-24.04"
-    timeout-minutes: 15
+    timeout-minutes: 30
     permissions:
       contents: "read"
       id-token: "write"
@@ -216,7 +270,7 @@ jobs:
 
       - name: "Download build artifacts"
         uses: "actions/download-artifact@v8"
-        timeout-minutes: 15
+        timeout-minutes: 30
         with:
           name: "artifact-homebridge-adt-pulse"
           path: "build/homebridge-adt-pulse"
@@ -241,7 +295,7 @@ jobs:
           fi
 
       - name: "Publish package to npm"
-        timeout-minutes: 15
+        timeout-minutes: 30
         run: |
           if [ "${PUBLISH}" = "true" ]; then
             echo "[Publish] Production."
@@ -255,7 +309,7 @@ jobs:
   publish-github-packages-packages-homebridge-adt-pulse:
     needs: "build"
     runs-on: "ubuntu-24.04"
-    timeout-minutes: 15
+    timeout-minutes: 30
     permissions:
       contents: "read"
       packages: "write"
@@ -292,7 +346,7 @@ jobs:
 
       - name: "Download build artifacts"
         uses: "actions/download-artifact@v8"
-        timeout-minutes: 15
+        timeout-minutes: 30
         with:
           name: "artifact-homebridge-adt-pulse"
           path: "build/homebridge-adt-pulse"
@@ -328,7 +382,7 @@ jobs:
           echo "NODE_AUTH_TOKEN=${GITHUB_TOKEN}" >> "$GITHUB_ENV"
 
       - name: "Publish package to GitHub Packages"
-        timeout-minutes: 15
+        timeout-minutes: 30
         run: |
           if [ "${PUBLISH}" = "true" ]; then
             echo "[Publish] Production."
@@ -349,7 +403,7 @@ jobs:
   publish-github-pages-apps-docs:
     needs: "build"
     runs-on: "ubuntu-24.04"
-    timeout-minutes: 15
+    timeout-minutes: 30
     permissions:
       contents: "read"
       pages: "write"
@@ -361,13 +415,13 @@ jobs:
 
       - name: "Download build artifacts"
         uses: "actions/download-artifact@v8"
-        timeout-minutes: 15
+        timeout-minutes: 30
         with:
           name: "artifact-documentation"
           path: "build/documentation"
 
       - name: "Check GitHub Pages status"
-        timeout-minutes: 15
+        timeout-minutes: 30
         run: |
           if gh api "repos/${{ github.repository }}/pages" > /dev/null 2>&1; then
             echo "[Pages] GitHub Pages is enabled."
@@ -387,11 +441,11 @@ jobs:
       - name: "Upload artifact to GitHub Pages"
         if: "${{ env.PUBLISH == 'true' && env.PAGES_ENABLED == 'true' }}"
         uses: "actions/upload-pages-artifact@v5"
-        timeout-minutes: 15
+        timeout-minutes: 30
         with:
           path: "build/documentation"
 
       - name: "Deploy to GitHub Pages"
         if: "${{ env.PUBLISH == 'true' && env.PAGES_ENABLED == 'true' }}"
         uses: "actions/deploy-pages@v5"
-        timeout-minutes: 15
+        timeout-minutes: 30

@@ -11,7 +11,6 @@ import type { ErrorObject } from 'serialize-error';
 import type { z } from 'zod';
 
 import type { ADTPulseAccessory } from '../../lib/accessory.js';
-import type { ADTPulseAPI } from '../../lib/api.js';
 import type { platformConfig } from '../../lib/schema.js';
 import type {
   Constant_PluginDeviceId,
@@ -20,7 +19,9 @@ import type {
   Constant_PortalVersion,
 } from '../constant.d.ts';
 import type {
+  Shared_AlarmPanel,
   Shared_ApiResponse,
+  Shared_ArmActions,
   Shared_CachedState,
   Shared_Device,
   Shared_Device_OriginalName,
@@ -30,7 +31,6 @@ import type {
   Shared_GatewayInformation,
   Shared_GatewayInformation_Status,
   Shared_NetworkId,
-  Shared_OrbSecurityButtons,
   Shared_PanelInformation,
   Shared_PanelInformation_Status,
   Shared_PanelStatus,
@@ -205,7 +205,7 @@ export type Lib_Platform_ADTPulsePlatform_FetchUpdatedInformation_Requests = [
   Shared_ApiResponse<'GET_PANEL_STATUS', Shared_PanelStatus>,
   Shared_ApiResponse<'GET_SENSORS_INFORMATION', Lib_Platform_ADTPulsePlatform_FetchUpdatedInformation_RequestsSensorsInfo>,
   Shared_ApiResponse<'GET_SENSORS_STATUS', Lib_Platform_ADTPulsePlatform_FetchUpdatedInformation_RequestsSensorsStatus>,
-  Shared_ApiResponse<'GET_ORB_SECURITY_BUTTONS', Shared_OrbSecurityButtons>,
+  Shared_ApiResponse<'GET_ARM_ACTIONS', Shared_ArmActions>,
 ];
 
 export type Lib_Platform_ADTPulsePlatform_FetchUpdatedInformation_GatewayInfo = Shared_GatewayInformation;
@@ -218,7 +218,7 @@ export type Lib_Platform_ADTPulsePlatform_FetchUpdatedInformation_SensorsInfo = 
 
 export type Lib_Platform_ADTPulsePlatform_FetchUpdatedInformation_SensorsStatus = Shared_SensorStatus[];
 
-export type Lib_Platform_ADTPulsePlatform_FetchUpdatedInformation_OrbSecurityButtons = Shared_OrbSecurityButtons;
+export type Lib_Platform_ADTPulsePlatform_FetchUpdatedInformation_ArmActions = Shared_ArmActions;
 
 /**
  * Lib - Platform.
@@ -232,7 +232,7 @@ export type Lib_Platform_ADTPulsePlatform_Handlers = Record<string, ADTPulseAcce
  *
  * @since 1.0.0
  */
-export type Lib_Platform_ADTPulsePlatform_Instance = ADTPulseAPI | null;
+export type Lib_Platform_ADTPulsePlatform_Instance = Shared_AlarmPanel | null;
 
 /**
  * Lib - Platform.

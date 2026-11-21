@@ -12,10 +12,15 @@ const detectorMocks = vi.hoisted(() => ({
   stackTracer: vi.fn(),
 }));
 
+vi.mock('../../lib/report-sink.js', () => ({
+  detectReportSink: {
+    send: detectorMocks.sendDetectReport,
+  },
+}));
+
 vi.mock('../../lib/utility.js', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../lib/utility.js')>(),
   isPluginOutdated: detectorMocks.isPluginOutdated,
-  sendDetectReport: detectorMocks.sendDetectReport,
   stackTracer: detectorMocks.stackTracer,
 }));
 
@@ -70,7 +75,11 @@ const knownDetections = [
     method: 'getSensorsStatus',
     rawHtml: '<div id="orbSensorsList"></div>',
     response: [],
-  } as unknown as Parameters<typeof detectGlobalDebugParser>[0], null, false)],
+  } as unknown as Parameters<typeof detectGlobalDebugParser>[0], {
+    hasArmingForm: false,
+    hasSensorsList: true,
+    hasStatusUnavailable: false,
+  }, null, false)],
   ['portal version', () => detectGlobalPortalVersion({
     version: '30.0.0-61',
   }, null, false)],
@@ -119,7 +128,11 @@ const unknownDetections = [
     method: 'getSensorsInformation',
     rawHtml: '<html></html>',
     response: [],
-  } as unknown as Parameters<typeof detectGlobalDebugParser>[0], logger, debugMode)],
+  } as unknown as Parameters<typeof detectGlobalDebugParser>[0], {
+    hasArmingForm: false,
+    hasSensorsList: false,
+    hasStatusUnavailable: false,
+  }, logger, debugMode)],
   ['portal version', (logger: Logger | null = null, debugMode = false) => detectGlobalPortalVersion({
     version: '99.0.0-1',
   } as unknown as Parameters<typeof detectGlobalPortalVersion>[0], logger, debugMode)],
@@ -225,6 +238,59 @@ describe('detect', () => {
         message: 'registry unavailable',
       }),
     );
+  });
+
+  it('sends the raw parser data to the report sink unchanged', async () => {
+    const data = {
+      method: 'getSensorsStatus',
+      rawHtml: '<html><body>Fixture page</body></html>',
+      response: [],
+    } as unknown as Parameters<typeof detectGlobalDebugParser>[0];
+
+    await expect(detectGlobalDebugParser(data, {
+      hasArmingForm: false,
+      hasSensorsList: false,
+      hasStatusUnavailable: false,
+    }, null, false)).resolves.toBe(true);
+
+    expect(detectorMocks.sendDetectReport).toHaveBeenCalledWith(
+      expect.stringContaining('Detected a parser anomaly for "getSensorsStatus"'),
+      expect.stringContaining('<html><body>Fixture page</body></html>'),
+    );
+  });
+
+  it('uses the page markers from the adapter to skip explained empty results', async () => {
+    await expect(detectGlobalDebugParser({
+      method: 'getOrbSecurityButtons',
+      rawHtml: '<html></html>',
+      response: [{
+        buttonDisabled: true,
+        buttonText: 'Unexpected Button',
+      }],
+    } as unknown as Parameters<typeof detectGlobalDebugParser>[0], {
+      hasArmingForm: false,
+      hasSensorsList: false,
+      hasStatusUnavailable: true,
+    }, null, false)).resolves.toBe(false);
+    await expect(detectGlobalDebugParser({
+      method: 'forceArmHandler',
+      rawHtml: '<html></html>',
+      response: [{
+        relativeUrl: 'fixture/unknown.jsp',
+        urlParams: {
+          arm: null,
+          armState: null,
+          href: 'fixture/unknown',
+          sat: 'fixture-sat',
+        },
+      }],
+    } as unknown as Parameters<typeof detectGlobalDebugParser>[0], {
+      hasArmingForm: true,
+      hasSensorsList: false,
+      hasStatusUnavailable: false,
+    }, null, false)).resolves.toBe(false);
+
+    expect(detectorMocks.sendDetectReport).not.toHaveBeenCalled();
   });
 
   it('retries later when report delivery fails', async () => {

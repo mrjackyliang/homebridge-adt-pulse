@@ -14,21 +14,21 @@ body:
       value: "Thank you for contributing to the improvement of this project by submitting a feature request!"
   - type: "markdown"
     attributes:
-      value: "Please __fill out the form with as much detail as possible__ to help me understand your feature request better. Your input is valuable in shaping the future of this project."
+      value: "Please __fill out the form with as much detail as possible__ to help me understand your feature request better."
   - type: "markdown"
     attributes:
       value: "---"
   - type: "checkboxes"
     id: "pre-check"
     attributes:
-      label: "Pre-check confirmation"
-      description: "Before proceeding further, please confirm the following by checking each box. This confirmation is crucial for the consideration of your request. __All boxes MUST be checked; failure to comply will result in your request being closed.__"
+      label: "Feature Request Confirmation"
+      description: "Confirm that this submission belongs in the feature request form."
       options:
-        - label: "I have provided a descriptive title for my feature request"
+        - label: "I have provided a descriptive title and kept the original title prefix, __\"[Feature]: \"__"
           required: true
-        - label: "I have kept the original title prefix, __\"[Feature]: \"__"
+        - label: "I searched open and closed issues and did not find the same request"
           required: true
-        - label: "I have confirmed that this feature is __NOT__ already available or planned"
+        - label: "The requested behavior is not already available"
           required: true
   - type: "input"
     id: "email"
@@ -39,18 +39,72 @@ body:
     validations:
       required: true
   - type: "textarea"
-    id: "feature-description"
+    id: "problem"
     attributes:
-      label: "Describe the new feature requested"
-      description: "Provide a detailed description of the feature you would like to see implemented. Include any relevant information or use cases that might help me understand the need for this feature."
-      placeholder: "e.g. I would like a new feature that allows..."
+      label: "Problem or Use Case"
+      description: "Describe the problem or workflow that the requested change should address."
     validations:
       required: true
-  - type: "checkboxes"
-    id: "post-check"
+  - type: "textarea"
+    id: "requested-outcome"
     attributes:
-      label: "Post-check confirmation"
-      description: "Before proceeding further, please confirm the following by checking each box. This confirmation is crucial for the consideration of your request. __All boxes MUST be checked; failure to comply will result in your request being closed.__"
+      label: "Requested Outcome"
+      description: "Describe the behavior you want and what a successful result would look like."
+    validations:
+      required: true
+  - type: "textarea"
+    id: "alternatives"
+    attributes:
+      label: "Alternatives Considered"
+      description: "Describe any current workaround or alternative approach you considered."
+    validations:
+      required: false
+  - type: "dropdown"
+    id: "affected-area"
+    attributes:
+      label: "Affected Area"
+      description: "Select the plugin area involved."
       options:
-        - label: "I have filled in the form __exactly as requested__ and did not attempt to circumvent form validation"
+        - "Security Panel"
+        - "Gateway"
+        - "Alarm Ringing Switch"
+        - "Sensor"
+        - "Setup Wizard"
+        - "Portal Login or MFA"
+        - "Synchronization"
+        - "Other"
+    validations:
+      required: true
+  - type: "dropdown"
+    id: "sensor-type"
+    attributes:
+      label: "Sensor Type"
+      description: "Select the affected sensor type."
+      options:
+        - "Carbon Monoxide"
+        - "Door or Window"
+        - "Fire"
+        - "Flood"
+        - "Glass Break"
+        - "Heat"
+        - "Motion"
+        - "Shock"
+        - "Temperature"
+        - "Not Applicable"
+    validations:
+      required: false
+  - type: "textarea"
+    id: "additional-context"
+    attributes:
+      label: "Additional Context"
+      description: "Add any other information that could help explain the submission."
+    validations:
+      required: false
+  - type: "checkboxes"
+    id: "legal"
+    attributes:
+      label: "Legal Agreements"
+      description: "By submitting a new feature request, you confirm that you have read, understood, and agree to the [Terms of Use](https://github.com/mrjackyliang/mrjackyliang/blob/HEAD/TERMS.md) and [Privacy Policy](https://github.com/mrjackyliang/mrjackyliang/blob/HEAD/PRIVACY.md). If you have questions, please contact my team."
+      options:
+        - label: "I agree to the Terms of Use and Privacy Policy"
           required: true

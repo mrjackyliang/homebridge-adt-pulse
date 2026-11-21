@@ -34,6 +34,7 @@ import {
   fetchErrorMessage,
   findNullKeys,
   generateHash,
+  parseDebugParserMarkup,
   parseMultiFactorMethods,
   parseMultiFactorTrustedDevices,
   parseSensorsTable,
@@ -109,6 +110,7 @@ import type {
   Lib_Auth_ADTPulseAuth_NewInformationDispatcher_DataHash,
   Lib_Auth_ADTPulseAuth_NewInformationDispatcher_DataPortalVersion,
   Lib_Auth_ADTPulseAuth_NewInformationDispatcher_DetectedNew,
+  Lib_Auth_ADTPulseAuth_NewInformationDispatcher_Markup,
   Lib_Auth_ADTPulseAuth_NewInformationDispatcher_Returns,
   Lib_Auth_ADTPulseAuth_NewInformationDispatcher_Type,
   Lib_Auth_ADTPulseAuth_RequestCode_AxiosRequestCodeRequestPath,
@@ -1867,7 +1869,10 @@ export class ADTPulseAuth {
       // Determine what information needs to be checked.
       switch (type) {
         case 'debug-parser': {
-          detectedNew = await detectGlobalDebugParser(data as Lib_Auth_ADTPulseAuth_NewInformationDispatcher_DataDebugParser, null, this.#internal['debug']);
+          // Portal page markers are read here, so the detector only receives neutral flags.
+          const markup: Lib_Auth_ADTPulseAuth_NewInformationDispatcher_Markup = parseDebugParserMarkup((data as Lib_Auth_ADTPulseAuth_NewInformationDispatcher_DataDebugParser)['rawHtml']);
+
+          detectedNew = await detectGlobalDebugParser(data as Lib_Auth_ADTPulseAuth_NewInformationDispatcher_DataDebugParser, markup, null, this.#internal['debug']);
 
           break;
         }

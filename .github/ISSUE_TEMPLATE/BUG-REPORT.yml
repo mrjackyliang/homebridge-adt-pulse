@@ -14,25 +14,23 @@ body:
       value: "I truly appreciate you taking the time to share this bug report with me."
   - type: "markdown"
     attributes:
-      value: "Please __fill out the form with as much detail as possible__ so I can easily recreate the bug and work swiftly to assist you in resolving it. Thank you for your cooperation!"
+      value: "Please __fill out the form with as much detail as possible__ so I can recreate the problem."
   - type: "markdown"
     attributes:
       value: "---"
   - type: "checkboxes"
     id: "pre-check"
     attributes:
-      label: "Pre-check confirmation"
-      description: "Before proceeding further, please confirm the following by checking each box. This confirmation is crucial for me to effectively identify and address the bug. __All boxes MUST be checked; failure to comply will result in the immediate closure of this bug report.__"
+      label: "Bug Report Confirmation"
+      description: "Confirm that this submission belongs in the bug report form."
       options:
-        - label: "I have provided a descriptive title for the bug I am currently having"
+        - label: "I have provided a descriptive title and kept the original title prefix, __\"[Bug]: \"__"
           required: true
-        - label: "I have kept the original title prefix, __\"[Bug]: \"__"
+        - label: "I searched open and closed issues and did not find the same problem"
           required: true
-        - label: "I have read the `README.md` file, and this is __NOT__ a duplicate bug report"
+        - label: "I have read the [documentation](https://mrjackyliang.github.io/homebridge-adt-pulse/), and this is __NOT__ a duplicate bug report"
           required: true
-        - label: "I am __NOT__ requesting a new feature"
-          required: true
-        - label: "I am __NOT__ requesting help related to a support request"
+        - label: "I am reporting behavior that is not working as documented or intended"
           required: true
   - type: "input"
     id: "email"
@@ -43,59 +41,219 @@ body:
     validations:
       required: true
   - type: "textarea"
-    id: "what-happened"
+    id: "steps-to-reproduce"
     attributes:
-      label: "Tell me exactly what happened"
-      description: "Provide a comprehensive description of __the steps or circumstances__ that led to the occurrence of this bug."
-      placeholder: "e.g. When I was doing ..., I expected ... to happen, but I got ... instead."
+      label: "Steps to Reproduce"
+      description: "List the shortest sequence that shows the problem. Include setup details that affect the result."
+      placeholder: "1. ...\n2. ...\n3. ..."
+    validations:
+      required: true
+  - type: "textarea"
+    id: "expected-behavior"
+    attributes:
+      label: "Expected Behavior"
+      description: "Describe the result you expected after following those steps."
+    validations:
+      required: true
+  - type: "textarea"
+    id: "actual-behavior"
+    attributes:
+      label: "Actual Behavior"
+      description: "Describe what happened instead. Include the exact error text when available."
     validations:
       required: true
   - type: "input"
-    id: "program-version"
+    id: "affected-version"
     attributes:
-      label: "Program version"
-      description: "What version of the program are you using?"
+      label: "Affected Version or Date"
+      description: "Enter the affected version. If no version is visible, enter the date the problem was observed."
       placeholder: "e.g. 1.0.0"
+    validations:
+      required: true
+  - type: "dropdown"
+    id: "frequency"
+    attributes:
+      label: "Frequency"
+      description: "Select how consistently the problem occurs."
+      options:
+        - "Every Time"
+        - "Often"
+        - "Sometimes"
+        - "Once"
+        - "Not Sure"
     validations:
       required: true
   - type: "input"
     id: "node-version"
     attributes:
-      label: "Node.js\xAE version"
-      description: "What version of Node.js\xAE are you using? It is recommended that you use versions under \"Long Term Support (LTS)\" as listed on the [Node.js\xAE](https://nodejs.org) homepage."
+      label: "Node.js® Version"
+      description: "Enter the complete Node.js® version shown by `node --version`."
       placeholder: "e.g. 24.13.1"
     validations:
       required: true
   - type: "input"
-    id: "plugin-version"
+    id: "command"
     attributes:
-      label: "Plugin version"
-      description: "What version of the plugin are you using? If you are using the Homebridge Config UI, you may find this information in the \"Plugins\" tab."
-      placeholder: "e.g. 3.0.0"
+      label: "Installation or Invocation Command"
+      description: "Enter the exact command that installs or invokes the affected package. __Remove all secrets before submitting.__"
     validations:
-      required: true
+      required: false
+  - type: "textarea"
+    id: "minimal-reproduction"
+    attributes:
+      label: "Minimal Reproduction"
+      description: "Provide the smallest code or command sequence that reproduces the problem. __Remove all secrets and private data before submitting.__"
+      render: "Shell"
+    validations:
+      required: false
   - type: "input"
     id: "homebridge-version"
     attributes:
-      label: "Homebridge version"
-      description: "What version of Homebridge are you using? You may find this information in the \"System Information\" widget when using the Homebridge Config UI or by running the `homebridge -V` command."
+      label: "Homebridge Version"
+      description: "Enter the complete Homebridge version. The Homebridge UI shows it in the \"System Information\" widget, and `homebridge -V` prints it."
       placeholder: "e.g. 1.11.2"
     validations:
       required: true
+  - type: "dropdown"
+    id: "configuration-method"
+    attributes:
+      label: "Configuration Method"
+      description: "Select how the plugin was configured."
+      options:
+        - "Homebridge UI"
+        - "`config.json`"
+        - "HOOBS"
+        - "Other"
+    validations:
+      required: false
+  - type: "textarea"
+    id: "plugin-configuration"
+    attributes:
+      label: "Plugin Configuration"
+      description: "Paste only the affected plugin settings. __Replace all account details and secrets before submitting.__"
+      render: "JSON"
+    validations:
+      required: false
+  - type: "input"
+    id: "affected-url"
+    attributes:
+      label: "Affected URL or Route"
+      description: "Enter the affected public URL or route. Use only the route when the hostname is private."
+      placeholder: "e.g. /settings"
+    validations:
+      required: false
+  - type: "dropdown"
+    id: "browser"
+    attributes:
+      label: "Browser"
+      description: "Select the affected browser."
+      options:
+        - "Google Chrome"
+        - "Mozilla Firefox"
+        - "Apple Safari"
+        - "Microsoft Edge"
+        - "Other"
+    validations:
+      required: false
+  - type: "input"
+    id: "browser-version"
+    attributes:
+      label: "Browser Version"
+      description: "Enter the complete browser version."
+      placeholder: "e.g. 145.0.7632.75"
+    validations:
+      required: false
+  - type: "input"
+    id: "viewport-size"
+    attributes:
+      label: "Viewport Size"
+      description: "Enter the viewport width and height when layout affects the problem."
+      placeholder: "e.g. 390 x 844"
+    validations:
+      required: false
+  - type: "textarea"
+    id: "screenshots"
+    attributes:
+      label: "Screenshot"
+      description: "Attach a screenshot when it helps show the problem. __Remove personal and confidential information first.__"
+    validations:
+      required: false
+  - type: "dropdown"
+    id: "portal-region"
+    attributes:
+      label: "Portal Region"
+      description: "Select the ADT Pulse portal region."
+      options:
+        - "United States"
+        - "Canada"
+    validations:
+      required: true
+  - type: "dropdown"
+    id: "affected-area"
+    attributes:
+      label: "Affected Area"
+      description: "Select the plugin area involved."
+      options:
+        - "Security Panel"
+        - "Gateway"
+        - "Alarm Ringing Switch"
+        - "Sensor"
+        - "Setup Wizard"
+        - "Portal Login or MFA"
+        - "Synchronization"
+        - "Other"
+    validations:
+      required: true
+  - type: "dropdown"
+    id: "sensor-type"
+    attributes:
+      label: "Sensor Type"
+      description: "Select the affected sensor type."
+      options:
+        - "Carbon Monoxide"
+        - "Door or Window"
+        - "Fire"
+        - "Flood"
+        - "Glass Break"
+        - "Heat"
+        - "Motion"
+        - "Shock"
+        - "Temperature"
+        - "Not Applicable"
+    validations:
+      required: false
+  - type: "dropdown"
+    id: "operational-mode"
+    attributes:
+      label: "Operational Mode"
+      description: "Select the plugin mode when the problem occurred."
+      options:
+        - "Normal"
+        - "Paused"
+        - "Reset"
+        - "Not Sure"
+    validations:
+      required: false
   - type: "textarea"
     id: "logs"
     attributes:
-      label: "Captured logs relevant to this report"
-      description: "Copy and paste all logs related to this bug. __Do not include logs unrelated to this project.__ This block will be automatically formatted into code, so __there is no need for backticks__ or special markup."
-      placeholder: "Please include logs relevant to this bug report. If this field is filled with irrelevant content (e.g., \"no logs\" or \"cannot find logs\"), this bug report will be closed immediately."
+      label: "Relevant Logs"
+      description: "Paste the relevant failure output when available. __Remove all secrets and personal data before submitting.__ This block is formatted as code, so there is no need for backticks."
       render: "Shell"
     validations:
-      required: true
-  - type: "checkboxes"
-    id: "post-check"
+      required: false
+  - type: "textarea"
+    id: "additional-context"
     attributes:
-      label: "Post-check confirmation"
-      description: "Before proceeding further, please confirm the following by checking each box. This confirmation is crucial for the consideration of this bug report. __All boxes MUST be checked; failure to comply will result in this bug report being closed.__"
+      label: "Additional Context"
+      description: "Add any other information that could help explain the submission."
+    validations:
+      required: false
+  - type: "checkboxes"
+    id: "legal"
+    attributes:
+      label: "Legal Agreements"
+      description: "By submitting a new bug report, you confirm that you have read, understood, and agree to the [Terms of Use](https://github.com/mrjackyliang/mrjackyliang/blob/HEAD/TERMS.md) and [Privacy Policy](https://github.com/mrjackyliang/mrjackyliang/blob/HEAD/PRIVACY.md). If you have questions, please contact my team."
       options:
-        - label: "I have filled in the form __exactly as requested__ and did not attempt to circumvent form validation"
+        - label: "I agree to the Terms of Use and Privacy Policy"
           required: true

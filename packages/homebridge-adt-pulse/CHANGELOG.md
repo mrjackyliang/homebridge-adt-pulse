@@ -1,5 +1,17 @@
 # homebridge-adt-pulse
 
+## 3.5.11 - 2026-11-21
+
+### UPDATED
+- Tests now report coverage through a `check:coverage` script, which fails when line, function, branch or statement coverage drops below the project minimum, and the README badges now include that coverage.
+- @NorthernMan54 is now credited as a contributor in the package metadata, README, and documentation credits for recommending the faster status polling API.
+- Nova 0.49.0, which brings fuller bug report, feature request and support request forms with built-in questions, longer publish workflow time limits, and a coverage badge that the publish workflow now writes into the documentation site.
+- README introduction, which now uses the project's new long description.
+- The ADT Pulse portal, detection report delivery, and release version lookups each sit behind one adapter, so a change to any of those services only touches that adapter. Project checks test the detection report endpoint request against a stand-in instead of the live service.
+
+### FIXED
+- The local Homebridge run script now works on Windows, because it points Homebridge at the plugin folder without the `$(pwd)` shell syntax that only macOS and Linux understand.
+
 ## 3.5.10 - 2026-11-17
 
 ### UPDATED

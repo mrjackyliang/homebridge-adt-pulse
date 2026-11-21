@@ -63,14 +63,18 @@ packages/homebridge-adt-pulse/
 │   ├── lib/
 │   │   ├── accessory.ts         — Bridges one ADT Pulse device into HomeKit services and
 │   │   │                           characteristics, keeps values in sync with portal state
-│   │   ├── api.ts               — Portal driver (ADTPulseAPI): browser-emulated session,
-│   │   │                           login/logout, gateway/panel/sensor reads, arm/disarm
+│   │   ├── alarm-panel.ts       — createAlarmPanel factory; the one place the portal driver
+│   │   │                           is constructed for the platform
+│   │   ├── api.ts               — Portal driver (ADTPulseAPI, implements the AlarmPanel
+│   │   │                           contract): browser-emulated session, login/logout,
+│   │   │                           gateway/panel/sensor reads, arm actions, arm/disarm
 │   │   ├── auth.ts              — MFA workflow (ADTPulseAuth): validate credentials, register
 │   │   │                           trusted devices, fetch the sensor list
-│   │   ├── browser-releases.ts  — Fetches Stable browser versions and resolves cached or
-│   │   │                           packaged fallbacks for new fingerprints
+│   │   ├── browser-releases.ts  — Parses Stable browser versions from the release source and
+│   │   │                           resolves cached or packaged fallbacks for new fingerprints
 │   │   ├── detect.ts            — Compares parsed portal data against documented baselines and
-│   │   │                           reports undocumented shapes to the plugin author
+│   │   │                           reports undocumented shapes to the plugin author through
+│   │   │                           the report sink
 │   │   ├── fake.ts              — Fabricates browser fingerprint components (fonts, plugins,
 │   │   │                           screen, timezone, user agent, Dynatrace header)
 │   │   ├── items.ts             — Catalogs of known portal shapes (do submit handlers, orb
@@ -78,11 +82,15 @@ packages/homebridge-adt-pulse/
 │   │   ├── platform.ts          — Homebridge platform (ADTPulsePlatform): lifecycle, accessory
 │   │   │                           cache, polling timers, session keep-alive
 │   │   ├── regex.ts             — Central registry of every regex pattern in the plugin
+│   │   ├── release-source.ts    — ReleaseSource adapter (HttpReleaseSource): npm registry
+│   │   │                           latest version and browser vendor release feeds
+│   │   ├── report-sink.ts       — ReportSink adapter (NtfyReportSink): detect report endpoint,
+│   │   │                           session token request, and report post
 │   │   ├── schema.ts            — Zod schemas (platform config, config UI forms and server
 │   │   │                           bodies, portal MFA/OTP responses); imported directly by
 │   │   │                           apps/config-ui across the workspace boundary
-│   │   └── utility.ts           — Shared helpers (parsing, logging, PII redaction, detect
-│   │                               report URL, package version)
+│   │   └── utility.ts           — Shared helpers (parsing, logging, PII redaction, plugin
+│   │                               outdated check, package version)
 │   ├── cli/
 │   │   ├── generate-browser-snapshot.ts — Writes the build's browser-version fallback
 │   │   ├── generate-identity-snapshot.ts — Writes the build's Nova identity fallback
@@ -101,7 +109,8 @@ packages/homebridge-adt-pulse/
 │   │   ├── cli/*.d.ts           — One per src/cli module
 │   │   ├── constant.d.ts        — Constant union types (device categories, statuses, types)
 │   │   ├── index.d.ts           — Types for src/index.ts
-│   │   └── shared.d.ts          — Shared type aliases used across domains
+│   │   └── shared.d.ts          — Shared type aliases used across domains, including the
+│   │                               AlarmPanel, ReportSink, and ReleaseSource contracts
 │   └── index.ts                 — Entry point; registers ADTPulsePlatform under "ADTPulse"
 ├── config.schema.json           — Homebridge plugin schema + custom UI registration
 ├── eslint.config.mts            — ESLint flat config (Nova presets + per-file overrides)
@@ -258,6 +267,7 @@ JSDoc is mandatory in every workspace: every documentable block carries `@since`
 - Keep `config.schema.json` and the `platformConfig` Zod schema in sync whenever the config shape changes; both describe the same platform block.
 - Route new portal shapes through the catalogs in `src/lib/items.ts` and the baselines in `src/lib/detect.ts` so undocumented shapes keep triggering detect reports.
 - Redact personally identifiable information with `removePersonalIdentifiableInformation` before any detect report leaves the user's machine.
+- Keep third-party API and SDK code behind project-owned adapters so an upstream change touches one place. The ADT Pulse portal stays behind `ADTPulseAPI` / `ADTPulseAuth`, which the platform and accessories reach only through the `AlarmPanel` contract (`Shared_AlarmPanel`, built by `createAlarmPanel`); the detect report service stays behind `ReportSink` (`src/lib/report-sink.ts`); the npm registry and browser vendor feeds stay behind `ReleaseSource` (`src/lib/release-source.ts`). Portal HTML, element ids, and button labels stay in the portal adapter, which hands the rest of the plugin project-owned shapes such as arm actions. Homebridge and HAP are the plugin host contract and are used directly.
 - Run `npm run build` in `packages/homebridge-adt-pulse` before `npm run repl` or `npm run test-api`; both execute compiled files from `build/`.
 - Run `npm run check` from the root before committing; it lints, type-checks, and tests every workspace through Nova.
 
@@ -288,13 +298,20 @@ packages/homebridge-adt-pulse/src/index.ts (registers the "ADTPulse" platform)
 ADTPulsePlatform (src/lib/platform.ts)
   lifecycle, accessory cache, state, polling timers
   |
-  |--> ADTPulseAPI (src/lib/api.ts)
-  |      browser-emulated portal session (axios + cookie jar + jsdom)
-  |      helpers: fake.ts (fingerprints), regex.ts (patterns),
-  |               items.ts (known shapes), detect.ts (anomaly checks)
+  |--> AlarmPanel contract (Shared_AlarmPanel, built by src/lib/alarm-panel.ts)
+  |      `--> ADTPulseAPI (src/lib/api.ts)
+  |             browser-emulated portal session (axios + cookie jar + jsdom)
+  |             helpers: fake.ts (fingerprints), regex.ts (patterns),
+  |                      items.ts (known shapes), detect.ts (anomaly checks)
   |
   `--> ADTPulseAccessory (src/lib/accessory.ts)
-         one per device; maps portal state onto HAP services
+         one per device; maps panel state onto HAP services through the
+         AlarmPanel contract
+
+Adapters for other third-party services:
+  detect.ts --> ReportSink (src/lib/report-sink.ts, ntfy)
+  utility.ts / browser-releases.ts --> ReleaseSource (src/lib/release-source.ts,
+                                       npm registry + browser vendor feeds)
 
 Homebridge UI (custom config UI, customUiPath: ./build/config-ui)
   |
@@ -321,8 +338,8 @@ apps/docs (Docusaurus; independent workspace)
 2. **Config validation** - The platform block from Homebridge's `config.json` is validated with the `platformConfig` Zod schema so misconfigured credentials, modes, or sensors fail fast. Module: `src/lib/schema.ts` (consumed by `src/lib/platform.ts`, and imported directly by `apps/config-ui` for the frontend form).
 3. **Login** - `ADTPulseAPI` performs a browser-emulated portal login using axios with a cookie jar and fabricated fingerprint components. Modules: `src/lib/api.ts`, `src/lib/fake.ts`.
 4. **Polling** - A synchronize interval (scaled by the `speed` setting) dispatches sync checks and keep-alives, then fetches gateway, panel, and sensor information when the portal reports changes. Module: `src/lib/platform.ts`.
-5. **Parsing and detection** - Portal responses are parsed with jsdom and the shared regex patterns; parsed shapes are compared against the known catalogs, and unknown shapes are dispatched as redacted detect reports. Modules: `src/lib/api.ts`, `src/lib/regex.ts`, `src/lib/items.ts`, `src/lib/detect.ts`, `src/lib/utility.ts`.
-6. **HomeKit updates** - The platform unifies portal devices with the accessory cache (`unifyDevices`, `pollAccessories`), and each `ADTPulseAccessory` maps device state onto services and characteristics. Arm/disarm requests flow back through `ADTPulseAPI.setPanelStatus`, force-arming open sensors when needed. Modules: `src/lib/platform.ts`, `src/lib/accessory.ts`, `src/lib/api.ts`.
+5. **Parsing and detection** - Portal responses are parsed with jsdom and the shared regex patterns; parsed shapes are compared against the known catalogs, and unknown shapes are dispatched as redacted detect reports through the `ReportSink` adapter. Modules: `src/lib/api.ts`, `src/lib/regex.ts`, `src/lib/items.ts`, `src/lib/detect.ts`, `src/lib/utility.ts`, `src/lib/report-sink.ts`.
+6. **HomeKit updates** - The platform unifies portal devices with the accessory cache (`unifyDevices`, `pollAccessories`), and each `ADTPulseAccessory` maps device state and the panel's arm actions onto services and characteristics. Arm/disarm requests flow back through the `AlarmPanel` contract's `setPanelStatus` (implemented by `ADTPulseAPI`), force-arming open sensors when needed. Modules: `src/lib/platform.ts`, `src/lib/accessory.ts`, `src/lib/api.ts`.
 7. **First-time setup (config UI)** - The `apps/config-ui` frontend builds independently and Nova assembles it into the final plugin artifact's `build/config-ui/public`. It walks `/initialize` -> `/get-methods` -> `/request-code` -> `/validate` -> `/generate-config`, calling into `packages/homebridge-adt-pulse/src/config-ui/server.ts`, which uses `ADTPulseAuth` to complete MFA and produce a config with the device fingerprint. Modules: `apps/config-ui/src/router.tsx`, `packages/homebridge-adt-pulse/src/config-ui/server.ts`, `src/lib/auth.ts`.
 
 ### Error Strategy

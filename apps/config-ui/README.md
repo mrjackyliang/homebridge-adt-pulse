@@ -34,6 +34,9 @@
   <a href="https://github.com/mrjackyliang/homebridge-adt-pulse/blob/HEAD/LICENSE">
     <img alt="GitHub License" src="https://img.shields.io/github/license/mrjackyliang/homebridge-adt-pulse?style=for-the-badge&logo=googledocs&logoColor=%23ffffff&color=%2348a56a">
   </a>
+  <a href="https://github.com/mrjackyliang/homebridge-adt-pulse/actions">
+    <img alt="Test Coverage" src="https://img.shields.io/endpoint?url=https%3A%2F%2Fmrjackyliang.github.io%2Fhomebridge-adt-pulse%2Fbadges%2Fcoverage.json&style=for-the-badge&logo=vitest&logoColor=%23ffffff">
+  </a>
   <a href="https://github.com/sponsors/mrjackyliang">
     <img alt="Become a GitHub Sponsor" src="https://img.shields.io/badge/github-sponsor-gray?style=for-the-badge&logo=githubsponsors&logoColor=%23ffffff&color=%23eaaf41">
   </a>
@@ -46,7 +49,7 @@
 <!-- nova-region: introduction -->
 ## Introduction
 
-ADT Pulse for Homebridge is a Homebridge platform plugin that connects an ADT Pulse security system to Apple HomeKit. It exposes the security panel and its sensors as HomeKit accessories, so the system can be armed or disarmed and sensor status monitored from the Home app.
+Arm, disarm, and watch your ADT Pulse system from HomeKit, with the panel and nine kinds of sensors showing up as native accessories. Arm Night, an Alarm Ringing switch, and a guided setup wizard come included.
 <!-- nova-region-end: introduction -->
 
 <!-- nova-region: documentation -->
@@ -68,6 +71,7 @@ A special thanks to my contributors and supporters:
 - [@Danimal4326](https://github.com/Danimal4326)
 - [@hapinstance](https://github.com/hapinstance)
 - [@kevinmhickey](https://github.com/kevinmhickey)
+- [@NorthernMan54](https://github.com/NorthernMan54)
 - [@rlippmann](https://github.com/rlippmann)
 - [@sapireli](https://github.com/sapireli)
 - [@thcooley](https://github.com/thcooley)

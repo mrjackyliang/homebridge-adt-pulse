@@ -3,7 +3,6 @@ import { createRequire } from 'node:module';
 import os from 'node:os';
 import util from 'node:util';
 
-import axios from 'axios';
 import chalk from 'chalk';
 import { Categories } from 'homebridge';
 import { JSDOM } from 'jsdom';
@@ -33,6 +32,7 @@ import {
   textOrbTextSummarySections,
   textSyncCode,
 } from './regex.js';
+import { defaultReleaseSource } from './release-source.js';
 
 import type {
   Lib_Utility_ClearHtmlLineBreak_Data,
@@ -105,7 +105,6 @@ import type {
   Lib_Utility_GenerateHash_StaticData,
   Lib_Utility_GetAccessoryCategory_DeviceCategory,
   Lib_Utility_GetAccessoryCategory_Returns,
-  Lib_Utility_GetDetectReportUrl_Returns,
   Lib_Utility_GetPackageVersion_PackageJson,
   Lib_Utility_GetPackageVersion_Require,
   Lib_Utility_GetPackageVersion_Returns,
@@ -122,16 +121,13 @@ import type {
   Lib_Utility_IsMaintenancePeriod_Now,
   Lib_Utility_IsMaintenancePeriod_Returns,
   Lib_Utility_IsMaintenancePeriod_StartTime,
+  Lib_Utility_IsPanelAlarmActive_ArmActions,
   Lib_Utility_IsPanelAlarmActive_HasDisarmedTroubleButtons,
   Lib_Utility_IsPanelAlarmActive_IgnoreSensorProblem,
-  Lib_Utility_IsPanelAlarmActive_OrbSecurityButtonButtonText,
-  Lib_Utility_IsPanelAlarmActive_OrbSecurityButtons,
   Lib_Utility_IsPanelAlarmActive_PanelStatuses,
   Lib_Utility_IsPanelAlarmActive_Returns,
   Lib_Utility_IsPluginOutdated_CurrentVersion,
   Lib_Utility_IsPluginOutdated_FetchedVersion,
-  Lib_Utility_IsPluginOutdated_Response,
-  Lib_Utility_IsPluginOutdated_ResponseData,
   Lib_Utility_IsPluginOutdated_Returns,
   Lib_Utility_IsPortalSyncCode_SyncCode,
   Lib_Utility_IsPortalSyncCode_TypeGuard,
@@ -152,6 +148,8 @@ import type {
   Lib_Utility_IsUnknownPanelDevice_Returns,
   Lib_Utility_ParseArmDisarmMessage_Element,
   Lib_Utility_ParseArmDisarmMessage_Returns,
+  Lib_Utility_ParseDebugParserMarkup_RawHtml,
+  Lib_Utility_ParseDebugParserMarkup_Returns,
   Lib_Utility_ParseDoSubmitHandlers_Elements,
   Lib_Utility_ParseDoSubmitHandlers_Handlers,
   Lib_Utility_ParseDoSubmitHandlers_OnClick,
@@ -250,12 +248,6 @@ import type {
   Lib_Utility_RemovePersonalIdentifiableInformation_ReplaceValue_Returns,
   Lib_Utility_RemovePersonalIdentifiableInformation_ReplaceValue_Value,
   Lib_Utility_RemovePersonalIdentifiableInformation_Returns,
-  Lib_Utility_SendDetectReport_Body,
-  Lib_Utility_SendDetectReport_Returns,
-  Lib_Utility_SendDetectReport_SessionData,
-  Lib_Utility_SendDetectReport_SessionResponse,
-  Lib_Utility_SendDetectReport_Title,
-  Lib_Utility_SendDetectReport_Token,
   Lib_Utility_Sleep_Milliseconds,
   Lib_Utility_Sleep_Returns,
   Lib_Utility_StackTracer_Error,
@@ -958,20 +950,6 @@ export function getAccessoryCategory(deviceCategory: Lib_Utility_GetAccessoryCat
 }
 
 /**
- * Lib - Utility - Get Detect Report URL.
- *
- * Provides the endpoint where detection reports for unknown devices and
- * statuses are sent so the plugin author can add support for them.
- *
- * @returns {Lib_Utility_GetDetectReportUrl_Returns}
- *
- * @since 1.0.0
- */
-export function getDetectReportUrl(): Lib_Utility_GetDetectReportUrl_Returns {
-  return 'https://mhQKf8mFu6LJQtYwRDAc.ntfy.liang.nyc';
-}
-
-/**
  * Lib - Utility - Get Package Version.
  *
  * Reads the version straight from package.json so version checks always
@@ -1100,23 +1078,19 @@ export function isMaintenancePeriod(): Lib_Utility_IsMaintenancePeriod_Returns {
  * panel statuses, optionally treating sensor problems as active alarms.
  *
  * @param {Lib_Utility_IsPanelAlarmActive_PanelStatuses}       panelStatuses       - Panel statuses.
- * @param {Lib_Utility_IsPanelAlarmActive_OrbSecurityButtons}  orbSecurityButtons  - Orb security buttons.
+ * @param {Lib_Utility_IsPanelAlarmActive_ArmActions}          armActions          - Arm actions.
  * @param {Lib_Utility_IsPanelAlarmActive_IgnoreSensorProblem} ignoreSensorProblem - Ignore sensor problem.
  *
  * @returns {Lib_Utility_IsPanelAlarmActive_Returns}
  *
- * @since 1.0.0
+ * @since 3.5.11
  */
-export function isPanelAlarmActive(panelStatuses: Lib_Utility_IsPanelAlarmActive_PanelStatuses, orbSecurityButtons: Lib_Utility_IsPanelAlarmActive_OrbSecurityButtons, ignoreSensorProblem: Lib_Utility_IsPanelAlarmActive_IgnoreSensorProblem): Lib_Utility_IsPanelAlarmActive_Returns {
-  const hasDisarmedTroubleButtons: Lib_Utility_IsPanelAlarmActive_HasDisarmedTroubleButtons = orbSecurityButtons.filter((orbSecurityButton) => {
-    const orbSecurityButtonButtonText: Lib_Utility_IsPanelAlarmActive_OrbSecurityButtonButtonText = orbSecurityButton['buttonText'];
-
-    return orbSecurityButtonButtonText !== null && [
-      'Disarm',
-      'Arm Away',
-      'Arm Stay',
-    ].includes(orbSecurityButtonButtonText);
-  }).length === 3;
+export function isPanelAlarmActive(panelStatuses: Lib_Utility_IsPanelAlarmActive_PanelStatuses, armActions: Lib_Utility_IsPanelAlarmActive_ArmActions, ignoreSensorProblem: Lib_Utility_IsPanelAlarmActive_IgnoreSensorProblem): Lib_Utility_IsPanelAlarmActive_Returns {
+  const hasDisarmedTroubleButtons: Lib_Utility_IsPanelAlarmActive_HasDisarmedTroubleButtons = armActions.filter((armAction) => [
+    'disarm',
+    'arm-away',
+    'arm-stay',
+  ].includes(armAction)).length === 3;
 
   return (
     panelStatuses.includes('BURGLARY ALARM')
@@ -1140,30 +1114,21 @@ export function isPanelAlarmActive(panelStatuses: Lib_Utility_IsPanelAlarmActive
 /**
  * Lib - Utility - Is Plugin Outdated.
  *
- * Compares the installed plugin version against the latest npm release so
- * detect reports coming from outdated installations can be skipped.
+ * Compares the installed plugin version against the latest published release
+ * so detect reports coming from outdated installations can be skipped.
  *
  * @returns {Lib_Utility_IsPluginOutdated_Returns}
  *
- * @since 1.0.0
+ * @since 3.5.11
  */
 export async function isPluginOutdated(): Lib_Utility_IsPluginOutdated_Returns {
   const currentVersion: Lib_Utility_IsPluginOutdated_CurrentVersion = getPackageVersion();
 
   try {
-    const response: Lib_Utility_IsPluginOutdated_Response = await axios.get(
-      'https://registry.npmjs.org/homebridge-adt-pulse/latest',
-      {
-        family: 4,
-        timeout: 5000,
-      },
-    );
-    const responseData: Lib_Utility_IsPluginOutdated_ResponseData = response.data;
-
-    const fetchedVersion: Lib_Utility_IsPluginOutdated_FetchedVersion = (responseData !== undefined && responseData !== null) ? responseData['version'] : undefined;
+    const fetchedVersion: Lib_Utility_IsPluginOutdated_FetchedVersion = await defaultReleaseSource.fetchLatestPluginVersion();
 
     // Treat missing/invalid version as outdated to avoid reports from stale installations.
-    if (typeof fetchedVersion !== 'string') {
+    if (fetchedVersion === undefined) {
       return true;
     }
 
@@ -1346,6 +1311,26 @@ export function parseArmDisarmMessage(element: Lib_Utility_ParseArmDisarmMessage
   }
 
   return clearWhitespace(element.textContent);
+}
+
+/**
+ * Lib - Utility - Parse Debug Parser Markup.
+ *
+ * Reads the portal page markers that explain an empty parser result, so the
+ * detector receives neutral flags instead of portal element ids and labels.
+ *
+ * @param {Lib_Utility_ParseDebugParserMarkup_RawHtml} rawHtml - Raw html.
+ *
+ * @returns {Lib_Utility_ParseDebugParserMarkup_Returns}
+ *
+ * @since 3.5.11
+ */
+export function parseDebugParserMarkup(rawHtml: Lib_Utility_ParseDebugParserMarkup_RawHtml): Lib_Utility_ParseDebugParserMarkup_Returns {
+  return {
+    hasArmingForm: rawHtml.includes('p_whiteBoxMiddleCenter') || rawHtml.includes('p_armDisarmWrapper'),
+    hasSensorsList: rawHtml.includes('id="orbSensorsList"'),
+    hasStatusUnavailable: rawHtml.includes('Status Unavailable'),
+  };
 }
 
 /**
@@ -1892,54 +1877,6 @@ export function removePersonalIdentifiableInformation(data: Lib_Utility_RemovePe
   }
 
   return replaceValue(data);
-}
-
-/**
- * Lib - Utility - Send Detect Report.
- *
- * Gets a one-use session token from the report endpoint, then sends the
- * report with it, so posts that skip the token never reach the author.
- *
- * @param {Lib_Utility_SendDetectReport_Title} title - Title.
- * @param {Lib_Utility_SendDetectReport_Body}  body  - Body.
- *
- * @returns {Lib_Utility_SendDetectReport_Returns}
- *
- * @since 3.5.10
- */
-export async function sendDetectReport(title: Lib_Utility_SendDetectReport_Title, body: Lib_Utility_SendDetectReport_Body): Lib_Utility_SendDetectReport_Returns {
-  // Both requests stay on IPv4, because a session token only works from the address that asked for it.
-  const sessionResponse: Lib_Utility_SendDetectReport_SessionResponse = await axios.post(
-    `${getDetectReportUrl()}/session`,
-    '',
-    {
-      family: 4,
-      headers: {
-        'User-Agent': 'homebridge-adt-pulse',
-      },
-    },
-  );
-  const sessionData: Lib_Utility_SendDetectReport_SessionData = sessionResponse.data;
-  const token: Lib_Utility_SendDetectReport_Token = (sessionData !== undefined && sessionData !== null) ? sessionData['token'] : undefined;
-
-  if (typeof token !== 'string') {
-    throw new Error('Detect report session did not return a token');
-  }
-
-  await axios.post(
-    getDetectReportUrl(),
-    body,
-    {
-      family: 4,
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'User-Agent': 'homebridge-adt-pulse',
-        'X-Title': title,
-      },
-    },
-  );
-
-  return;
 }
 
 /**

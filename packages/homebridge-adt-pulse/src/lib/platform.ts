@@ -10,7 +10,7 @@ import _ from 'lodash';
 import { serializeError } from 'serialize-error';
 
 import { ADTPulseAccessory } from './accessory.js';
-import { ADTPulseAPI } from './api.js';
+import { createAlarmPanel } from './alarm-panel.js';
 import { detectPlatformUnknownSensorsAction } from './detect.js';
 import { textOrbTextSummarySections, textSensorTrailingNumberedParentheses } from './regex.js';
 import { platformConfig } from './schema.js';
@@ -49,9 +49,9 @@ import type {
   Lib_Platform_ADTPulsePlatform_Constructor_Log,
   Lib_Platform_ADTPulsePlatform_Constructor_ParsedConfig,
   Lib_Platform_ADTPulsePlatform_DebugMode,
+  Lib_Platform_ADTPulsePlatform_FetchUpdatedInformation_ArmActions,
   Lib_Platform_ADTPulsePlatform_FetchUpdatedInformation_CachedState,
   Lib_Platform_ADTPulsePlatform_FetchUpdatedInformation_GatewayInfo,
-  Lib_Platform_ADTPulsePlatform_FetchUpdatedInformation_OrbSecurityButtons,
   Lib_Platform_ADTPulsePlatform_FetchUpdatedInformation_PanelInfo,
   Lib_Platform_ADTPulsePlatform_FetchUpdatedInformation_PanelStatus,
   Lib_Platform_ADTPulsePlatform_FetchUpdatedInformation_Requests,
@@ -245,7 +245,7 @@ export class ADTPulsePlatform implements Lib_Platform_ADTPulsePlatform_Plugin {
   /**
    * ADT Pulse Platform - Instance.
    *
-   * References the ADT Pulse API instance used to talk to the web portal. It
+   * References the alarm panel backend used to talk to the web portal. It
    * stays "null" until the plugin finishes launching and initializes it.
    *
    * @private
@@ -330,8 +330,8 @@ export class ADTPulsePlatform implements Lib_Platform_ADTPulsePlatform_Plugin {
         isSyncing: false,
       },
       data: {
+        armActions: [],
         gatewayInfo: null,
-        orbSecurityButtons: [],
         panelInfo: null,
         panelStatus: null,
         sensorsInfo: [],
@@ -468,7 +468,7 @@ export class ADTPulsePlatform implements Lib_Platform_ADTPulsePlatform_Plugin {
       }
 
       // Initialize the API instance.
-      this.#instance = new ADTPulseAPI(
+      this.#instance = createAlarmPanel(
         this.#config,
         {
           // If Homebridge debug mode, set "this instance" to debug mode as well.
@@ -1065,7 +1065,7 @@ export class ADTPulsePlatform implements Lib_Platform_ADTPulsePlatform_Plugin {
         this.#instance.getPanelStatus(),
         this.#instance.getSensorsInformation(),
         this.#instance.getSensorsStatus(),
-        this.#instance.getOrbSecurityButtons(),
+        this.#instance.getArmActions(),
       ]);
 
       // Update gateway information.
@@ -1108,12 +1108,12 @@ export class ADTPulsePlatform implements Lib_Platform_ADTPulsePlatform_Plugin {
         this.#state['data'].sensorsStatus = sensorsStatus;
       }
 
-      // Cache orb security buttons.
+      // Cache arm actions.
       if (requests[5]['success'] === true) {
-        const orbSecurityButtons: Lib_Platform_ADTPulsePlatform_FetchUpdatedInformation_OrbSecurityButtons = requests[5]['info'];
+        const armActions: Lib_Platform_ADTPulsePlatform_FetchUpdatedInformation_ArmActions = requests[5]['info'];
 
-        // Set orb security buttons into memory.
-        this.#state['data'].orbSecurityButtons = orbSecurityButtons;
+        // Set arm actions into memory.
+        this.#state['data'].armActions = armActions;
       }
 
       // Check if device statuses have changed.

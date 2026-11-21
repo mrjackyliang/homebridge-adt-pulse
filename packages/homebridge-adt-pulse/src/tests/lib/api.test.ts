@@ -837,6 +837,54 @@ describe('ADTPulseAPI', () => {
     });
   });
 
+  it('translates orb security buttons into project-owned arm actions', async () => {
+    const api = createApi();
+    vi.spyOn(api, 'getOrbSecurityButtons').mockResolvedValueOnce({
+      action: 'GET_ORB_SECURITY_BUTTONS',
+      info: [
+        { ...readyButton('off', 'away'), buttonText: 'Arm Away' },
+        { ...readyButton('off', 'night'), buttonText: 'Arm Night' },
+        { ...readyButton('off', 'stay'), buttonText: 'Arm Stay' },
+        { ...readyButton('away', 'off'), buttonText: 'Clear Alarm' },
+        { ...readyButton('away', 'off'), buttonText: 'Disarm' },
+        { buttonDisabled: true, buttonId: 'pending', buttonText: 'Arming Away' },
+        { buttonDisabled: true, buttonId: 'unlabeled', buttonText: null },
+      ],
+      success: true,
+    } as never);
+
+    await expect(api.getArmActions()).resolves.toEqual({
+      action: 'GET_ARM_ACTIONS',
+      info: [
+        'arm-away',
+        'arm-night',
+        'arm-stay',
+        'clear-alarm',
+        'disarm',
+      ],
+      success: true,
+    });
+  });
+
+  it('passes an orb security button failure through as an arm action failure', async () => {
+    const api = createApi();
+    vi.spyOn(api, 'getOrbSecurityButtons').mockResolvedValueOnce({
+      action: 'GET_ORB_SECURITY_BUTTONS',
+      info: {
+        message: 'fixture failure',
+      },
+      success: false,
+    });
+
+    await expect(api.getArmActions()).resolves.toEqual({
+      action: 'GET_ARM_ACTIONS',
+      info: {
+        message: 'fixture failure',
+      },
+      success: false,
+    });
+  });
+
   it.each([
     [1, 5000],
     [0.75, 6000],
