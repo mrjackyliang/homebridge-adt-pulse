@@ -43,7 +43,52 @@ jobs:
     permissions:
       contents: "read"
       issues: "write"
+    outputs:
+      summary_work_0: "${{ steps.nova-summary.outputs.summary_work_0 }}"
+      summary_workspace_0: "${{ steps.nova-summary.outputs.summary_workspace_0 }}"
+      summary_destination_0: "${{ steps.nova-summary.outputs.summary_destination_0 }}"
+      summary_detail_0: "${{ steps.nova-summary.outputs.summary_detail_0 }}"
     steps:
+      - name: "Check for Nova placeholders"
+        timeout-minutes: 5
+        env:
+          SGS_ISSUE_LABELS: "${{ vars.SGS_ISSUE_LABELS }}"
+          SGS_ISSUE_LIMIT_COMMENTER: "${{ vars.SGS_ISSUE_LIMIT_COMMENTER }}"
+          SGS_ISSUE_LOCK_ON_CLOSE: "${{ vars.SGS_ISSUE_LOCK_ON_CLOSE }}"
+          SGS_ISSUE_MESSAGE_NOT_SPONSOR: "${{ vars.SGS_ISSUE_MESSAGE_NOT_SPONSOR }}"
+          SGS_ISSUE_MESSAGE_WELCOME: "${{ vars.SGS_ISSUE_MESSAGE_WELCOME }}"
+          SGS_IS_ORGANIZATION: "${{ vars.SGS_IS_ORGANIZATION }}"
+          SGS_PERSONAL_ACCESS_TOKEN: "${{ secrets.SGS_PERSONAL_ACCESS_TOKEN }}"
+          SGS_SPONSOR_ACTIVE_ONLY: "${{ vars.SGS_SPONSOR_ACTIVE_ONLY }}"
+          SGS_SPONSOR_EXEMPT_FILE_LOCATION: "${{ vars.SGS_SPONSOR_EXEMPT_FILE_LOCATION }}"
+          SGS_SPONSOR_MINIMUM: "${{ vars.SGS_SPONSOR_MINIMUM }}"
+        run: |
+          set -euo pipefail
+
+          NOVA_PLACEHOLDER_FOUND="false"
+
+          check_nova_placeholder() {
+            if [[ "$2" == "NOVA_PLACEHOLDER" ]]; then
+              printf '::error::%s still holds the Nova placeholder; set its real value in the repository settings.\n' "$1"
+              NOVA_PLACEHOLDER_FOUND="true"
+            fi
+          }
+
+          check_nova_placeholder "SGS_ISSUE_LABELS" "$SGS_ISSUE_LABELS"
+          check_nova_placeholder "SGS_ISSUE_LIMIT_COMMENTER" "$SGS_ISSUE_LIMIT_COMMENTER"
+          check_nova_placeholder "SGS_ISSUE_LOCK_ON_CLOSE" "$SGS_ISSUE_LOCK_ON_CLOSE"
+          check_nova_placeholder "SGS_ISSUE_MESSAGE_NOT_SPONSOR" "$SGS_ISSUE_MESSAGE_NOT_SPONSOR"
+          check_nova_placeholder "SGS_ISSUE_MESSAGE_WELCOME" "$SGS_ISSUE_MESSAGE_WELCOME"
+          check_nova_placeholder "SGS_IS_ORGANIZATION" "$SGS_IS_ORGANIZATION"
+          check_nova_placeholder "SGS_PERSONAL_ACCESS_TOKEN" "$SGS_PERSONAL_ACCESS_TOKEN"
+          check_nova_placeholder "SGS_SPONSOR_ACTIVE_ONLY" "$SGS_SPONSOR_ACTIVE_ONLY"
+          check_nova_placeholder "SGS_SPONSOR_EXEMPT_FILE_LOCATION" "$SGS_SPONSOR_EXEMPT_FILE_LOCATION"
+          check_nova_placeholder "SGS_SPONSOR_MINIMUM" "$SGS_SPONSOR_MINIMUM"
+
+          if [[ "$NOVA_PLACEHOLDER_FOUND" == "true" ]]; then
+            exit 1
+          fi
+
       - name: "Checkout repository"
         uses: "actions/checkout@v7"
         timeout-minutes: 5
@@ -66,3 +111,98 @@ jobs:
           SPONSOR_ACTIVE_ONLY: "${{ env.SPONSOR_ACTIVE_ONLY }}"
           SPONSOR_EXEMPT_FILE_LOCATION: "${{ env.SPONSOR_EXEMPT_FILE_LOCATION }}"
           SPONSOR_MINIMUM: "${{ env.SPONSOR_MINIMUM }}"
+
+      - name: "Expose Nova summary rows"
+        id: "nova-summary"
+        if: "${{ always() }}"
+        timeout-minutes: 5
+        env:
+          NOVA_SUMMARY_ROW_0_WORK: "Check support issues"
+          NOVA_SUMMARY_ROW_0_WORKSPACE: "-"
+          NOVA_SUMMARY_ROW_0_DESTINATION: "GitHub issues"
+          NOVA_SUMMARY_ROW_0_DETAIL: ""
+        run: |
+          {
+            printf "summary_work_0=%s\\n" "$NOVA_SUMMARY_ROW_0_WORK"
+            printf "summary_workspace_0=%s\\n" "$NOVA_SUMMARY_ROW_0_WORKSPACE"
+            printf "summary_destination_0=%s\\n" "$NOVA_SUMMARY_ROW_0_DESTINATION"
+            printf "summary_detail_0=%s\\n" "$NOVA_SUMMARY_ROW_0_DETAIL"
+          } >> "$GITHUB_OUTPUT"
+
+  summary:
+    needs: "check-issues"
+    runs-on: "ubuntu-24.04"
+    timeout-minutes: 5
+    permissions:
+      contents: "read"
+    if: "${{ always() }}"
+    steps:
+      - name: "Write Nova workflow summary"
+        timeout-minutes: 5
+        env:
+          NOVA_SUMMARY_PROJECT: "${{ github.repository }}"
+          NOVA_SUMMARY_PUBLISH: "${{ env.PUBLISH || 'false' }}"
+          NOVA_SUMMARY_VERSION: "${{ github.event.release.tag_name || inputs.tag || github.event.workflow_run.head_branch || github.ref || github.sha }}"
+          NOVA_SUMMARY_ROW_0_WORK: "Check support issues"
+          NOVA_SUMMARY_ROW_0_WORK_OUTPUT: "${{ needs['check-issues'].outputs.summary_work_0 || '' }}"
+          NOVA_SUMMARY_ROW_0_WORKSPACE: "-"
+          NOVA_SUMMARY_ROW_0_WORKSPACE_OUTPUT: "${{ needs['check-issues'].outputs.summary_workspace_0 || '' }}"
+          NOVA_SUMMARY_ROW_0_DESTINATION: "GitHub issues"
+          NOVA_SUMMARY_ROW_0_DESTINATION_OUTPUT: "${{ needs['check-issues'].outputs.summary_destination_0 || '' }}"
+          NOVA_SUMMARY_ROW_0_DETAIL_OUTPUT: "${{ needs['check-issues'].outputs.summary_detail_0 || '' }}"
+          NOVA_SUMMARY_ROW_0_RESULT: "${{ needs['check-issues'].result }}"
+          NOVA_SUMMARY_ROW_0_PUBLISH: "false"
+        run: |
+          set -euo pipefail
+
+          sanitize_summary_value() {
+            local value="$1"
+
+            value="${value//$'\r'/ }"
+            value="${value//$'\n'/ }"
+            value="${value//|/\\|}"
+
+            printf '%s' "$value"
+          }
+
+          NOVA_SUMMARY_DISPLAY_VERSION="${NOVA_SUMMARY_VERSION#refs/tags/}"
+          NOVA_SUMMARY_DISPLAY_VERSION="${NOVA_SUMMARY_DISPLAY_VERSION#refs/heads/}"
+
+          {
+            printf "## Nova · %s · %s\\n" "$NOVA_SUMMARY_PROJECT" "$NOVA_SUMMARY_DISPLAY_VERSION"
+            printf "\\n"
+            printf "| Work | Workspace | Destination | Result |\\n"
+            printf "| --- | --- | --- | --- |\\n"
+
+            NOVA_SUMMARY_WORK="$NOVA_SUMMARY_ROW_0_WORK_OUTPUT"
+            if [[ -z "$NOVA_SUMMARY_WORK" ]]; then
+              NOVA_SUMMARY_WORK="$NOVA_SUMMARY_ROW_0_WORK"
+            fi
+
+            NOVA_SUMMARY_WORKSPACE="$NOVA_SUMMARY_ROW_0_WORKSPACE_OUTPUT"
+            if [[ -z "$NOVA_SUMMARY_WORKSPACE" ]]; then
+              NOVA_SUMMARY_WORKSPACE="$NOVA_SUMMARY_ROW_0_WORKSPACE"
+            fi
+
+            NOVA_SUMMARY_DESTINATION="$NOVA_SUMMARY_ROW_0_DESTINATION_OUTPUT"
+            if [[ -z "$NOVA_SUMMARY_DESTINATION" ]]; then
+              NOVA_SUMMARY_DESTINATION="$NOVA_SUMMARY_ROW_0_DESTINATION"
+            fi
+
+            NOVA_SUMMARY_DETAIL="$NOVA_SUMMARY_ROW_0_DETAIL_OUTPUT"
+            if [[ -n "$NOVA_SUMMARY_DETAIL" ]]; then
+              NOVA_SUMMARY_DESTINATION="$NOVA_SUMMARY_DESTINATION · $NOVA_SUMMARY_DETAIL"
+            fi
+
+            NOVA_SUMMARY_RESULT="$NOVA_SUMMARY_ROW_0_RESULT"
+            if [[ "$NOVA_SUMMARY_ROW_0_PUBLISH" == "true" && "$NOVA_SUMMARY_PUBLISH" != "true" ]]; then
+              NOVA_SUMMARY_RESULT="dry run ($NOVA_SUMMARY_RESULT)"
+            fi
+
+            NOVA_SUMMARY_WORK="$(sanitize_summary_value "$NOVA_SUMMARY_WORK")"
+            NOVA_SUMMARY_WORKSPACE="$(sanitize_summary_value "$NOVA_SUMMARY_WORKSPACE")"
+            NOVA_SUMMARY_DESTINATION="$(sanitize_summary_value "$NOVA_SUMMARY_DESTINATION")"
+            NOVA_SUMMARY_RESULT="$(sanitize_summary_value "$NOVA_SUMMARY_RESULT")"
+
+            printf "| %s | %s | %s | %s |\\n" "$NOVA_SUMMARY_WORK" "$NOVA_SUMMARY_WORKSPACE" "$NOVA_SUMMARY_DESTINATION" "$NOVA_SUMMARY_RESULT"
+          } >> "$GITHUB_STEP_SUMMARY"

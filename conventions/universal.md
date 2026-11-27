@@ -221,6 +221,7 @@ When the user corrects you, state what you're actually updating, why the prior a
 
 - Every member documented — public, private, protocol stubs (`var body`). No exceptions.
 - Required body paragraph: every doc comment MUST include a body paragraph after the summary line that explains why the declaration exists, who uses it, or when it matters. Body must be 2–3 lines, max 80 characters per line (not counting the comment prefix). Prefer 2 lines — fill the first line as fully as possible, remainder on line 2. Use 3 lines only when content truly needs it. For 3-line bodies, the second line must be the longest (diamond/belly shape) — keep the 1st and 3rd lines at reasonable length. Structured tags (`- Parameter`, `- Returns`, `- Throws`, `@param`, `@returns`, etc.) go after the body.
+- One `since` tag per declaration — records the version the declaration was introduced. Tag new declarations (or declarations missing a `since` tag) with the language's `UNRELEASED` sentinel; keep the existing released version unchanged when modifying an existing declaration (never stack multiple `since` tags and never overwrite a released version with `UNRELEASED`).
 - No file-level comments above imports.
 
 ### Summary Line Convention

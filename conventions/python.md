@@ -5,7 +5,7 @@ Quotes: Double (Black/Google convention). Indentation: 4-space. File naming: sna
 ## Documentation Style
 
 - Comment syntax: `"""` (Google-style)
-- Padding tag: `Since:\n    UNRELEASED` (Google-style custom section) — tag new or changed API with the sentinel; Nova stamps the real version during the workspace release, so never hand-write a version number.
+- Padding tag: `Since:\n    UNRELEASED` (Google-style custom section) — tag new declarations with the sentinel; keep the original version on existing declarations without stacking or replacing it. Nova stamps the real version during the workspace release, so never hand-write a version number.
 - Param format: `Args:\n    name: Name.` (description matches the parameter name, capitalized, with a trailing period)
 - Return format: `Returns:\n    Type.`
 - Docstring starts with `"""` then a newline before the summary line.

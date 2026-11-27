@@ -160,11 +160,15 @@ const config: DocusaurusNovaConfig = {
             light: '#B91C1C',
             dark: '#EF4444',
           },
+          success: {
+            light: '#1F8455',
+            dark: '#4ED093',
+          },
         },
         fonts: {
-          display: 'Plus Jakarta Sans',
-          body: 'Inter',
-          code: 'JetBrains Mono',
+          display: 'Poppins',
+          body: 'Open Sans',
+          code: 'Source Code Pro',
         },
         navbar: undefined,
         footer: undefined,
@@ -221,8 +225,11 @@ const config: DocusaurusNovaConfig = {
 
       // Analytics.
       analytics: {
-        gtm: {
-          containerId: 'GTM-NJN3C25S',
+        googleAnalytics: {
+          measurementId: 'G-4P0KHCMPS3',
+        },
+        clarity: {
+          projectId: 'zjw8yxuvyg',
         },
       },
 
@@ -499,10 +506,20 @@ const config: DocusaurusNovaConfig = {
             href: 'https://www.mrjackyliang.com/work/',
           },
         ],
-        legal: [{
-          label: 'License',
-          href: 'https://github.com/mrjackyliang/homebridge-adt-pulse/blob/HEAD/LICENSE',
-        }],
+        legal: [
+          {
+            label: 'License',
+            href: 'https://github.com/mrjackyliang/homebridge-adt-pulse/blob/HEAD/LICENSE',
+          },
+          {
+            label: 'Terms of Use',
+            href: 'https://mrjackyliang.github.io/mrjackyliang/terms/',
+          },
+          {
+            label: 'Privacy Policy',
+            href: 'https://mrjackyliang.github.io/mrjackyliang/privacy/',
+          },
+        ],
       },
       layout: {
         docs: {

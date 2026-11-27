@@ -5,7 +5,7 @@ Quotes: Double (only option). Indentation: 4-space. File naming: PascalCase matc
 ## Documentation Style
 
 - Comment syntax: `/** */`
-- Padding tag: `@since UNRELEASED` (Javadoc) — tag new or changed API with `@since UNRELEASED`; the release process stamps the real version automatically, so never hand-write a version number.
+- Padding tag: `@since UNRELEASED` (Javadoc) — tag new declarations with `@since UNRELEASED`; keep the original version on existing declarations without stacking or replacing it. The release process stamps the real version automatically, so never hand-write a version number.
 - Param format: `@param name - Name.` (description matches the parameter name, capitalized, with a trailing period)
 - Return format: `@return Type`
 

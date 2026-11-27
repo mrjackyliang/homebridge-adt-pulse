@@ -5,7 +5,7 @@ Quotes: Double (only option). Indentation: 4-space. File naming: PascalCase matc
 ## Documentation Style
 
 - Comment syntax: `///`
-- Padding tag: `<remarks>Since: UNRELEASED</remarks>` (XML documentation) — tag new or changed API with the sentinel; Nova stamps the real version during the workspace release, so never hand-write a version number.
+- Padding tag: `<remarks>Since: UNRELEASED</remarks>` (XML documentation) — tag new declarations with the sentinel; keep the original version on existing declarations without stacking or replacing it. Nova stamps the real version during the workspace release, so never hand-write a version number.
 - Param format: `<param name="x">X</param>` (description matches the parameter name, capitalized, no trailing period inside XML tags)
 - Return format: `<returns>Type</returns>`
 - Blank `///` at top and bottom of every comment block.

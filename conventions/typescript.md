@@ -11,13 +11,13 @@ review conventions rather than claims of automatic enforcement.
 ## Documentation Style
 
 - Comment syntax: `/** */`
-- Padding tag: `@since UNRELEASED` (JSDoc) — tag new or changed API with `@since UNRELEASED`; the release process stamps the real version automatically, so never hand-write a version number.
+- Padding tag: `@since UNRELEASED` (JSDoc) — tag new declarations with `@since UNRELEASED`; keep the original version on existing declarations without stacking or replacing it. The release process stamps the real version automatically, so never hand-write a version number.
 - Param format: `@param {TypeName} name - Name.` (description matches the parameter name, capitalized, with a trailing period)
 - Return format: `@returns {TypeName}`
 - Include `@private` tag for private members.
 - Every documentable class, function, method, field, enum, interface, type, and function-valued constant requires a leading JSDoc block. Declaration mirrors in `.d.ts` files use section comments instead of per-symbol blocks.
 - After the summary and one blank line, include a 2–3 line body paragraph explaining why the declaration exists, who uses it, or when it matters. Keep each body line within 80 characters.
-- Tags use this canonical order: `@param`, `@private`, `@returns`, `@since`, `@deprecated`. Repeated tags in the same group stay adjacent; distinct groups have exactly one blank line between them.
+- Tags use this canonical order: `@param`, `@private`, `@returns`, `@since`, `@deprecated`. Repeated multi-value tags in the same group (such as `@param`) stay adjacent; distinct groups have exactly one blank line between them, and each declaration has at most one `@since` tag.
 
 ### JSDoc `@param` Alignment
 

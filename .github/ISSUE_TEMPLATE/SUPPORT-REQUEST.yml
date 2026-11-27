@@ -223,7 +223,7 @@ body:
     id: "legal"
     attributes:
       label: "Legal Agreements"
-      description: "By submitting a new support request, you confirm that you have read, understood, and agree to the [Terms of Use](https://github.com/mrjackyliang/mrjackyliang/blob/HEAD/TERMS.md) and [Privacy Policy](https://github.com/mrjackyliang/mrjackyliang/blob/HEAD/PRIVACY.md). If you have questions, please contact my team."
+      description: "By submitting a new support request, you confirm that you have read, understood, and agree to the [Terms of Use](https://mrjackyliang.github.io/mrjackyliang/terms/) and [Privacy Policy](https://mrjackyliang.github.io/mrjackyliang/privacy/). If you have questions, please contact my team."
       options:
         - label: "I agree to the Terms of Use and Privacy Policy"
           required: true

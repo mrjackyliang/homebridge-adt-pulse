@@ -12,6 +12,7 @@ coverage/
 dist/
 out/
 .output/
+*.log
 local.properties
 .env
 .env.*
@@ -243,5 +244,4 @@ firebase-debug.log
 ##########################
 #### Project Excludes ####
 ##########################
-/assets/
 graphify-out/

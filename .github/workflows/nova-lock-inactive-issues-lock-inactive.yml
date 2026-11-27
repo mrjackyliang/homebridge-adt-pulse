@@ -34,6 +34,11 @@ jobs:
   lock-inactive-issues:
     runs-on: "ubuntu-24.04"
     timeout-minutes: 5
+    outputs:
+      summary_work_0: "${{ steps.nova-summary.outputs.summary_work_0 }}"
+      summary_workspace_0: "${{ steps.nova-summary.outputs.summary_workspace_0 }}"
+      summary_destination_0: "${{ steps.nova-summary.outputs.summary_destination_0 }}"
+      summary_detail_0: "${{ steps.nova-summary.outputs.summary_detail_0 }}"
     steps:
       - name: "Lock inactive threads"
         uses: "mrjackyliang/lock-inactive-threads@v1"
@@ -50,3 +55,98 @@ jobs:
           PR_LOCK_REASON: "resolved"
           LOG_OUTPUT: "true"
           DRY_RUN: "${{ env.DRY_RUN }}"
+
+      - name: "Expose Nova summary rows"
+        id: "nova-summary"
+        if: "${{ always() }}"
+        timeout-minutes: 5
+        env:
+          NOVA_SUMMARY_ROW_0_WORK: "Lock inactive threads"
+          NOVA_SUMMARY_ROW_0_WORKSPACE: "-"
+          NOVA_SUMMARY_ROW_0_DESTINATION: "GitHub issues and pull requests"
+          NOVA_SUMMARY_ROW_0_DETAIL: ""
+        run: |
+          {
+            printf "summary_work_0=%s\\n" "$NOVA_SUMMARY_ROW_0_WORK"
+            printf "summary_workspace_0=%s\\n" "$NOVA_SUMMARY_ROW_0_WORKSPACE"
+            printf "summary_destination_0=%s\\n" "$NOVA_SUMMARY_ROW_0_DESTINATION"
+            printf "summary_detail_0=%s\\n" "$NOVA_SUMMARY_ROW_0_DETAIL"
+          } >> "$GITHUB_OUTPUT"
+
+  summary:
+    needs: "lock-inactive-issues"
+    runs-on: "ubuntu-24.04"
+    timeout-minutes: 5
+    permissions:
+      contents: "read"
+    if: "${{ always() }}"
+    steps:
+      - name: "Write Nova workflow summary"
+        timeout-minutes: 5
+        env:
+          NOVA_SUMMARY_PROJECT: "${{ github.repository }}"
+          NOVA_SUMMARY_PUBLISH: "${{ env.PUBLISH || 'false' }}"
+          NOVA_SUMMARY_VERSION: "${{ github.event.release.tag_name || inputs.tag || github.event.workflow_run.head_branch || github.ref || github.sha }}"
+          NOVA_SUMMARY_ROW_0_WORK: "Lock inactive threads"
+          NOVA_SUMMARY_ROW_0_WORK_OUTPUT: "${{ needs['lock-inactive-issues'].outputs.summary_work_0 || '' }}"
+          NOVA_SUMMARY_ROW_0_WORKSPACE: "-"
+          NOVA_SUMMARY_ROW_0_WORKSPACE_OUTPUT: "${{ needs['lock-inactive-issues'].outputs.summary_workspace_0 || '' }}"
+          NOVA_SUMMARY_ROW_0_DESTINATION: "GitHub issues and pull requests"
+          NOVA_SUMMARY_ROW_0_DESTINATION_OUTPUT: "${{ needs['lock-inactive-issues'].outputs.summary_destination_0 || '' }}"
+          NOVA_SUMMARY_ROW_0_DETAIL_OUTPUT: "${{ needs['lock-inactive-issues'].outputs.summary_detail_0 || '' }}"
+          NOVA_SUMMARY_ROW_0_RESULT: "${{ needs['lock-inactive-issues'].result }}"
+          NOVA_SUMMARY_ROW_0_PUBLISH: "false"
+        run: |
+          set -euo pipefail
+
+          sanitize_summary_value() {
+            local value="$1"
+
+            value="${value//$'\r'/ }"
+            value="${value//$'\n'/ }"
+            value="${value//|/\\|}"
+
+            printf '%s' "$value"
+          }
+
+          NOVA_SUMMARY_DISPLAY_VERSION="${NOVA_SUMMARY_VERSION#refs/tags/}"
+          NOVA_SUMMARY_DISPLAY_VERSION="${NOVA_SUMMARY_DISPLAY_VERSION#refs/heads/}"
+
+          {
+            printf "## Nova · %s · %s\\n" "$NOVA_SUMMARY_PROJECT" "$NOVA_SUMMARY_DISPLAY_VERSION"
+            printf "\\n"
+            printf "| Work | Workspace | Destination | Result |\\n"
+            printf "| --- | --- | --- | --- |\\n"
+
+            NOVA_SUMMARY_WORK="$NOVA_SUMMARY_ROW_0_WORK_OUTPUT"
+            if [[ -z "$NOVA_SUMMARY_WORK" ]]; then
+              NOVA_SUMMARY_WORK="$NOVA_SUMMARY_ROW_0_WORK"
+            fi
+
+            NOVA_SUMMARY_WORKSPACE="$NOVA_SUMMARY_ROW_0_WORKSPACE_OUTPUT"
+            if [[ -z "$NOVA_SUMMARY_WORKSPACE" ]]; then
+              NOVA_SUMMARY_WORKSPACE="$NOVA_SUMMARY_ROW_0_WORKSPACE"
+            fi
+
+            NOVA_SUMMARY_DESTINATION="$NOVA_SUMMARY_ROW_0_DESTINATION_OUTPUT"
+            if [[ -z "$NOVA_SUMMARY_DESTINATION" ]]; then
+              NOVA_SUMMARY_DESTINATION="$NOVA_SUMMARY_ROW_0_DESTINATION"
+            fi
+
+            NOVA_SUMMARY_DETAIL="$NOVA_SUMMARY_ROW_0_DETAIL_OUTPUT"
+            if [[ -n "$NOVA_SUMMARY_DETAIL" ]]; then
+              NOVA_SUMMARY_DESTINATION="$NOVA_SUMMARY_DESTINATION · $NOVA_SUMMARY_DETAIL"
+            fi
+
+            NOVA_SUMMARY_RESULT="$NOVA_SUMMARY_ROW_0_RESULT"
+            if [[ "$NOVA_SUMMARY_ROW_0_PUBLISH" == "true" && "$NOVA_SUMMARY_PUBLISH" != "true" ]]; then
+              NOVA_SUMMARY_RESULT="dry run ($NOVA_SUMMARY_RESULT)"
+            fi
+
+            NOVA_SUMMARY_WORK="$(sanitize_summary_value "$NOVA_SUMMARY_WORK")"
+            NOVA_SUMMARY_WORKSPACE="$(sanitize_summary_value "$NOVA_SUMMARY_WORKSPACE")"
+            NOVA_SUMMARY_DESTINATION="$(sanitize_summary_value "$NOVA_SUMMARY_DESTINATION")"
+            NOVA_SUMMARY_RESULT="$(sanitize_summary_value "$NOVA_SUMMARY_RESULT")"
+
+            printf "| %s | %s | %s | %s |\\n" "$NOVA_SUMMARY_WORK" "$NOVA_SUMMARY_WORKSPACE" "$NOVA_SUMMARY_DESTINATION" "$NOVA_SUMMARY_RESULT"
+          } >> "$GITHUB_STEP_SUMMARY"

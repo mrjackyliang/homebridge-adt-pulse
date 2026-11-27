@@ -41,7 +41,7 @@
     <img alt="Become a GitHub Sponsor" src="https://img.shields.io/badge/github-sponsor-gray?style=for-the-badge&logo=githubsponsors&logoColor=%23ffffff&color=%23eaaf41">
   </a>
   <a href="https://liang.nyc/paypal">
-    <img alt="Support this project" src="https://img.shields.io/badge/donate-support-gray?style=for-the-badge&logo=heart&logoColor=%23ffffff&color=%23888888">
+    <img alt="Donate via PayPal" src="https://img.shields.io/badge/paypal-donate-gray?style=for-the-badge&logo=paypal&logoColor=%23ffffff&color=%23ce4a4a">
   </a>
 <!-- nova-region-end: badges -->
 </div>
@@ -64,7 +64,7 @@ To get started, visit [https://mrjackyliang.github.io/homebridge-adt-pulse/](htt
 If you find value in the ongoing development of this project and wish to express your appreciation, you have the option to:
 
 - Become my supporter on [GitHub Sponsors](https://github.com/sponsors/mrjackyliang)
-- Support me at [https://liang.nyc/paypal](https://liang.nyc/paypal)
+- Make a one-time donation through [PayPal](https://liang.nyc/paypal)
 
 A special thanks to my contributors and supporters:
 

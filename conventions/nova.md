@@ -112,7 +112,9 @@ new aliases, categories, or command semantics from memory.
 - `0.0.0` is the reserved freezable sentinel. Do not reuse it as a generic
   starting version for trackable or distributable workspaces.
 - Add `UNRELEASED` annotations only in syntaxes the Nova stamper supports and
-  only where the declaration convention requires one.
+  only on new declarations (or declarations missing a `since` tag); keep the
+  original released version on existing declarations without stacking or
+  replacing it.
 - A release command does not authorize commit, tag, push, publish, deployment,
   or consumer rollout. Those remain separate user decisions.
 

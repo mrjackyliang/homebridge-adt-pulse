@@ -5,7 +5,7 @@ Quotes: Double (only option). Indentation: 4-space. File naming: PascalCase + ro
 ## Documentation Style
 
 - Comment syntax: `///`
-- Padding tag: `- Since: UNRELEASED` (DocC callout; Nova stamps it during the workspace release)
+- Padding tag: `- Since: UNRELEASED` (DocC callout) — tag new declarations with the sentinel; keep the original version on existing declarations without stacking or replacing it. Nova stamps the real version during the workspace release, so never hand-write a version number.
 - Param format: `- Parameter name: Name.` (description matches the parameter name, capitalized, with a trailing period)
 - Return format: `- Returns: Description.`
 - Throws format: `- Throws: Description.`

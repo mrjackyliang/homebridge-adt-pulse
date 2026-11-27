@@ -14,7 +14,8 @@ idiomatic Go. They do not translate TypeScript syntax mechanically.
 - Package comments start with `Package <name>` and appear once per package.
 - Add a 2–3 line body explaining why the declaration exists, who uses it, or
   when it matters.
-- New or changed declarations end with `Since: UNRELEASED`. Nova stamps that
+- New declarations end with `Since: UNRELEASED`; keep the original version on
+  existing declarations without stacking or replacing it. Nova stamps that
   sentinel during the workspace release; never write the release version by
   hand.
 - Document unexported declarations when their contract, concurrency, security,

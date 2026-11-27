@@ -14,7 +14,8 @@ idiomatic Rust. They do not translate TypeScript syntax mechanically.
   item exists, who uses it, or when it matters.
 - Add standard sections such as `# Errors`, `# Panics`, and `# Safety` when the
   contract exposes those behaviors.
-- New or changed items end with `Since: UNRELEASED`. Nova stamps that sentinel
+- New items end with `Since: UNRELEASED`; keep the original version on
+  existing items without stacking or replacing it. Nova stamps that sentinel
   during the workspace release; never write the release version by hand.
 - Document private items when their invariants, concurrency, unsafe behavior,
   or side effects are not obvious from the implementation.

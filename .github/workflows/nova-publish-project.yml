@@ -37,6 +37,15 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: "read"
+    outputs:
+      summary_work_0: "${{ steps.nova-summary.outputs.summary_work_0 }}"
+      summary_workspace_0: "${{ steps.nova-summary.outputs.summary_workspace_0 }}"
+      summary_destination_0: "${{ steps.nova-summary.outputs.summary_destination_0 }}"
+      summary_detail_0: "${{ steps.nova-summary.outputs.summary_detail_0 }}"
+      summary_work_1: "${{ steps.nova-summary.outputs.summary_work_1 }}"
+      summary_workspace_1: "${{ steps.nova-summary.outputs.summary_workspace_1 }}"
+      summary_destination_1: "${{ steps.nova-summary.outputs.summary_destination_1 }}"
+      summary_detail_1: "${{ steps.nova-summary.outputs.summary_detail_1 }}"
     steps:
       - name: "Checkout repository"
         uses: "actions/checkout@v7"
@@ -239,6 +248,31 @@ jobs:
           path: |
             build/documentation
 
+      - name: "Expose Nova summary rows"
+        id: "nova-summary"
+        if: "${{ always() }}"
+        timeout-minutes: 5
+        env:
+          NOVA_SUMMARY_ROW_0_WORK: "Check project"
+          NOVA_SUMMARY_ROW_0_WORKSPACE: "homebridge-adt-pulse-app-config-ui, homebridge-adt-pulse, homebridge-adt-pulse-docs"
+          NOVA_SUMMARY_ROW_0_DESTINATION: "Nova checks"
+          NOVA_SUMMARY_ROW_0_DETAIL: ""
+          NOVA_SUMMARY_ROW_1_WORK: "Build project"
+          NOVA_SUMMARY_ROW_1_WORKSPACE: "homebridge-adt-pulse-app-config-ui, homebridge-adt-pulse, homebridge-adt-pulse-docs"
+          NOVA_SUMMARY_ROW_1_DESTINATION: "Build artifacts"
+          NOVA_SUMMARY_ROW_1_DETAIL: ""
+        run: |
+          {
+            printf "summary_work_0=%s\\n" "$NOVA_SUMMARY_ROW_0_WORK"
+            printf "summary_workspace_0=%s\\n" "$NOVA_SUMMARY_ROW_0_WORKSPACE"
+            printf "summary_destination_0=%s\\n" "$NOVA_SUMMARY_ROW_0_DESTINATION"
+            printf "summary_detail_0=%s\\n" "$NOVA_SUMMARY_ROW_0_DETAIL"
+            printf "summary_work_1=%s\\n" "$NOVA_SUMMARY_ROW_1_WORK"
+            printf "summary_workspace_1=%s\\n" "$NOVA_SUMMARY_ROW_1_WORKSPACE"
+            printf "summary_destination_1=%s\\n" "$NOVA_SUMMARY_ROW_1_DESTINATION"
+            printf "summary_detail_1=%s\\n" "$NOVA_SUMMARY_ROW_1_DETAIL"
+          } >> "$GITHUB_OUTPUT"
+
   publish-npm-packages-homebridge-adt-pulse:
     needs: "build"
     runs-on: "ubuntu-24.04"
@@ -246,7 +280,34 @@ jobs:
     permissions:
       contents: "read"
       id-token: "write"
+    outputs:
+      summary_work_0: "${{ steps.nova-summary.outputs.summary_work_0 }}"
+      summary_workspace_0: "${{ steps.nova-summary.outputs.summary_workspace_0 }}"
+      summary_destination_0: "${{ steps.nova-summary.outputs.summary_destination_0 }}"
+      summary_detail_0: "${{ steps.nova-summary.outputs.summary_detail_0 }}"
     steps:
+      - name: "Check for Nova placeholders"
+        timeout-minutes: 10
+        env:
+          PROJECT_NPM_TOKEN: "${{ secrets.PROJECT_NPM_TOKEN }}"
+        run: |
+          set -euo pipefail
+
+          NOVA_PLACEHOLDER_FOUND="false"
+
+          check_nova_placeholder() {
+            if [[ "$2" == "NOVA_PLACEHOLDER" ]]; then
+              printf '::error::%s still holds the Nova placeholder; set its real value in the repository settings.\n' "$1"
+              NOVA_PLACEHOLDER_FOUND="true"
+            fi
+          }
+
+          check_nova_placeholder "PROJECT_NPM_TOKEN" "$PROJECT_NPM_TOKEN"
+
+          if [[ "$NOVA_PLACEHOLDER_FOUND" == "true" ]]; then
+            exit 1
+          fi
+
       - name: "Checkout repository"
         uses: "actions/checkout@v7"
         timeout-minutes: 5
@@ -306,6 +367,23 @@ jobs:
           fi
         working-directory: "build/homebridge-adt-pulse"
 
+      - name: "Expose Nova summary rows"
+        id: "nova-summary"
+        if: "${{ always() }}"
+        timeout-minutes: 5
+        env:
+          NOVA_SUMMARY_ROW_0_WORK: "Publish package"
+          NOVA_SUMMARY_ROW_0_WORKSPACE: "homebridge-adt-pulse"
+          NOVA_SUMMARY_ROW_0_DESTINATION: "https://www.npmjs.com/package/homebridge-adt-pulse"
+          NOVA_SUMMARY_ROW_0_DETAIL: "${{ github.event.release.tag_name || inputs.tag || github.ref_name }}"
+        run: |
+          {
+            printf "summary_work_0=%s\\n" "$NOVA_SUMMARY_ROW_0_WORK"
+            printf "summary_workspace_0=%s\\n" "$NOVA_SUMMARY_ROW_0_WORKSPACE"
+            printf "summary_destination_0=%s\\n" "$NOVA_SUMMARY_ROW_0_DESTINATION"
+            printf "summary_detail_0=%s\\n" "$NOVA_SUMMARY_ROW_0_DETAIL"
+          } >> "$GITHUB_OUTPUT"
+
   publish-github-packages-packages-homebridge-adt-pulse:
     needs: "build"
     runs-on: "ubuntu-24.04"
@@ -314,6 +392,11 @@ jobs:
       contents: "read"
       packages: "write"
       id-token: "write"
+    outputs:
+      summary_work_0: "${{ steps.nova-summary.outputs.summary_work_0 }}"
+      summary_workspace_0: "${{ steps.nova-summary.outputs.summary_workspace_0 }}"
+      summary_destination_0: "${{ steps.nova-summary.outputs.summary_destination_0 }}"
+      summary_detail_0: "${{ steps.nova-summary.outputs.summary_detail_0 }}"
     steps:
       - name: "Checkout repository"
         uses: "actions/checkout@v7"
@@ -400,6 +483,23 @@ jobs:
           npm pkg set name="$PACKAGE_NAME"
         working-directory: "build/homebridge-adt-pulse"
 
+      - name: "Expose Nova summary rows"
+        id: "nova-summary"
+        if: "${{ always() }}"
+        timeout-minutes: 5
+        env:
+          NOVA_SUMMARY_ROW_0_WORK: "Publish package"
+          NOVA_SUMMARY_ROW_0_WORKSPACE: "homebridge-adt-pulse"
+          NOVA_SUMMARY_ROW_0_DESTINATION: "https://github.com/${{ github.repository_owner }}?tab=packages"
+          NOVA_SUMMARY_ROW_0_DETAIL: "${{ github.event.release.tag_name || inputs.tag || github.ref_name }}"
+        run: |
+          {
+            printf "summary_work_0=%s\\n" "$NOVA_SUMMARY_ROW_0_WORK"
+            printf "summary_workspace_0=%s\\n" "$NOVA_SUMMARY_ROW_0_WORKSPACE"
+            printf "summary_destination_0=%s\\n" "$NOVA_SUMMARY_ROW_0_DESTINATION"
+            printf "summary_detail_0=%s\\n" "$NOVA_SUMMARY_ROW_0_DETAIL"
+          } >> "$GITHUB_OUTPUT"
+
   publish-github-pages-apps-docs:
     needs: "build"
     runs-on: "ubuntu-24.04"
@@ -408,6 +508,11 @@ jobs:
       contents: "read"
       pages: "write"
       id-token: "write"
+    outputs:
+      summary_work_0: "${{ steps.nova-summary.outputs.summary_work_0 }}"
+      summary_workspace_0: "${{ steps.nova-summary.outputs.summary_workspace_0 }}"
+      summary_destination_0: "${{ steps.nova-summary.outputs.summary_destination_0 }}"
+      summary_detail_0: "${{ steps.nova-summary.outputs.summary_detail_0 }}"
     steps:
       - name: "Checkout repository"
         uses: "actions/checkout@v7"
@@ -446,6 +551,266 @@ jobs:
           path: "build/documentation"
 
       - name: "Deploy to GitHub Pages"
+        id: "deploy-pages"
         if: "${{ env.PUBLISH == 'true' && env.PAGES_ENABLED == 'true' }}"
         uses: "actions/deploy-pages@v5"
         timeout-minutes: 30
+
+      - name: "Expose Nova summary rows"
+        id: "nova-summary"
+        if: "${{ always() }}"
+        timeout-minutes: 5
+        env:
+          NOVA_SUMMARY_ROW_0_WORK: "Deploy site"
+          NOVA_SUMMARY_ROW_0_WORKSPACE: "homebridge-adt-pulse-docs"
+          NOVA_SUMMARY_ROW_0_DESTINATION: "GitHub Pages"
+          NOVA_SUMMARY_ROW_0_DETAIL: "${{ steps.deploy-pages.outputs.page_url || '' }}"
+        run: |
+          {
+            printf "summary_work_0=%s\\n" "$NOVA_SUMMARY_ROW_0_WORK"
+            printf "summary_workspace_0=%s\\n" "$NOVA_SUMMARY_ROW_0_WORKSPACE"
+            printf "summary_destination_0=%s\\n" "$NOVA_SUMMARY_ROW_0_DESTINATION"
+            printf "summary_detail_0=%s\\n" "$NOVA_SUMMARY_ROW_0_DETAIL"
+          } >> "$GITHUB_OUTPUT"
+
+  summary:
+    needs: ["build", "publish-npm-packages-homebridge-adt-pulse", "publish-github-packages-packages-homebridge-adt-pulse", "publish-github-pages-apps-docs"]
+    runs-on: "ubuntu-24.04"
+    timeout-minutes: 5
+    permissions:
+      contents: "read"
+    if: "${{ always() }}"
+    steps:
+      - name: "Write Nova workflow summary"
+        timeout-minutes: 5
+        env:
+          NOVA_SUMMARY_PROJECT: "${{ github.repository }}"
+          NOVA_SUMMARY_PUBLISH: "${{ env.PUBLISH || 'false' }}"
+          NOVA_SUMMARY_VERSION: "${{ github.event.release.tag_name || inputs.tag || github.event.workflow_run.head_branch || github.ref || github.sha }}"
+          NOVA_SUMMARY_ROW_0_WORK: "Check project"
+          NOVA_SUMMARY_ROW_0_WORK_OUTPUT: "${{ needs['build'].outputs.summary_work_0 || '' }}"
+          NOVA_SUMMARY_ROW_0_WORKSPACE: "homebridge-adt-pulse-app-config-ui, homebridge-adt-pulse, homebridge-adt-pulse-docs"
+          NOVA_SUMMARY_ROW_0_WORKSPACE_OUTPUT: "${{ needs['build'].outputs.summary_workspace_0 || '' }}"
+          NOVA_SUMMARY_ROW_0_DESTINATION: "Nova checks"
+          NOVA_SUMMARY_ROW_0_DESTINATION_OUTPUT: "${{ needs['build'].outputs.summary_destination_0 || '' }}"
+          NOVA_SUMMARY_ROW_0_DETAIL_OUTPUT: "${{ needs['build'].outputs.summary_detail_0 || '' }}"
+          NOVA_SUMMARY_ROW_0_RESULT: "${{ needs['build'].result }}"
+          NOVA_SUMMARY_ROW_0_PUBLISH: "false"
+          NOVA_SUMMARY_ROW_1_WORK: "Build project"
+          NOVA_SUMMARY_ROW_1_WORK_OUTPUT: "${{ needs['build'].outputs.summary_work_1 || '' }}"
+          NOVA_SUMMARY_ROW_1_WORKSPACE: "homebridge-adt-pulse-app-config-ui, homebridge-adt-pulse, homebridge-adt-pulse-docs"
+          NOVA_SUMMARY_ROW_1_WORKSPACE_OUTPUT: "${{ needs['build'].outputs.summary_workspace_1 || '' }}"
+          NOVA_SUMMARY_ROW_1_DESTINATION: "Build artifacts"
+          NOVA_SUMMARY_ROW_1_DESTINATION_OUTPUT: "${{ needs['build'].outputs.summary_destination_1 || '' }}"
+          NOVA_SUMMARY_ROW_1_DETAIL_OUTPUT: "${{ needs['build'].outputs.summary_detail_1 || '' }}"
+          NOVA_SUMMARY_ROW_1_RESULT: "${{ needs['build'].result }}"
+          NOVA_SUMMARY_ROW_1_PUBLISH: "false"
+          NOVA_SUMMARY_ROW_2_WORK: "Publish package"
+          NOVA_SUMMARY_ROW_2_WORK_OUTPUT: "${{ needs['publish-npm-packages-homebridge-adt-pulse'].outputs.summary_work_0 || '' }}"
+          NOVA_SUMMARY_ROW_2_WORKSPACE: "homebridge-adt-pulse"
+          NOVA_SUMMARY_ROW_2_WORKSPACE_OUTPUT: "${{ needs['publish-npm-packages-homebridge-adt-pulse'].outputs.summary_workspace_0 || '' }}"
+          NOVA_SUMMARY_ROW_2_DESTINATION: "https://www.npmjs.com/package/homebridge-adt-pulse"
+          NOVA_SUMMARY_ROW_2_DESTINATION_OUTPUT: "${{ needs['publish-npm-packages-homebridge-adt-pulse'].outputs.summary_destination_0 || '' }}"
+          NOVA_SUMMARY_ROW_2_DETAIL_OUTPUT: "${{ needs['publish-npm-packages-homebridge-adt-pulse'].outputs.summary_detail_0 || '' }}"
+          NOVA_SUMMARY_ROW_2_RESULT: "${{ needs['publish-npm-packages-homebridge-adt-pulse'].result }}"
+          NOVA_SUMMARY_ROW_2_PUBLISH: "true"
+          NOVA_SUMMARY_ROW_3_WORK: "Publish package"
+          NOVA_SUMMARY_ROW_3_WORK_OUTPUT: "${{ needs['publish-github-packages-packages-homebridge-adt-pulse'].outputs.summary_work_0 || '' }}"
+          NOVA_SUMMARY_ROW_3_WORKSPACE: "homebridge-adt-pulse"
+          NOVA_SUMMARY_ROW_3_WORKSPACE_OUTPUT: "${{ needs['publish-github-packages-packages-homebridge-adt-pulse'].outputs.summary_workspace_0 || '' }}"
+          NOVA_SUMMARY_ROW_3_DESTINATION: "https://github.com/${{ github.repository_owner }}?tab=packages"
+          NOVA_SUMMARY_ROW_3_DESTINATION_OUTPUT: "${{ needs['publish-github-packages-packages-homebridge-adt-pulse'].outputs.summary_destination_0 || '' }}"
+          NOVA_SUMMARY_ROW_3_DETAIL_OUTPUT: "${{ needs['publish-github-packages-packages-homebridge-adt-pulse'].outputs.summary_detail_0 || '' }}"
+          NOVA_SUMMARY_ROW_3_RESULT: "${{ needs['publish-github-packages-packages-homebridge-adt-pulse'].result }}"
+          NOVA_SUMMARY_ROW_3_PUBLISH: "true"
+          NOVA_SUMMARY_ROW_4_WORK: "Deploy site"
+          NOVA_SUMMARY_ROW_4_WORK_OUTPUT: "${{ needs['publish-github-pages-apps-docs'].outputs.summary_work_0 || '' }}"
+          NOVA_SUMMARY_ROW_4_WORKSPACE: "homebridge-adt-pulse-docs"
+          NOVA_SUMMARY_ROW_4_WORKSPACE_OUTPUT: "${{ needs['publish-github-pages-apps-docs'].outputs.summary_workspace_0 || '' }}"
+          NOVA_SUMMARY_ROW_4_DESTINATION: "GitHub Pages"
+          NOVA_SUMMARY_ROW_4_DESTINATION_OUTPUT: "${{ needs['publish-github-pages-apps-docs'].outputs.summary_destination_0 || '' }}"
+          NOVA_SUMMARY_ROW_4_DETAIL_OUTPUT: "${{ needs['publish-github-pages-apps-docs'].outputs.summary_detail_0 || '' }}"
+          NOVA_SUMMARY_ROW_4_RESULT: "${{ needs['publish-github-pages-apps-docs'].result }}"
+          NOVA_SUMMARY_ROW_4_PUBLISH: "true"
+        run: |
+          set -euo pipefail
+
+          sanitize_summary_value() {
+            local value="$1"
+
+            value="${value//$'\r'/ }"
+            value="${value//$'\n'/ }"
+            value="${value//|/\\|}"
+
+            printf '%s' "$value"
+          }
+
+          NOVA_SUMMARY_DISPLAY_VERSION="${NOVA_SUMMARY_VERSION#refs/tags/}"
+          NOVA_SUMMARY_DISPLAY_VERSION="${NOVA_SUMMARY_DISPLAY_VERSION#refs/heads/}"
+
+          {
+            printf "## Nova · %s · %s\\n" "$NOVA_SUMMARY_PROJECT" "$NOVA_SUMMARY_DISPLAY_VERSION"
+            printf "\\n"
+            printf "| Work | Workspace | Destination | Result |\\n"
+            printf "| --- | --- | --- | --- |\\n"
+
+            NOVA_SUMMARY_WORK="$NOVA_SUMMARY_ROW_0_WORK_OUTPUT"
+            if [[ -z "$NOVA_SUMMARY_WORK" ]]; then
+              NOVA_SUMMARY_WORK="$NOVA_SUMMARY_ROW_0_WORK"
+            fi
+
+            NOVA_SUMMARY_WORKSPACE="$NOVA_SUMMARY_ROW_0_WORKSPACE_OUTPUT"
+            if [[ -z "$NOVA_SUMMARY_WORKSPACE" ]]; then
+              NOVA_SUMMARY_WORKSPACE="$NOVA_SUMMARY_ROW_0_WORKSPACE"
+            fi
+
+            NOVA_SUMMARY_DESTINATION="$NOVA_SUMMARY_ROW_0_DESTINATION_OUTPUT"
+            if [[ -z "$NOVA_SUMMARY_DESTINATION" ]]; then
+              NOVA_SUMMARY_DESTINATION="$NOVA_SUMMARY_ROW_0_DESTINATION"
+            fi
+
+            NOVA_SUMMARY_DETAIL="$NOVA_SUMMARY_ROW_0_DETAIL_OUTPUT"
+            if [[ -n "$NOVA_SUMMARY_DETAIL" ]]; then
+              NOVA_SUMMARY_DESTINATION="$NOVA_SUMMARY_DESTINATION · $NOVA_SUMMARY_DETAIL"
+            fi
+
+            NOVA_SUMMARY_RESULT="$NOVA_SUMMARY_ROW_0_RESULT"
+            if [[ "$NOVA_SUMMARY_ROW_0_PUBLISH" == "true" && "$NOVA_SUMMARY_PUBLISH" != "true" ]]; then
+              NOVA_SUMMARY_RESULT="dry run ($NOVA_SUMMARY_RESULT)"
+            fi
+
+            NOVA_SUMMARY_WORK="$(sanitize_summary_value "$NOVA_SUMMARY_WORK")"
+            NOVA_SUMMARY_WORKSPACE="$(sanitize_summary_value "$NOVA_SUMMARY_WORKSPACE")"
+            NOVA_SUMMARY_DESTINATION="$(sanitize_summary_value "$NOVA_SUMMARY_DESTINATION")"
+            NOVA_SUMMARY_RESULT="$(sanitize_summary_value "$NOVA_SUMMARY_RESULT")"
+
+            printf "| %s | %s | %s | %s |\\n" "$NOVA_SUMMARY_WORK" "$NOVA_SUMMARY_WORKSPACE" "$NOVA_SUMMARY_DESTINATION" "$NOVA_SUMMARY_RESULT"
+
+            NOVA_SUMMARY_WORK="$NOVA_SUMMARY_ROW_1_WORK_OUTPUT"
+            if [[ -z "$NOVA_SUMMARY_WORK" ]]; then
+              NOVA_SUMMARY_WORK="$NOVA_SUMMARY_ROW_1_WORK"
+            fi
+
+            NOVA_SUMMARY_WORKSPACE="$NOVA_SUMMARY_ROW_1_WORKSPACE_OUTPUT"
+            if [[ -z "$NOVA_SUMMARY_WORKSPACE" ]]; then
+              NOVA_SUMMARY_WORKSPACE="$NOVA_SUMMARY_ROW_1_WORKSPACE"
+            fi
+
+            NOVA_SUMMARY_DESTINATION="$NOVA_SUMMARY_ROW_1_DESTINATION_OUTPUT"
+            if [[ -z "$NOVA_SUMMARY_DESTINATION" ]]; then
+              NOVA_SUMMARY_DESTINATION="$NOVA_SUMMARY_ROW_1_DESTINATION"
+            fi
+
+            NOVA_SUMMARY_DETAIL="$NOVA_SUMMARY_ROW_1_DETAIL_OUTPUT"
+            if [[ -n "$NOVA_SUMMARY_DETAIL" ]]; then
+              NOVA_SUMMARY_DESTINATION="$NOVA_SUMMARY_DESTINATION · $NOVA_SUMMARY_DETAIL"
+            fi
+
+            NOVA_SUMMARY_RESULT="$NOVA_SUMMARY_ROW_1_RESULT"
+            if [[ "$NOVA_SUMMARY_ROW_1_PUBLISH" == "true" && "$NOVA_SUMMARY_PUBLISH" != "true" ]]; then
+              NOVA_SUMMARY_RESULT="dry run ($NOVA_SUMMARY_RESULT)"
+            fi
+
+            NOVA_SUMMARY_WORK="$(sanitize_summary_value "$NOVA_SUMMARY_WORK")"
+            NOVA_SUMMARY_WORKSPACE="$(sanitize_summary_value "$NOVA_SUMMARY_WORKSPACE")"
+            NOVA_SUMMARY_DESTINATION="$(sanitize_summary_value "$NOVA_SUMMARY_DESTINATION")"
+            NOVA_SUMMARY_RESULT="$(sanitize_summary_value "$NOVA_SUMMARY_RESULT")"
+
+            printf "| %s | %s | %s | %s |\\n" "$NOVA_SUMMARY_WORK" "$NOVA_SUMMARY_WORKSPACE" "$NOVA_SUMMARY_DESTINATION" "$NOVA_SUMMARY_RESULT"
+
+            NOVA_SUMMARY_WORK="$NOVA_SUMMARY_ROW_2_WORK_OUTPUT"
+            if [[ -z "$NOVA_SUMMARY_WORK" ]]; then
+              NOVA_SUMMARY_WORK="$NOVA_SUMMARY_ROW_2_WORK"
+            fi
+
+            NOVA_SUMMARY_WORKSPACE="$NOVA_SUMMARY_ROW_2_WORKSPACE_OUTPUT"
+            if [[ -z "$NOVA_SUMMARY_WORKSPACE" ]]; then
+              NOVA_SUMMARY_WORKSPACE="$NOVA_SUMMARY_ROW_2_WORKSPACE"
+            fi
+
+            NOVA_SUMMARY_DESTINATION="$NOVA_SUMMARY_ROW_2_DESTINATION_OUTPUT"
+            if [[ -z "$NOVA_SUMMARY_DESTINATION" ]]; then
+              NOVA_SUMMARY_DESTINATION="$NOVA_SUMMARY_ROW_2_DESTINATION"
+            fi
+
+            NOVA_SUMMARY_DETAIL="$NOVA_SUMMARY_ROW_2_DETAIL_OUTPUT"
+            if [[ -n "$NOVA_SUMMARY_DETAIL" ]]; then
+              NOVA_SUMMARY_DESTINATION="$NOVA_SUMMARY_DESTINATION · $NOVA_SUMMARY_DETAIL"
+            fi
+
+            NOVA_SUMMARY_RESULT="$NOVA_SUMMARY_ROW_2_RESULT"
+            if [[ "$NOVA_SUMMARY_ROW_2_PUBLISH" == "true" && "$NOVA_SUMMARY_PUBLISH" != "true" ]]; then
+              NOVA_SUMMARY_RESULT="dry run ($NOVA_SUMMARY_RESULT)"
+            fi
+
+            NOVA_SUMMARY_WORK="$(sanitize_summary_value "$NOVA_SUMMARY_WORK")"
+            NOVA_SUMMARY_WORKSPACE="$(sanitize_summary_value "$NOVA_SUMMARY_WORKSPACE")"
+            NOVA_SUMMARY_DESTINATION="$(sanitize_summary_value "$NOVA_SUMMARY_DESTINATION")"
+            NOVA_SUMMARY_RESULT="$(sanitize_summary_value "$NOVA_SUMMARY_RESULT")"
+
+            printf "| %s | %s | %s | %s |\\n" "$NOVA_SUMMARY_WORK" "$NOVA_SUMMARY_WORKSPACE" "$NOVA_SUMMARY_DESTINATION" "$NOVA_SUMMARY_RESULT"
+
+            NOVA_SUMMARY_WORK="$NOVA_SUMMARY_ROW_3_WORK_OUTPUT"
+            if [[ -z "$NOVA_SUMMARY_WORK" ]]; then
+              NOVA_SUMMARY_WORK="$NOVA_SUMMARY_ROW_3_WORK"
+            fi
+
+            NOVA_SUMMARY_WORKSPACE="$NOVA_SUMMARY_ROW_3_WORKSPACE_OUTPUT"
+            if [[ -z "$NOVA_SUMMARY_WORKSPACE" ]]; then
+              NOVA_SUMMARY_WORKSPACE="$NOVA_SUMMARY_ROW_3_WORKSPACE"
+            fi
+
+            NOVA_SUMMARY_DESTINATION="$NOVA_SUMMARY_ROW_3_DESTINATION_OUTPUT"
+            if [[ -z "$NOVA_SUMMARY_DESTINATION" ]]; then
+              NOVA_SUMMARY_DESTINATION="$NOVA_SUMMARY_ROW_3_DESTINATION"
+            fi
+
+            NOVA_SUMMARY_DETAIL="$NOVA_SUMMARY_ROW_3_DETAIL_OUTPUT"
+            if [[ -n "$NOVA_SUMMARY_DETAIL" ]]; then
+              NOVA_SUMMARY_DESTINATION="$NOVA_SUMMARY_DESTINATION · $NOVA_SUMMARY_DETAIL"
+            fi
+
+            NOVA_SUMMARY_RESULT="$NOVA_SUMMARY_ROW_3_RESULT"
+            if [[ "$NOVA_SUMMARY_ROW_3_PUBLISH" == "true" && "$NOVA_SUMMARY_PUBLISH" != "true" ]]; then
+              NOVA_SUMMARY_RESULT="dry run ($NOVA_SUMMARY_RESULT)"
+            fi
+
+            NOVA_SUMMARY_WORK="$(sanitize_summary_value "$NOVA_SUMMARY_WORK")"
+            NOVA_SUMMARY_WORKSPACE="$(sanitize_summary_value "$NOVA_SUMMARY_WORKSPACE")"
+            NOVA_SUMMARY_DESTINATION="$(sanitize_summary_value "$NOVA_SUMMARY_DESTINATION")"
+            NOVA_SUMMARY_RESULT="$(sanitize_summary_value "$NOVA_SUMMARY_RESULT")"
+
+            printf "| %s | %s | %s | %s |\\n" "$NOVA_SUMMARY_WORK" "$NOVA_SUMMARY_WORKSPACE" "$NOVA_SUMMARY_DESTINATION" "$NOVA_SUMMARY_RESULT"
+
+            NOVA_SUMMARY_WORK="$NOVA_SUMMARY_ROW_4_WORK_OUTPUT"
+            if [[ -z "$NOVA_SUMMARY_WORK" ]]; then
+              NOVA_SUMMARY_WORK="$NOVA_SUMMARY_ROW_4_WORK"
+            fi
+
+            NOVA_SUMMARY_WORKSPACE="$NOVA_SUMMARY_ROW_4_WORKSPACE_OUTPUT"
+            if [[ -z "$NOVA_SUMMARY_WORKSPACE" ]]; then
+              NOVA_SUMMARY_WORKSPACE="$NOVA_SUMMARY_ROW_4_WORKSPACE"
+            fi
+
+            NOVA_SUMMARY_DESTINATION="$NOVA_SUMMARY_ROW_4_DESTINATION_OUTPUT"
+            if [[ -z "$NOVA_SUMMARY_DESTINATION" ]]; then
+              NOVA_SUMMARY_DESTINATION="$NOVA_SUMMARY_ROW_4_DESTINATION"
+            fi
+
+            NOVA_SUMMARY_DETAIL="$NOVA_SUMMARY_ROW_4_DETAIL_OUTPUT"
+            if [[ -n "$NOVA_SUMMARY_DETAIL" ]]; then
+              NOVA_SUMMARY_DESTINATION="$NOVA_SUMMARY_DESTINATION · $NOVA_SUMMARY_DETAIL"
+            fi
+
+            NOVA_SUMMARY_RESULT="$NOVA_SUMMARY_ROW_4_RESULT"
+            if [[ "$NOVA_SUMMARY_ROW_4_PUBLISH" == "true" && "$NOVA_SUMMARY_PUBLISH" != "true" ]]; then
+              NOVA_SUMMARY_RESULT="dry run ($NOVA_SUMMARY_RESULT)"
+            fi
+
+            NOVA_SUMMARY_WORK="$(sanitize_summary_value "$NOVA_SUMMARY_WORK")"
+            NOVA_SUMMARY_WORKSPACE="$(sanitize_summary_value "$NOVA_SUMMARY_WORKSPACE")"
+            NOVA_SUMMARY_DESTINATION="$(sanitize_summary_value "$NOVA_SUMMARY_DESTINATION")"
+            NOVA_SUMMARY_RESULT="$(sanitize_summary_value "$NOVA_SUMMARY_RESULT")"
+
+            printf "| %s | %s | %s | %s |\\n" "$NOVA_SUMMARY_WORK" "$NOVA_SUMMARY_WORKSPACE" "$NOVA_SUMMARY_DESTINATION" "$NOVA_SUMMARY_RESULT"
+          } >> "$GITHUB_STEP_SUMMARY"
